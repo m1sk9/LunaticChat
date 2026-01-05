@@ -30,12 +30,12 @@ jobs:
         run: ./gradlew ktlintCheck --no-daemon
 
       - name: Build with shadowJar
-        run: ./gradlew shadowJar --parallel --no-daemon
+        run: ./gradlew :platform-paper:shadowJar --parallel --no-daemon
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v6
         if: success()
         with:
           name: LunaticChat-${{ github.sha }}
-          path: build/libs/*-all.jar
+          path: platform-paper/build/libs/*-all.jar
           retention-days: 7

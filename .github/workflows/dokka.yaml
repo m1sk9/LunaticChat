@@ -32,13 +32,13 @@ jobs:
         run: chmod +x gradlew
 
       - name: Generate JavaDoc with Dokka
-        run: ./gradlew dokkaGenerate --no-daemon
+        run: ./gradlew :platform-paper:dokkaGenerate --no-daemon
 
       - name: Upload artifact
         id: lunaticchat_dokka
         uses: actions/upload-pages-artifact@v4
         with:
-          path: build/dokka/html
+          path: platform-paper/build/dokka/html
 
   deploy:
     environment:

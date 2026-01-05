@@ -2,7 +2,7 @@
 
 set -e
 
-DOCKER_COMPOSE="docker compose -f docker/compose.yml"
+DOCKER_COMPOSE="docker compose -f docker/compose.yaml"
 
 help() {
     cat <<EOF
@@ -22,7 +22,7 @@ EOF
 
 case "${1:-}" in
     start)
-        ./gradlew shadowJar
+        ./gradlew :platform-paper:shadowJar
         $DOCKER_COMPOSE up
         ;;
     restart)

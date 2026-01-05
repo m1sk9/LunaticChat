@@ -10,7 +10,7 @@
       </option>
       <option name="taskNames">
         <list>
-          <option value="dokkaGenerate" />
+          <option value=":platform-paper:dokkaGenerate" />
         </list>
       </option>
       <option name="vmOptions" />
