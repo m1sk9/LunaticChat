@@ -1,8 +1,8 @@
-# RuneChat - Design Document
+# LunaticChat - Design Document
 
 ## Project Overview
 
-RuneChat is a Minecraft chat plugin providing 1on1 messaging, quick reply functionality, and romaji-to-Japanese conversion features.
+LunaticChat is a Minecraft chat plugin providing 1on1 messaging, quick reply functionality, and romaji-to-Japanese conversion features.
 
 ## Technology Stack
 
@@ -22,11 +22,11 @@ RuneChat is a Minecraft chat plugin providing 1on1 messaging, quick reply functi
 ## Project Structure
 
 ```
-rune-chat/
-├── common/          # Shared code (data models, interfaces)
-├── paper/           # Paper plugin implementation
-├── velocity/        # Velocity plugin implementation (future)
-└── core/            # Core logic (chat processing, romaji conversion)
+LunaticChat/
+├── engine/              # Core logic (shared code, chat processing, romaji conversion)
+├── platform-paper/      # Paper plugin implementation
+├── platform-velocity/   # Velocity plugin implementation
+└── docker/              # Docker configuration
 ```
 
 ### Why Separate JARs?
@@ -139,7 +139,7 @@ fun onChat(event: AsyncChatEvent) {
 
 - **AsyncChatEvent** uses Paper's Component API - handle accordingly
 - Command aliases must be properly registered
-- Settings file location: `plugins/RuneChat/settings/`
+- Settings file location: `plugins/LunaticChat/settings/`
 - Cache settings in memory to avoid frequent file I/O
 
 ## Development Environment

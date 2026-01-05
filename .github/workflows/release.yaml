@@ -18,9 +18,9 @@ jobs:
       - name: Extract version from build.gradle.kts
         id: get_version
         run: |
-          VERSION=$(grep '^version = ' build.gradle.kts | sed 's/version = "\(.*\)"/\1/')
+          VERSION=$(grep '    version = ' build.gradle.kts | sed 's/.*version = "\(.*\)"/\1/')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "jar_name=rune-core-$VERSION-all.jar" >> $GITHUB_OUTPUT
+          echo "jar_name=LunaticChat-$VERSION-all.jar" >> $GITHUB_OUTPUT
           echo "Extracted version: $VERSION"
 
       - name: Validate tag matches version
@@ -62,13 +62,13 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with shadowJar
-        run: ./gradlew shadowJar --parallel --no-daemon
+        run: ./gradlew :platform-paper:shadowJar --parallel --no-daemon
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v6
         with:
           name: LunaticChat-v${{ needs.validate.outputs.version }}
-          path: build/libs/${{ needs.validate.outputs.jar_name }}
+          path: platform-paper/build/libs/${{ needs.validate.outputs.jar_name }}
           retention-days: 90
 
   release:
