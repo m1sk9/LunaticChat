@@ -1,0 +1,60 @@
+# ----------------------------------------------
+# --------------   LunaticChat   ---------------
+# ----------------------------------------------
+#
+#  Docs: https://lc.m1sk9.dev
+#  GitHub: https://github.com/m1sk9/LunaticChat
+#
+#  This configuration file is for customizing LunaticChat's behavior.
+#  Please specify appropriate values to ensure LunaticChat functions correctly.
+#
+#  For detailed configuration options, please refer to the documentation:
+#       https://lc.m1sk9.dev/docs/configuration
+# ----------------------------------------------
+
+# If enabled, Activate LunaticChat's debug mode, which provides detailed logging for troubleshooting.
+debug: false
+
+# ----------------------------------------------
+# -----------   Features Settings   ------------
+# ----------------------------------------------
+
+features:
+  # If enabled, enables the conversion function from Roman letters to hiragana.
+  japaneseConversionEnabled: false
+  # If enabled, the quick reply feature via the /reply command will be activated.
+  quickRepliesEnabled: true
+
+# ----------------------------------------------
+# ---------   Message Format Settings   --------
+# ----------------------------------------------
+#
+# Customize the format of various chat messages here.
+# You can use placeholders such as {sender}, {message}, etc.
+#
+# {sender} - The name of the message sender
+# {message} - The content of the message
+# ----------------------------------------------
+
+messageFormat:
+  # Configure the format for direct messages sent via /tell or /msg
+  directMessageFormat: "&7[&e{sender} &7>>] &f{message}"
+  # Configure the format for cross-server messages
+  crossServerMessageFormat: "&7[&e{sender} &7(&b{server}&7)] &f{message}"
+  # Configure the format for cross-server direct messages
+  crossServerDirectMessageFormat: "&7[&e{sender}@&7(&b{server}&7) >>] &f{message}"
+
+# ----------------------------------------------
+# -----------   Velocity Settings   ------------
+# ----------------------------------------------
+
+velocity:
+  # If enabled, Activate LunaticChat's Velocity integration features.
+  # This setting overrides all other features; if set to `false`, features such as cross-server chat will become unavailable.
+  enabled: false
+  # The name of the server as recognized by the Velocity proxy.
+  serverName: "s1"
+  # If enabled, allows cross-server chat functionality.
+  crossServerChatEnabled: false
+  # If enabled, allows cross-server direct messaging functionality.
+  crossServerDirectMessagesEnabled: false

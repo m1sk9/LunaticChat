@@ -6,7 +6,6 @@ import dev.m1sk9.lunaticChat.paper.config.key.VelocityConfig
 import org.bukkit.configuration.file.FileConfiguration
 
 object ConfigManager {
-
     private var lunaticChatConfiguration: LunaticChatConfiguration? = null
 
     fun getConfiguration(): LunaticChatConfiguration =
@@ -55,5 +54,4 @@ object ConfigManager {
         lunaticChatConfiguration = loadedConfig
         return loadedConfig
     }
-
 }
