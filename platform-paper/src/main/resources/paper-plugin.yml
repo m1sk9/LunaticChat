@@ -1,5 +1,5 @@
 name: LunaticChat
-version: '0.0.0'
+version: ${version}
 main: dev.m1sk9.lunaticChat.paper.LunaticChat
 api-version: '1.21'
 prefix: LunaticChat
