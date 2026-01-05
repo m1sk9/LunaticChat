@@ -1,0 +1,52 @@
+name: Deploy Dokka
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Development Environment
+        uses: jdx/mise-action@v3
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Generate JavaDoc with Dokka
+        run: ./gradlew dokkaGenerate --no-daemon
+
+      - name: Upload artifact
+        id: lunaticchat_dokka
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: build/dokka/html
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-24.04
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: lunaticchat_dokka
+        uses: actions/deploy-pages@v4
