@@ -54,4 +54,6 @@ object ConfigManager {
         lunaticChatConfiguration = loadedConfig
         return loadedConfig
     }
+
+    fun reload(configFile: FileConfiguration): LunaticChatConfiguration = loadConfiguration(configFile)
 }
