@@ -7,3 +7,9 @@ load: STARTUP
 authors: [ m1sk9 ]
 description: Next-generation channel chat plugin for Paper/Velocity
 website: lc.m1sk9.dev
+
+permissions:
+  lunaticchat.command.tell:
+    default: not op
+  lunaticchat.command.reply:
+    default: not op

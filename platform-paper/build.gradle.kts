@@ -12,17 +12,19 @@ repositories {
 }
 
 dependencies {
-    // engine モジュールを使用
     api(project(":engine"))
-
-    // Paper API
     compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
 }
 
 tasks {
     shadowJar {
-        archiveClassifier.set("all")
+        archiveClassifier.set("")
         archiveBaseName.set("LunaticChat")
+    }
+
+    jar {
+        enabled = false
     }
 
     runServer {
