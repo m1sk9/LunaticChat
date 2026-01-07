@@ -4,6 +4,5 @@ plugins {
 }
 
 dependencies {
-    // JSON シリアライゼーション
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
 }
