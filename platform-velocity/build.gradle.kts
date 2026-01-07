@@ -11,12 +11,7 @@ repositories {
 }
 
 dependencies {
-    // engine モジュールを使用
     api(project(":engine"))
-
-    // Velocity API (将来追加予定)
-    // compileOnly("com.velocitypowered:velocity-api:3.4.0")
-    // kapt("com.velocitypowered:velocity-api:3.4.0")
 }
 
 tasks {
