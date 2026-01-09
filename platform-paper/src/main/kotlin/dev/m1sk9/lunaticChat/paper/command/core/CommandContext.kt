@@ -2,6 +2,7 @@ package dev.m1sk9.lunaticChat.paper.command.core
 
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.event.ClickEvent
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 
@@ -39,6 +40,21 @@ class CommandContext(
      */
     fun reply(message: Component) {
         sender.sendMessage(message)
+    }
+
+    /**
+     * Sends a message with a click event to the command sender.
+     *
+     * @param message The message component to send
+     * @param event The click event to attach to the message
+     */
+    fun replyWithEvent(
+        message: Component,
+        event: ClickEvent,
+    ) {
+        message
+            .clickEvent(event)
+            .let { sender.sendMessage(it) }
     }
 
     /**

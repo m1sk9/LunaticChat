@@ -3,6 +3,7 @@ package dev.m1sk9.lunaticChat.paper.command.handler
 import dev.m1sk9.lunaticChat.paper.common.SpyPermissionManager
 import dev.m1sk9.lunaticChat.paper.config.ConfigManager
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.event.ClickEvent
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import java.util.UUID
@@ -95,6 +96,8 @@ class DirectMessageHandler {
                 .replace("{recipient}", recipientName)
                 .replace("{message}", message)
 
-        return Component.text(text)
+        return Component
+            .text(text)
+            .clickEvent(ClickEvent.suggestCommand("/tell $senderName "))
     }
 }
