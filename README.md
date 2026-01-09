@@ -23,8 +23,8 @@ _[Supports Minecraft 1.21.X](https://minecraft.wiki/w/Java_Edition_version_histo
 
 ## Todo
 
-- [ ] 1on1 Direct Messaging System
-- [ ] Quick Reply Functionality
+- [x] 1on1 Direct Messaging System
+- [x] Quick Reply Functionality
 - [ ] Romaji to Japanese Conversion
 - [ ] Velocity Support
 - [ ] Channel Chat System
