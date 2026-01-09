@@ -1,13 +1,13 @@
 services:
   minecraft:
     image: itzg/minecraft-server:java21
-    container_name: runecore-debug-server
+    container_name: debug-server
     user: "0:0"
     ports:
       - "25565:25565"
       - "25575:25575"
     volumes:
-      - minecraft-data:/data
+      - lunatic-debug-minecraft-data:/data
       - ../platform-paper/build/libs:/plugins:ro
       - ./plugins:/data/plugins
       - ./bukkit.yml:/data/bukkit.yml
@@ -40,4 +40,4 @@ services:
     stdin_open: true
 
 volumes:
-  minecraft-data:
+  lunatic-debug-minecraft-data:

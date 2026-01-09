@@ -38,23 +38,5 @@ features:
 
 messageFormat:
   # Configure the format for direct messages sent via /tell or /msg
-  directMessageFormat: "&7[&e{sender} &7>>] &f{message}"
-  # Configure the format for cross-server messages
-  crossServerMessageFormat: "&7[&e{sender} &7(&b{server}&7)] &f{message}"
-  # Configure the format for cross-server direct messages
-  crossServerDirectMessageFormat: "&7[&e{sender}@&7(&b{server}&7) >>] &f{message}"
+  directMessageFormat: "§7[§e{sender} §7>> §e{recipient}§7] §f{message}"
 
-# ----------------------------------------------
-# -----------   Velocity Settings   ------------
-# ----------------------------------------------
-
-velocity:
-  # If enabled, Activate LunaticChat's Velocity integration features.
-  # This setting overrides all other features; if set to `false`, features such as cross-server chat will become unavailable.
-  enabled: false
-  # The name of the server as recognized by the Velocity proxy.
-  serverName: "s1"
-  # If enabled, allows cross-server chat functionality.
-  crossServerChatEnabled: false
-  # If enabled, allows cross-server direct messaging functionality.
-  crossServerDirectMessagesEnabled: false
