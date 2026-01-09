@@ -5,8 +5,8 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerQuitEvent
 
-class PlayerLogoutListener : Listener {
-    @EventHandler
+class PlayerPresenceListener : Listener {
+    @EventHandler(ignoreCancelled = true)
     fun onQuit(
         lunaticChat: LunaticChat,
         event: PlayerQuitEvent,

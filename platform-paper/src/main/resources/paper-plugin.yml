@@ -10,6 +10,9 @@ website: lc.m1sk9.dev
 
 permissions:
   lunaticchat.command.tell:
-    default: not op
+    default: true
   lunaticchat.command.reply:
-    default: not op
+    default: true
+
+  lunaticchat.spy:
+    default: op

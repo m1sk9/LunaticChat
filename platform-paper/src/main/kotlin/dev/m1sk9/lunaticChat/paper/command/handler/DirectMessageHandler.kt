@@ -1,5 +1,6 @@
 package dev.m1sk9.lunaticChat.paper.command.handler
 
+import dev.m1sk9.lunaticChat.paper.common.SpyPermissionManager
 import dev.m1sk9.lunaticChat.paper.config.ConfigManager
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
@@ -70,6 +71,12 @@ class DirectMessageHandler {
         recordMessage(sender, recipient)
         val format = lunaticChatConfiguration.messageFormat.directMessageFormat
         val formattedMessage = formatMessage(format, sender.name, recipient.name, message)
+
+        SpyPermissionManager.getDirectMessageSpyPlayers().values.forEach {
+            if (it.isOnline && it.uniqueId != sender.uniqueId && it.uniqueId != recipient.uniqueId) {
+                it.sendMessage(formattedMessage)
+            }
+        }
 
         sender.sendMessage(formattedMessage)
         recipient.sendMessage(formattedMessage)

@@ -4,7 +4,9 @@ import dev.m1sk9.lunaticChat.paper.command.core.CommandRegistry
 import dev.m1sk9.lunaticChat.paper.command.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.command.impl.ReplyCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.TellCommand
+import dev.m1sk9.lunaticChat.paper.common.SpyPermissionManager
 import dev.m1sk9.lunaticChat.paper.config.ConfigManager
+import dev.m1sk9.lunaticChat.paper.listener.PlayerPresenceListener
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 
@@ -34,7 +36,8 @@ class LunaticChat :
                 )
         commandRegistry.initialize()
 
-        server.pluginManager.registerEvents(this, this)
+        server.pluginManager.registerEvents(SpyPermissionManager, this)
+        server.pluginManager.registerEvents(PlayerPresenceListener(), this)
 
         logger.info("LunaticChat enabled.")
     }

@@ -6,4 +6,6 @@ sealed class LunaticChatPermissionNode(
     object Tell : LunaticChatPermissionNode("lunaticchat.command.tell")
 
     object Reply : LunaticChatPermissionNode("lunaticchat.command.reply")
+
+    object Spy : LunaticChatPermissionNode("lunaticchat.spy")
 }
