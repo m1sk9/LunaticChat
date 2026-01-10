@@ -13,13 +13,10 @@ import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
 import dev.m1sk9.lunaticChat.paper.command.handler.DirectMessageHandler
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
+import kotlinx.coroutines.runBlocking
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 
-/**
- * Quick reply command for responding to the last person who messaged you.
- * Usage: /reply <message>
- */
 @Command(
     name = "reply",
     aliases = ["r"],
@@ -61,7 +58,9 @@ class ReplyCommand(
                         .color(NamedTextColor.RED),
                 )
 
-        dmHandler.sendDirectMessage(sender, target, message)
+        runBlocking {
+            dmHandler.sendDirectMessage(sender, target, message)
+        }
 
         return CommandResult.Success
     }

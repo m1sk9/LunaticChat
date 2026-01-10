@@ -7,4 +7,5 @@ data class JapaneseConversionFeatureConfig(
     val cacheFilePath: String,
     val apiTimeout: Long,
     val apiRetryAttempts: Int,
+    val settingsDirectory: String = "settings",
 )

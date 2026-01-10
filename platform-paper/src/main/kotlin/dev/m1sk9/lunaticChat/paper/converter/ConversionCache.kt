@@ -1,6 +1,5 @@
 package dev.m1sk9.lunaticChat.paper.converter
 
-import dev.m1sk9.lunaticChat.engine.exception.ConversionCacheFileNotFoundException
 import kotlinx.serialization.json.Json
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin

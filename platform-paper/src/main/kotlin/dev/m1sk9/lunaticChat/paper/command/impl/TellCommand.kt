@@ -15,15 +15,12 @@ import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
 import dev.m1sk9.lunaticChat.paper.command.handler.DirectMessageHandler
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
+import kotlinx.coroutines.runBlocking
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Bukkit
 import java.util.concurrent.CompletableFuture
 
-/**
- * Direct messaging command.
- * Usage: /tell <player> <message>
- */
 @Command(
     name = "tell",
     aliases = ["t", "msg", "m", "w", "whisper"],
@@ -79,7 +76,10 @@ class TellCommand(
                     .color(NamedTextColor.RED),
             )
         }
-        directMessageHandler.sendDirectMessage(sender, recipient, message)
+
+        runBlocking {
+            directMessageHandler.sendDirectMessage(sender, recipient, message)
+        }
 
         return CommandResult.Success
     }
