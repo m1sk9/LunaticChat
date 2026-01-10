@@ -3,7 +3,7 @@
 layout: home
 
 hero:
-  name: "LunaticChat Docs"
+  name: "LunaticChat"
   tagline: Next-generation channel chat plugin
   actions:
     - theme: brand

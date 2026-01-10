@@ -14,6 +14,8 @@ import net.kyori.adventure.text.format.NamedTextColor
  * Provides common functionality and enforces consistent command structure.
  */
 abstract class LunaticCommand(
+    // Reference to the main plugin instance
+    // DO NOT REMOVE - needed for command registration
     protected val plugin: LunaticChat,
 ) {
     private val commandAnnotation: Command by lazy {
