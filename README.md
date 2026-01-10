@@ -2,6 +2,9 @@
 
 Next-generation channel chat plugin for Paper/Velocity.
 
+- [Documentation](https://lc.m1sk9.dev)
+- [API Documentation](https://lc.api.m1sk9.dev)
+
 ```shell
 git clone git@github.com:m1sk9/LunaticChat.git
 cd LunaticChat
@@ -10,6 +13,10 @@ cd LunaticChat
 ```
 
 _[Supports Minecraft 1.21.X](https://minecraft.wiki/w/Java_Edition_version_history#1.21) | [Requires Java 21+ and Gradle 9+](.github/CONTRIBUTING.md#開発環境)_
+
+## Installation
+
+See the [Documentation](https://lc.m1sk9.dev/guide/getting-started).
 
 ## Features
 
@@ -25,7 +32,7 @@ _[Supports Minecraft 1.21.X](https://minecraft.wiki/w/Java_Edition_version_histo
 
 - [x] 1on1 Direct Messaging System
 - [x] Quick Reply Functionality
-- [ ] Romaji to Japanese Conversion
+- [x] Romaji to Japanese Conversion
 - [ ] Velocity Support
 - [ ] Channel Chat System
 
