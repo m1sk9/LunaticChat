@@ -20,7 +20,7 @@ jobs:
         run: |
           VERSION=$(grep '    version = ' build.gradle.kts | sed 's/.*version = "\(.*\)"/\1/')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "jar_name=LunaticChat-$VERSION-all.jar" >> $GITHUB_OUTPUT
+          echo "jar_name=LunaticChat-$VERSION-paper.jar" >> $GITHUB_OUTPUT
           echo "Extracted version: $VERSION"
 
       - name: Validate tag matches version
