@@ -6,6 +6,7 @@ class RomanjiConverter(
     private val cache: ConversionCache,
     private val apiClient: GoogleIMEClient,
     private val logger: Logger,
+    private val debugMode: Boolean = false,
 ) {
     /**
      * Converts the given romaji input to Japanese using the API client.
@@ -25,7 +26,9 @@ class RomanjiConverter(
 
         // Step 1: Romanji -> Hiragana
         val hiragana = KanaConverter.toHiragana(input)
-        logger.info("Romanji -> Hiragana: $input -> $hiragana")
+        if (debugMode) {
+            logger.info("Romanji -> Hiragana: $input -> $hiragana")
+        }
 
         // Step 2: Hiragana -> Kanji/Kana
         val result =

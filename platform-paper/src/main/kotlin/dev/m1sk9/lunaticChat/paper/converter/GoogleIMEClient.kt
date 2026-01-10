@@ -41,16 +41,23 @@ class GoogleIMEClient(
         val resultArray = parsed.jsonArray
 
         // Response format: [["input", ["candidate1", "candidate2", ...]], ...]
-        if (resultArray.isNotEmpty()) {
-            val firstResult = resultArray[0].jsonArray
-            if (firstResult.size >= 2) {
-                val candidates = firstResult[1].jsonArray
+        // For multi-word input, there are multiple arrays, one per segment
+        val result = StringBuilder()
+
+        for (segment in resultArray) {
+            val segmentArray = segment.jsonArray
+            if (segmentArray.size >= 2) {
+                val candidates = segmentArray[1].jsonArray
                 if (candidates.isNotEmpty()) {
-                    return candidates[0].jsonPrimitive.content
+                    result.append(candidates[0].jsonPrimitive.content)
                 }
             }
         }
 
-        throw IllegalStateException("No conversion result found in the response.")
+        if (result.isEmpty()) {
+            throw IllegalStateException("No conversion result found in the response.")
+        }
+
+        return result.toString()
     }
 }

@@ -44,6 +44,7 @@ features:
 # You can use placeholders such as {sender}, {message}, etc.
 #
 # {sender} - The name of the message sender
+# {recipient} - The name of the message recipient
 # {message} - The content of the message
 # ----------------------------------------------
 
