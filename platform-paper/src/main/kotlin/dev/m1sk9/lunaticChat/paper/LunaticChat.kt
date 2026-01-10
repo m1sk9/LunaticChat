@@ -3,6 +3,7 @@ package dev.m1sk9.lunaticChat.paper
 import dev.m1sk9.lunaticChat.paper.command.core.CommandRegistry
 import dev.m1sk9.lunaticChat.paper.command.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.command.impl.ReplyCommand
+import dev.m1sk9.lunaticChat.paper.command.impl.RomajiConvertToggleCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.TellCommand
 import dev.m1sk9.lunaticChat.paper.common.SpyPermissionManager
 import dev.m1sk9.lunaticChat.paper.config.ConfigManager
@@ -11,6 +12,7 @@ import dev.m1sk9.lunaticChat.paper.converter.GoogleIMEClient
 import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
 import dev.m1sk9.lunaticChat.paper.listener.PlayerChatListener
 import dev.m1sk9.lunaticChat.paper.listener.PlayerPresenceListener
+import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import org.bukkit.event.Listener
@@ -24,6 +26,7 @@ class LunaticChat :
 
     private lateinit var commandRegistry: CommandRegistry
     private var romajiConverter: RomanjiConverter? = null
+    private var playerSettingsManager: PlayerSettingsManager? = null
 
     override fun onEnable() {
         saveDefaultConfig()
@@ -35,6 +38,15 @@ class LunaticChat :
         }
 
         if (lunaticChatConfiguration.features.japaneseConversion.enabled) {
+            val settingsDir = dataFolder.resolve(lunaticChatConfiguration.features.japaneseConversion.settingsDirectory).toPath()
+            playerSettingsManager =
+                PlayerSettingsManager(
+                    settingsDirectory = settingsDir,
+                    plugin = this,
+                    logger = logger,
+                )
+            playerSettingsManager!!.initializeDirectory()
+
             val cache =
                 ConversionCache(
                     cacheFile = dataFolder.resolve(lunaticChatConfiguration.features.japaneseConversion.cacheFilePath).toPath(),
@@ -62,11 +74,15 @@ class LunaticChat :
                 saveInterval,
             )
 
-            server.pluginManager.registerEvents(PlayerChatListener(romajiConverter!!), this)
+            server.pluginManager.registerEvents(PlayerChatListener(romajiConverter!!, playerSettingsManager!!), this)
             logger.info("Japanese conversion feature enabled.")
         }
 
-        directMessageHandler = DirectMessageHandler()
+        directMessageHandler =
+            DirectMessageHandler(
+                settingsManager = playerSettingsManager,
+                romanjiConverter = romajiConverter,
+            )
 
         commandRegistry =
             CommandRegistry(this)
@@ -78,10 +94,15 @@ class LunaticChat :
                 ReplyCommand(this, directMessageHandler),
             )
         }
+        if (lunaticChatConfiguration.features.japaneseConversion.enabled) {
+            commandRegistry.registerAll(
+                RomajiConvertToggleCommand(this, playerSettingsManager!!),
+            )
+        }
         commandRegistry.initialize()
 
         server.pluginManager.registerEvents(SpyPermissionManager, this)
-        server.pluginManager.registerEvents(PlayerPresenceListener(this), this)
+        server.pluginManager.registerEvents(PlayerPresenceListener(this, playerSettingsManager), this)
 
         logger.info("LunaticChat enabled.")
     }

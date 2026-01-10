@@ -42,6 +42,11 @@ object ConfigManager {
                                         3000,
                                     ),
                                 apiRetryAttempts = configFile.getInt("features.japaneseConversion.api.retryAttempts", 2),
+                                settingsDirectory =
+                                    configFile.getString(
+                                        "features.japaneseConversion.settings.directory",
+                                        "settings",
+                                    )!!,
                             ),
                     ),
                 messageFormat =

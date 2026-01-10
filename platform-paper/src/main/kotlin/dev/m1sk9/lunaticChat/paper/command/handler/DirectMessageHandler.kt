@@ -91,7 +91,9 @@ class DirectMessageHandler(
         val format = lunaticChatConfiguration.messageFormat.directMessageFormat
 
         val spyMessage = formatMessage(format, sender.name, recipient.name, message)
-        SpyPermissionManager.getDirectMessageSpyPlayers().values
+        SpyPermissionManager
+            .getDirectMessageSpyPlayers()
+            .values
             .filter { it.isOnline && it.uniqueId !in setOf(sender.uniqueId, recipient.uniqueId) }
             .forEach { it.sendMessage(spyMessage) }
 
