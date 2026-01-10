@@ -16,7 +16,7 @@ LunaticChat is a Minecraft chat plugin providing 1on1 messaging, quick reply fun
 
 1. **Always support the latest version** while maintaining backward compatibility (e.g., 1.21.x)
 2. **Maintainability**: Design for extensibility and easy maintenance
-3. **Use Paper's LifecycleEventManager** for command registration (not RuneCore's implementation)
+3. **Use Paper's LifecycleEventManager** for command registration
 4. **Chat logs must be compatible** with CoreProtect and similar logging plugins
 
 ## Project Structure
@@ -61,24 +61,99 @@ LunaticChat/
 
 **Conversion Timing**: When player sends message (`AsyncChatEvent` fires)
 
-**Implementation Strategy**:
-1. **Phase 1**: Implement with Kotlin sealed classes
-    - Define romaji mappings as sealed class hierarchy
-    - If this becomes unmanageable, proceed to Phase 2
-2. **Phase 2**: Use Map-based approach
-3. **Phase 3**: External API with request limiting and caching
+**Architecture**: Simple cache + Google IME API approach
 
-**Example sealed class structure**:
+```
+┌─────────────────────────────────────────┐
+│         Player Input (Romanji)          │
+└──────────────────┬──────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────────┐
+│         Check Memory Cache              │
+├─────────────────────────────────────────┤
+│  Hit: Return cached result (< 1ms)      │
+│  Miss: Call Google IME API              │
+│        → Save to cache                  │
+│        → Queue async disk save          │
+└──────────────────┬──────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────────┐
+│       Converted Text (Japanese)         │
+└─────────────────────────────────────────┘
+```
+
+**Key Components**:
+
+1. **RomanjiConverter** - Main conversion coordinator
+2. **ConversionCache** - Two-tier caching (memory + disk)
+    - Memory: ConcurrentHashMap for instant access
+    - Disk: JSON file loaded on startup, saved periodically
+3. **GoogleIMEClient** - HTTP client for Google Transliterate API
+
+**Cache Strategy**:
+- Load cache from disk on plugin enable (once)
+- All conversions check memory cache first
+- Cache misses trigger API call and store result
+- Periodic async saves (every 5 minutes) + final save on disable
+- LRU eviction when max entries (500) exceeded
+
+**Performance**:
+- Cached conversions: < 1ms
+- API calls: < 3000ms (first time only per phrase)
+- Disk I/O: Async, no gameplay impact
+- Memory footprint: ~25KB for 500 entries
+- Startup load time: < 10ms
+
+**Example Implementation**:
 ```kotlin
-sealed class RomajiMapping {
-    abstract val romaji: String
-    abstract val hiragana: String
-    
-    data object A : RomajiMapping() {
-        override val romaji = "a"
-        override val hiragana = "あ"
+class RomanjiConverter(
+    private val cache: ConversionCache,
+    private val apiClient: GoogleIMEClient
+) {
+    suspend fun convert(input: String): String {
+        // Check cache first
+        cache.get(input)?.let { return it }
+        
+        // Call Google IME API
+        val result = apiClient.convert(input)
+        
+        // Store in cache
+        cache.put(input, result)
+        
+        return result
     }
-    // ... more mappings
+}
+```
+
+**Cache Implementation**:
+```kotlin
+class ConversionCache(
+    private val cacheFile: Path,
+    private val maxEntries: Int = 500
+) {
+    private val memoryCache = ConcurrentHashMap<String, String>()
+    private val saveQueue = AtomicBoolean(false)
+    
+    fun loadFromDisk() {
+        if (!cacheFile.exists()) return
+        val data = Json.decodeFromString<CacheData>(cacheFile.readText())
+        memoryCache.putAll(data.entries)
+    }
+    
+    fun get(key: String): String? = memoryCache[key]
+    
+    fun put(key: String, value: String) {
+        if (memoryCache.size >= maxEntries) evictOldest()
+        memoryCache[key] = value
+        queueDiskSave()
+    }
+    
+    fun saveToDisk() {
+        val data = CacheData(version = "1.0", entries = memoryCache.toMap())
+        cacheFile.writeText(Json.encodeToString(data))
+    }
 }
 ```
 
@@ -98,6 +173,30 @@ data class PlayerChatSettings(
     val uuid: UUID,
     val japaneseConversionEnabled: Boolean = false
 )
+```
+
+**Cache Data Model**:
+```kotlin
+@Serializable
+data class CacheData(
+    val version: String,
+    val entries: Map<String, String>
+)
+```
+
+## Configuration
+
+```yaml
+features:
+  japaneseConversion:
+    enabled: true
+    cache:
+      maxEntries: 500
+      saveIntervalSeconds: 300  # 5 minutes
+      cacheFile: "conversion-cache.json"
+    api:
+      timeout: 3000  # milliseconds
+      retryCount: 2
 ```
 
 ## Future Features (Post v0.1.0)
@@ -129,8 +228,49 @@ fun onChat(event: AsyncChatEvent) {
     val settings = settingsManager.get(player.uniqueId)
     
     if (settings.japaneseConversionEnabled) {
-        val converted = romajiConverter.convert(/* message */)
-        // Modify message (don't cancel event for CoreProtect compatibility)
+        val plainText = (event.message() as? TextComponent)?.content() ?: return
+        val converted = runBlocking { romajiConverter.convert(plainText) }
+        event.message(Component.text(converted))
+    }
+}
+```
+
+## Plugin Lifecycle
+
+```kotlin
+class LunaticChat : JavaPlugin() {
+    private lateinit var romanjiConverter: RomanjiConverter
+    
+    override fun onEnable() {
+        // Load cache on startup
+        val cache = ConversionCache(
+            cacheFile = dataFolder.resolve("conversion-cache.json").toPath(),
+            maxEntries = config.getInt("features.japaneseConversion.cache.maxEntries", 500)
+        )
+        cache.loadFromDisk()
+        
+        // Initialize converter
+        val apiClient = GoogleIMEClient(
+            timeout = config.getInt("features.japaneseConversion.api.timeout", 3000).milliseconds
+        )
+        romanjiConverter = RomanjiConverter(cache, apiClient)
+        
+        // Periodic save task
+        val saveInterval = config.getLong(
+            "features.japaneseConversion.cache.saveIntervalSeconds", 300
+        ) * 20L // Convert seconds to ticks
+        
+        server.scheduler.runTaskTimerAsynchronously(this, {
+            cache.saveToDisk()
+        }, saveInterval, saveInterval)
+        
+        logger.info("Japanese conversion system initialized")
+    }
+    
+    override fun onDisable() {
+        // Final save on shutdown
+        cache.saveToDisk()
+        logger.info("Cache saved on shutdown")
     }
 }
 ```
@@ -141,8 +281,28 @@ fun onChat(event: AsyncChatEvent) {
 - Command aliases must be properly registered
 - Settings file location: `plugins/LunaticChat/settings/`
 - Cache settings in memory to avoid frequent file I/O
+- Cache file location: `plugins/LunaticChat/conversion-cache.json`
+- All disk I/O is async to prevent blocking game thread
+
+## Performance Considerations
+
+### Memory Usage
+- 500 entries × ~50 bytes average = ~25KB
+- Parse-time memory consumption: < 100KB
+- Negligible impact on Minecraft server
+
+### Disk I/O
+- **Startup**: Once (< 10ms for 500 entries)
+- **Runtime**: Periodic saves every 5 minutes (async)
+- **Shutdown**: Once (final save)
+
+### Network
+- No network calls after cache hit
+- Each unique phrase calls Google API only once
 
 ## Development Environment
 
 - Shell: Fish
-- Always use Japanese punctuation (，．) in responses.
+- Java: 21+
+- Gradle: 9+
+- Kotlin: 2.3.0+

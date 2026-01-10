@@ -1,7 +1,9 @@
 package dev.m1sk9.lunaticChat.paper.config
 
 import dev.m1sk9.lunaticChat.paper.config.key.FeaturesConfig
+import dev.m1sk9.lunaticChat.paper.config.key.JapaneseConversionFeatureConfig
 import dev.m1sk9.lunaticChat.paper.config.key.MessageFormatConfig
+import dev.m1sk9.lunaticChat.paper.config.key.QuickRepliesFeatureConfig
 import org.bukkit.configuration.file.FileConfiguration
 
 object ConfigManager {
@@ -15,8 +17,37 @@ object ConfigManager {
             LunaticChatConfiguration(
                 features =
                     FeaturesConfig(
-                        japaneseConversionEnabled = configFile.getBoolean("features.japaneseConversionEnabled", false),
-                        quickRepliesEnabled = configFile.getBoolean("features.quickRepliesEnabled", true),
+                        quickRepliesEnabled =
+                            QuickRepliesFeatureConfig(
+                                enabled =
+                                    configFile.getBoolean("features.quickReplies.enabled", true),
+                            ),
+                        japaneseConversion =
+                            JapaneseConversionFeatureConfig(
+                                enabled = configFile.getBoolean("features.japaneseConversion.enabled", false),
+                                cacheMaxEntries = configFile.getInt("features.japaneseConversion.cache.maxEntries", 500),
+                                cacheSaveIntervalSeconds =
+                                    configFile.getInt(
+                                        "features.japaneseConversion.cache.saveIntervalSeconds",
+                                        300,
+                                    ),
+                                cacheFilePath =
+                                    configFile.getString(
+                                        "features.japaneseConversion.cache.filePath",
+                                        "conversion_cache.json",
+                                    )!!,
+                                apiTimeout =
+                                    configFile.getLong(
+                                        "features.japaneseConversion.api.timeout",
+                                        3000,
+                                    ),
+                                apiRetryAttempts = configFile.getInt("features.japaneseConversion.api.retryAttempts", 2),
+                                settingsDirectory =
+                                    configFile.getString(
+                                        "features.japaneseConversion.settings.directory",
+                                        "settings",
+                                    )!!,
+                            ),
                     ),
                 messageFormat =
                     MessageFormatConfig(

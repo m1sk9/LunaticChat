@@ -2,6 +2,8 @@ package dev.m1sk9.lunaticChat.paper.command.handler
 
 import dev.m1sk9.lunaticChat.paper.common.SpyPermissionManager
 import dev.m1sk9.lunaticChat.paper.config.ConfigManager
+import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
+import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.ClickEvent
 import org.bukkit.Bukkit
@@ -13,7 +15,10 @@ import java.util.concurrent.ConcurrentHashMap
  * Manages direct message state including reply targets.
  * Tracks the last player who messaged each player for /reply functionality.
  */
-class DirectMessageHandler {
+class DirectMessageHandler(
+    private val settingsManager: PlayerSettingsManager?,
+    private val romanjiConverter: RomanjiConverter?,
+) {
     private var lunaticChatConfiguration = ConfigManager.getConfiguration()
 
     private val lastMessager: ConcurrentHashMap<UUID, UUID> = ConcurrentHashMap()
@@ -61,26 +66,40 @@ class DirectMessageHandler {
     /**
      * Sends a direct message from one player to another.
      * Handles formatting and recording the conversation.
+     * Applies romaji-to-Japanese conversion if sender has it enabled.
      *
      * @return true if message was sent successfully
      */
-    fun sendDirectMessage(
+    suspend fun sendDirectMessage(
         sender: Player,
         recipient: Player,
         message: String,
     ): Boolean {
         recordMessage(sender, recipient)
+
+        val senderSettings = settingsManager?.getSettings(sender.uniqueId)
+        val displayMessage =
+            senderSettings
+                ?.takeIf { it.japaneseConversionEnabled }
+                ?.let {
+                    romanjiConverter
+                        ?.runCatching {
+                            "$message §e(${convert(message)})"
+                        }?.getOrNull()
+                } ?: message
+
         val format = lunaticChatConfiguration.messageFormat.directMessageFormat
-        val formattedMessage = formatMessage(format, sender.name, recipient.name, message)
 
-        SpyPermissionManager.getDirectMessageSpyPlayers().values.forEach {
-            if (it.isOnline && it.uniqueId != sender.uniqueId && it.uniqueId != recipient.uniqueId) {
-                it.sendMessage(formattedMessage)
-            }
-        }
+        val spyMessage = formatMessage(format, sender.name, recipient.name, message)
+        SpyPermissionManager
+            .getDirectMessageSpyPlayers()
+            .values
+            .filter { it.isOnline && it.uniqueId !in setOf(sender.uniqueId, recipient.uniqueId) }
+            .forEach { it.sendMessage(spyMessage) }
 
-        sender.sendMessage(formattedMessage)
-        recipient.sendMessage(formattedMessage)
+        val userMessage = formatMessage(format, sender.name, recipient.name, displayMessage)
+        sender.sendMessage(userMessage)
+        recipient.sendMessage(userMessage)
         return true
     }
 

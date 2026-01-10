@@ -20,10 +20,21 @@ debug: false
 # ----------------------------------------------
 
 features:
-  # If enabled, enables the conversion function from Roman letters to hiragana.
-  japaneseConversionEnabled: false
-  # If enabled, the quick reply feature via the /reply command will be activated.
-  quickRepliesEnabled: true
+  quickReplies:
+    # If enabled, the quick reply feature via the /reply command will be activated.
+    enabled: true
+  japaneseConversion:
+    # If enabled, enables the conversion function from Roman letters to hiragana.
+    enabled: false
+    cache:
+      maxEntries: 500
+      saveIntervalSeconds: 300
+      filePath: "conversion_cache.json"
+    api:
+      timeout: 3000
+      retryAttempts: 2
+    settings:
+      directory: "settings"
 
 # ----------------------------------------------
 # ---------   Message Format Settings   --------
