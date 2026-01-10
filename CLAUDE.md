@@ -97,13 +97,14 @@ LunaticChat/
 - All conversions check memory cache first
 - Cache misses trigger API call and store result
 - Periodic async saves (every 5 minutes) + final save on disable
-- LRU eviction when max entries (5000) exceeded
+- LRU eviction when max entries (500) exceeded
 
 **Performance**:
 - Cached conversions: < 1ms
 - API calls: < 3000ms (first time only per phrase)
 - Disk I/O: Async, no gameplay impact
-- Memory footprint: ~250KB for 5000 entries
+- Memory footprint: ~25KB for 500 entries
+- Startup load time: < 10ms
 
 **Example Implementation**:
 ```kotlin
@@ -130,7 +131,7 @@ class RomanjiConverter(
 ```kotlin
 class ConversionCache(
     private val cacheFile: Path,
-    private val maxEntries: Int = 5000
+    private val maxEntries: Int = 500
 ) {
     private val memoryCache = ConcurrentHashMap<String, String>()
     private val saveQueue = AtomicBoolean(false)
@@ -190,7 +191,7 @@ features:
   japaneseConversion:
     enabled: true
     cache:
-      maxEntries: 5000
+      maxEntries: 500
       saveIntervalSeconds: 300  # 5 minutes
       cacheFile: "conversion-cache.json"
     api:
@@ -244,7 +245,7 @@ class LunaticChat : JavaPlugin() {
         // Load cache on startup
         val cache = ConversionCache(
             cacheFile = dataFolder.resolve("conversion-cache.json").toPath(),
-            maxEntries = config.getInt("features.japaneseConversion.cache.maxEntries", 5000)
+            maxEntries = config.getInt("features.japaneseConversion.cache.maxEntries", 500)
         )
         cache.loadFromDisk()
         
@@ -286,11 +287,12 @@ class LunaticChat : JavaPlugin() {
 ## Performance Considerations
 
 ### Memory Usage
-- 5000 entries × ~50 bytes average = ~250KB
+- 500 entries × ~50 bytes average = ~25KB
+- Parse-time memory consumption: < 100KB
 - Negligible impact on Minecraft server
 
 ### Disk I/O
-- **Startup**: Once (< 100ms for thousands of entries)
+- **Startup**: Once (< 10ms for 500 entries)
 - **Runtime**: Periodic saves every 5 minutes (async)
 - **Shutdown**: Once (final save)
 
