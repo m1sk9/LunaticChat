@@ -7,7 +7,7 @@ export default defineConfig({
   lang: 'ja-JP',
   cleanUrls: true,
   srcDir: './src',
-  outDir: './out',
+  outDir: './dist',
   themeConfig: {
     nav: [
       { text: 'Guide', link: '/guide/getting-started' },
