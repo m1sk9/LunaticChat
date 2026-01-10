@@ -106,7 +106,7 @@ jobs:
           Please refer to [CHANGELOG.md](./CHANGELOG.md) for update details."
 
       - name: Publish to Modrinth
-        uses: cloudnode-pro/modrinth-publish@0fa6eb3654b77861d943346be1d6a63f4fa6aea3 # v2
+        uses: cloudnode-pro/modrinth-publish@0d0d7948e051e7481e6690795d23e06925967b68 # v2
         with:
           token: ${{ secrets.MODRINTH_TOKEN }}
           name: LunaticChat v${{ needs.validate.outputs.version }}
