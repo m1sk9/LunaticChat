@@ -100,10 +100,7 @@ jobs:
           gh release create "$TAG_NAME" \
             "$JAR_NAME" \
             --title "$TAG_NAME" \
-            --notes "## $TAG_NAME (${{ steps.get_date.outputs.current_date }})
-
-          Release of version $VERSION.
-          Please refer to [CHANGELOG.md](./CHANGELOG.md) for update details."
+            --notes "Please refer to [changelog](./CHANGELOG.md) for update details."
 
       - name: Publish to Modrinth
         uses: cloudnode-pro/modrinth-publish@0d0d7948e051e7481e6690795d23e06925967b68 # v2
@@ -113,13 +110,9 @@ jobs:
           project: ${{ secrets.MODRINTH_PROJECT_ID }}
           version: ${{ needs.validate.outputs.version }}
           channel: alpha
-          featured: true
           changelog: |
-            Release of version ${{ needs.validate.outputs.version }}.
-            Please refer to [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for update details.
+            Please refer to [changelog](https://github.com/m1sk9/LunaticChat/blob/main/CHANGELOG.md) for update details.
           loaders: paper
-          game-versions: |
-            1.21.x
-          files: |
-            ${{ needs.validate.outputs.jar_name }}
-          
+          game-versions: "1.21.x"
+          files: ${{ needs.validate.outputs.jar_name }}
+
