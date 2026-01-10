@@ -9,13 +9,8 @@ on:
       - main
 
 jobs:
-  build:
+  build_plugin:
     runs-on: ubuntu-24.04
-    permissions:
-      contents: read
-      pull-requests: write
-      issues: write
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -39,3 +34,25 @@ jobs:
           name: LunaticChat-${{ github.sha }}
           path: platform-paper/build/libs/*-all.jar
           retention-days: 7
+  build_docs:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: "./docs"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Development Environment
+        uses: jdx/mise-action@v3
+        with:
+          working_directory: .
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Check lints
+        run: bun run lint
+
+      - name: Build documentation
+        run: bun run build

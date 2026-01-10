@@ -1,0 +1,102 @@
+name: Bug Report
+description: Report a bug or unexpected behavior in LunaticChat
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out the information below to help us fix the issue.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: Describe the bug you encountered...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Run command '...'
+        2. Send message '...'
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What you expected to happen
+      placeholder: Describe what you expected to happen...
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+      description: What actually happened
+      placeholder: Describe what actually happened...
+    validations:
+      required: true
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: LunaticChat Version
+      description: What version of LunaticChat are you using?
+      placeholder: "e.g., v0.1.0"
+    validations:
+      required: true
+
+  - type: input
+    id: minecraft-version
+    attributes:
+      label: Minecraft Version
+      description: What version of Minecraft are you running?
+      placeholder: "e.g., 1.21.4"
+    validations:
+      required: true
+
+  - type: input
+    id: paper-version
+    attributes:
+      label: Paper Version
+      description: What version of Paper are you using?
+      placeholder: "e.g., Paper-1.21.4-123"
+    validations:
+      required: true
+
+  - type: input
+    id: java-version
+    attributes:
+      label: Java Version
+      description: What version of Java are you running?
+      placeholder: "e.g., Java 21"
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs and Error Messages
+      description: Please paste relevant logs or error messages here
+      placeholder: Paste your logs here...
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here (screenshots, related issues, etc.)
+      placeholder: Any additional information...
+    validations:
+      required: false
