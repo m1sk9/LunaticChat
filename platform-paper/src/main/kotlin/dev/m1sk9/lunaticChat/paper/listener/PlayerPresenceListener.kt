@@ -5,12 +5,11 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerQuitEvent
 
-class PlayerPresenceListener : Listener {
+class PlayerPresenceListener(
+    private val lunaticChat: LunaticChat,
+) : Listener {
     @EventHandler(ignoreCancelled = true)
-    fun onQuit(
-        lunaticChat: LunaticChat,
-        event: PlayerQuitEvent,
-    ) {
+    fun onQuit(event: PlayerQuitEvent) {
         lunaticChat.directMessageHandler.clearPlayer(event.player)
     }
 }
