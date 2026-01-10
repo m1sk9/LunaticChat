@@ -21,23 +21,44 @@ class ConversionCache(
     private val conversionMemoryCache = ConcurrentHashMap<String, String>()
     private val conversionSaveQueue = AtomicBoolean(false)
 
+    companion object {
+        private const val CACHE_VERSION = "1"
+    }
+
     /**
      * Loads the conversion cache from disk into memory.
-     * @throws ConversionCacheFileNotFoundException if the cache file does not exist.
+     * If the cache file does not exist or version is incompatible, initializes it with an empty cache.
      */
     fun loadFromDisk() {
         if (!cacheFile.exists()) {
-            throw ConversionCacheFileNotFoundException(cacheFile)
+            logger.info("Cache file not found, initializing new cache file at: $cacheFile")
+            initializeEmptyCache()
+            return
         }
 
         try {
             val jsonBuffer = cacheFile.bufferedReader().use { it.readText() }
             val cacheData = Json.decodeFromString<CacheData>(jsonBuffer)
+
+            if (cacheData.version != CACHE_VERSION) {
+                logger.warning("Cache version mismatch (expected: $CACHE_VERSION, found: ${cacheData.version}). Reinitializing cache.")
+                initializeEmptyCache()
+                return
+            }
+
             conversionMemoryCache.putAll(cacheData.entries)
-            logger.info("Save ${conversionMemoryCache.size} cache entries from disk.")
+            logger.info("Loaded ${conversionMemoryCache.size} cache entries from disk.")
         } catch (e: Exception) {
             logger.severe("Failed to load conversion cache from disk: ${e.message}")
+            logger.info("Reinitializing cache due to error.")
+            initializeEmptyCache()
         }
+    }
+
+    private fun initializeEmptyCache() {
+        val emptyData = CacheData(version = CACHE_VERSION, entries = emptyMap())
+        val jsonBuffer = Json.encodeToString(CacheData.serializer(), emptyData)
+        cacheFile.writeText(jsonBuffer)
     }
 
     /**
@@ -76,14 +97,14 @@ class ConversionCache(
         try {
             val data =
                 CacheData(
-                    version = "0.1.0",
+                    version = CACHE_VERSION,
                     entries = conversionMemoryCache.toMap(),
                 )
-            val jsonBuffer = Json.encodeToString(data)
+            val jsonBuffer = Json.encodeToString(CacheData.serializer(), data)
             cacheFile.writeText(jsonBuffer)
-            logger.info("Save ${conversionMemoryCache.size} cache entries from disk.")
+            logger.info("Saved ${conversionMemoryCache.size} cache entries to disk.")
         } catch (e: Exception) {
-            logger.severe("Failed to save conversion cache from disk: ${e.message}")
+            logger.severe("Failed to save conversion cache to disk: ${e.message}")
         }
     }
 
