@@ -62,12 +62,13 @@ class LunaticChat :
                     timeout = lunaticChatConfiguration.features.japaneseConversion.apiTimeout.milliseconds,
                     httpClient = httpClient,
                 )
-            romajiConverter = RomanjiConverter(
-                cache = cache,
-                apiClient = apiClient,
-                logger = logger,
-                debugMode = lunaticChatConfiguration.debug
-            )
+            romajiConverter =
+                RomanjiConverter(
+                    cache = cache,
+                    apiClient = apiClient,
+                    logger = logger,
+                    debugMode = lunaticChatConfiguration.debug,
+                )
 
             val saveInterval = lunaticChatConfiguration.features.japaneseConversion.cacheSaveIntervalSeconds * 20L
             server.scheduler.runTaskTimerAsynchronously(
