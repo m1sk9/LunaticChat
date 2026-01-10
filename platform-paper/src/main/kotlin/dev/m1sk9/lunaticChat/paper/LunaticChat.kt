@@ -23,7 +23,7 @@ class LunaticChat :
     lateinit var directMessageHandler: DirectMessageHandler
 
     private lateinit var commandRegistry: CommandRegistry
-    private lateinit var romajiConverter: RomanjiConverter
+    private var romajiConverter: RomanjiConverter? = null
 
     override fun onEnable() {
         saveDefaultConfig()
@@ -34,32 +34,37 @@ class LunaticChat :
             logger.info("Debug: $lunaticChatConfiguration")
         }
 
-        val cache =
-            ConversionCache(
-                cacheFile = dataFolder.resolve("conversion_cache.json").toPath(),
-                maxEntries = lunaticChatConfiguration.features.japaneseConversion.cacheMaxEntries,
-                plugin = this,
-                logger = logger,
-            )
-        cache.loadFromDisk()
+        if (lunaticChatConfiguration.features.japaneseConversion.enabled) {
+            val cache =
+                ConversionCache(
+                    cacheFile = dataFolder.resolve(lunaticChatConfiguration.features.japaneseConversion.cacheFilePath).toPath(),
+                    maxEntries = lunaticChatConfiguration.features.japaneseConversion.cacheMaxEntries,
+                    plugin = this,
+                    logger = logger,
+                )
+            cache.loadFromDisk()
 
-        val httpClient = HttpClient(CIO)
-        val apiClient =
-            GoogleIMEClient(
-                timeout = lunaticChatConfiguration.features.japaneseConversion.apiTimeout.milliseconds,
-                httpClient = httpClient,
-            )
-        romajiConverter = RomanjiConverter(cache, apiClient, logger)
+            val httpClient = HttpClient(CIO)
+            val apiClient =
+                GoogleIMEClient(
+                    timeout = lunaticChatConfiguration.features.japaneseConversion.apiTimeout.milliseconds,
+                    httpClient = httpClient,
+                )
+            romajiConverter = RomanjiConverter(cache, apiClient, logger)
 
-        val saveInterval = lunaticChatConfiguration.features.japaneseConversion.cacheSaveIntervalSeconds * 20L
-        server.scheduler.runTaskTimerAsynchronously(
-            this,
-            Runnable {
-                cache.saveToDisk()
-            },
-            saveInterval,
-            saveInterval,
-        )
+            val saveInterval = lunaticChatConfiguration.features.japaneseConversion.cacheSaveIntervalSeconds * 20L
+            server.scheduler.runTaskTimerAsynchronously(
+                this,
+                Runnable {
+                    cache.saveToDisk()
+                },
+                saveInterval,
+                saveInterval,
+            )
+
+            server.pluginManager.registerEvents(PlayerChatListener(romajiConverter!!), this)
+            logger.info("Japanese conversion feature enabled.")
+        }
 
         directMessageHandler = DirectMessageHandler()
 
@@ -77,7 +82,6 @@ class LunaticChat :
 
         server.pluginManager.registerEvents(SpyPermissionManager, this)
         server.pluginManager.registerEvents(PlayerPresenceListener(this), this)
-        server.pluginManager.registerEvents(PlayerChatListener(romajiConverter), this)
 
         logger.info("LunaticChat enabled.")
     }

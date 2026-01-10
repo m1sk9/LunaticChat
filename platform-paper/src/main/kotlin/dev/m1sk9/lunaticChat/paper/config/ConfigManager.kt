@@ -25,23 +25,23 @@ object ConfigManager {
                         japaneseConversion =
                             JapaneseConversionFeatureConfig(
                                 enabled = configFile.getBoolean("features.japaneseConversion.enabled", false),
-                                cacheMaxEntries = configFile.getInt("features.japaneseConversion.cacheMaxEntries", 500),
+                                cacheMaxEntries = configFile.getInt("features.japaneseConversion.cache.maxEntries", 500),
                                 cacheSaveIntervalSeconds =
                                     configFile.getInt(
-                                        "features.japaneseConversion.cacheSaveIntervalSeconds",
+                                        "features.japaneseConversion.cache.saveIntervalSeconds",
                                         300,
                                     ),
                                 cacheFilePath =
                                     configFile.getString(
-                                        "features.japaneseConversion.cacheFilePath",
+                                        "features.japaneseConversion.cache.filePath",
                                         "conversion_cache.json",
                                     )!!,
                                 apiTimeout =
                                     configFile.getLong(
-                                        "features.japaneseConversion.apiTimeout",
+                                        "features.japaneseConversion.api.timeout",
                                         3000,
                                     ),
-                                apiRetryAttempts = configFile.getInt("features.japaneseConversion.apiRetryAttempts", 2),
+                                apiRetryAttempts = configFile.getInt("features.japaneseConversion.api.retryAttempts", 2),
                             ),
                     ),
                 messageFormat =
