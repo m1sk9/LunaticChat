@@ -23,3 +23,16 @@ It also uses Ktlint. Merging pull requests into the main branch requires passing
 When making major changes that break backward compatibility, please discuss them beforehand via an issue or discussion.
 Such changes often cause confusion when made without prior discussion.
 
+### Project Structure
+
+LunaticChat uses a multi-module Gradle setup. 
+
+- `engine`: Contains code shared across all platforms.
+- `platform-paper`: Contains code specific to the Paper platform.
+- `platform-velocity`: Contains code specific to the Velocity platform.
+
+### Debugging
+
+LunaticChat comes with a Docker environment that can be launched as a debug server.
+
+Running `./x start` will launch a Paper server with LunaticChat installed.

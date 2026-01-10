@@ -16,9 +16,8 @@
 ## Related Issues
 
 <!-- Link any related issues here -->
-<!-- Example: Fixes #123, Relates to #456 -->
 
-Closes #
+close #
 
 ## Testing
 
