@@ -7,4 +7,5 @@ data class LunaticChatConfiguration(
     val features: FeaturesConfig,
     val messageFormat: MessageFormatConfig,
     val debug: Boolean = false,
+    val userSettingsFilePath: String = "player-settings.yaml",
 )

@@ -14,7 +14,7 @@
 LunaticChat を起動すると以下のファイルが作成されます．
 
 - `plugins/LunaticChat/config.yml`：プラグインの設定ファイル
-- `plugins/LunaticChat/settings/`：ユーザーごとの設定ファイルが保存されるフォルダ
+- `plugins/LunaticChat/player-settings.yaml`：ユーザーごとの設定ファイル
 - `plugins/LunaticChat/conversion_cache.json`: ローマ字変換のキャッシュファイル
 
 設定ファイル `config.yml` を開き，必要に応じて設定を変更します．設定項目の詳細については，[設定ガイド](./configuration.md)を参照してください．

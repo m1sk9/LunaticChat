@@ -12,11 +12,14 @@
 #  Please specify appropriate values to ensure LunaticChat functions correctly.
 #
 #  For detailed configuration options, please refer to the documentation:
-#       https://lc.m1sk9.dev/guide//configuration
+#       https://lc.m1sk9.dev/guide/configuration
 # ----------------------------------------------
 
 # If enabled, Activate LunaticChat's debug mode, which provides detailed logging for troubleshooting.
-debug: false
+debug: true
+
+# Path to the YAML file storing player settings
+userSettingsFilePath: "player-settings.yaml"
 
 # ----------------------------------------------
 # -----------   Features Settings   ------------
@@ -28,7 +31,7 @@ features:
     enabled: true
   japaneseConversion:
     # If enabled, enables the conversion function from Roman letters to hiragana.
-    enabled: false
+    enabled: true
     cache:
       maxEntries: 500
       saveIntervalSeconds: 300
@@ -36,8 +39,6 @@ features:
     api:
       timeout: 3000
       retryAttempts: 2
-    settings:
-      directory: "settings"
 
 # ----------------------------------------------
 # ---------   Message Format Settings   --------
@@ -47,6 +48,7 @@ features:
 # You can use placeholders such as {sender}, {message}, etc.
 #
 # {sender} - The name of the message sender
+# {recipient} - The name of the message recipient
 # {message} - The content of the message
 # ----------------------------------------------
 
@@ -63,6 +65,13 @@ messageFormat:
 - Default: `false`
 
 LunaticChat をデバッグモードで起動します．
+
+### `userSettingsFilePath`
+
+- Type: `string`
+- Default: `player-settings.yaml`
+
+LunaticChat がプレイヤーの設定を保存する YAML ファイルのパスを指定します．
 
 ## Features Settings
 
@@ -124,13 +133,6 @@ LunaticChat の [`/reply`](../reference/commands/reply.md) コマンドによる
 - Default: `2`
 
 ローマ字変換 API へのリクエストが失敗した場合の再試行回数を指定します．
-
-#### `settings.directory`
-
-- Type: `string`
-- Default: `settings`
-
-ローマ字変換のユーザーごとの設定ファイルを保存するディレクトリを指定します．
 
 ## Message Format Settings
 
