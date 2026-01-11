@@ -42,11 +42,6 @@ object ConfigManager {
                                         3000,
                                     ),
                                 apiRetryAttempts = configFile.getInt("features.japaneseConversion.api.retryAttempts", 2),
-                                settingsDirectory =
-                                    configFile.getString(
-                                        "features.japaneseConversion.settings.directory",
-                                        "settings",
-                                    )!!,
                             ),
                     ),
                 messageFormat =
@@ -58,6 +53,11 @@ object ConfigManager {
                             )!!,
                     ),
                 debug = configFile.getBoolean("debug", false),
+                userSettingsFilePath =
+                    configFile.getString(
+                        "userSettingsFilePath",
+                        "player-settings.yaml",
+                    )!!,
             )
 
         lunaticChatConfiguration = loadedConfig

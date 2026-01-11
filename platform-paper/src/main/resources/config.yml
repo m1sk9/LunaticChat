@@ -15,6 +15,9 @@
 # If enabled, Activate LunaticChat's debug mode, which provides detailed logging for troubleshooting.
 debug: false
 
+# Path to the YAML file storing player settings
+userSettingsFilePath: "player-settings.yaml"
+
 # ----------------------------------------------
 # -----------   Features Settings   ------------
 # ----------------------------------------------
@@ -33,8 +36,6 @@ features:
     api:
       timeout: 3000
       retryAttempts: 2
-    settings:
-      directory: "settings"
 
 # ----------------------------------------------
 # ---------   Message Format Settings   --------

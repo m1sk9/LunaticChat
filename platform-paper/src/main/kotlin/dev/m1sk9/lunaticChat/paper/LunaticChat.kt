@@ -7,12 +7,14 @@ import dev.m1sk9.lunaticChat.paper.command.impl.RomajiConvertToggleCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.TellCommand
 import dev.m1sk9.lunaticChat.paper.common.SpyPermissionManager
 import dev.m1sk9.lunaticChat.paper.config.ConfigManager
+import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
 import dev.m1sk9.lunaticChat.paper.converter.ConversionCache
 import dev.m1sk9.lunaticChat.paper.converter.GoogleIMEClient
 import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
 import dev.m1sk9.lunaticChat.paper.listener.PlayerChatListener
 import dev.m1sk9.lunaticChat.paper.listener.PlayerPresenceListener
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
+import dev.m1sk9.lunaticChat.paper.settings.YamlPlayerSettingsStorage
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import org.bukkit.event.Listener
@@ -30,90 +32,139 @@ class LunaticChat :
 
     override fun onEnable() {
         saveDefaultConfig()
-        val lunaticChatConfiguration = ConfigManager.loadConfiguration(config)
+        val configuration = ConfigManager.loadConfiguration(config)
 
-        if (lunaticChatConfiguration.debug) {
+        if (configuration.debug) {
             logger.warning("LunaticChat is running in debug mode.")
-            logger.info("Debug: $lunaticChatConfiguration")
+            logger.info("Debug: $configuration")
         }
 
-        if (lunaticChatConfiguration.features.japaneseConversion.enabled) {
-            val settingsDir = dataFolder.resolve(lunaticChatConfiguration.features.japaneseConversion.settingsDirectory).toPath()
-            playerSettingsManager =
-                PlayerSettingsManager(
-                    settingsDirectory = settingsDir,
-                    plugin = this,
-                    logger = logger,
-                )
-            playerSettingsManager!!.initializeDirectory()
-
-            val cache =
-                ConversionCache(
-                    cacheFile = dataFolder.resolve(lunaticChatConfiguration.features.japaneseConversion.cacheFilePath).toPath(),
-                    maxEntries = lunaticChatConfiguration.features.japaneseConversion.cacheMaxEntries,
-                    plugin = this,
-                    logger = logger,
-                )
-            cache.loadFromDisk()
-
-            val httpClient = HttpClient(CIO)
-            val apiClient =
-                GoogleIMEClient(
-                    timeout = lunaticChatConfiguration.features.japaneseConversion.apiTimeout.milliseconds,
-                    httpClient = httpClient,
-                )
-            romajiConverter =
-                RomanjiConverter(
-                    cache = cache,
-                    apiClient = apiClient,
-                    logger = logger,
-                    debugMode = lunaticChatConfiguration.debug,
-                )
-
-            val saveInterval = lunaticChatConfiguration.features.japaneseConversion.cacheSaveIntervalSeconds * 20L
-            server.scheduler.runTaskTimerAsynchronously(
-                this,
-                Runnable {
-                    cache.saveToDisk()
-                },
-                saveInterval,
-                saveInterval,
-            )
-
-            server.pluginManager.registerEvents(PlayerChatListener(romajiConverter!!, playerSettingsManager!!), this)
-            logger.info("Japanese conversion feature enabled.")
+        // Initialize features
+        if (configuration.features.japaneseConversion.enabled) {
+            initializeJapaneseConversionFeature(configuration)
         }
 
+        // Initialize handlers
         directMessageHandler =
             DirectMessageHandler(
                 settingsManager = playerSettingsManager,
                 romanjiConverter = romajiConverter,
             )
 
-        commandRegistry =
-            CommandRegistry(this)
-                .registerAll(
-                    TellCommand(this, directMessageHandler),
-                )
-        if (lunaticChatConfiguration.features.quickRepliesEnabled.enabled) {
-            commandRegistry.registerAll(
-                ReplyCommand(this, directMessageHandler),
-            )
-        }
-        if (lunaticChatConfiguration.features.japaneseConversion.enabled) {
-            commandRegistry.registerAll(
-                RomajiConvertToggleCommand(this, playerSettingsManager!!),
-            )
-        }
-        commandRegistry.initialize()
-
-        server.pluginManager.registerEvents(SpyPermissionManager, this)
-        server.pluginManager.registerEvents(PlayerPresenceListener(this, playerSettingsManager), this)
+        // Register commands and listeners
+        registerCommands(configuration)
+        registerEventListeners()
 
         logger.info("LunaticChat enabled.")
     }
 
     override fun onDisable() {
+        playerSettingsManager?.saveToDisk()
         logger.info("LunaticChat disabled.")
+    }
+
+    /**
+     * Initializes the Japanese conversion feature including:
+     * - Player settings management (YAML-based)
+     * - Conversion cache
+     * - Google IME API client
+     * - Romanji converter
+     * - Periodic cache saving task
+     */
+    private fun initializeJapaneseConversionFeature(configuration: LunaticChatConfiguration) {
+        // Initialize player settings
+        val settingsFile = dataFolder.resolve(configuration.userSettingsFilePath).toPath()
+        val storage =
+            YamlPlayerSettingsStorage(
+                settingsFile = settingsFile,
+                plugin = this,
+                logger = logger,
+            )
+
+        playerSettingsManager =
+            PlayerSettingsManager(
+                storage = storage,
+                logger = logger,
+            )
+        playerSettingsManager!!.initialize()
+
+        // Initialize conversion cache
+        val cache =
+            ConversionCache(
+                cacheFile = dataFolder.resolve(configuration.features.japaneseConversion.cacheFilePath).toPath(),
+                maxEntries = configuration.features.japaneseConversion.cacheMaxEntries,
+                plugin = this,
+                logger = logger,
+            )
+        cache.loadFromDisk()
+
+        // Initialize Google IME API client
+        val httpClient = HttpClient(CIO)
+        val apiClient =
+            GoogleIMEClient(
+                timeout = configuration.features.japaneseConversion.apiTimeout.milliseconds,
+                httpClient = httpClient,
+            )
+
+        // Initialize Romanji converter
+        romajiConverter =
+            RomanjiConverter(
+                cache = cache,
+                apiClient = apiClient,
+                logger = logger,
+                debugMode = configuration.debug,
+            )
+
+        // Schedule periodic cache saving
+        val saveInterval = configuration.features.japaneseConversion.cacheSaveIntervalSeconds * 20L
+        server.scheduler.runTaskTimerAsynchronously(
+            this,
+            Runnable {
+                cache.saveToDisk()
+            },
+            saveInterval,
+            saveInterval,
+        )
+
+        // Register event listener for Japanese conversion
+        server.pluginManager.registerEvents(PlayerChatListener(romajiConverter!!, playerSettingsManager!!), this)
+
+        logger.info("Japanese conversion feature enabled.")
+    }
+
+    /**
+     * Registers all commands based on enabled features.
+     */
+    private fun registerCommands(configuration: LunaticChatConfiguration) {
+        commandRegistry = CommandRegistry(this)
+
+        // Always register /tell command
+        commandRegistry.registerAll(
+            TellCommand(this, directMessageHandler),
+        )
+
+        // Register /reply command if quick replies are enabled
+        if (configuration.features.quickRepliesEnabled.enabled) {
+            commandRegistry.registerAll(
+                ReplyCommand(this, directMessageHandler),
+            )
+        }
+
+        // Register /jp command if Japanese conversion is enabled
+        if (configuration.features.japaneseConversion.enabled) {
+            commandRegistry.registerAll(
+                RomajiConvertToggleCommand(this, playerSettingsManager!!),
+            )
+        }
+
+        commandRegistry.initialize()
+    }
+
+    /**
+     * Registers all event listeners.
+     */
+    private fun registerEventListeners() {
+        server.pluginManager.registerEvents(SpyPermissionManager, this)
+        server.pluginManager.registerEvents(PlayerPresenceListener(this), this)
     }
 }
