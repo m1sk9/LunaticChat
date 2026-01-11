@@ -1,5 +1,9 @@
 # LunaticChat Changelog
 
+### v0.3.1
+
+- Fixed an issue where Japanese text was being converted to Romanized characters.
+
 ### v0.3.0
 
 - Fixed an issue where romaji conversion did not work properly in some cases.

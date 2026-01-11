@@ -16,10 +16,17 @@ class RomanjiConverter(
      * Step 2: Hiragana -> Kanji/Kana (using Google IME API)
      *
      * @param input The romaji string to convert.
-     * @return The converted Japanese string, or the original input if conversion fails.
+     * @return The converted Japanese string, or null if the input contains non-romaji characters.
      * @throws Exception if the conversion process encounters an error.
      */
-    suspend fun convert(input: String): String {
+    suspend fun convert(input: String): String? {
+        if (!isRomajiOnly(input)) {
+            if (debugMode) {
+                logger.info("Input contains non-romaji characters, skipping conversion: $input")
+            }
+            return null
+        }
+
         cache.get(input)?.let {
             return it
         }
@@ -42,4 +49,9 @@ class RomanjiConverter(
         cache.put(input, result)
         return result
     }
+
+    private fun isRomajiOnly(input: String): Boolean =
+        input.all {
+            it.code in 0x20..0x7E
+        }
 }
