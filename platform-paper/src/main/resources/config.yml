@@ -30,11 +30,16 @@ features:
     # If enabled, enables the conversion function from Roman letters to hiragana.
     enabled: false
     cache:
+      # Specifies the maximum number of entries to store in the Romanization conversion cache.
       maxEntries: 500
+      # Specify the interval (in seconds) for saving the Romanization conversion cache to disk.
       saveIntervalSeconds: 300
+      # Specify the file path where the cache for Romanization conversion is saved.
       filePath: "conversion_cache.json"
     api:
+      # Specify the timeout duration (in milliseconds) for API requests to the Romanization conversion service.
       timeout: 3000
+      # Specify the number of retry attempts for failed API requests to the Romanization conversion service.
       retryAttempts: 2
 
 # ----------------------------------------------

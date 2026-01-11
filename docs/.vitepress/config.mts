@@ -8,6 +8,7 @@ export default defineConfig({
   cleanUrls: true,
   srcDir: './src',
   outDir: './dist',
+  head: [['link', { rel: 'icon', href: '/static/favicon.ico' }]],
   themeConfig: {
     nav: [
       { text: 'Guide', link: '/guide/getting-started' },
@@ -26,6 +27,10 @@ export default defineConfig({
         {
           text: 'パーミッション',
           link: '/guide/permissions',
+        },
+        {
+          text: 'ローマ字変換',
+          link: '/guide/japanese-romanization',
         },
       ],
       '/reference/': [
