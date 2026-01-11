@@ -10,26 +10,30 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 
 class PlayerChatListener(
-    private val converter: RomanjiConverter,
+    private val romajiConverter: RomanjiConverter,
     private val settingsManager: PlayerSettingsManager,
 ) : Listener {
     private val plainTextSerializer = PlainTextComponentSerializer.plainText()
 
     @EventHandler(ignoreCancelled = true)
-    fun onChat(event: AsyncChatEvent) {
-        val player = event.player
-        val settings = settingsManager.getSettings(player.uniqueId)
-        if (!settings.japaneseConversionEnabled)return
+    fun onChat(event: AsyncChatEvent) =
+        runBlocking {
+            val player = event.player
+            val settings = settingsManager.getSettings(player.uniqueId)
+            val message = event.message()
+            val originalMessage = plainTextSerializer.serialize(message)
 
-        val message = event.message()
-        val originalMessage = plainTextSerializer.serialize(message)
+            val displayMessage =
+                settings
+                    .takeIf {
+                        it.japaneseConversionEnabled
+                    }?.runCatching {
+                        romajiConverter
+                            .convert(originalMessage)
+                            ?.let { "$originalMessage §e($it)" }
+                            ?: originalMessage
+                    }?.getOrNull() ?: originalMessage
 
-        // AsyncChatEvent is already running on an async thread, so runBlocking is safe
-        val result =
-            runBlocking {
-                converter.convert(originalMessage)
-            }
-
-        event.message(Component.text("$originalMessage §e($result)"))
-    }
+            event.message(Component.text(displayMessage))
+        }
 }

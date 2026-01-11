@@ -22,7 +22,7 @@ EOF
 
 case "${1:-}" in
     start)
-        ./gradlew :platform-paper:shadowJar
+        ./gradlew :platform-paper:clean :platform-paper:shadowJar
         $DOCKER_COMPOSE up
         ;;
     restart)

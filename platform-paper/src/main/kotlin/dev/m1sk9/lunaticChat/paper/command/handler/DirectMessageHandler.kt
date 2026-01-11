@@ -81,12 +81,12 @@ class DirectMessageHandler(
         val displayMessage =
             senderSettings
                 ?.takeIf { it.japaneseConversionEnabled }
-                ?.let {
-                    romanjiConverter
-                        ?.runCatching {
-                            "$message §e(${convert(message)})"
-                        }?.getOrNull()
-                } ?: message
+                ?.let { romanjiConverter }
+                ?.runCatching {
+                    convert(message)
+                        ?.let { "$message §e($it)" }
+                        ?: message
+                }?.getOrNull() ?: message
 
         val format = lunaticChatConfiguration.messageFormat.directMessageFormat
 
