@@ -39,3 +39,9 @@ LunaticChat のアップデート通知を受け取ります．
 - Default: `non OP`
 
 [`/jp`](../reference/commands/jp.md) コマンドの使用を切り替えます．
+
+### `lunaticchat.command.notice`
+
+- Default: `non OP`
+
+[`/notice`](../reference/commands/notice.md) コマンドの使用を切り替えます．

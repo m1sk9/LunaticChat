@@ -18,6 +18,7 @@ class PlayerSettingsManager(
     private val logger: Logger,
 ) {
     private val japaneseConversionCache = ConcurrentHashMap<UUID, Boolean>()
+    private val directMessageNotificationCache = ConcurrentHashMap<UUID, Boolean>()
     private lateinit var settingsData: PlayerSettingsData
 
     /**
@@ -27,6 +28,7 @@ class PlayerSettingsManager(
     fun initialize() {
         settingsData = storage.loadFromDisk()
         japaneseConversionCache.putAll(settingsData.japaneseConversion)
+        directMessageNotificationCache.putAll(settingsData.directMessageNotification)
         logger.info("Loaded settings for ${japaneseConversionCache.size} players")
     }
 
@@ -38,8 +40,13 @@ class PlayerSettingsManager(
      * @return The player's settings
      */
     fun getSettings(uuid: UUID): PlayerChatSettings {
-        val enabled = japaneseConversionCache.getOrDefault(uuid, true)
-        return PlayerChatSettings(uuid = uuid, japaneseConversionEnabled = enabled)
+        val japaneseConversionEnabled = japaneseConversionCache.getOrDefault(uuid, true)
+        val directMessageNotificationEnabled = directMessageNotificationCache.getOrDefault(uuid, true)
+        return PlayerChatSettings(
+            uuid = uuid,
+            japaneseConversionEnabled = japaneseConversionEnabled,
+            directMessageNotificationEnabled = directMessageNotificationEnabled,
+        )
     }
 
     /**
@@ -49,10 +56,12 @@ class PlayerSettingsManager(
      */
     fun updateSettings(settings: PlayerChatSettings) {
         japaneseConversionCache[settings.uuid] = settings.japaneseConversionEnabled
+        directMessageNotificationCache[settings.uuid] = settings.directMessageNotificationEnabled
 
         settingsData =
             settingsData.copy(
                 japaneseConversion = japaneseConversionCache.toMap(),
+                directMessageNotification = directMessageNotificationCache.toMap(),
             )
 
         storage.queueAsyncSave(settingsData)

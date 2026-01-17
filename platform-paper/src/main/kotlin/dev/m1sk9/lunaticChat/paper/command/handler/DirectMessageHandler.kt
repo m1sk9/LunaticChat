@@ -1,6 +1,8 @@
 package dev.m1sk9.lunaticChat.paper.command.handler
 
 import dev.m1sk9.lunaticChat.paper.common.SpyPermissionManager
+import dev.m1sk9.lunaticChat.paper.common.playDirectMessageNotification
+import dev.m1sk9.lunaticChat.paper.common.playDirectMessageSendNotification
 import dev.m1sk9.lunaticChat.paper.config.ConfigManager
 import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
@@ -78,6 +80,8 @@ class DirectMessageHandler(
         recordMessage(sender, recipient)
 
         val senderSettings = settingsManager?.getSettings(sender.uniqueId)
+        val recipientSettings = settingsManager?.getSettings(recipient.uniqueId)
+
         val displayMessage =
             senderSettings
                 ?.takeIf { it.japaneseConversionEnabled }
@@ -98,8 +102,16 @@ class DirectMessageHandler(
             .forEach { it.sendMessage(spyMessage) }
 
         val userMessage = formatMessage(format, sender.name, recipient.name, displayMessage)
-        sender.sendMessage(userMessage)
-        recipient.sendMessage(userMessage)
+        sender.apply {
+            sendMessage(userMessage)
+            takeIf { senderSettings?.directMessageNotificationEnabled == true }
+                ?.playDirectMessageSendNotification()
+        }
+        recipient.apply {
+            sendMessage(userMessage)
+            takeIf { recipientSettings?.directMessageNotificationEnabled == true }
+                ?.playDirectMessageNotification()
+        }
         return true
     }
 
