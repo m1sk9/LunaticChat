@@ -1,4 +1,4 @@
-package dev.m1sk9.lunaticChat.paper.converter
+package dev.m1sk9.lunaticChat.engine.converter
 
 /**
  * Converts romanji text to hiragana using Trie data structure.

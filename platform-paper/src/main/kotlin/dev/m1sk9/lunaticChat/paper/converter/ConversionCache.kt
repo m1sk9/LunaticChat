@@ -1,5 +1,6 @@
 package dev.m1sk9.lunaticChat.paper.converter
 
+import dev.m1sk9.lunaticChat.engine.converter.CacheData
 import kotlinx.serialization.json.Json
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin

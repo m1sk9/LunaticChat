@@ -1,5 +1,6 @@
 package dev.m1sk9.lunaticChat.paper
 
+import dev.m1sk9.lunaticChat.engine.converter.GoogleIMEClient
 import dev.m1sk9.lunaticChat.paper.command.core.CommandRegistry
 import dev.m1sk9.lunaticChat.paper.command.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.command.impl.ReplyCommand
@@ -11,7 +12,6 @@ import dev.m1sk9.lunaticChat.paper.common.UpdateChecker
 import dev.m1sk9.lunaticChat.paper.config.ConfigManager
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
 import dev.m1sk9.lunaticChat.paper.converter.ConversionCache
-import dev.m1sk9.lunaticChat.paper.converter.GoogleIMEClient
 import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
 import dev.m1sk9.lunaticChat.paper.listener.PlayerChatListener
 import dev.m1sk9.lunaticChat.paper.listener.PlayerPresenceListener

@@ -1,6 +1,7 @@
 package dev.m1sk9.lunaticChat.paper.command.core
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
+import dev.m1sk9.lunaticChat.engine.command.CommandResult
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.command.annotation.Command
 import dev.m1sk9.lunaticChat.paper.command.annotation.Permission

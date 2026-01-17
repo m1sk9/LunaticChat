@@ -1,4 +1,4 @@
-package dev.m1sk9.lunaticChat.paper.settings
+package dev.m1sk9.lunaticChat.engine.settings
 
 import kotlinx.serialization.Serializable
 import java.util.UUID
@@ -13,5 +13,5 @@ import java.util.UUID
 data class PlayerChatSettings(
     @Serializable(with = UUIDSerializer::class)
     val uuid: UUID,
-    val japaneseConversionEnabled: Boolean = false,
+    val japaneseConversionEnabled: Boolean = true,
 )

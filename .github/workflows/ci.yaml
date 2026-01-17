@@ -32,8 +32,9 @@ jobs:
         if: success()
         with:
           name: LunaticChat-${{ github.sha }}
-          path: platform-paper/build/libs/*-all.jar
+          path: platform-paper/build/libs/*.jar
           retention-days: 7
+
   build_docs:
     runs-on: ubuntu-24.04
     defaults:

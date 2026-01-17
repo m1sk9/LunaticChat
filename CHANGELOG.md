@@ -3,6 +3,10 @@
 ### v0.4.0
 
 - Added an update checker that verifies whether updates are available when the server starts up.
+- Change so that Japanese input settings are enabled by default.
+- Improved certain modules to eliminate Paper dependencies.
+- Added notification feature for receiving direct messages via `/tell` and `/reply`.
+- Fixed an issue where the internal API documentation for LunaticChat published at `lc.api.m1sk9.dev` only referenced the `platform-paper` module.
 
 ### v0.3.1
 

@@ -1,5 +1,7 @@
 package dev.m1sk9.lunaticChat.paper.settings
 
+import dev.m1sk9.lunaticChat.engine.settings.PlayerChatSettings
+import dev.m1sk9.lunaticChat.engine.settings.PlayerSettingsData
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.logging.Logger
@@ -36,7 +38,7 @@ class PlayerSettingsManager(
      * @return The player's settings
      */
     fun getSettings(uuid: UUID): PlayerChatSettings {
-        val enabled = japaneseConversionCache.getOrDefault(uuid, false)
+        val enabled = japaneseConversionCache.getOrDefault(uuid, true)
         return PlayerChatSettings(uuid = uuid, japaneseConversionEnabled = enabled)
     }
 

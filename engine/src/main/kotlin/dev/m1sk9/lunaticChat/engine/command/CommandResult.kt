@@ -1,4 +1,4 @@
-package dev.m1sk9.lunaticChat.paper.command.core
+package dev.m1sk9.lunaticChat.engine.command
 
 import net.kyori.adventure.text.Component
 
