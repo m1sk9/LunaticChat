@@ -6,6 +6,8 @@ import dev.m1sk9.lunaticChat.paper.command.impl.ReplyCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.RomajiConvertToggleCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.TellCommand
 import dev.m1sk9.lunaticChat.paper.common.SpyPermissionManager
+import dev.m1sk9.lunaticChat.paper.common.UpdateCheckResult
+import dev.m1sk9.lunaticChat.paper.common.UpdateChecker
 import dev.m1sk9.lunaticChat.paper.config.ConfigManager
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
 import dev.m1sk9.lunaticChat.paper.converter.ConversionCache
@@ -17,8 +19,10 @@ import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
 import dev.m1sk9.lunaticChat.paper.settings.YamlPlayerSettingsStorage
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
+import kotlinx.coroutines.runBlocking
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.time.Duration.Companion.milliseconds
 
 class LunaticChat :
@@ -27,8 +31,11 @@ class LunaticChat :
     lateinit var directMessageHandler: DirectMessageHandler
 
     private lateinit var commandRegistry: CommandRegistry
+    private var updateChecker: UpdateChecker? = null
     private var romajiConverter: RomanjiConverter? = null
     private var playerSettingsManager: PlayerSettingsManager? = null
+
+    private val updateAvailable = AtomicBoolean(false)
 
     override fun onEnable() {
         saveDefaultConfig()
@@ -39,9 +46,11 @@ class LunaticChat :
             logger.info("Debug: $configuration")
         }
 
+        val httpClient = HttpClient(CIO)
+
         // Initialize features
         if (configuration.features.japaneseConversion.enabled) {
-            initializeJapaneseConversionFeature(configuration)
+            initializeJapaneseConversionFeature(configuration, httpClient)
         }
 
         // Initialize handlers
@@ -54,6 +63,24 @@ class LunaticChat :
         // Register commands and listeners
         registerCommands(configuration)
         registerEventListeners()
+
+        // Check for updates
+        if (configuration.checkForUpdates) {
+            updateChecker =
+                UpdateChecker(
+                    currentVersion = pluginMeta.version,
+                    logger = logger,
+                    httpClient = httpClient,
+                )
+            server.scheduler.runTaskAsynchronously(
+                this,
+                Runnable {
+                    runBlocking {
+                        checkUpdates()
+                    }
+                },
+            )
+        }
 
         logger.info("LunaticChat enabled.")
     }
@@ -71,7 +98,10 @@ class LunaticChat :
      * - Romanji converter
      * - Periodic cache saving task
      */
-    private fun initializeJapaneseConversionFeature(configuration: LunaticChatConfiguration) {
+    private fun initializeJapaneseConversionFeature(
+        configuration: LunaticChatConfiguration,
+        httpClient: HttpClient,
+    ) {
         // Initialize player settings
         val settingsFile = dataFolder.resolve(configuration.userSettingsFilePath).toPath()
         val storage =
@@ -99,7 +129,6 @@ class LunaticChat :
         cache.loadFromDisk()
 
         // Initialize Google IME API client
-        val httpClient = HttpClient(CIO)
         val apiClient =
             GoogleIMEClient(
                 timeout = configuration.features.japaneseConversion.apiTimeout.milliseconds,
@@ -165,6 +194,26 @@ class LunaticChat :
      */
     private fun registerEventListeners() {
         server.pluginManager.registerEvents(SpyPermissionManager, this)
-        server.pluginManager.registerEvents(PlayerPresenceListener(this), this)
+        server.pluginManager.registerEvents(PlayerPresenceListener(this, updateAvailable), this)
+    }
+
+    private suspend fun checkUpdates() {
+        val result = updateChecker?.checkForUpdates()
+        when (result) {
+            is UpdateCheckResult.ExistUpdate -> {
+                logger.info("A new version of LunaticChat is available!")
+                logger.info("You can download the latest build from GitHub or Modrinth.")
+                logger.info("   GitHub: https://github.com/m1sk9/LunaticChat/releases/latest")
+                logger.info("   Modrinth: https://modrinth.com/plugin/lunaticchat/version/latest")
+                updateAvailable.set(true)
+            }
+            is UpdateCheckResult.NotUpdate -> {
+                logger.info("LunaticChat is up to date.")
+            }
+            // Include failed case for completeness
+            else -> {
+                logger.warning("Failed to check for updates.")
+            }
+        }
     }
 }
