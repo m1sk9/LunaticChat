@@ -49,6 +49,10 @@ export default defineConfig({
               text: '/jp',
               link: '/reference/commands/jp',
             },
+            {
+              text: '/notice',
+              link: '/reference/commands/notice',
+            },
           ],
         },
       ],
