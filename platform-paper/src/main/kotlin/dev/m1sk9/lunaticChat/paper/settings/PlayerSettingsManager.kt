@@ -36,7 +36,7 @@ class PlayerSettingsManager(
      * @return The player's settings
      */
     fun getSettings(uuid: UUID): PlayerChatSettings {
-        val enabled = japaneseConversionCache.getOrDefault(uuid, false)
+        val enabled = japaneseConversionCache.getOrDefault(uuid, true)
         return PlayerChatSettings(uuid = uuid, japaneseConversionEnabled = enabled)
     }
 
