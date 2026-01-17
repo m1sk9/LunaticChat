@@ -18,3 +18,5 @@ permissions:
 
   lunaticchat.spy:
     default: op
+  lunaticchat.noticeUpdate:
+    default: op

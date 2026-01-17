@@ -10,4 +10,6 @@ sealed class LunaticChatPermissionNode(
     object JapaneseToggle : LunaticChatPermissionNode("lunaticchat.command.jp")
 
     object Spy : LunaticChatPermissionNode("lunaticchat.spy")
+
+    object NoticeUpdate : LunaticChatPermissionNode("lunaticchat.noticeUpdate")
 }
