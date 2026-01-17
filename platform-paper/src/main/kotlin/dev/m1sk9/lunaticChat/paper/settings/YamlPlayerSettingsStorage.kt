@@ -1,6 +1,7 @@
 package dev.m1sk9.lunaticChat.paper.settings
 
 import com.charleskorn.kaml.Yaml
+import dev.m1sk9.lunaticChat.engine.settings.PlayerSettingsData
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
 import java.nio.file.Path

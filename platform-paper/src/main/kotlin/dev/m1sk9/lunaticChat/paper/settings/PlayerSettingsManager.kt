@@ -1,5 +1,7 @@
 package dev.m1sk9.lunaticChat.paper.settings
 
+import dev.m1sk9.lunaticChat.engine.settings.PlayerChatSettings
+import dev.m1sk9.lunaticChat.engine.settings.PlayerSettingsData
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.logging.Logger

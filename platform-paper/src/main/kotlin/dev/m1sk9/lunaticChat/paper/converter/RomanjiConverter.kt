@@ -1,5 +1,7 @@
 package dev.m1sk9.lunaticChat.paper.converter
 
+import dev.m1sk9.lunaticChat.engine.converter.GoogleIMEClient
+import dev.m1sk9.lunaticChat.engine.converter.KanaConverter
 import java.util.logging.Logger
 
 class RomanjiConverter(

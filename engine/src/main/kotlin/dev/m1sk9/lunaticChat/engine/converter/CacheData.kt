@@ -1,4 +1,4 @@
-package dev.m1sk9.lunaticChat.paper.converter
+package dev.m1sk9.lunaticChat.engine.converter
 
 import kotlinx.serialization.Serializable
 

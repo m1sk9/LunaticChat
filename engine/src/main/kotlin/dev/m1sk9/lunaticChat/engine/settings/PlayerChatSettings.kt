@@ -1,4 +1,4 @@
-package dev.m1sk9.lunaticChat.paper.settings
+package dev.m1sk9.lunaticChat.engine.settings
 
 import kotlinx.serialization.Serializable
 import java.util.UUID
