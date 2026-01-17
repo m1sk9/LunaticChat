@@ -3,6 +3,7 @@ package dev.m1sk9.lunaticChat.paper
 import dev.m1sk9.lunaticChat.engine.converter.GoogleIMEClient
 import dev.m1sk9.lunaticChat.paper.command.core.CommandRegistry
 import dev.m1sk9.lunaticChat.paper.command.handler.DirectMessageHandler
+import dev.m1sk9.lunaticChat.paper.command.impl.DirectMessageNoticeToggleCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.ReplyCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.RomajiConvertToggleCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.TellCommand
@@ -167,9 +168,9 @@ class LunaticChat :
     private fun registerCommands(configuration: LunaticChatConfiguration) {
         commandRegistry = CommandRegistry(this)
 
-        // Always register /tell command
         commandRegistry.registerAll(
             TellCommand(this, directMessageHandler),
+            DirectMessageNoticeToggleCommand(this, playerSettingsManager!!)
         )
 
         // Register /reply command if quick replies are enabled
