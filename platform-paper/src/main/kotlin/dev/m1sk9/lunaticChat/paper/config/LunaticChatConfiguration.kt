@@ -8,4 +8,5 @@ data class LunaticChatConfiguration(
     val messageFormat: MessageFormatConfig,
     val debug: Boolean = false,
     val userSettingsFilePath: String = "player-settings.yaml",
+    val checkForUpdates: Boolean = true,
 )

@@ -18,6 +18,9 @@ debug: false
 # Path to the YAML file storing player settings
 userSettingsFilePath: "player-settings.yaml"
 
+# If enabled, LunaticChat will check for updates on startup.
+checkForUpdates: true
+
 # ----------------------------------------------
 # -----------   Features Settings   ------------
 # ----------------------------------------------

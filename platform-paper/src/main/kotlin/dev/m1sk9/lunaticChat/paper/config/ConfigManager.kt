@@ -53,6 +53,7 @@ object ConfigManager {
                             )!!,
                     ),
                 debug = configFile.getBoolean("debug", false),
+                checkForUpdates = configFile.getBoolean("checkForUpdates", false),
                 userSettingsFilePath =
                     configFile.getString(
                         "userSettingsFilePath",
