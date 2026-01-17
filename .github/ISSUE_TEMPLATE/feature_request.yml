@@ -1,6 +1,6 @@
 name: Feature Request
 description: Suggest a new feature or enhancement for LunaticChat
-labels: ["enhancement"]
+labels: ["Type: enhancement"]
 body:
   - type: markdown
     attributes:
