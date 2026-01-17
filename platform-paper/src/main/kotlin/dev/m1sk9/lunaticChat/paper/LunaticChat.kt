@@ -170,7 +170,7 @@ class LunaticChat :
 
         commandRegistry.registerAll(
             TellCommand(this, directMessageHandler),
-            DirectMessageNoticeToggleCommand(this, playerSettingsManager!!)
+            DirectMessageNoticeToggleCommand(this, playerSettingsManager!!),
         )
 
         // Register /reply command if quick replies are enabled
