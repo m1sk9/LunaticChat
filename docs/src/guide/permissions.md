@@ -12,6 +12,14 @@ LuckPerms を使用した設定方法に関する詳細は [LuckPerms Wiki](http
 
 この権限を持つプレイヤーは他プレイヤーの [`/tell`](../reference/commands/tell.md) / [`/reply`](../reference/commands/reply.md) でのメッセージがブロードキャストされます．
 
+### `lunaticchat.noticeUpdate`
+
+- Default: `OP`
+
+LunaticChat のアップデート通知を受け取ります．
+
+[受け取るには `checkForUpdates` を有効にしておく](../guide/configuration.md#checkforupdates) 必要があります．
+
 ## `lunaticchat.command.*`
 
 ### `lunaticchat.command.tell`

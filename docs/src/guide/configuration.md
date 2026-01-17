@@ -16,10 +16,13 @@
 # ----------------------------------------------
 
 # If enabled, Activate LunaticChat's debug mode, which provides detailed logging for troubleshooting.
-debug: true
+debug: false
 
 # Path to the YAML file storing player settings
 userSettingsFilePath: "player-settings.yaml"
+
+# If enabled, LunaticChat will check for updates on startup.
+checkForUpdates: true
 
 # ----------------------------------------------
 # -----------   Features Settings   ------------
@@ -31,13 +34,18 @@ features:
     enabled: true
   japaneseConversion:
     # If enabled, enables the conversion function from Roman letters to hiragana.
-    enabled: true
+    enabled: false
     cache:
+      # Specifies the maximum number of entries to store in the Romanization conversion cache.
       maxEntries: 500
+      # Specify the interval (in seconds) for saving the Romanization conversion cache to disk.
       saveIntervalSeconds: 300
+      # Specify the file path where the cache for Romanization conversion is saved.
       filePath: "conversion_cache.json"
     api:
+      # Specify the timeout duration (in milliseconds) for API requests to the Romanization conversion service.
       timeout: 3000
+      # Specify the number of retry attempts for failed API requests to the Romanization conversion service.
       retryAttempts: 2
 
 # ----------------------------------------------
@@ -72,6 +80,13 @@ LunaticChat をデバッグモードで起動します．
 - Default: `player-settings.yaml`
 
 LunaticChat がプレイヤーの設定を保存する YAML ファイルのパスを指定します．
+
+### `checkForUpdates`
+
+- Type: `boolean`
+- Default: `true`
+
+LunaticChat の起動時・権限を持ったプレイヤーがサーバに参加した際に，LunaticChat のアップデートを促すかどうか設定します．
 
 ## Features Settings
 

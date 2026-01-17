@@ -1,5 +1,9 @@
 # LunaticChat Changelog
 
+### v0.4.0
+
+- Added an update checker that verifies whether updates are available when the server starts up.
+
 ### v0.3.1
 
 #### Breaking Changes:
