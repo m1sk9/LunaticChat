@@ -49,6 +49,9 @@ class LunaticChat :
 
         val httpClient = HttpClient(CIO)
 
+        // Initialize player settings manager (always needed for DM notifications)
+        initializePlayerSettingsManager(configuration)
+
         // Initialize features
         if (configuration.features.japaneseConversion.enabled) {
             initializeJapaneseConversionFeature(configuration, httpClient)
@@ -92,18 +95,10 @@ class LunaticChat :
     }
 
     /**
-     * Initializes the Japanese conversion feature including:
-     * - Player settings management (YAML-based)
-     * - Conversion cache
-     * - Google IME API client
-     * - Romanji converter
-     * - Periodic cache saving task
+     * Initializes the player settings manager.
+     * This is always needed for features like DM notifications.
      */
-    private fun initializeJapaneseConversionFeature(
-        configuration: LunaticChatConfiguration,
-        httpClient: HttpClient,
-    ) {
-        // Initialize player settings
+    private fun initializePlayerSettingsManager(configuration: LunaticChatConfiguration) {
         val settingsFile = dataFolder.resolve(configuration.userSettingsFilePath).toPath()
         val storage =
             YamlPlayerSettingsStorage(
@@ -118,7 +113,19 @@ class LunaticChat :
                 logger = logger,
             )
         playerSettingsManager!!.initialize()
+    }
 
+    /**
+     * Initializes the Japanese conversion feature including:
+     * - Conversion cache
+     * - Google IME API client
+     * - Romanji converter
+     * - Periodic cache saving task
+     */
+    private fun initializeJapaneseConversionFeature(
+        configuration: LunaticChatConfiguration,
+        httpClient: HttpClient,
+    ) {
         // Initialize conversion cache
         val cache =
             ConversionCache(
