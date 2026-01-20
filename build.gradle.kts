@@ -36,8 +36,8 @@ subprojects {
     afterEvaluate {
         dependencies {
             add("testImplementation", "org.jetbrains.kotlin:kotlin-test-junit5")
-            add("testImplementation", "org.junit.jupiter:junit-jupiter-api:5.11.4")
-            add("testRuntimeOnly", "org.junit.jupiter:junit-jupiter-engine:5.11.4")
+            add("testImplementation", "org.junit.jupiter:junit-jupiter-api:5.14.2")
+            add("testRuntimeOnly", "org.junit.jupiter:junit-jupiter-engine:5.14.2")
         }
     }
 }
