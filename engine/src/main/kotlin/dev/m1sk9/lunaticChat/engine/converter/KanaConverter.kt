@@ -20,6 +20,20 @@ object KanaConverter {
     private fun buildTrie(): TrieNode {
         val mappings =
             listOf(
+                // 4文字変換 (x/l prefix small characters)
+                "xtsu" to "っ",
+                "ltsu" to "っ",
+                // 3文字変換 (x/l prefix small characters)
+                "xtu" to "っ",
+                "ltu" to "っ",
+                "xya" to "ゃ",
+                "lya" to "ゃ",
+                "xyu" to "ゅ",
+                "lyu" to "ゅ",
+                "xyo" to "ょ",
+                "lyo" to "ょ",
+                "xwa" to "ゎ",
+                "lwa" to "ゎ",
                 // 3文字変換
                 "kya" to "きゃ",
                 "kyi" to "きぃ",
@@ -104,6 +118,17 @@ object KanaConverter {
                 "whi" to "うぃ",
                 "whe" to "うぇ",
                 "who" to "うぉ",
+                // 2文字変換 (x/l prefix small vowels)
+                "xa" to "ぁ",
+                "la" to "ぁ",
+                "xi" to "ぃ",
+                "li" to "ぃ",
+                "xu" to "ぅ",
+                "lu" to "ぅ",
+                "xe" to "ぇ",
+                "le" to "ぇ",
+                "xo" to "ぉ",
+                "lo" to "ぉ",
                 // 2文字変換
                 "ka" to "か",
                 "ki" to "き",
@@ -181,11 +206,6 @@ object KanaConverter {
                 "wu" to "う",
                 "we" to "ゑ",
                 "wo" to "を",
-                "la" to "ら",
-                "li" to "り",
-                "lu" to "る",
-                "le" to "れ",
-                "lo" to "ろ",
                 "nn" to "ん",
                 // 1文字変換
                 "a" to "あ",
