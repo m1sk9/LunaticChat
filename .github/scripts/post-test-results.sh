@@ -3,39 +3,36 @@ set -e
 
 MARKER="<!-- test-results-comment -->"
 
-TEST_RESULTS_DIR="build/test-results/test"
 TOTAL_TESTS=0
 PASSED_TESTS=0
 FAILED_TESTS=0
 SKIPPED_TESTS=0
 FAILED_TEST_NAMES=""
 
-if [ -d "$TEST_RESULTS_DIR" ]; then
-  for xml_file in "$TEST_RESULTS_DIR"/*.xml; do
-    if [ -f "$xml_file" ]; then
-      tests=$(sed -n 's/.*tests="\([0-9]*\)".*/\1/p' "$xml_file" | head -n1)
-      failures=$(sed -n 's/.*failures="\([0-9]*\)".*/\1/p' "$xml_file" | head -n1)
-      skipped=$(sed -n 's/.*skipped="\([0-9]*\)".*/\1/p' "$xml_file" | head -n1)
+for xml_file in */build/test-results/test/*.xml; do
+  if [ -f "$xml_file" ]; then
+    tests=$(sed -n 's/.*tests="\([0-9]*\)".*/\1/p' "$xml_file" | head -n1)
+    failures=$(sed -n 's/.*failures="\([0-9]*\)".*/\1/p' "$xml_file" | head -n1)
+    skipped=$(sed -n 's/.*skipped="\([0-9]*\)".*/\1/p' "$xml_file" | head -n1)
 
-      tests=${tests:-0}
-      failures=${failures:-0}
-      skipped=${skipped:-0}
+    tests=${tests:-0}
+    failures=${failures:-0}
+    skipped=${skipped:-0}
 
-      TOTAL_TESTS=$((TOTAL_TESTS + tests))
-      FAILED_TESTS=$((FAILED_TESTS + failures))
-      SKIPPED_TESTS=$((SKIPPED_TESTS + skipped))
+    TOTAL_TESTS=$((TOTAL_TESTS + tests))
+    FAILED_TESTS=$((FAILED_TESTS + failures))
+    SKIPPED_TESTS=$((SKIPPED_TESTS + skipped))
 
-      if [ "$failures" -gt 0 ]; then
-        failed_names=$(sed -n 's/.*<testcase name="\([^"]*\)".*<failure.*/\1/p' "$xml_file" || echo "")
-        if [ -n "$failed_names" ]; then
-          FAILED_TEST_NAMES="${FAILED_TEST_NAMES}${failed_names}\n"
-        fi
+    if [ "$failures" -gt 0 ]; then
+      failed_names=$(sed -n 's/.*<testcase name="\([^"]*\)".*<failure.*/\1/p' "$xml_file" || echo "")
+      if [ -n "$failed_names" ]; then
+        FAILED_TEST_NAMES="${FAILED_TEST_NAMES}${failed_names}\n"
       fi
     fi
-  done
+  fi
+done
 
-  PASSED_TESTS=$((TOTAL_TESTS - FAILED_TESTS - SKIPPED_TESTS))
-fi
+PASSED_TESTS=$((TOTAL_TESTS - FAILED_TESTS - SKIPPED_TESTS))
 
 if [ "$FAILED_TESTS" -gt 0 ]; then
   STATUS="❌ Failed"
