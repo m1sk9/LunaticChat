@@ -12,7 +12,7 @@ plugins {
 
 allprojects {
     group = "dev.m1sk9"
-    version = "0.4.0"
+    version = "0.4.1"
 
     repositories {
         mavenCentral()
@@ -26,6 +26,18 @@ subprojects {
     tasks.withType<KotlinCompile> {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_21)
+        }
+    }
+
+    tasks.withType<Test> {
+        useJUnitPlatform()
+    }
+
+    afterEvaluate {
+        dependencies {
+            add("testImplementation", "org.jetbrains.kotlin:kotlin-test-junit5")
+            add("testImplementation", "org.junit.jupiter:junit-jupiter-api:5.11.4")
+            add("testRuntimeOnly", "org.junit.jupiter:junit-jupiter-engine:5.11.4")
         }
     }
 }
