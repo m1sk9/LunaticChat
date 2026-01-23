@@ -1,4 +1,4 @@
-# 設定
+# Configuration
 
 ```yaml
 # ----------------------------------------------
@@ -75,33 +75,33 @@ messageFormat:
 - Type: `boolean`
 - Default: `false`
 
-LunaticChat をデバッグモードで起動します．
+Starts LunaticChat in debug mode.
 
 ### `userSettingsFilePath`
 
 - Type: `string`
 - Default: `player-settings.yaml`
 
-LunaticChat がプレイヤーの設定を保存する YAML ファイルのパスを指定します．
+Specifies the path to the YAML file where LunaticChat saves player settings.
 
 ### `checkForUpdates`
 
 - Type: `boolean`
 - Default: `true`
 
-LunaticChat の起動時・権限を持ったプレイヤーがサーバに参加した際に，LunaticChat のアップデートを促すかどうか設定します．
+Configures whether to prompt for LunaticChat updates at startup and when players with the required permissions join the server.
 
 ### `language`
 
 - Type: `string`
 - Default: `en`
 
-LunaticChat のプレイヤー向けメッセージの言語を指定します．
+Specifies the language for LunaticChat's player-facing messages.
 
 ### Supported languages:
 
 - `en`: English
-- `ja`: 日本語
+- `ja`: Japanese (日本語)
 
 ## Features Settings
 
@@ -110,16 +110,16 @@ LunaticChat のプレイヤー向けメッセージの言語を指定します�
 - Type: `boolean`
 - Default: `true`
 
-LunaticChat の [`/reply`](../reference/commands/reply.md) コマンドによるクイックリプライ機能を有効にします．
+Enables the quick reply feature via the [`/reply`](../../reference/commands/reply.md) command in LunaticChat.
 
-無効にすると [`/reply`](../reference/commands/reply.md) コマンドは Paper に登録されず，使用できなくなります．
+When disabled, the [`/reply`](../../reference/commands/reply.md) command will not be registered with Paper and cannot be used.
 
 ### `features.japaneseConversion.enabled`
 
 - Type: `boolean`
 - Default: `false`
 
-ローマ字からひらがなへの変換機能を有効にします．
+Enables the conversion feature from romaji to hiragana.
 
 ### `features.japaneseConversion`
 
@@ -128,53 +128,53 @@ LunaticChat の [`/reply`](../reference/commands/reply.md) コマンドによる
 - Type: `integer`
 - Default: `500`
 
-ローマ字変換のキャッシュに保存する最大エントリ数を指定します．
+Specifies the maximum number of entries to store in the romanization conversion cache.
 
-この値を超えると，最も古いエントリから順に削除されます．
+When this value is exceeded, the oldest entries are deleted first.
 
-値を高く設定すれば，変換のパフォーマンスが向上しますが，メモリ使用量・キャッシュファイルサイズも増加します．
+Setting a higher value improves conversion performance, but also increases memory usage and cache file size.
 
 #### `cache.saveIntervalSeconds`
 
 - Type: `integer`
 - Default: `300`
 
-ローマ字変換のキャッシュをディスクに保存する間隔（秒）を指定します．
+Specifies the interval (in seconds) for saving the romanization conversion cache to disk.
 
 #### `cache.filePath`
 
 - Type: `string`
 - Default: `conversion_cache.json`
 
-ローマ字変換のキャッシュを保存するファイルパスを指定します．
+Specifies the file path where the romanization conversion cache is saved.
 
-ここで設定したパスは `plugins/LunaticChat/` ディレクトリを基準とした相対パスとして解釈されます．
+The path set here is interpreted as a relative path from the `plugins/LunaticChat/` directory.
 
 #### `api.timeout`
 
 - Type: `integer`
 - Default: `3000`
 
-ローマ字変換 API へのリクエストのタイムアウト時間（ミリ秒）を指定します．
+Specifies the timeout duration (in milliseconds) for API requests to the romanization conversion service.
 
 #### `api.retryAttempts`
 
 - Type: `integer`
 - Default: `2`
 
-ローマ字変換 API へのリクエストが失敗した場合の再試行回数を指定します．
+Specifies the number of retry attempts for failed API requests to the romanization conversion service.
 
 ## Message Format Settings
 
-使用できるプレースホルダー:
+Available placeholders:
 
-- `{sender}`: メッセージ送信者の名前
-- `{recipient}`: メッセージ受信者の名前
-- `{message}`: メッセージの内容
+- `{sender}`: Name of the message sender
+- `{recipient}`: Name of the message recipient
+- `{message}`: Content of the message
 
 ### `messageFormat.directMessageFormat`
 
 - Type: `string`
 - Default: `§7[§e{sender} §7>> §e{recipient}§7] §f{message}`
 
-ダイレクトメッセージ（ [`/tell`](../reference/commands/tell.md) や [`/reply`](../reference/commands/reply.md) コマンド）で送信されるメッセージのフォーマットを指定します．
+Specifies the format for messages sent via direct message ([`/tell`](../../reference/commands/tell.md) or [`/reply`](../../reference/commands/reply.md) commands).

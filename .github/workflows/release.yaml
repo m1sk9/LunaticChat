@@ -96,11 +96,12 @@ jobs:
           TAG_NAME=${GITHUB_REF#refs/tags/}
           VERSION=${{ needs.validate.outputs.version }}
           JAR_NAME=${{ needs.validate.outputs.jar_name }}
+          VERSION_ANCHOR=$(echo "$VERSION" | tr -d '.')
 
           gh release create "$TAG_NAME" \
             "$JAR_NAME" \
             --title "$TAG_NAME" \
-            --notes "Please refer to [changelog](./CHANGELOG.md) for update details."
+            --notes "Please refer to [changelog](./CHANGELOG.md#v${VERSION_ANCHOR}) for update details."
 
       - name: Publish to Modrinth
         uses: cloudnode-pro/modrinth-publish@0a5268ad092d4727bb6424326746fa2fe88761ff # v2
@@ -109,7 +110,7 @@ jobs:
           name: LunaticChat v${{ needs.validate.outputs.version }}
           project: ${{ secrets.MODRINTH_PROJECT_ID }}
           version: ${{ needs.validate.outputs.version }}
-          channel: alpha
+          channel: beta
           changelog: |
             Please refer to [changelog](https://github.com/m1sk9/LunaticChat/blob/main/CHANGELOG.md) for update details.
           loaders: paper

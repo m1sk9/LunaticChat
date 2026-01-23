@@ -17,6 +17,8 @@ permissions:
     default: true
   lunaticchat.command.lc.settings:
     default: true
+  lunaticchat.command.lc.status:
+    default: true
 
   lunaticchat.spy:
     default: op

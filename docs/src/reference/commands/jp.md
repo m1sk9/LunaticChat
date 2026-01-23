@@ -1,6 +1,12 @@
-# /jp <Badge type="tip" text="v0.1.0" /> <Badge type="tip" text="Paper / Velocity" />
+# /jp <Badge type="tip" text="v0.1.0" /> <Badge type="tip" text="Paper" />
 
-### `/jp [on | off]`
+### `/jp [on | off]` <Badge type="danger" text="非推奨: v1.0.0 で削除予定" />
+
+::: danger 非推奨
+
+このコマンドは v0.5.0 で非推奨となりました．代わりに [`/lc settings`](lc/settings.md) コマンドを使用してください．
+
+:::
 
 | パーミッション                  |
 |--------------------------|

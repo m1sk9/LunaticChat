@@ -2,5 +2,8 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "github>m1sk9/renovate-config"
+  ],
+  "addLabels": [
+    "Type: dependencies"
   ]
 }

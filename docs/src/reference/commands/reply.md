@@ -1,4 +1,4 @@
-# /reply　<Badge type="tip" text="v0.1.0" />　<Badge type="tip" text="Paper / Velocity" />
+# /reply　<Badge type="tip" text="v0.1.0" />　<Badge type="tip" text="Paper" />
 
 ### `/reply <メッセージ>`
 
@@ -6,7 +6,7 @@
 |-----------------------------|-------|
 | `lunaticchat.command.reply` | `/r` |
 
-直近で [`/tell`](./tell.md) を使用し，やりとりをしたプレイヤーに対して返信します．
+直近で [`/tell`](tell.md) を使用し，やりとりをしたプレイヤーに対して返信します．
 
 ::: info このコマンドが使用できない場合 
 

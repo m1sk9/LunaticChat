@@ -1,0 +1,59 @@
+# パーミッション
+
+LuckPerms を使用した設定方法に関する詳細は [LuckPerms Wiki](https://luckperms.net/wiki/Home) を参照してください．
+
+## `lunaticchat.*`
+
+### `lunaticchat.spy`
+
+- Default: `OP`
+
+[`/tell`](commands/tell.md) / [`/reply`](commands/reply.md) コマンドでのやり取りを可視化します．
+
+この権限を持つプレイヤーは他プレイヤーの [`/tell`](commands/tell.md) / [`/reply`](commands/reply.md) でのメッセージがブロードキャストされます．
+
+### `lunaticchat.noticeUpdate`
+
+- Default: `OP`
+
+LunaticChat のアップデート通知を受け取ります．
+
+[受け取るには `checkForUpdates` を有効にしておく](../guide/admin/configuration.md#checkforupdates) 必要があります．
+
+## `lunaticchat.command.*`
+
+### `lunaticchat.command.tell`
+
+- Default: `non OP`
+
+[`/tell`](commands/tell.md) コマンドの使用を切り替えます．
+
+### `lunaticchat.command.reply`
+
+- Default: `non OP`
+
+[`/reply`](commands/reply.md) コマンドの使用を切り替えます．
+
+### `lunaticchat.command.lc.settings`
+
+- Default: `non OP`
+
+[`/lc settings`](commands/lc/settings.md) コマンドの使用を切り替えます．
+
+### `lunaticchat.command.lc.status`
+
+- Default: `non OP`
+
+[`/lc status`](commands/lc/status.md) コマンドの使用を切り替えます．
+
+### `lunaticchat.command.jp` <Badge type="danger" text="非推奨: v1.0.0 で削除予定" />
+
+- Default: `non OP`
+
+[`/jp`](commands/jp.md) コマンドの使用を切り替えます．
+
+### `lunaticchat.command.notice` <Badge type="danger" text="非推奨: v1.0.0 で削除予定" />
+
+- Default: `non OP`
+
+[`/notice`](commands/notice.md) コマンドの使用を切り替えます．
