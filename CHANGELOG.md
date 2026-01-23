@@ -1,12 +1,11 @@
 # LunaticChat Changelog
 
-## v1 (Minecraft 1.21.X)
-
-### v1.0.0
-
-- Dokka currently references only the platform-paper module.
-
 ## v0
+
+### v0.5.0
+
+- Added i18n support for English and Japanese languages.
+- Fixed a Dokka currently references only the platform-paper module.
 
 ### v0.4.1
 

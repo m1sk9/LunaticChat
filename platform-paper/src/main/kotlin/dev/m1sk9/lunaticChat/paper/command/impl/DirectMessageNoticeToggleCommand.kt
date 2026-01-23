@@ -9,23 +9,28 @@ import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
 import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
+import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
+import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
+import dev.m1sk9.lunaticChat.paper.i18n.MessageKey
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
-import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.format.NamedTextColor
 
 @Command(
     name = "notice",
     aliases = ["dmnotice"],
-    description = "Toggle direct message notification",
+    description = "",
 )
 @Permission(LunaticChatPermissionNode.NoticeToggle::class)
 @PlayerOnly
 class DirectMessageNoticeToggleCommand(
     plugin: LunaticChat,
     private val settingsManager: PlayerSettingsManager,
+    private val languageManager: LanguageManager,
 ) : LunaticCommand(plugin) {
+    override val description: String
+        get() = languageManager.getMessage(MessageKey.CommandDescriptionNotice)
+
     override fun buildCommand(): LiteralArgumentBuilder<CommandSourceStack> =
         Commands
             .literal(name)
@@ -63,11 +68,11 @@ class DirectMessageNoticeToggleCommand(
         val updatedSettings = currentSettings.copy(directMessageNotificationEnabled = enable)
         settingsManager.updateSettings(updatedSettings)
 
-        val statusText = if (enable) "enabled" else "disabled"
+        val toggleText = languageManager.getToggleText(enable)
         val message =
-            Component
-                .text("Direct message notification has been $statusText.")
-                .color(NamedTextColor.GREEN)
+            MessageFormatter.formatSuccess(
+                languageManager.getMessage(MessageKey.DirectMessageNoticeToggle(toggleText)),
+            )
 
         player.sendMessage(message)
         return CommandResult.Success
@@ -77,11 +82,11 @@ class DirectMessageNoticeToggleCommand(
         val player = ctx.requirePlayer()
         val settings = settingsManager.getSettings(player.uniqueId)
 
-        val statusText = if (settings.directMessageNotificationEnabled) "enabled" else "disabled"
+        val toggleText = languageManager.getToggleText(settings.directMessageNotificationEnabled)
         val message =
-            Component
-                .text("Direct message notification is currently $statusText.")
-                .color(NamedTextColor.YELLOW)
+            MessageFormatter.format(
+                languageManager.getMessage(MessageKey.DirectMessageNoticeStatus(toggleText)),
+            )
 
         player.sendMessage(message)
         return CommandResult.Success

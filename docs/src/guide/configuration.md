@@ -24,6 +24,9 @@ userSettingsFilePath: "player-settings.yaml"
 # If enabled, LunaticChat will check for updates on startup.
 checkForUpdates: true
 
+# Plugin Configuration Language. This setting applies only to player feedback and does not affect plugin logs or similar outputs.
+language: "en"
+
 # ----------------------------------------------
 # -----------   Features Settings   ------------
 # ----------------------------------------------
@@ -87,6 +90,18 @@ LunaticChat がプレイヤーの設定を保存する YAML ファイルのパ�
 - Default: `true`
 
 LunaticChat の起動時・権限を持ったプレイヤーがサーバに参加した際に，LunaticChat のアップデートを促すかどうか設定します．
+
+### `language`
+
+- Type: `string`
+- Default: `en`
+
+LunaticChat のプレイヤー向けメッセージの言語を指定します．
+
+### Supported languages:
+
+- `en`: English
+- `ja`: 日本語
 
 ## Features Settings
 

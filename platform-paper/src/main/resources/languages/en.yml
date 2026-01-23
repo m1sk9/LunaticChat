@@ -1,0 +1,30 @@
+# ----------------------------------------------
+# ------  LunaticChat Languages Files   --------
+# -----------------  English   -----------------
+# ----------------------------------------------
+#
+# English language file for LunaticChat i18n (internationalization)
+#
+# These translations may affect the UI/UX of LunaticChat, so please translate accurately.
+#
+# When adding new translation keys, please submit a pull request to GitHub.
+#
+# ----------------------------------------------
+
+commandDescription:
+  jp: "Toggle romaji-to-kana conversion on/off"
+  notice: "Toggle direct message notifications on/off"
+  reply: "Reply to the player who last sent/received a direct message"
+  tell: "Send a direct message to another player"
+
+directMessageNoticeStatus: "Direct message notifications are currently {toggle}"
+directMessageNoticeToggle: "Direct message notifications have been set to {toggle}"
+replyTargetNotFound: "Reply target player not found."
+romajiConversionStatus: "Romaji-to-kana conversion is currently {toggle}"
+romajiConversionToggle: "Romaji-to-kana conversion has been set to {toggle}"
+tellTargetOffline: "Player '{target}' is currently offline."
+tellYourself: "You cannot send a message to yourself."
+
+toggle:
+  off: "Disabled"
+  on: "Enabled"

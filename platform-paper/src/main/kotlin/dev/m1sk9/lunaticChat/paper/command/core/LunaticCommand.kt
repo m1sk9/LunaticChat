@@ -6,6 +6,8 @@ import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.command.annotation.Command
 import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
+import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
+import dev.m1sk9.lunaticChat.paper.i18n.MessageKey
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
@@ -38,8 +40,8 @@ abstract class LunaticCommand(
     /** Command aliases */
     val aliases: List<String> get() = commandAnnotation.aliases.toList()
 
-    /** Command description for help text */
-    val description: String get() = commandAnnotation.description
+    /** Command description for help text - can be overridden for i18n */
+    open val description: String get() = commandAnnotation.description
 
     /** Required permission node, if any */
     val permission: String? get() = permissionAnnotation?.value?.objectInstance?.permissionNode
@@ -75,9 +77,9 @@ abstract class LunaticCommand(
     protected fun checkPlayerOnly(ctx: CommandContext): CommandResult? {
         if (isPlayerOnly && !ctx.isPlayer) {
             return CommandResult.Failure(
-                Component
-                    .text("This command can only be executed by a player.")
-                    .color(NamedTextColor.RED),
+                MessageFormatter.formatError(
+                    plugin.languageManager.getMessage(MessageKey.PlayerOnlyCommand),
+                ),
             )
         }
 

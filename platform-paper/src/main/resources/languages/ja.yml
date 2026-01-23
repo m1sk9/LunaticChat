@@ -1,0 +1,30 @@
+# ----------------------------------------------
+# ------  LunaticChat Languages Files   --------
+# -----------------  日本語   -------------------
+# ----------------------------------------------
+#
+# LunaticChat の i18n (国際化) 用の日本語言語ファイル
+#
+# 以下の翻訳は LunaticChat の UI/UX に影響を与える可能性があるため、正確に翻訳してください。
+#
+# また，新しい翻訳キーを追加する際は GitHub へのプルリクエストの提出をお願いします。
+#
+# ----------------------------------------------
+
+toggle:
+  on: "有効"
+  off: "無効"
+
+commandDescription:
+  tell: "他のプレイヤーにダイレクトメッセージを送信します"
+  reply: "最後にダイレクトメッセージを送信/受信したプレイヤーに返信します"
+  jp: "かな・ローマ字変換機能のオン/オフを切り替えます"
+  notice: "ダイレクトメッセージ通知のオン/オフを切り替えます"
+
+directMessageNoticeToggle: "ダイレクトメッセージ通知を{toggle}にしました"
+directMessageNoticeStatus: "現在ダイレクトメッセージ通知は{toggle}です"
+replyTargetNotFound: "返信対象のプレイヤーが見つかりません"
+romajiConversionToggle: "かな・ローマ字変換機能を{toggle}にしました"
+romajiConversionStatus: "現在かな・ローマ字変換機能は{toggle}です"
+tellTargetOffline: "プレイヤー '{target}' は現在オフラインです"
+tellYourself: "自分自身にメッセージを送信することはできません"

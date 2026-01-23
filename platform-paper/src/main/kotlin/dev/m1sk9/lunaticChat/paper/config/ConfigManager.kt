@@ -4,6 +4,7 @@ import dev.m1sk9.lunaticChat.paper.config.key.FeaturesConfig
 import dev.m1sk9.lunaticChat.paper.config.key.JapaneseConversionFeatureConfig
 import dev.m1sk9.lunaticChat.paper.config.key.MessageFormatConfig
 import dev.m1sk9.lunaticChat.paper.config.key.QuickRepliesFeatureConfig
+import dev.m1sk9.lunaticChat.paper.i18n.Language
 import org.bukkit.configuration.file.FileConfiguration
 
 object ConfigManager {
@@ -59,6 +60,10 @@ object ConfigManager {
                         "userSettingsFilePath",
                         "player-settings.yaml",
                     )!!,
+                language =
+                    Language.fromCode(
+                        configFile.getString("language", "en")!!,
+                    ),
             )
 
         lunaticChatConfiguration = loadedConfig

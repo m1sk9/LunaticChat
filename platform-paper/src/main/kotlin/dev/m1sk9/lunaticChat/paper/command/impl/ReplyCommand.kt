@@ -11,23 +11,28 @@ import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
 import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
 import dev.m1sk9.lunaticChat.paper.command.handler.DirectMessageHandler
+import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
+import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
+import dev.m1sk9.lunaticChat.paper.i18n.MessageKey
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
 import kotlinx.coroutines.runBlocking
-import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.format.NamedTextColor
 
 @Command(
     name = "reply",
     aliases = ["r"],
-    description = "Reply to the last person who messaged you",
+    description = "",
 )
 @Permission(LunaticChatPermissionNode.Reply::class)
 @PlayerOnly
 class ReplyCommand(
     plugin: LunaticChat,
     private val dmHandler: DirectMessageHandler,
+    private val languageManager: LanguageManager,
 ) : LunaticCommand(plugin) {
+    override val description: String
+        get() = languageManager.getMessage(MessageKey.CommandDescriptionReply)
+
     override fun buildCommand(): LiteralArgumentBuilder<CommandSourceStack> =
         Commands
             .literal(name)
@@ -53,9 +58,9 @@ class ReplyCommand(
         val target =
             dmHandler.getReplyTarget(sender)
                 ?: return CommandResult.Failure(
-                    Component
-                        .text("You have no one to reply to.")
-                        .color(NamedTextColor.RED),
+                    MessageFormatter.formatError(
+                        languageManager.getMessage(MessageKey.ReplyTargetNotFound),
+                    ),
                 )
 
         runBlocking {
