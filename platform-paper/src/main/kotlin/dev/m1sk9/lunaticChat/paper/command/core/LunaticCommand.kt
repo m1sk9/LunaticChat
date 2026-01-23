@@ -7,8 +7,8 @@ import dev.m1sk9.lunaticChat.paper.command.annotation.Command
 import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
-import dev.m1sk9.lunaticChat.paper.i18n.MessageKey
 import io.papermc.paper.command.brigadier.CommandSourceStack
+import io.papermc.paper.command.brigadier.Commands
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 
@@ -28,6 +28,10 @@ abstract class LunaticCommand(
 
     private val permissionAnnotation: Permission? by lazy {
         this::class.annotations.filterIsInstance<Permission>().firstOrNull()
+    }
+
+    private val deprecatedAnnotation: Deprecated? by lazy {
+        this::class.annotations.filterIsInstance<Deprecated>().firstOrNull()
     }
 
     private val isPlayerOnly: Boolean by lazy {
@@ -59,6 +63,20 @@ abstract class LunaticCommand(
      * Called by CommandRegistry during registration.
      */
     fun buildWithChecks(): LiteralArgumentBuilder<CommandSourceStack> {
+        // If command is deprecated, replace with error message handler
+        deprecatedAnnotation?.let { deprecated ->
+            return Commands
+                .literal(name)
+                .executes { ctx ->
+                    val context = wrapContext(ctx)
+                    val result =
+                        CommandResult.Failure(
+                            MessageFormatter.formatError(deprecated.message),
+                        )
+                    handleResult(context, result)
+                }
+        }
+
         var builder = buildCommand()
         permission?.let { perm ->
             builder =
@@ -78,7 +96,7 @@ abstract class LunaticCommand(
         if (isPlayerOnly && !ctx.isPlayer) {
             return CommandResult.Failure(
                 MessageFormatter.formatError(
-                    plugin.languageManager.getMessage(MessageKey.PlayerOnlyCommand),
+                    plugin.languageManager.getMessage("playerOnlyCommand"),
                 ),
             )
         }

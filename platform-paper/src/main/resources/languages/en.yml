@@ -16,6 +16,7 @@ commandDescription:
   notice: "Toggle direct message notifications on/off"
   reply: "Reply to the player who last sent/received a direct message"
   tell: "Send a direct message to another player"
+  lc: "LunaticChat Main Command"
 
 directMessageNoticeStatus: "Direct message notifications are currently {toggle}"
 directMessageNoticeToggle: "Direct message notifications have been set to {toggle}"
@@ -23,6 +24,7 @@ playerOnlyCommand: "This command can only be executed by players."
 replyTargetNotFound: "Reply target player not found."
 romajiConversionStatus: "Romaji-to-kana conversion is currently {toggle}"
 romajiConversionToggle: "Romaji-to-kana conversion has been set to {toggle}"
+settingsAvailableValues: "Available settings value: {values}"
 tellTargetOffline: "Player '{target}' is currently offline."
 tellYourself: "You cannot send a message to yourself."
 
