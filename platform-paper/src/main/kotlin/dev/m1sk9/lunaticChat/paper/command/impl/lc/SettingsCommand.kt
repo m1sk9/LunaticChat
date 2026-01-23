@@ -50,7 +50,7 @@ class SettingsCommand(
     fun build(): LiteralArgumentBuilder<CommandSourceStack> {
         val settingCommand = Commands.literal("settings")
 
-        for (settingKey in SettingKey.Companion.values()) {
+        for (settingKey in SettingKey.values()) {
             val handler = settingHandlerRegistry.getHandler(settingKey)
             if (handler == null) {
                 plugin.logger.warning("No handler registered for setting key: ${settingKey.key}")

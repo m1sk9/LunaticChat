@@ -40,5 +40,10 @@ class LunaticChatCommand(
                     settingHandlerRegistry,
                     languageManager,
                 ).buildWithPermissionCheck(),
+            ).then(
+                StatusCommand(
+                    plugin,
+                    languageManager,
+                ).buildWithPermissionCheck(),
             )
 }

@@ -220,7 +220,7 @@ class LunaticChat :
      */
     private fun registerEventListeners() {
         server.pluginManager.registerEvents(SpyPermissionManager, this)
-        server.pluginManager.registerEvents(PlayerPresenceListener(this, updateAvailable), this)
+        server.pluginManager.registerEvents(PlayerPresenceListener(this, languageManager, updateAvailable), this)
     }
 
     private suspend fun checkUpdates() {

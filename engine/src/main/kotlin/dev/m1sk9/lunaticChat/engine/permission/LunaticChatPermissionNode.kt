@@ -11,6 +11,8 @@ sealed class LunaticChatPermissionNode(
 
     object Settings : LunaticChatPermissionNode("lunaticchat.command.lc.settings")
 
+    object Status : LunaticChatPermissionNode("lunaticchat.command.lc.status")
+
     object Spy : LunaticChatPermissionNode("lunaticchat.spy")
 
     object NoticeUpdate : LunaticChatPermissionNode("lunaticchat.noticeUpdate")
