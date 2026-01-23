@@ -14,7 +14,7 @@ plugins {
 
 allprojects {
     group = "dev.m1sk9"
-    version = "0.4.1"
+    version = "1.0.0"
 
     repositories {
         mavenCentral()
@@ -22,6 +22,9 @@ allprojects {
 }
 
 subprojects {
+    // Skip dokka module (aggregator only, no Kotlin compilation needed)
+    if (name == "dokka") return@subprojects
+
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
     apply(plugin = "org.jetbrains.dokka")
@@ -49,6 +52,7 @@ subprojects {
 
     afterEvaluate {
         dependencies {
+            // Common test dependencies (applied to all subprojects)
             add("testImplementation", "org.jetbrains.kotlin:kotlin-test-junit5")
             add("testImplementation", "org.junit.jupiter:junit-jupiter-api:5.14.2")
             add("testRuntimeOnly", "org.junit.jupiter:junit-jupiter-engine:5.14.2")

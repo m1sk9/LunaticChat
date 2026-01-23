@@ -1,5 +1,13 @@
 # LunaticChat Changelog
 
+## v1 (Minecraft 1.21.X)
+
+### v1.0.0
+
+- Dokka currently references only the platform-paper module.
+
+## v0
+
 ### v0.4.1
 
 - Fixed Kana conversion with voiced consonants.
