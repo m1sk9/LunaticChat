@@ -27,6 +27,7 @@ romajiConversionToggle: "Romaji-to-kana conversion has been set to {toggle}"
 settingsAvailableValues: "Available settings value: {values}"
 tellTargetOffline: "Player '{target}' is currently offline."
 tellYourself: "You cannot send a message to yourself."
+noPermission: "You do not have permission to execute this command."
 
 toggle:
   off: "Disabled"

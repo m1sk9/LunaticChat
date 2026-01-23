@@ -11,6 +11,8 @@ import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
+import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.full.memberFunctions
 
 /**
  * Abstract base class for all LunaticChat commands.
@@ -129,5 +131,26 @@ abstract class LunaticCommand(
                 )
         }
         return result.toBrigadierResult()
+    }
+
+    /**
+     * Applies permission checks to a subcommand builder based on method-level @Permission annotation.
+     * Used for subcommands that use build() instead of buildCommand().
+     *
+     * @param methodName The name of the method to check for @Permission annotation
+     * @param builder The subcommand builder to wrap
+     * @return The builder with permission checks applied if annotation is present
+     */
+    protected fun applyMethodPermission(
+        methodName: String,
+        builder: LiteralArgumentBuilder<CommandSourceStack>,
+    ): LiteralArgumentBuilder<CommandSourceStack> {
+        val method = this::class.memberFunctions.find { it.name == methodName } ?: return builder
+        val permissionAnnotation = method.findAnnotation<Permission>() ?: return builder
+        val permissionNode = permissionAnnotation.value.objectInstance?.permissionNode ?: return builder
+
+        return builder.requires { source ->
+            source.sender.hasPermission(permissionNode)
+        }
     }
 }

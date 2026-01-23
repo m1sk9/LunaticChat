@@ -6,9 +6,13 @@ import kotlin.reflect.KClass
 /**
  * Restricts command execution to senders with the specified permission.
  *
+ * Can be applied to:
+ * - Classes: Restricts the entire command
+ * - Functions: Restricts a specific subcommand (when applied to build() methods)
+ *
  * @param value The permission node required to execute this command
  */
-@Target(AnnotationTarget.CLASS)
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class Permission(
     val value: KClass<out LunaticChatPermissionNode>,

@@ -1,8 +1,11 @@
 package dev.m1sk9.lunaticChat.paper.command.impl.lc
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
+import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.command.annotation.Command
+import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
+import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
 import dev.m1sk9.lunaticChat.paper.command.setting.SettingHandlerRegistry
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
@@ -18,6 +21,8 @@ import io.papermc.paper.command.brigadier.Commands
     aliases = ["lunaticchat"],
     description = "",
 )
+@Permission(LunaticChatPermissionNode.Lc::class)
+@PlayerOnly
 class LunaticChatCommand(
     plugin: LunaticChat,
     private val settingHandlerRegistry: SettingHandlerRegistry,
@@ -34,6 +39,6 @@ class LunaticChatCommand(
                     plugin,
                     settingHandlerRegistry,
                     languageManager,
-                ).build(),
+                ).buildWithPermissionCheck(),
             )
 }

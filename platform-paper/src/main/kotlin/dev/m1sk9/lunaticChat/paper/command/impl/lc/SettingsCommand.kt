@@ -2,7 +2,9 @@ package dev.m1sk9.lunaticChat.paper.command.impl.lc
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
+import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
+import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
 import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
@@ -29,12 +31,22 @@ class SettingsCommand(
     private val languageManager: LanguageManager,
 ) : LunaticCommand(plugin) {
     /**
+     * Builds the setting subcommand structure with permission checks.
+     * This method should be called from parent commands.
+     */
+    fun buildWithPermissionCheck(): LiteralArgumentBuilder<CommandSourceStack> {
+        val builder = build()
+        return applyMethodPermission("build", builder)
+    }
+
+    /**
      * Builds the setting subcommand structure.
      * For each registered setting key, creates:
      * - /lc setting <key> on
      * - /lc setting <key> off
      * - /lc setting <key> (shows status)
      */
+    @Permission(LunaticChatPermissionNode.Settings::class)
     fun build(): LiteralArgumentBuilder<CommandSourceStack> {
         val settingCommand = Commands.literal("settings")
 
@@ -92,7 +104,9 @@ class SettingsCommand(
     private fun showHelp(ctx: CommandContext): CommandResult {
         val availableKeys = settingHandlerRegistry.getAvailableKeys()
         val helpMessage =
-            MessageFormatter.format(languageManager.getMessage("settingsAvailableValues", mapOf("values" to availableKeys.joinToString(", "))))
+            MessageFormatter.format(
+                languageManager.getMessage("settingsAvailableValues", mapOf("values" to availableKeys.joinToString(", "))),
+            )
 
         ctx.reply(helpMessage)
         return CommandResult.Success

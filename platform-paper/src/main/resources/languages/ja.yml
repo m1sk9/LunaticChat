@@ -27,6 +27,7 @@ romajiConversionStatus: "現在かな・ローマ字変換機能は{toggle}で�
 settingsAvailableValues: "使用可能な設定値: {values}"
 tellTargetOffline: "プレイヤー '{target}' は現在オフラインです"
 tellYourself: "自分自身にメッセージを送信することはできません"
+noPermission: "このコマンドを実行する権限がありません"
 
 toggle:
   on: "有効"

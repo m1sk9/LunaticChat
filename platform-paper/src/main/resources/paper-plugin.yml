@@ -9,13 +9,13 @@ description: Next-generation channel chat plugin for Paper/Velocity
 website: lc.m1sk9.dev
 
 permissions:
+  lunaticchat.command.lc:
+    default: true
   lunaticchat.command.tell:
     default: true
   lunaticchat.command.reply:
     default: true
-  lunaticchat.command.jp:
-    default: true
-  lunaticchat.command.notice:
+  lunaticchat.command.lc.settings:
     default: true
 
   lunaticchat.spy:

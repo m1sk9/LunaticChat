@@ -3,9 +3,9 @@ package dev.m1sk9.lunaticChat.paper
 import dev.m1sk9.lunaticChat.engine.converter.GoogleIMEClient
 import dev.m1sk9.lunaticChat.paper.command.core.CommandRegistry
 import dev.m1sk9.lunaticChat.paper.command.handler.DirectMessageHandler
-import dev.m1sk9.lunaticChat.paper.command.impl.lc.LunaticChatCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.ReplyCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.TellCommand
+import dev.m1sk9.lunaticChat.paper.command.impl.lc.LunaticChatCommand
 import dev.m1sk9.lunaticChat.paper.command.setting.SettingHandlerRegistry
 import dev.m1sk9.lunaticChat.paper.command.setting.handler.DirectMessageNoticeSettingHandler
 import dev.m1sk9.lunaticChat.paper.command.setting.handler.JapaneseConversionSettingHandler
