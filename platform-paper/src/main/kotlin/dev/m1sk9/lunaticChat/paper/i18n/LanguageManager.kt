@@ -30,15 +30,23 @@ private sealed class YamlValue {
  * - Providing message retrieval with placeholder substitution
  * - Fallback to English if the selected language is unavailable
  *
- * @property plugin The JavaPlugin instance
+ * @property plugin The JavaPlugin instance (required unless resourceLoader is provided)
  * @property logger The logger for this manager
  * @property selectedLanguage The currently selected language
+ * @property resourceLoader Optional resource loader function for testing (overrides plugin.getResource)
  */
 class LanguageManager(
-    private val plugin: JavaPlugin,
+    private val plugin: JavaPlugin? = null,
     private val logger: Logger,
     private val selectedLanguage: Language,
+    private val resourceLoader: ((String) -> java.io.InputStream?)? = null,
 ) {
+    init {
+        require(plugin != null || resourceLoader != null) {
+            "Either plugin or resourceLoader must be provided"
+        }
+    }
+
     private val languageCache = mutableMapOf<Language, Map<String, String>>()
 
     /**
@@ -70,9 +78,10 @@ class LanguageManager(
      * @throws IllegalStateException if the language file is not found
      */
     private fun loadLanguageFile(language: Language): Map<String, String> {
+        val resourcePath = "languages/${language.fileName}"
         val stream =
-            plugin.getResource("languages/${language.fileName}")
-                ?: throw IllegalStateException("Language file not found: languages/${language.fileName}")
+            (resourceLoader?.invoke(resourcePath) ?: plugin?.getResource(resourcePath))
+                ?: throw IllegalStateException("Language file not found: $resourcePath")
 
         val yamlContent = stream.bufferedReader().use { it.readText() }
         val yamlNode = Yaml.default.parseToYamlNode(yamlContent)

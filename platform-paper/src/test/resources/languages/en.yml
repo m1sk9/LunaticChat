@@ -1,0 +1,18 @@
+commandDescription:
+  tell: "Send a direct message to another player"
+  reply: "Reply to the player who last sent/received a direct message"
+  jp: "Toggle romaji-to-kana conversion on/off"
+  notice: "Toggle direct message notifications on/off"
+
+directMessageNoticeStatus: "Direct message notifications are currently {toggle}"
+directMessageNoticeToggle: "Direct message notifications have been set to {toggle}"
+playerOnlyCommand: "This command can only be executed by players."
+replyTargetNotFound: "Reply target player not found."
+romajiConversionToggle: "Romaji-to-kana conversion has been set to {toggle}"
+romajiConversionStatus: "Romaji-to-kana conversion is currently {toggle}"
+tellTargetOffline: "Player '{target}' is currently offline."
+tellYourself: "You cannot send a message to yourself."
+
+toggle:
+  off: "Disabled"
+  on: "Enabled"
