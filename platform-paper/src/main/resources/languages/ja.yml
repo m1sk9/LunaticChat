@@ -23,8 +23,10 @@ commandDescription:
 
 directMessageNoticeToggle: "ダイレクトメッセージ通知を{toggle}にしました"
 directMessageNoticeStatus: "現在ダイレクトメッセージ通知は{toggle}です"
+playerOnlyCommand: "このコマンドはプレイヤーのみが実行できます"
 replyTargetNotFound: "返信対象のプレイヤーが見つかりません"
 romajiConversionToggle: "かな・ローマ字変換機能を{toggle}にしました"
 romajiConversionStatus: "現在かな・ローマ字変換機能は{toggle}です"
+settingsAvailableValues: "使用可能な設定値: "
 tellTargetOffline: "プレイヤー '{target}' は現在オフラインです"
 tellYourself: "自分自身にメッセージを送信することはできません"

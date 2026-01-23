@@ -4,9 +4,13 @@ import dev.m1sk9.lunaticChat.engine.converter.GoogleIMEClient
 import dev.m1sk9.lunaticChat.paper.command.core.CommandRegistry
 import dev.m1sk9.lunaticChat.paper.command.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.command.impl.DirectMessageNoticeToggleCommand
+import dev.m1sk9.lunaticChat.paper.command.impl.LunaticChatCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.ReplyCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.RomajiConvertToggleCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.TellCommand
+import dev.m1sk9.lunaticChat.paper.command.setting.SettingHandlerRegistry
+import dev.m1sk9.lunaticChat.paper.command.setting.handler.DirectMessageNoticeSettingHandler
+import dev.m1sk9.lunaticChat.paper.command.setting.handler.JapaneseConversionSettingHandler
 import dev.m1sk9.lunaticChat.paper.common.SpyPermissionManager
 import dev.m1sk9.lunaticChat.paper.common.UpdateCheckResult
 import dev.m1sk9.lunaticChat.paper.common.UpdateChecker
@@ -186,6 +190,25 @@ class LunaticChat :
      */
     private fun registerCommands(configuration: LunaticChatConfiguration) {
         commandRegistry = CommandRegistry(this)
+
+        // Initialize setting handler registry for /lc setting command
+        val settingHandlerRegistry = SettingHandlerRegistry()
+
+        // Register setting handlers
+        settingHandlerRegistry.register(
+            DirectMessageNoticeSettingHandler(playerSettingsManager!!, languageManager),
+        )
+
+        if (configuration.features.japaneseConversion.enabled) {
+            settingHandlerRegistry.register(
+                JapaneseConversionSettingHandler(playerSettingsManager!!, languageManager),
+            )
+        }
+
+        // Register new /lc command with setting subcommand
+        commandRegistry.register(
+            LunaticChatCommand(this, settingHandlerRegistry, languageManager),
+        )
 
         commandRegistry.registerAll(
             TellCommand(this, directMessageHandler, languageManager),

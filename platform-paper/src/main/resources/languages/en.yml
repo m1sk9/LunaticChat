@@ -19,6 +19,7 @@ commandDescription:
 
 directMessageNoticeStatus: "Direct message notifications are currently {toggle}"
 directMessageNoticeToggle: "Direct message notifications have been set to {toggle}"
+playerOnlyCommand: "This command can only be executed by players."
 replyTargetNotFound: "Reply target player not found."
 romajiConversionStatus: "Romaji-to-kana conversion is currently {toggle}"
 romajiConversionToggle: "Romaji-to-kana conversion has been set to {toggle}"
