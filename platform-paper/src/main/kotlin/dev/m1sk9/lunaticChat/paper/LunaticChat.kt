@@ -3,10 +3,12 @@ package dev.m1sk9.lunaticChat.paper
 import dev.m1sk9.lunaticChat.engine.converter.GoogleIMEClient
 import dev.m1sk9.lunaticChat.paper.command.core.CommandRegistry
 import dev.m1sk9.lunaticChat.paper.command.handler.DirectMessageHandler
-import dev.m1sk9.lunaticChat.paper.command.impl.DirectMessageNoticeToggleCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.ReplyCommand
-import dev.m1sk9.lunaticChat.paper.command.impl.RomajiConvertToggleCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.TellCommand
+import dev.m1sk9.lunaticChat.paper.command.impl.lc.LunaticChatCommand
+import dev.m1sk9.lunaticChat.paper.command.setting.SettingHandlerRegistry
+import dev.m1sk9.lunaticChat.paper.command.setting.handler.DirectMessageNoticeSettingHandler
+import dev.m1sk9.lunaticChat.paper.command.setting.handler.JapaneseConversionSettingHandler
 import dev.m1sk9.lunaticChat.paper.common.SpyPermissionManager
 import dev.m1sk9.lunaticChat.paper.common.UpdateCheckResult
 import dev.m1sk9.lunaticChat.paper.common.UpdateChecker
@@ -187,22 +189,26 @@ class LunaticChat :
     private fun registerCommands(configuration: LunaticChatConfiguration) {
         commandRegistry = CommandRegistry(this)
 
+        val settingHandlerRegistry = SettingHandlerRegistry()
+        settingHandlerRegistry.register(
+            DirectMessageNoticeSettingHandler(playerSettingsManager!!, languageManager),
+        )
+
         commandRegistry.registerAll(
             TellCommand(this, directMessageHandler, languageManager),
-            DirectMessageNoticeToggleCommand(this, playerSettingsManager!!, languageManager),
+            LunaticChatCommand(this, settingHandlerRegistry, languageManager),
         )
+
+        if (configuration.features.japaneseConversion.enabled) {
+            settingHandlerRegistry.register(
+                JapaneseConversionSettingHandler(playerSettingsManager!!, languageManager),
+            )
+        }
 
         // Register /reply command if quick replies are enabled
         if (configuration.features.quickRepliesEnabled.enabled) {
             commandRegistry.registerAll(
                 ReplyCommand(this, directMessageHandler, languageManager),
-            )
-        }
-
-        // Register /jp command if Japanese conversion is enabled
-        if (configuration.features.japaneseConversion.enabled) {
-            commandRegistry.registerAll(
-                RomajiConvertToggleCommand(this, playerSettingsManager!!, languageManager),
             )
         }
 
@@ -214,7 +220,7 @@ class LunaticChat :
      */
     private fun registerEventListeners() {
         server.pluginManager.registerEvents(SpyPermissionManager, this)
-        server.pluginManager.registerEvents(PlayerPresenceListener(this, updateAvailable), this)
+        server.pluginManager.registerEvents(PlayerPresenceListener(this, languageManager, updateAvailable), this)
     }
 
     private suspend fun checkUpdates() {

@@ -13,7 +13,6 @@ import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
 import dev.m1sk9.lunaticChat.paper.command.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
-import dev.m1sk9.lunaticChat.paper.i18n.MessageKey
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
 import kotlinx.coroutines.runBlocking
@@ -31,7 +30,7 @@ class ReplyCommand(
     private val languageManager: LanguageManager,
 ) : LunaticCommand(plugin) {
     override val description: String
-        get() = languageManager.getMessage(MessageKey.CommandDescriptionReply)
+        get() = languageManager.getMessage("commandDescription.reply")
 
     override fun buildCommand(): LiteralArgumentBuilder<CommandSourceStack> =
         Commands
@@ -59,7 +58,7 @@ class ReplyCommand(
             dmHandler.getReplyTarget(sender)
                 ?: return CommandResult.Failure(
                     MessageFormatter.formatError(
-                        languageManager.getMessage(MessageKey.ReplyTargetNotFound),
+                        languageManager.getMessage("replyTargetNotFound"),
                     ),
                 )
 

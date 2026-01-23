@@ -7,10 +7,12 @@ import dev.m1sk9.lunaticChat.paper.command.annotation.Command
 import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
-import dev.m1sk9.lunaticChat.paper.i18n.MessageKey
 import io.papermc.paper.command.brigadier.CommandSourceStack
+import io.papermc.paper.command.brigadier.Commands
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
+import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.full.memberFunctions
 
 /**
  * Abstract base class for all LunaticChat commands.
@@ -28,6 +30,10 @@ abstract class LunaticCommand(
 
     private val permissionAnnotation: Permission? by lazy {
         this::class.annotations.filterIsInstance<Permission>().firstOrNull()
+    }
+
+    private val deprecatedAnnotation: Deprecated? by lazy {
+        this::class.annotations.filterIsInstance<Deprecated>().firstOrNull()
     }
 
     private val isPlayerOnly: Boolean by lazy {
@@ -59,6 +65,20 @@ abstract class LunaticCommand(
      * Called by CommandRegistry during registration.
      */
     fun buildWithChecks(): LiteralArgumentBuilder<CommandSourceStack> {
+        // If command is deprecated, replace with error message handler
+        deprecatedAnnotation?.let { deprecated ->
+            return Commands
+                .literal(name)
+                .executes { ctx ->
+                    val context = wrapContext(ctx)
+                    val result =
+                        CommandResult.Failure(
+                            MessageFormatter.formatError(deprecated.message),
+                        )
+                    handleResult(context, result)
+                }
+        }
+
         var builder = buildCommand()
         permission?.let { perm ->
             builder =
@@ -78,7 +98,7 @@ abstract class LunaticCommand(
         if (isPlayerOnly && !ctx.isPlayer) {
             return CommandResult.Failure(
                 MessageFormatter.formatError(
-                    plugin.languageManager.getMessage(MessageKey.PlayerOnlyCommand),
+                    plugin.languageManager.getMessage("playerOnlyCommand"),
                 ),
             )
         }
@@ -111,5 +131,26 @@ abstract class LunaticCommand(
                 )
         }
         return result.toBrigadierResult()
+    }
+
+    /**
+     * Applies permission checks to a subcommand builder based on method-level @Permission annotation.
+     * Used for subcommands that use build() instead of buildCommand().
+     *
+     * @param methodName The name of the method to check for @Permission annotation
+     * @param builder The subcommand builder to wrap
+     * @return The builder with permission checks applied if annotation is present
+     */
+    protected fun applyMethodPermission(
+        methodName: String,
+        builder: LiteralArgumentBuilder<CommandSourceStack>,
+    ): LiteralArgumentBuilder<CommandSourceStack> {
+        val method = this::class.memberFunctions.find { it.name == methodName } ?: return builder
+        val permissionAnnotation = method.findAnnotation<Permission>() ?: return builder
+        val permissionNode = permissionAnnotation.value.objectInstance?.permissionNode ?: return builder
+
+        return builder.requires { source ->
+            source.sender.hasPermission(permissionNode)
+        }
     }
 }

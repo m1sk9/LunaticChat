@@ -16,14 +16,21 @@ commandDescription:
   notice: "Toggle direct message notifications on/off"
   reply: "Reply to the player who last sent/received a direct message"
   tell: "Send a direct message to another player"
+  lc: "LunaticChat Main Command"
 
 directMessageNoticeStatus: "Direct message notifications are currently {toggle}"
 directMessageNoticeToggle: "Direct message notifications have been set to {toggle}"
+playerOnlyCommand: "This command can only be executed by players."
 replyTargetNotFound: "Reply target player not found."
-romajiConversionStatus: "Romaji-to-kana conversion is currently {toggle}"
 romajiConversionToggle: "Romaji-to-kana conversion has been set to {toggle}"
+romajiConversionStatus: "Romaji-to-kana conversion is currently {toggle}"
+settingsAvailableValues: "Available settings value: {values}"
+statusHover: "LunaticChat was born as the successor to LunaChat. With respect to its original creator, uccchyocean."
+statusRunningVersion: "Running LunaticChat v{version}"
 tellTargetOffline: "Player '{target}' is currently offline."
 tellYourself: "You cannot send a message to yourself."
+newUpdateAvailable: "The new version of LunaticChat is now available! You can download it from GitHub or Modrinth."
+noPermission: "You do not have permission to execute this command."
 
 toggle:
   off: "Disabled"

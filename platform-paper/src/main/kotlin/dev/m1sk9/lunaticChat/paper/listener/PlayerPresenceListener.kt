@@ -3,6 +3,7 @@ package dev.m1sk9.lunaticChat.paper.listener
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.common.hasAnyPermission
+import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.ClickEvent
 import org.bukkit.event.EventHandler
@@ -13,6 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 class PlayerPresenceListener(
     private val lunaticChat: LunaticChat,
+    private val languageManager: LanguageManager,
     private val updateCheckerFlag: AtomicBoolean,
 ) : Listener {
     @EventHandler(ignoreCancelled = true)
@@ -23,12 +25,9 @@ class PlayerPresenceListener(
         player.sendMessage {
             Component
                 .text(
-                    listOf(
-                        "§6[§eLunaticChat§6] §aA new update is available!",
-                        "§aYou can download the latest build from §bGitHub §aor §bModrinth.",
-                    ).joinToString("\n"),
+                    languageManager.getMessage("newUpdateAvailable"),
                 ).clickEvent(
-                    ClickEvent.openUrl("https://modrinth.com/plugin/lunaticchat/version/latest"),
+                    ClickEvent.openUrl("https://github.com/m1sk9/LunaticChat/releases/latest"),
                 )
         }
     }

@@ -3,13 +3,15 @@ package dev.m1sk9.lunaticChat.engine.permission
 sealed class LunaticChatPermissionNode(
     val permissionNode: String,
 ) {
+    object Lc : LunaticChatPermissionNode("lunaticchat.command.lc")
+
     object Tell : LunaticChatPermissionNode("lunaticchat.command.tell")
 
     object Reply : LunaticChatPermissionNode("lunaticchat.command.reply")
 
-    object JapaneseToggle : LunaticChatPermissionNode("lunaticchat.command.jp")
+    object Settings : LunaticChatPermissionNode("lunaticchat.command.lc.settings")
 
-    object NoticeToggle : LunaticChatPermissionNode("lunaticchat.command.notice")
+    object Status : LunaticChatPermissionNode("lunaticchat.command.lc.status")
 
     object Spy : LunaticChatPermissionNode("lunaticchat.spy")
 

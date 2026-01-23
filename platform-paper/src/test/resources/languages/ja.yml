@@ -1,0 +1,18 @@
+commandDescription:
+  tell: "他のプレイヤーにダイレクトメッセージを送信します"
+  reply: "最後にダイレクトメッセージを送受信したプレイヤーに返信します"
+  jp: "ローマ字→かな変換のオン/オフを切り替えます"
+  notice: "ダイレクトメッセージ通知のオン/オフを切り替えます"
+
+directMessageNoticeStatus: "ダイレクトメッセージ通知は現在 {toggle} です"
+directMessageNoticeToggle: "ダイレクトメッセージ通知を {toggle} に設定しました"
+playerOnlyCommand: "このコマンドはプレイヤーのみが実行できます。"
+replyTargetNotFound: "返信先のプレイヤーが見つかりませんでした。"
+romajiConversionToggle: "ローマ字→かな変換を {toggle} に設定しました"
+romajiConversionStatus: "ローマ字→かな変換は現在 {toggle} です"
+tellTargetOffline: "プレイヤー '{target}' は現在オフラインです。"
+tellYourself: "自分自身にメッセージを送信することはできません。"
+
+toggle:
+  off: "無効"
+  on: "有効"
