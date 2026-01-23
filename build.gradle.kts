@@ -1,3 +1,5 @@
+import org.jetbrains.dokka.gradle.DokkaExtension
+import org.jetbrains.dokka.gradle.DokkaTaskPartial
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -22,6 +24,7 @@ allprojects {
 subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
+    apply(plugin = "org.jetbrains.dokka")
 
     tasks.withType<KotlinCompile> {
         compilerOptions {
@@ -31,6 +34,17 @@ subprojects {
 
     tasks.withType<Test> {
         useJUnitPlatform()
+    }
+
+    configure<DokkaExtension> {
+        dokkaSourceSets {
+            configureEach {
+                sourceLink {
+                    remoteUrl("https://github.com/m1sk9/LunaticChat/tree/main")
+                    localDirectory.set(rootDir)
+                }
+            }
+        }
     }
 
     afterEvaluate {
