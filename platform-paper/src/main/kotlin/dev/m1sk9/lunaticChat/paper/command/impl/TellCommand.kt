@@ -13,25 +13,30 @@ import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
 import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
 import dev.m1sk9.lunaticChat.paper.command.handler.DirectMessageHandler
+import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
+import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
+import dev.m1sk9.lunaticChat.paper.i18n.MessageKey
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
 import kotlinx.coroutines.runBlocking
-import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Bukkit
 import java.util.concurrent.CompletableFuture
 
 @Command(
     name = "tell",
     aliases = ["t", "msg", "m", "w", "whisper"],
-    description = "Send a private message to another player",
+    description = "",
 )
 @Permission(LunaticChatPermissionNode.Tell::class)
 @PlayerOnly
 class TellCommand(
     plugin: LunaticChat,
     private val directMessageHandler: DirectMessageHandler,
+    private val languageManager: LanguageManager,
 ) : LunaticCommand(plugin) {
+    override val description: String
+        get() = languageManager.getMessage(MessageKey.CommandDescriptionTell)
+
     override fun buildCommand(): LiteralArgumentBuilder<CommandSourceStack> =
         Commands
             .literal(name)
@@ -64,16 +69,16 @@ class TellCommand(
         val recipient =
             Bukkit.getPlayer(targetName)
                 ?: return CommandResult.Failure(
-                    Component
-                        .text("Player '$targetName' is not online.")
-                        .color(NamedTextColor.RED),
+                    MessageFormatter.formatError(
+                        languageManager.getMessage(MessageKey.TellTargetOffline(targetName)),
+                    ),
                 )
 
         if (recipient.uniqueId == sender.uniqueId) {
             return CommandResult.Failure(
-                Component
-                    .text("You cannot send a message to yourself.")
-                    .color(NamedTextColor.RED),
+                MessageFormatter.formatError(
+                    languageManager.getMessage(MessageKey.TellYourself),
+                ),
             )
         }
 
