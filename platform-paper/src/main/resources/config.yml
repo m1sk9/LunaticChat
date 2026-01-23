@@ -21,6 +21,9 @@ userSettingsFilePath: "player-settings.yaml"
 # If enabled, LunaticChat will check for updates on startup.
 checkForUpdates: true
 
+# Plugin Configuration Language. This setting applies only to player feedback and does not affect plugin logs or similar outputs.
+language: "en"
+
 # ----------------------------------------------
 # -----------   Features Settings   ------------
 # ----------------------------------------------

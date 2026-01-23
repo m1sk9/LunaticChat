@@ -2,6 +2,7 @@ package dev.m1sk9.lunaticChat.paper.config
 
 import dev.m1sk9.lunaticChat.paper.config.key.FeaturesConfig
 import dev.m1sk9.lunaticChat.paper.config.key.MessageFormatConfig
+import dev.m1sk9.lunaticChat.paper.i18n.Language
 
 data class LunaticChatConfiguration(
     val features: FeaturesConfig,
@@ -9,4 +10,5 @@ data class LunaticChatConfiguration(
     val debug: Boolean = false,
     val userSettingsFilePath: String = "player-settings.yaml",
     val checkForUpdates: Boolean = true,
+    val language: Language = Language.EN,
 )

@@ -14,6 +14,7 @@ import dev.m1sk9.lunaticChat.paper.config.ConfigManager
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
 import dev.m1sk9.lunaticChat.paper.converter.ConversionCache
 import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
+import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.listener.PlayerChatListener
 import dev.m1sk9.lunaticChat.paper.listener.PlayerPresenceListener
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
@@ -30,6 +31,7 @@ class LunaticChat :
     JavaPlugin(),
     Listener {
     lateinit var directMessageHandler: DirectMessageHandler
+    lateinit var languageManager: LanguageManager
 
     private lateinit var commandRegistry: CommandRegistry
     private var updateChecker: UpdateChecker? = null
@@ -46,6 +48,16 @@ class LunaticChat :
             logger.warning("LunaticChat is running in debug mode.")
             logger.info("Debug: $configuration")
         }
+
+        // Initialize language manager (BEFORE commands)
+        languageManager =
+            LanguageManager(
+                plugin = this,
+                logger = logger,
+                selectedLanguage = configuration.language,
+            )
+        languageManager.initialize()
+        logger.info("Language system initialized: ${configuration.language.code}")
 
         val httpClient = HttpClient(CIO)
 
@@ -176,21 +188,21 @@ class LunaticChat :
         commandRegistry = CommandRegistry(this)
 
         commandRegistry.registerAll(
-            TellCommand(this, directMessageHandler),
-            DirectMessageNoticeToggleCommand(this, playerSettingsManager!!),
+            TellCommand(this, directMessageHandler, languageManager),
+            DirectMessageNoticeToggleCommand(this, playerSettingsManager!!, languageManager),
         )
 
         // Register /reply command if quick replies are enabled
         if (configuration.features.quickRepliesEnabled.enabled) {
             commandRegistry.registerAll(
-                ReplyCommand(this, directMessageHandler),
+                ReplyCommand(this, directMessageHandler, languageManager),
             )
         }
 
         // Register /jp command if Japanese conversion is enabled
         if (configuration.features.japaneseConversion.enabled) {
             commandRegistry.registerAll(
-                RomajiConvertToggleCommand(this, playerSettingsManager!!),
+                RomajiConvertToggleCommand(this, playerSettingsManager!!, languageManager),
             )
         }
 
