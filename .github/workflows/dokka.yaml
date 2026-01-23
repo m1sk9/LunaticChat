@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -32,15 +35,17 @@ jobs:
         run: chmod +x gradlew
 
       - name: Generate JavaDoc with Dokka
-        run: ./gradlew :platform-paper:dokkaGenerate --no-daemon
+        run: ./gradlew :dokka:dokkaGenerate --no-daemon
 
       - name: Upload artifact
+        if: github.event_name == 'push'
         id: lunaticchat_dokka
         uses: actions/upload-pages-artifact@v4
         with:
-          path: platform-paper/build/dokka/html
+          path: dokka/build/dokka/html
 
   deploy:
+    if: github.event_name == 'push'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
