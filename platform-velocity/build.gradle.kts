@@ -1,16 +1,10 @@
 plugins {
     kotlin("jvm")
     id("com.gradleup.shadow")
-    kotlin("kapt")
-}
-
-repositories {
-    maven("https://repo.papermc.io/repository/maven-public/") {
-        name = "papermc-repo"
-    }
 }
 
 dependencies {
+    // Engine module (provides serialization, coroutines, ktor)
     api(project(":engine"))
 }
 
