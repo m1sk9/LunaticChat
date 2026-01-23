@@ -110,9 +110,9 @@ LunaticChat のプレイヤー向けメッセージの言語を指定します�
 - Type: `boolean`
 - Default: `true`
 
-LunaticChat の [`/reply`](../reference/commands/reply.md) コマンドによるクイックリプライ機能を有効にします．
+LunaticChat の [`/reply`](../../reference/commands/reply.md) コマンドによるクイックリプライ機能を有効にします．
 
-無効にすると [`/reply`](../reference/commands/reply.md) コマンドは Paper に登録されず，使用できなくなります．
+無効にすると [`/reply`](../../reference/commands/reply.md) コマンドは Paper に登録されず，使用できなくなります．
 
 ### `features.japaneseConversion.enabled`
 
@@ -177,4 +177,4 @@ LunaticChat の [`/reply`](../reference/commands/reply.md) コマンドによる
 - Type: `string`
 - Default: `§7[§e{sender} §7>> §e{recipient}§7] §f{message}`
 
-ダイレクトメッセージ（ [`/tell`](../reference/commands/tell.md) や [`/reply`](../reference/commands/reply.md) コマンド）で送信されるメッセージのフォーマットを指定します．
+ダイレクトメッセージ（ [`/tell`](../../reference/commands/tell.md) や [`/reply`](../../reference/commands/reply.md) コマンド）で送信されるメッセージのフォーマットを指定します．

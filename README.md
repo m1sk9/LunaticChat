@@ -1,5 +1,11 @@
 # LunaticChat
 
+[![CI](https://github.com/m1sk9/LunaticChat/actions/workflows/ci.yaml/badge.svg)](https://github.com/m1sk9/LunaticChat/actions/workflows/ci.yaml)
+[![Release](https://github.com/m1sk9/LunaticChat/actions/workflows/release.yaml/badge.svg)](https://github.com/m1sk9/LunaticChat/actions/workflows/release.yaml)
+[![Deploy Dokka](https://github.com/m1sk9/LunaticChat/actions/workflows/dokka.yaml/badge.svg)](https://github.com/m1sk9/LunaticChat/actions/workflows/dokka.yaml)
+[![GNU General Public License v3.0](https://img.shields.io/github/license/m1sk9/LunaticChat?color=%239944ee)](https://github.com/m1sk9/LunaticChat/blob/main/LICENSE)
+![Modrinth Downloads](https://img.shields.io/modrinth/dt/MBeAdO4L)
+
 Next-generation channel chat plugin for Paper/Velocity.
 
 - [Documentation](https://lc.m1sk9.dev)
@@ -24,17 +30,9 @@ See the [Documentation](https://lc.m1sk9.dev/guide/getting-started).
 - Quick Reply Functionality (`/reply`)
 - Romaji to Japanese Conversion
 - CoreProtect-compatible chat logging
-- Multi-platform support (Paper, Velocity)
+- Multi-platform support (Paper, Velocity) (coming soon)
   - Spigot? No problem, just use Paper!
-- Channel Chat System
-
-## Todo
-
-- [x] 1on1 Direct Messaging System
-- [x] Quick Reply Functionality
-- [x] Romaji to Japanese Conversion
-- [ ] Velocity Support
-- [ ] Channel Chat System
+- Channel Chat System (coming soon)
 
 ## License
 

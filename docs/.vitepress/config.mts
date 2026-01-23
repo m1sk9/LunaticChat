@@ -21,19 +21,62 @@ export default defineConfig({
           link: '/guide/getting-started',
         },
         {
-          text: '設定',
-          link: '/guide/configuration',
+          text: 'LunaticChat について',
+          link: '/guide/about',
         },
         {
-          text: 'パーミッション',
-          link: '/guide/permissions',
+          text: 'サーバー管理者向け',
+          items: [
+            {
+              text: 'キャッシュシステム',
+              link: '/guide/admin/cache',
+            },
+            {
+              text: '設定',
+              link: '/guide/admin/configuration',
+            },
+            {
+              text: 'Velocity 連携',
+              link: '/guide/admin/velocity',
+            },
+          ],
         },
         {
-          text: 'ローマ字変換',
-          link: '/guide/japanese-romanization',
+          text: 'プレイヤー向け',
+          items: [
+            {
+              text: 'チャンネルチャット',
+              link: '/guide/player/channel-chat',
+            },
+            {
+              text: 'ダイレクトメッセージ',
+              link: '/guide/player/direct-message',
+            },
+            {
+              text: 'ローマ字変換',
+              link: '/guide/player/japanese-romanization',
+            },
+          ],
+        },
+        {
+          text: 'パッチノート',
+          items: [
+            {
+              text: 'プラグイン',
+              link: '/guide/patch-notes/plugin',
+            },
+            {
+              text: 'キャッシュファイル',
+              link: '/guide/patch-notes/cache-file',
+            },
+          ],
         },
       ],
       '/reference/': [
+        {
+          text: 'パーミッション',
+          link: '/reference/permissions',
+        },
         {
           text: 'コマンド',
           items: [
@@ -52,6 +95,19 @@ export default defineConfig({
             {
               text: '/notice',
               link: '/reference/commands/notice',
+            },
+            {
+              text: '/lc',
+              items: [
+                {
+                  text: '/lc settings',
+                  link: '/reference/commands/lc/settings',
+                },
+                {
+                  text: '/lc status',
+                  link: '/reference/commands/lc/status',
+                },
+              ],
             },
           ],
         },

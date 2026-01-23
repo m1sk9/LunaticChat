@@ -1,4 +1,4 @@
-# /tell <Badge type="tip" text="v0.1.0" /> <Badge type="tip" text="Paper / Velocity" />
+# /tell <Badge type="tip" text="v0.1.0" /> <Badge type="tip" text="Paper" />
 
 ### `/tell <プレイヤーID> <メッセージ>`
 
