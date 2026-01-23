@@ -112,7 +112,7 @@ jobs:
           version: ${{ needs.validate.outputs.version }}
           channel: beta
           changelog: |
-            Please refer to [changelog](https://github.com/m1sk9/LunaticChat/blob/main/CHANGELOG.md#v${{ replace(needs.validate.outputs.version, '.', '') }}) for update details.
+            Please refer to [changelog](https://github.com/m1sk9/LunaticChat/blob/main/CHANGELOG.md) for update details.
           loaders: paper
           game-versions: "1.21.x"
           files: ${{ needs.validate.outputs.jar_name }}
