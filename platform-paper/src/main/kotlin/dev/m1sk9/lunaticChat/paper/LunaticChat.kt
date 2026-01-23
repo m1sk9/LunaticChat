@@ -1,6 +1,5 @@
 package dev.m1sk9.lunaticChat.paper
 
-import dev.m1sk9.lunaticChat.engine.converter.GoogleIMEClient
 import dev.m1sk9.lunaticChat.paper.command.core.CommandRegistry
 import dev.m1sk9.lunaticChat.paper.command.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.command.impl.ReplyCommand
@@ -9,206 +8,114 @@ import dev.m1sk9.lunaticChat.paper.command.impl.lc.LunaticChatCommand
 import dev.m1sk9.lunaticChat.paper.command.setting.SettingHandlerRegistry
 import dev.m1sk9.lunaticChat.paper.command.setting.handler.DirectMessageNoticeSettingHandler
 import dev.m1sk9.lunaticChat.paper.command.setting.handler.JapaneseConversionSettingHandler
-import dev.m1sk9.lunaticChat.paper.common.SpyPermissionManager
 import dev.m1sk9.lunaticChat.paper.common.UpdateCheckResult
 import dev.m1sk9.lunaticChat.paper.common.UpdateChecker
 import dev.m1sk9.lunaticChat.paper.config.ConfigManager
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
-import dev.m1sk9.lunaticChat.paper.converter.ConversionCache
-import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
-import dev.m1sk9.lunaticChat.paper.listener.PlayerChatListener
-import dev.m1sk9.lunaticChat.paper.listener.PlayerPresenceListener
-import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
-import dev.m1sk9.lunaticChat.paper.settings.YamlPlayerSettingsStorage
+import dev.m1sk9.lunaticChat.paper.listener.EventListenerRegistry
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import kotlinx.coroutines.runBlocking
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.time.Duration.Companion.milliseconds
 
 class LunaticChat :
     JavaPlugin(),
     Listener {
+    // Public API - accessed by commands (maintain backward compatibility)
     lateinit var directMessageHandler: DirectMessageHandler
     lateinit var languageManager: LanguageManager
 
-    private lateinit var commandRegistry: CommandRegistry
+    // Private services
+    private lateinit var services: ServiceContainer
+    private lateinit var configuration: LunaticChatConfiguration
+    private lateinit var serviceInitializer: ServiceInitializer
     private var updateChecker: UpdateChecker? = null
-    private var romajiConverter: RomanjiConverter? = null
-    private var playerSettingsManager: PlayerSettingsManager? = null
 
     private val updateAvailable = AtomicBoolean(false)
 
     override fun onEnable() {
         saveDefaultConfig()
-        val configuration = ConfigManager.loadConfiguration(config)
+        configuration = ConfigManager.loadConfiguration(config)
 
         if (configuration.debug) {
             logger.warning("LunaticChat is running in debug mode.")
             logger.info("Debug: $configuration")
         }
 
-        // Initialize language manager (BEFORE commands)
-        languageManager =
-            LanguageManager(
-                plugin = this,
-                logger = logger,
-                selectedLanguage = configuration.language,
-            )
-        languageManager.initialize()
-        logger.info("Language system initialized: ${configuration.language.code}")
-
         val httpClient = HttpClient(CIO)
 
-        // Initialize player settings manager (always needed for DM notifications)
-        initializePlayerSettingsManager(configuration)
-
-        // Initialize features
-        if (configuration.features.japaneseConversion.enabled) {
-            initializeJapaneseConversionFeature(configuration, httpClient)
-        }
-
-        // Initialize handlers
-        directMessageHandler =
-            DirectMessageHandler(
-                settingsManager = playerSettingsManager,
-                romanjiConverter = romajiConverter,
+        // Initialize all services
+        serviceInitializer =
+            ServiceInitializer(
+                plugin = this,
+                configuration = configuration,
+                httpClient = httpClient,
+                logger = logger,
             )
+        services = serviceInitializer.initialize()
+
+        // Set public API properties (for command access)
+        directMessageHandler = services.directMessageHandler
+        languageManager = services.languageManager
+
+        // Schedule periodic tasks
+        serviceInitializer.schedulePeriodicTasks()
 
         // Register commands and listeners
-        registerCommands(configuration)
+        registerCommands()
         registerEventListeners()
 
         // Check for updates
         if (configuration.checkForUpdates) {
-            updateChecker =
-                UpdateChecker(
-                    currentVersion = pluginMeta.version,
-                    logger = logger,
-                    httpClient = httpClient,
-                )
-            server.scheduler.runTaskAsynchronously(
-                this,
-                Runnable {
-                    runBlocking {
-                        checkUpdates()
-                    }
-                },
-            )
+            initializeUpdateChecker(httpClient)
         }
 
         logger.info("LunaticChat enabled.")
     }
 
     override fun onDisable() {
-        playerSettingsManager?.saveToDisk()
+        serviceInitializer.shutdown(services)
         logger.info("LunaticChat disabled.")
-    }
-
-    /**
-     * Initializes the player settings manager.
-     * This is always needed for features like DM notifications.
-     */
-    private fun initializePlayerSettingsManager(configuration: LunaticChatConfiguration) {
-        val settingsFile = dataFolder.resolve(configuration.userSettingsFilePath).toPath()
-        val storage =
-            YamlPlayerSettingsStorage(
-                settingsFile = settingsFile,
-                plugin = this,
-                logger = logger,
-            )
-
-        playerSettingsManager =
-            PlayerSettingsManager(
-                storage = storage,
-                logger = logger,
-            )
-        playerSettingsManager!!.initialize()
-    }
-
-    /**
-     * Initializes the Japanese conversion feature including:
-     * - Conversion cache
-     * - Google IME API client
-     * - Romanji converter
-     * - Periodic cache saving task
-     */
-    private fun initializeJapaneseConversionFeature(
-        configuration: LunaticChatConfiguration,
-        httpClient: HttpClient,
-    ) {
-        // Initialize conversion cache
-        val cache =
-            ConversionCache(
-                cacheFile = dataFolder.resolve(configuration.features.japaneseConversion.cacheFilePath).toPath(),
-                maxEntries = configuration.features.japaneseConversion.cacheMaxEntries,
-                plugin = this,
-                logger = logger,
-            )
-        cache.loadFromDisk()
-
-        // Initialize Google IME API client
-        val apiClient =
-            GoogleIMEClient(
-                timeout = configuration.features.japaneseConversion.apiTimeout.milliseconds,
-                httpClient = httpClient,
-            )
-
-        // Initialize Romanji converter
-        romajiConverter =
-            RomanjiConverter(
-                cache = cache,
-                apiClient = apiClient,
-                logger = logger,
-                debugMode = configuration.debug,
-            )
-
-        // Schedule periodic cache saving
-        val saveInterval = configuration.features.japaneseConversion.cacheSaveIntervalSeconds * 20L
-        server.scheduler.runTaskTimerAsynchronously(
-            this,
-            Runnable {
-                cache.saveToDisk()
-            },
-            saveInterval,
-            saveInterval,
-        )
-
-        // Register event listener for Japanese conversion
-        server.pluginManager.registerEvents(PlayerChatListener(romajiConverter!!, playerSettingsManager!!), this)
-
-        logger.info("Japanese conversion feature enabled.")
     }
 
     /**
      * Registers all commands based on enabled features.
      */
-    private fun registerCommands(configuration: LunaticChatConfiguration) {
-        commandRegistry = CommandRegistry(this)
-
+    private fun registerCommands() {
+        val commandRegistry = CommandRegistry(this)
         val settingHandlerRegistry = SettingHandlerRegistry()
+
+        // Always register DM notification setting
         settingHandlerRegistry.register(
-            DirectMessageNoticeSettingHandler(playerSettingsManager!!, languageManager),
+            DirectMessageNoticeSettingHandler(
+                services.playerSettingsManager,
+                services.languageManager,
+            ),
         )
 
-        commandRegistry.registerAll(
-            TellCommand(this, directMessageHandler, languageManager),
-            LunaticChatCommand(this, settingHandlerRegistry, languageManager),
-        )
-
-        if (configuration.features.japaneseConversion.enabled) {
+        // Conditionally register Japanese conversion setting
+        if (services.romajiConverter != null) {
             settingHandlerRegistry.register(
-                JapaneseConversionSettingHandler(playerSettingsManager!!, languageManager),
+                JapaneseConversionSettingHandler(
+                    services.playerSettingsManager,
+                    services.languageManager,
+                ),
             )
         }
 
-        // Register /reply command if quick replies are enabled
+        // Register core commands
+        commandRegistry.registerAll(
+            TellCommand(this, services.directMessageHandler, services.languageManager),
+            LunaticChatCommand(this, settingHandlerRegistry, services.languageManager),
+        )
+
+        // Conditionally register /reply command if quick replies are enabled
         if (configuration.features.quickRepliesEnabled.enabled) {
             commandRegistry.registerAll(
-                ReplyCommand(this, directMessageHandler, languageManager),
+                ReplyCommand(this, services.directMessageHandler, services.languageManager),
             )
         }
 
@@ -219,8 +126,27 @@ class LunaticChat :
      * Registers all event listeners.
      */
     private fun registerEventListeners() {
-        server.pluginManager.registerEvents(SpyPermissionManager, this)
-        server.pluginManager.registerEvents(PlayerPresenceListener(this, languageManager, updateAvailable), this)
+        EventListenerRegistry.registerAll(this, services, updateAvailable)
+    }
+
+    /**
+     * Initializes the update checker.
+     */
+    private fun initializeUpdateChecker(httpClient: HttpClient) {
+        updateChecker =
+            UpdateChecker(
+                currentVersion = pluginMeta.version,
+                logger = logger,
+                httpClient = httpClient,
+            )
+        server.scheduler.runTaskAsynchronously(
+            this,
+            Runnable {
+                runBlocking {
+                    checkUpdates()
+                }
+            },
+        )
     }
 
     private suspend fun checkUpdates() {

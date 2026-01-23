@@ -6,6 +6,10 @@
 
 - Added i18n support for English and Japanese languages.
 - Fixed a Dokka currently references only the platform-paper module.
+- Improve the cache strategy for kana conversion.
+- Save the cache in memory to disk when the server stops.
+- Added `/lc settings` command to manage LunaticChat user settings.
+- Added `/lc status` command to check the status of LunaticChat.
 
 ### v0.4.1
 
