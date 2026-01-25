@@ -12,7 +12,8 @@
 #  Please specify appropriate values to ensure LunaticChat functions correctly.
 #
 #  For detailed configuration options, please refer to the documentation:
-#       https://lc.m1sk9.dev/guide/configuration
+#       Japanese: https://lc.m1sk9.dev/guide/admin/configuration
+#       English:  https://lc.m1sk9.dev/en/guide/admin/configuration
 # ----------------------------------------------
 
 # If enabled, Activate LunaticChat's debug mode, which provides detailed logging for troubleshooting.

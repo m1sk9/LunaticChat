@@ -2,6 +2,10 @@
 
 ## v0
 
+### v0.6.0
+
+- Fixed broken links to documentation referenced in config.yml
+
 ### v0.5.0
 
 - Added i18n support for English and Japanese languages.
