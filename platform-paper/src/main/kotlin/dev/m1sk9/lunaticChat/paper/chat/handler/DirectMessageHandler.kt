@@ -59,10 +59,18 @@ class DirectMessageHandler(
 
     /**
      * Clears message history for a player (called on disconnect).
+     * Removes entries where this player is either the sender or recipient.
      */
     fun clearPlayer(player: Player) {
-        lastMessager.remove(player.uniqueId)
-        lastRecipient.remove(player.uniqueId)
+        val playerId = player.uniqueId
+
+        // Remove entries where this player is the sender
+        lastMessager.remove(playerId)
+        lastRecipient.remove(playerId)
+
+        // Remove entries where this player is the recipient
+        lastMessager.entries.removeIf { it.value == playerId }
+        lastRecipient.entries.removeIf { it.value == playerId }
     }
 
     /**
@@ -72,7 +80,7 @@ class DirectMessageHandler(
      *
      * @return true if message was sent successfully
      */
-    suspend fun sendDirectMessage(
+    fun sendDirectMessage(
         sender: Player,
         recipient: Player,
         message: String,
@@ -82,15 +90,20 @@ class DirectMessageHandler(
         val senderSettings = settingsManager?.getSettings(sender.uniqueId)
         val recipientSettings = settingsManager?.getSettings(recipient.uniqueId)
 
+        // Handle romaji conversion if enabled (requires blocking for HTTP call)
         val displayMessage =
-            senderSettings
-                ?.takeIf { it.japaneseConversionEnabled }
-                ?.let { romanjiConverter }
-                ?.runCatching {
-                    convert(message)
-                        ?.let { "$message §e($it)" }
-                        ?: message
-                }?.getOrNull() ?: message
+            if (senderSettings?.japaneseConversionEnabled == true && romanjiConverter != null) {
+                runCatching {
+                    kotlinx.coroutines.runBlocking {
+                        romanjiConverter
+                            ?.convert(message)
+                            ?.let { "$message §e($it)" }
+                            ?: message
+                    }
+                }.getOrNull() ?: message
+            } else {
+                message
+            }
 
         val format = lunaticChatConfiguration.messageFormat.directMessageFormat
 

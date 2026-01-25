@@ -110,17 +110,20 @@ class ConversionCache(
 
     private fun queueSaveToDisk() {
         if (conversionSaveQueue.compareAndSet(false, true)) {
-            Bukkit.getScheduler().runTaskAsynchronously(
+            Bukkit.getScheduler().runTaskLaterAsynchronously(
                 plugin,
                 Runnable {
-                    Thread.sleep(5000) // 5 seconds delay to batch multiple save requests
-                    conversionSaveQueue.set(true)
+                    conversionSaveQueue.set(false)
                     saveToDisk()
                 },
+                100L, // 5 seconds = 100 ticks
             )
         }
     }
 
+    // FIXME: ConcurrentHashMap keys are unordered, so evicting "oldest" entries
+    // actually evicts random entries. Consider using LinkedHashMap with access-order
+    // or implement proper LRU cache with timestamp tracking.
     private fun evictOldestEntry() {
         val toRemove = conversionMemoryCache.size / 10
         conversionMemoryCache.keys.take(toRemove).forEach {

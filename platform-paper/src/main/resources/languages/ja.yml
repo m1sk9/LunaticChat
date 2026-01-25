@@ -85,6 +85,8 @@ channel:
     noChannels: "どのチャンネルにも参加していません"
     clickToSwitch: "クリックして切り替え"
     error: "チャンネルステータスの取得に失敗しました"
+  notification:
+    login: "チャンネル '{channelName}' に入室中です"
 
 chatmode:
   current: "現在のチャットモード"
@@ -93,6 +95,8 @@ chatmode:
     channel: "チャンネル"
   toggle:
     success: "チャットモードを切り替えました"
+  notification:
+    login: "現在のチャットモード: {mode}"
 
 general:
   playerOnlyCommand: "このコマンドはプレイヤーのみが実行できます"

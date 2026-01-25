@@ -29,7 +29,14 @@ object EventListenerRegistry {
         // Always register these listeners
         pluginManager.registerEvents(SpyPermissionManager, plugin)
         pluginManager.registerEvents(
-            PlayerPresenceListener(plugin, services.languageManager, updateAvailable),
+            PlayerPresenceListener(
+                lunaticChat = plugin,
+                languageManager = services.languageManager,
+                updateCheckerFlag = updateAvailable,
+                playerSettingsManager = services.playerSettingsManager,
+                chatModeManager = services.chatModeManager,
+                channelManager = services.channelManager,
+            ),
             plugin,
         )
 

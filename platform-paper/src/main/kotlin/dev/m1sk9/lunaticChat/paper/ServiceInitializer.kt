@@ -257,6 +257,6 @@ class ServiceInitializer(
         services.playerSettingsManager.saveToDisk()
         conversionCache?.saveToDisk()
         services.channelManager?.saveToDisk()
-        services.chatModeManager?.saveToDisk()
+        services.chatModeManager?.shutdown()
     }
 }

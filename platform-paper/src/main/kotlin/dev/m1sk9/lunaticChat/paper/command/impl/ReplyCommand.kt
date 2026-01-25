@@ -15,7 +15,6 @@ import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
-import kotlinx.coroutines.runBlocking
 
 @Command(
     name = "reply",
@@ -62,9 +61,7 @@ class ReplyCommand(
                     ),
                 )
 
-        runBlocking {
-            dmHandler.sendDirectMessage(sender, target, message)
-        }
+        dmHandler.sendDirectMessage(sender, target, message)
 
         return CommandResult.Success
     }

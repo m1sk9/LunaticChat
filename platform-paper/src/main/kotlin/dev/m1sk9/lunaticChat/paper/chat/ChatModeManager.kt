@@ -91,4 +91,13 @@ class ChatModeManager(
         val data = ChatModeData(modes = chatModes.toMap())
         storage.saveToDisk(data)
     }
+
+    /**
+     * Shuts down the chat mode manager and its storage executor.
+     * Should be called during plugin disable to prevent thread leaks.
+     */
+    fun shutdown() {
+        saveToDisk()
+        storage.shutdown()
+    }
 }

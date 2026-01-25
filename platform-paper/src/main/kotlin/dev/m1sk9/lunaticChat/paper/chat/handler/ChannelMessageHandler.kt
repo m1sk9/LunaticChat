@@ -16,7 +16,7 @@ class ChannelMessageHandler(
 ) {
     private var lunaticChatConfiguration = ConfigManager.getConfiguration()
 
-    suspend fun sendChannelMessage(
+    fun sendChannelMessage(
         player: Player,
         message: String,
     ): Boolean {
@@ -33,7 +33,7 @@ class ChannelMessageHandler(
             .forEach { it.sendMessage(formattedMessage) }
         context.members.forEach { member ->
             Bukkit.getPlayer(member.playerId)?.let { memberPlayer ->
-                if (memberPlayer.isOnline && member.playerId != playerId) {
+                if (memberPlayer.isOnline) {
                     memberPlayer.sendMessage(formattedMessage)
                 }
             }

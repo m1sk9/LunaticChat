@@ -8,6 +8,8 @@ import dev.m1sk9.lunaticChat.paper.config.key.QuickRepliesFeatureConfig
 import dev.m1sk9.lunaticChat.paper.i18n.Language
 import org.bukkit.configuration.file.FileConfiguration
 
+// FIXME: ConfigManager uses mutable static state which makes testing difficult
+// and creates hidden global dependencies. Consider refactoring to dependency injection.
 object ConfigManager {
     private var lunaticChatConfiguration: LunaticChatConfiguration? = null
 

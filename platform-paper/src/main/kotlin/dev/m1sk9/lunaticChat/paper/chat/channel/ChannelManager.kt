@@ -9,6 +9,7 @@ import dev.m1sk9.lunaticChat.engine.exception.ChannelNoOwnerPermissionException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelNotFoundException
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.logging.Logger
 import kotlin.collections.forEach
 
@@ -17,7 +18,7 @@ class ChannelManager(
     private val logger: Logger,
 ) {
     private val channelsCache = ConcurrentHashMap<String, Channel>()
-    private val membersCache = ConcurrentHashMap<String, MutableList<ChannelMember>>()
+    private val membersCache = ConcurrentHashMap<String, CopyOnWriteArrayList<ChannelMember>>()
     private val activeChannels = ConcurrentHashMap<UUID, String>()
 
     /**
@@ -27,7 +28,7 @@ class ChannelManager(
         val data = storage.loadFromDisk()
         channelsCache.putAll(data.channels)
         data.members.forEach { (channelId, members) ->
-            membersCache[channelId] = members.toMutableList()
+            membersCache[channelId] = CopyOnWriteArrayList(members)
         }
         data.activeChannels.forEach { (playerIdStr, channelId) ->
             try {
@@ -60,7 +61,7 @@ class ChannelManager(
                 playerId = channel.ownerId,
                 role = ChannelRole.OWNER,
             )
-        membersCache[channel.id] = mutableListOf(ownerMember)
+        membersCache[channel.id] = CopyOnWriteArrayList(listOf(ownerMember))
 
         // Set the owner's active channel
         setPlayerChannel(channel.ownerId, channel.id)
@@ -169,7 +170,7 @@ class ChannelManager(
 
         val members =
             membersCache.getOrPut(channelId) {
-                mutableListOf()
+                CopyOnWriteArrayList()
             }
         val newMember =
             ChannelMember(

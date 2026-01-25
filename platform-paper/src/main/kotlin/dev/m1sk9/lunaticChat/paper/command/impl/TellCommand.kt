@@ -17,7 +17,6 @@ import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
-import kotlinx.coroutines.runBlocking
 import org.bukkit.Bukkit
 import java.util.concurrent.CompletableFuture
 
@@ -81,9 +80,7 @@ class TellCommand(
             )
         }
 
-        runBlocking {
-            directMessageHandler.sendDirectMessage(sender, recipient, message)
-        }
+        directMessageHandler.sendDirectMessage(sender, recipient, message)
 
         return CommandResult.Success
     }

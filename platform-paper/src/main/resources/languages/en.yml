@@ -85,6 +85,8 @@ channel:
     noChannels: "You are not a member of any channels"
     clickToSwitch: "Click to switch"
     error: "Failed to retrieve channel status"
+  notification:
+    login: "You are in channel '{channelName}'"
 
 chatmode:
   current: "Current chat mode"
@@ -93,6 +95,8 @@ chatmode:
     channel: "CHANNEL"
   toggle:
     success: "Chat mode switched to"
+  notification:
+    login: "Current chat mode: {mode}"
 
 general:
   playerOnlyCommand: "This command can only be executed by players."

@@ -21,47 +21,58 @@ class PlayerChatListener(
     private val plainTextSerializer = PlainTextComponentSerializer.plainText()
 
     @EventHandler(ignoreCancelled = true)
-    fun onChat(event: AsyncChatEvent) =
-        runBlocking {
-            val player = event.player
-            val settings = settingsManager.getSettings(player.uniqueId)
+    fun onChat(event: AsyncChatEvent) {
+        val player = event.player
+        val settings = settingsManager.getSettings(player.uniqueId)
 
-            val originalMessage = plainTextSerializer.serialize(event.message())
-            val displayMessage =
-                settings
-                    .takeIf {
-                        it.japaneseConversionEnabled
-                    }?.runCatching {
-                        romajiConverter
-                            .convert(originalMessage)
-                            ?.let { "$originalMessage §e($it)" }
-                            ?: originalMessage
-                    }?.getOrNull() ?: originalMessage
+        val originalMessage = plainTextSerializer.serialize(event.message())
 
-            val (_, effectiveMode) =
-                if (originalMessage.startsWith('!')) {
-                    val withoutPrefix = originalMessage.removePrefix("!").trim()
-                    if (withoutPrefix.isEmpty()) {
-                        event.isCancelled = true
-                        return@runBlocking
-                    }
-                    val currentMode = chatModeManager.getChatMode(player.uniqueId)
-                    withoutPrefix to currentMode.toggle()
-                } else {
-                    originalMessage to chatModeManager.getChatMode(player.uniqueId)
-                }
-
-            when (effectiveMode) {
-                ChatMode.GLOBAL -> {
-                    event.message(Component.text(displayMessage))
-                }
-                ChatMode.CHANNEL -> {
-                    event.isCancelled = true
-                    channelMessageHandler
-                        .sendChannelMessage(player, originalMessage)
-                }
+        // Handle chat mode switching with '!' prefix
+        val hasPrefix = originalMessage.startsWith('!')
+        val messageWithoutPrefix =
+            if (hasPrefix) {
+                originalMessage.removePrefix("!").trim()
+            } else {
+                originalMessage
             }
 
-            event.message(Component.text(displayMessage))
+        if (hasPrefix && messageWithoutPrefix.isEmpty()) {
+            event.isCancelled = true
+            return
         }
+
+        val effectiveMode =
+            if (hasPrefix) {
+                val currentMode = chatModeManager.getChatMode(player.uniqueId)
+                currentMode.toggle()
+            } else {
+                chatModeManager.getChatMode(player.uniqueId)
+            }
+
+        // Handle romaji conversion if enabled (requires blocking for HTTP call)
+        val displayMessage =
+            if (settings.japaneseConversionEnabled) {
+                runCatching {
+                    runBlocking {
+                        romajiConverter
+                            .convert(messageWithoutPrefix)
+                            ?.let { "$messageWithoutPrefix §e($it)" }
+                            ?: messageWithoutPrefix
+                    }
+                }.getOrNull() ?: messageWithoutPrefix
+            } else {
+                messageWithoutPrefix
+            }
+
+        // Route message based on chat mode
+        when (effectiveMode) {
+            ChatMode.GLOBAL -> {
+                event.message(Component.text(displayMessage))
+            }
+            ChatMode.CHANNEL -> {
+                event.isCancelled = true
+                channelMessageHandler.sendChannelMessage(player, messageWithoutPrefix)
+            }
+        }
+    }
 }
