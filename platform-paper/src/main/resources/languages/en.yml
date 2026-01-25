@@ -86,6 +86,14 @@ channel:
     clickToSwitch: "Click to switch"
     error: "Failed to retrieve channel status"
 
+chatmode:
+  current: "Current chat mode"
+  mode:
+    global: "GLOBAL"
+    channel: "CHANNEL"
+  toggle:
+    success: "Chat mode switched to"
+
 general:
   playerOnlyCommand: "This command can only be executed by players."
   newUpdateAvailable: "The new version of LunaticChat is now available! You can download it from GitHub or Modrinth."

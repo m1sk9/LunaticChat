@@ -1,9 +1,11 @@
 package dev.m1sk9.lunaticChat.paper
 
 import dev.m1sk9.lunaticChat.engine.converter.GoogleIMEClient
-import dev.m1sk9.lunaticChat.paper.channel.ChannelManager
-import dev.m1sk9.lunaticChat.paper.channel.ChannelMembershipManager
-import dev.m1sk9.lunaticChat.paper.channel.ChannelStorage
+import dev.m1sk9.lunaticChat.paper.chat.ChatModeManager
+import dev.m1sk9.lunaticChat.paper.chat.ChatModeStorage
+import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
+import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMembershipManager
+import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelStorage
 import dev.m1sk9.lunaticChat.paper.command.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
 import dev.m1sk9.lunaticChat.paper.converter.ConversionCache
@@ -31,6 +33,7 @@ class ServiceInitializer(
     private var conversionCache: ConversionCache? = null
     private var channelManager: ChannelManager? = null
     private var channelMembershipManager: ChannelMembershipManager? = null
+    private var chatModeManager: ChatModeManager? = null
 
     /**
      * Initializes all services in dependency order.
@@ -66,12 +69,12 @@ class ServiceInitializer(
                 null
             }
 
-        // 4. Initialize channel manager and membership manager
-        val (channelManager, channelMembershipManager) =
+        // 4. Initialize channel manager, membership manager, and chat mode manager
+        val (channelManager, channelMembershipManager, chatModeManager) =
             if (configuration.features.channelChat.enabled) {
                 initializeChannelManager()
             } else {
-                Pair(null, null)
+                Triple(null, null, null)
             }
 
         // 5. Initialize handlers
@@ -88,6 +91,7 @@ class ServiceInitializer(
             romajiConverter = romajiConverter,
             channelManager = channelManager,
             channelMembershipManager = channelMembershipManager,
+            chatModeManager = chatModeManager,
         )
     }
 
@@ -152,9 +156,9 @@ class ServiceInitializer(
     }
 
     /**
-     * Initializes channel manager and membership manager with storage.
+     * Initializes channel manager, membership manager, and chat mode manager with storage.
      */
-    private fun initializeChannelManager(): Pair<ChannelManager, ChannelMembershipManager> {
+    private fun initializeChannelManager(): Triple<ChannelManager, ChannelMembershipManager, ChatModeManager> {
         val channelsFile = plugin.dataFolder.resolve("channels.json").toPath()
         val storage =
             ChannelStorage(
@@ -178,8 +182,23 @@ class ServiceInitializer(
             )
         channelMembershipManager = membershipManager
 
-        logger.info("Channel manager and membership manager initialized successfully.")
-        return Pair(manager, membershipManager)
+        val chatModeFile = plugin.dataFolder.resolve("chatmodes.json").toPath()
+        val chatModeStorage =
+            ChatModeStorage(
+                dataFile = chatModeFile,
+                logger = logger,
+            )
+
+        val chatMode =
+            ChatModeManager(
+                storage = chatModeStorage,
+                logger = logger,
+            )
+        chatMode.initialize()
+        chatModeManager = chatMode
+
+        logger.info("Channel manager, membership manager, and chat mode manager initialized successfully.")
+        return Triple(manager, membershipManager, chatMode)
     }
 
     /**
@@ -206,5 +225,6 @@ class ServiceInitializer(
         services.playerSettingsManager.saveToDisk()
         conversionCache?.saveToDisk()
         services.channelManager?.saveToDisk()
+        services.chatModeManager?.saveToDisk()
     }
 }

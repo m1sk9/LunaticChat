@@ -1,4 +1,4 @@
-package dev.m1sk9.lunaticChat.engine.channel.modal
+package dev.m1sk9.lunaticChat.engine.chat.channel
 
 import dev.m1sk9.lunaticChat.engine.settings.UUIDSerializer
 import kotlinx.serialization.Serializable

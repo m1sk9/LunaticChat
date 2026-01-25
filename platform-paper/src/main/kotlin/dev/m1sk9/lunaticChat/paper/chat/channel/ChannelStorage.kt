@@ -1,6 +1,6 @@
-package dev.m1sk9.lunaticChat.paper.channel
+package dev.m1sk9.lunaticChat.paper.chat.channel
 
-import dev.m1sk9.lunaticChat.engine.channel.modal.ChannelData
+import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelData
 import dev.m1sk9.lunaticChat.engine.exception.ChannelStorageLoadException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelStorageSaveException
 import kotlinx.serialization.json.Json
@@ -33,7 +33,7 @@ class ChannelStorage(
      * Loads channel data from disk.
      *
      * @return The loaded ChannelData.
-     * @throws dev.m1sk9.lunaticChat.engine.exception.ChannelStorageLoadException if there is an error loading the data.
+     * @throws ChannelStorageLoadException if there is an error loading the data.
      */
     fun loadFromDisk(): ChannelData {
         if (!channelsFile.exists()) {
@@ -61,7 +61,7 @@ class ChannelStorage(
      * Saves channel data to disk.
      *
      * @param data The ChannelData to save.
-     * @throws dev.m1sk9.lunaticChat.engine.exception.ChannelStorageSaveException if there is an error saving the data.
+     * @throws ChannelStorageSaveException if there is an error saving the data.
      */
     fun saveToDisk(data: ChannelData) {
         try {

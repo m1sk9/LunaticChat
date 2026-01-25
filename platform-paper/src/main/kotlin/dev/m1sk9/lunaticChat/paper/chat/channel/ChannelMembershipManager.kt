@@ -1,6 +1,6 @@
-package dev.m1sk9.lunaticChat.paper.channel
+package dev.m1sk9.lunaticChat.paper.chat.channel
 
-import dev.m1sk9.lunaticChat.engine.channel.modal.ChannelRole
+import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelRole
 import dev.m1sk9.lunaticChat.engine.exception.ChannelAlreadyActiveException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelMemberAlreadyException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelNotFoundException

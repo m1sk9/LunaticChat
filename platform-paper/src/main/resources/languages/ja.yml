@@ -86,6 +86,14 @@ channel:
     clickToSwitch: "クリックして切り替え"
     error: "チャンネルステータスの取得に失敗しました"
 
+chatmode:
+  current: "現在のチャットモード"
+  mode:
+    global: "グローバル"
+    channel: "チャンネル"
+  toggle:
+    success: "チャットモードを切り替えました"
+
 general:
   playerOnlyCommand: "このコマンドはプレイヤーのみが実行できます"
   newUpdateAvailable: "LunaticChat の新しいバージョンが利用可能です。GitHubまたはModrinthからダウンロードできます"

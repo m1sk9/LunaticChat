@@ -1,9 +1,9 @@
-package dev.m1sk9.lunaticChat.paper.channel
+package dev.m1sk9.lunaticChat.paper.chat.channel
 
-import dev.m1sk9.lunaticChat.engine.channel.modal.Channel
-import dev.m1sk9.lunaticChat.engine.channel.modal.ChannelData
-import dev.m1sk9.lunaticChat.engine.channel.modal.ChannelMember
-import dev.m1sk9.lunaticChat.engine.channel.modal.ChannelRole
+import dev.m1sk9.lunaticChat.engine.chat.channel.Channel
+import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelData
+import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelMember
+import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelRole
 import dev.m1sk9.lunaticChat.engine.exception.ChannelNoOwnerPermissionException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelNotFoundException
 import java.util.UUID

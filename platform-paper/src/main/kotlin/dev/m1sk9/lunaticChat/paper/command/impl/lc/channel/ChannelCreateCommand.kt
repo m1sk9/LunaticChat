@@ -3,11 +3,11 @@ package dev.m1sk9.lunaticChat.paper.command.impl.lc.channel
 import com.mojang.brigadier.arguments.BoolArgumentType
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
-import dev.m1sk9.lunaticChat.engine.channel.modal.Channel
+import dev.m1sk9.lunaticChat.engine.chat.channel.Channel
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
-import dev.m1sk9.lunaticChat.paper.channel.ChannelManager
+import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
