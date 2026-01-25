@@ -51,6 +51,9 @@ features:
       timeout: 3000
       # Specify the number of retry attempts for failed API requests to the Romanization conversion service.
       retryAttempts: 2
+  channelChat:
+    # If enabled, channel-based chat functionality will be activated.
+    enabled: false
 
 # ----------------------------------------------
 # ---------   Message Format Settings   --------
@@ -62,11 +65,14 @@ features:
 # {sender} - The name of the message sender
 # {recipient} - The name of the message recipient
 # {message} - The content of the message
+# {channel} - The name of the chat channel (only for channel chat)
 # ----------------------------------------------
 
 messageFormat:
   # Configure the format for direct messages sent via /tell or /msg
   directMessageFormat: "§7[§e{sender} §7>> §e{recipient}§7] §f{message}"
+  # Configure the format for messages sent in channel chat
+  channelMessageFormat: "§7[§b#{channel}§7] §e{sender}: §f{message}"
 ```
 
 ## General Settings
@@ -165,6 +171,13 @@ Specifies the timeout duration (in milliseconds) for API requests to the romaniz
 
 Specifies the number of retry attempts for failed API requests to the romanization conversion service.
 
+### `features.channelChat.enabled`
+
+- Type: `boolean`
+- Default: `false`
+
+Enables channel-based chat functionality.
+
 ## Message Format Settings
 
 Available placeholders:
@@ -172,6 +185,7 @@ Available placeholders:
 - `{sender}`: Name of the message sender
 - `{recipient}`: Name of the message recipient
 - `{message}`: Content of the message
+- `{channel}`: Name of the chat channel (only for channel chat)
 
 ### `messageFormat.directMessageFormat`
 
@@ -179,3 +193,10 @@ Available placeholders:
 - Default: `§7[§e{sender} §7>> §e{recipient}§7] §f{message}`
 
 Specifies the format for messages sent via direct message ([`/tell`](../../reference/commands/tell.md) or [`/reply`](../../reference/commands/reply.md) commands).
+
+### `messageFormat.channelMessageFormat`
+
+- Type: `string`
+- Default: `§7[§b#{channel}§7] §e{sender}: §f{message}`
+
+Specifies the format for messages sent in channel chat.

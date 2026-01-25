@@ -51,6 +51,9 @@ features:
       timeout: 3000
       # Specify the number of retry attempts for failed API requests to the Romanization conversion service.
       retryAttempts: 2
+  channelChat:
+    # If enabled, channel-based chat functionality will be activated.
+    enabled: false
 
 # ----------------------------------------------
 # ---------   Message Format Settings   --------
@@ -62,11 +65,14 @@ features:
 # {sender} - The name of the message sender
 # {recipient} - The name of the message recipient
 # {message} - The content of the message
+# {channel} - The name of the chat channel (only for channel chat)
 # ----------------------------------------------
 
 messageFormat:
   # Configure the format for direct messages sent via /tell or /msg
   directMessageFormat: "§7[§e{sender} §7>> §e{recipient}§7] §f{message}"
+  # Configure the format for messages sent in channel chat
+  channelMessageFormat: "§7[§b#{channel}§7] §e{sender}: §f{message}"
 ```
 
 ## General Settings
@@ -165,6 +171,13 @@ LunaticChat の [`/reply`](../../reference/commands/reply.md) コマンドによ
 
 ローマ字変換 API へのリクエストが失敗した場合の再試行回数を指定します．
 
+### `features.channelChat.enabled`
+
+- Type: `boolean`
+- Default: `false`
+
+チャンネルチャット機能を有効にします．
+
 ## Message Format Settings
 
 使用できるプレースホルダー:
@@ -172,6 +185,7 @@ LunaticChat の [`/reply`](../../reference/commands/reply.md) コマンドによ
 - `{sender}`: メッセージ送信者の名前
 - `{recipient}`: メッセージ受信者の名前
 - `{message}`: メッセージの内容
+- `{channel}`: チャットチャンネルの名前 (チャンネルチャットの場合のみ)
 
 ### `messageFormat.directMessageFormat`
 
@@ -179,3 +193,10 @@ LunaticChat の [`/reply`](../../reference/commands/reply.md) コマンドによ
 - Default: `§7[§e{sender} §7>> §e{recipient}§7] §f{message}`
 
 ダイレクトメッセージ（ [`/tell`](../../reference/commands/tell.md) や [`/reply`](../../reference/commands/reply.md) コマンド）で送信されるメッセージのフォーマットを指定します．
+
+### `messageFormat.channelMessageFormat`
+
+- Type: `string`
+- Default: `§7[§b#{channel}§7] §e{sender}: §f{message}`
+
+チャンネルチャットで送信されるメッセージのフォーマットを指定します．

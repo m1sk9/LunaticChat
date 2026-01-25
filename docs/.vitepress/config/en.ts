@@ -37,7 +37,13 @@ export const en: DefaultTheme.Config = {
         items: [
           {
             text: 'Channel Chat',
-            link: '/en/guide/player/channel-chat',
+            link: '/en/guide/player/channel-chat/about',
+            items: [
+              {
+                text: 'Chat Mode',
+                link: '/en/guide/player/channel-chat/chatmode',
+              }
+            ]
           },
           {
             text: 'Direct Messages',
@@ -97,6 +103,14 @@ export const en: DefaultTheme.Config = {
               {
                 text: '/lc status',
                 link: '/en/reference/commands/lc/status',
+              },
+              {
+                text: '/lc channel',
+                link: '/en/reference/commands/lc/channel',
+              },
+              {
+                text: '/lc chatmode',
+                link: '/en/reference/commands/lc/chatmode',
               },
             ],
           },

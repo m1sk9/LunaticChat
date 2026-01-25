@@ -37,7 +37,13 @@ export const ja: DefaultTheme.Config = {
         items: [
           {
             text: 'チャンネルチャット',
-            link: '/guide/player/channel-chat',
+              link: "/guide/player/channel-chat/about",
+            items: [
+                {
+                    text: 'チャットモード',
+                    link: '/guide/player/channel-chat/chatmode',
+                }
+            ]
           },
           {
             text: 'ダイレクトメッセージ',
