@@ -43,6 +43,9 @@ jobs:
       - name: Build with shadowJar
         run: ./gradlew :platform-paper:shadowJar --parallel --no-daemon
 
+      - name: Generate Dokka
+        run: ./gradlew :dokka:dokkaGenerate --no-daemon
+
       - name: Upload build artifact
         uses: actions/upload-artifact@v6
         if: success()
