@@ -5,6 +5,7 @@ import dev.m1sk9.lunaticChat.paper.common.SpyPermissionManager
 import dev.m1sk9.lunaticChat.paper.common.playChannelReceiveNotification
 import dev.m1sk9.lunaticChat.paper.common.playMessageSendNotification
 import dev.m1sk9.lunaticChat.paper.config.ConfigManager
+import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
 import io.ktor.util.logging.Logger
 import net.kyori.adventure.text.Component
@@ -14,6 +15,7 @@ import org.bukkit.entity.Player
 class ChannelMessageHandler(
     private val settingsManager: PlayerSettingsManager?,
     private val channelManager: ChannelManager,
+    private val romanjiConverter: RomanjiConverter?,
     private val logger: Logger,
 ) {
     private var lunaticChatConfiguration = ConfigManager.getConfiguration()
@@ -26,21 +28,37 @@ class ChannelMessageHandler(
         val context =
             channelManager.getPlayerChannelContext(playerId)
                 ?: return false
-        val formattedMessage = formatChannelMessage(player.name, context.channel.name, message)
+
+        val senderSettings = settingsManager?.getSettings(playerId)
+
+        // Handle romaji conversion if enabled (requires blocking for HTTP call)
+        val displayMessage =
+            if (senderSettings?.japaneseConversionEnabled == true && romanjiConverter != null) {
+                runCatching {
+                    kotlinx.coroutines.runBlocking {
+                        romanjiConverter
+                            ?.convert(message)
+                            ?.let { "$message §e($it)" }
+                            ?: message
+                    }
+                }.getOrNull() ?: message
+            } else {
+                message
+            }
+
+        val formattedMessage = formatChannelMessage(player.name, context.channel.name, displayMessage)
+        val spyMessage = formatChannelMessage(player.name, context.channel.name, message)
 
         // Play notification sound to sender if enabled
-        settingsManager?.let { manager ->
-            val senderSettings = manager.getSettings(playerId)
-            if (senderSettings.channelMessageNotificationEnabled) {
-                player.playMessageSendNotification()
-            }
+        if (senderSettings?.channelMessageNotificationEnabled == true) {
+            player.playMessageSendNotification()
         }
 
         SpyPermissionManager
             .getDirectMessageSpyPlayers()
             .values
             .filter { it.isOnline && it.uniqueId != playerId }
-            .forEach { it.sendMessage(formattedMessage) }
+            .forEach { it.sendMessage(spyMessage) }
         context.members.forEach { member ->
             Bukkit.getPlayer(member.playerId)?.let { memberPlayer ->
                 if (memberPlayer.isOnline) {

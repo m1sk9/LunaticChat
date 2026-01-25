@@ -84,7 +84,7 @@ class ServiceInitializer(
         // 4. Initialize channel manager, membership manager, chat mode manager, and channel message handler
         val channelComponents =
             if (configuration.features.channelChat.enabled) {
-                initializeChannelManager(playerSettingsManager)
+                initializeChannelManager(playerSettingsManager, romajiConverter)
             } else {
                 null
             }
@@ -175,7 +175,10 @@ class ServiceInitializer(
     /**
      * Initializes channel manager, membership manager, chat mode manager, and channel message handler with storage.
      */
-    private fun initializeChannelManager(settingsManager: PlayerSettingsManager): ChannelComponents {
+    private fun initializeChannelManager(
+        settingsManager: PlayerSettingsManager,
+        romajiConverter: RomanjiConverter?,
+    ): ChannelComponents {
         val channelsFile = plugin.dataFolder.resolve("channels.json").toPath()
         val storage =
             ChannelStorage(
@@ -188,6 +191,7 @@ class ServiceInitializer(
             ChannelManager(
                 storage = storage,
                 logger = logger,
+                config = configuration.features.channelChat,
             )
         manager.initialize()
         channelManager = manager
@@ -196,6 +200,7 @@ class ServiceInitializer(
             ChannelMembershipManager(
                 channelManager = manager,
                 logger = logger,
+                config = configuration.features.channelChat,
             )
         channelMembershipManager = membershipManager
 
@@ -218,6 +223,7 @@ class ServiceInitializer(
             ChannelMessageHandler(
                 settingsManager = settingsManager,
                 channelManager = manager,
+                romanjiConverter = romajiConverter,
                 logger =
                     io.ktor.util.logging
                         .KtorSimpleLogger("ChannelMessageHandler"),

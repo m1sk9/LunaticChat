@@ -5,7 +5,9 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
 import dev.m1sk9.lunaticChat.engine.exception.ChannelAlreadyActiveException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelMemberAlreadyException
+import dev.m1sk9.lunaticChat.engine.exception.ChannelMemberLimitExceededException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelNotFoundException
+import dev.m1sk9.lunaticChat.engine.exception.PlayerChannelLimitExceededException
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
@@ -109,6 +111,26 @@ class ChannelJoinCommand(
                                 languageManager.getMessage(
                                     "channel.join.alreadyMember",
                                     mapOf("channelName" to (channel?.name ?: channelId)),
+                                ),
+                            ),
+                        )
+                    }
+                    is ChannelMemberLimitExceededException -> {
+                        CommandResult.Failure(
+                            MessageFormatter.formatError(
+                                languageManager.getMessage(
+                                    "channel.join.channelMemberLimitExceeded",
+                                    mapOf("limit" to error.limit.toString()),
+                                ),
+                            ),
+                        )
+                    }
+                    is PlayerChannelLimitExceededException -> {
+                        CommandResult.Failure(
+                            MessageFormatter.formatError(
+                                languageManager.getMessage(
+                                    "channel.join.playerChannelLimitExceeded",
+                                    mapOf("limit" to error.limit.toString()),
                                 ),
                             ),
                         )

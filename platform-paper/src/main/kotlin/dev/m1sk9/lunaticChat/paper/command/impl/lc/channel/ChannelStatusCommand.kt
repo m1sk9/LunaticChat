@@ -19,6 +19,7 @@ import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.event.HoverEvent
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
+import org.bukkit.Bukkit
 
 @PlayerOnly
 class ChannelStatusCommand(
@@ -27,6 +28,10 @@ class ChannelStatusCommand(
     private val membershipManager: ChannelMembershipManager,
     private val languageManager: LanguageManager,
 ) : LunaticCommand(plugin) {
+    companion object {
+        private const val MAX_MEMBERS_DISPLAY = 10
+    }
+
     fun buildWithPermissionCheck(): LiteralArgumentBuilder<CommandSourceStack> {
         val builder = build()
         return applyMethodPermission("build", builder)
@@ -85,6 +90,44 @@ class ChannelStatusCommand(
                     .append(Component.text(")", NamedTextColor.GRAY))
 
             sender.sendMessage(activeText)
+
+            // Display members of active channel
+            val activeMembers =
+                channelManager.getChannelMembers(activeChannelId).getOrElse {
+                    emptyList()
+                }
+
+            if (activeMembers.isNotEmpty()) {
+                val memberNames =
+                    activeMembers.mapNotNull { member ->
+                        Bukkit.getOfflinePlayer(member.playerId).name
+                    }
+
+                val membersText =
+                    if (memberNames.size > MAX_MEMBERS_DISPLAY) {
+                        val displayNames = memberNames.take(MAX_MEMBERS_DISPLAY)
+                        val message =
+                            languageManager.getMessage(
+                                "channel.info.membersOmitted",
+                                mapOf("count" to memberNames.size.toString()),
+                            )
+                        Component
+                            .text("    ")
+                            .append(Component.text(languageManager.getMessage("channel.info.members"), NamedTextColor.GRAY))
+                            .append(Component.text(": ", NamedTextColor.GRAY))
+                            .append(Component.text(displayNames.joinToString(", "), NamedTextColor.WHITE))
+                            .append(Component.text(" ... ", NamedTextColor.GRAY))
+                            .append(Component.text("($message)", NamedTextColor.YELLOW))
+                    } else {
+                        Component
+                            .text("    ")
+                            .append(Component.text(languageManager.getMessage("channel.info.members"), NamedTextColor.GRAY))
+                            .append(Component.text(": ", NamedTextColor.GRAY))
+                            .append(Component.text(memberNames.joinToString(", "), NamedTextColor.WHITE))
+                    }
+
+                sender.sendMessage(membersText)
+            }
         } else {
             sender.sendMessage(
                 Component

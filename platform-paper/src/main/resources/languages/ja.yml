@@ -50,11 +50,13 @@ channel:
     leave: "/lc channel leave - アクティブチャンネルから退出します"
     switch: "/lc channel switch <チャンネルID> - 既に参加しているチャンネルに切り替えます"
     status: "/lc channel status - チャンネルのステータスとメンバーシップを表示します"
+    info: "/lc channel info [チャンネルID] - チャンネルの詳細情報を表示します"
     delete: "/lc channel delete <チャンネルID> - チャンネルを削除します"
   create:
     success: "チャンネル '{name}' (ID: {id}) を作成しました"
     alreadyExists: "チャンネルID '{id}' は既に使用されています"
     invalidId: "無効なチャンネルID '{id}' です。3-30文字の英数字、アンダースコア、ハイフンのみ使用できます"
+    limitExceeded: "チャンネルを作成できません: サーバーはチャンネル数の上限 ({limit}件) に達しています"
   list:
     header: "=== 公開チャンネル ({count}件) ==="
     empty: "公開チャンネルはありません"
@@ -71,6 +73,8 @@ channel:
     alreadyMember: "既にチャンネル '{channelName}' のメンバーです"
     notFound: "チャンネル '{channelId}' が見つかりません"
     privateChannel: "プライベートチャンネルには招待が必要です"
+    channelMemberLimitExceeded: "チャンネルに参加できません: チャンネルのメンバー数が上限 ({limit}人) に達しています"
+    playerChannelLimitExceeded: "チャンネルに参加できません: 参加できるチャンネル数の上限 ({limit}件) に達しています"
     error: "チャンネルへの参加に失敗しました"
   leave:
     success: "チャンネル '{channelName}' から退出しました"
@@ -90,6 +94,16 @@ channel:
     noChannels: "どのチャンネルにも参加していません"
     clickToSwitch: "クリックして切り替え"
     error: "チャンネルステータスの取得に失敗しました"
+  info:
+    header: "=== チャンネル情報 ==="
+    name: "名前"
+    id: "ID"
+    owner: "オーナー"
+    members: "メンバー"
+    membersOmitted: "{count}人のメンバー (最初の10人を表示)"
+    notFound: "チャンネル '{channelId}' が見つかりません"
+    noActiveChannel: "アクティブなチャンネルがありません。チャンネルIDを指定してください"
+    error: "チャンネル情報の取得に失敗しました"
   notification:
     login: "チャンネル '{channelName}' に入室中です"
 

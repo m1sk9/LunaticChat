@@ -12,6 +12,7 @@ import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
 import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.lc.channel.ChannelCreateCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.lc.channel.ChannelDeleteCommand
+import dev.m1sk9.lunaticChat.paper.command.impl.lc.channel.ChannelInfoCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.lc.channel.ChannelJoinCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.lc.channel.ChannelLeaveCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.lc.channel.ChannelListCommand
@@ -79,6 +80,12 @@ class ChannelCommand(
                     plugin,
                     channelManager,
                     membershipManager,
+                    languageManager,
+                ).buildWithPermissionCheck(),
+            ).then(
+                ChannelInfoCommand(
+                    plugin,
+                    channelManager,
                     languageManager,
                 ).buildWithPermissionCheck(),
             ).then(
@@ -160,6 +167,15 @@ class ChannelCommand(
                 .append(
                     MessageFormatter.formatSuccess(
                         languageManager.getMessage("channel.help.status"),
+                    ),
+                ),
+        )
+        sender.sendMessage(
+            Component
+                .text("  ")
+                .append(
+                    MessageFormatter.formatSuccess(
+                        languageManager.getMessage("channel.help.info"),
                     ),
                 ),
         )

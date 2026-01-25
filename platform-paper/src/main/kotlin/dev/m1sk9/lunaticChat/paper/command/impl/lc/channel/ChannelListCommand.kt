@@ -1,5 +1,6 @@
 package dev.m1sk9.lunaticChat.paper.command.impl.lc.channel
 
+import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
@@ -17,7 +18,7 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.event.HoverEvent
 import net.kyori.adventure.text.format.NamedTextColor
-import net.kyori.adventure.text.format.TextDecoration
+import kotlin.math.ceil
 
 @PlayerOnly
 class ChannelListCommand(
@@ -25,6 +26,10 @@ class ChannelListCommand(
     private val channelManager: ChannelManager,
     private val languageManager: LanguageManager,
 ) : LunaticCommand(plugin) {
+    companion object {
+        private const val CHANNELS_PER_PAGE = 10
+    }
+
     fun buildWithPermissionCheck(): LiteralArgumentBuilder<CommandSourceStack> {
         val builder = build()
         return applyMethodPermission("build", builder)
@@ -32,15 +37,31 @@ class ChannelListCommand(
 
     @Permission(LunaticChatPermissionNode.ChannelList::class)
     fun build(): LiteralArgumentBuilder<CommandSourceStack> =
-        Commands.literal("list").executes { ctx ->
-            val context = wrapContext(ctx)
-            checkPlayerOnly(context)?.let { return@executes handleResult(context, it) }
+        Commands
+            .literal("list")
+            .executes { ctx ->
+                val context = wrapContext(ctx)
+                checkPlayerOnly(context)?.let { return@executes handleResult(context, it) }
 
-            val result = execute(context)
-            handleResult(context, result)
-        }
+                val result = execute(context, 1)
+                handleResult(context, result)
+            }.then(
+                Commands
+                    .argument("page", IntegerArgumentType.integer(1))
+                    .executes { ctx ->
+                        val context = wrapContext(ctx)
+                        checkPlayerOnly(context)?.let { return@executes handleResult(context, it) }
 
-    private fun execute(ctx: CommandContext): CommandResult {
+                        val page = IntegerArgumentType.getInteger(ctx, "page")
+                        val result = execute(context, page)
+                        handleResult(context, result)
+                    },
+            )
+
+    private fun execute(
+        ctx: CommandContext,
+        page: Int,
+    ): CommandResult {
         val sender = ctx.requirePlayer()
 
         val result = channelManager.getPublicChannels()
@@ -53,6 +74,12 @@ class ChannelListCommand(
                         ),
                     )
                 } else {
+                    val totalPages = ceil(channels.size.toDouble() / CHANNELS_PER_PAGE).toInt()
+                    val currentPage = page.coerceIn(1, totalPages)
+                    val startIndex = (currentPage - 1) * CHANNELS_PER_PAGE
+                    val endIndex = (startIndex + CHANNELS_PER_PAGE).coerceAtMost(channels.size)
+                    val pageChannels = channels.subList(startIndex, endIndex)
+
                     sender.sendMessage(
                         MessageFormatter.format(
                             languageManager.getMessage(
@@ -62,7 +89,7 @@ class ChannelListCommand(
                         ),
                     )
 
-                    channels.forEach { channel ->
+                    pageChannels.forEach { channel ->
                         val memberCountResult = channelManager.getChannelMembers(channel.id)
                         val memberCount =
                             memberCountResult.getOrNull()?.size
@@ -97,8 +124,7 @@ class ChannelListCommand(
                                 .text("  • ", NamedTextColor.GRAY)
                                 .append(
                                     Component
-                                        .text(channel.name, NamedTextColor.AQUA)
-                                        .decorate(TextDecoration.BOLD),
+                                        .text(channel.name, NamedTextColor.AQUA),
                                 ).append(Component.text(" (", NamedTextColor.GRAY))
                                 .append(Component.text(channel.id, NamedTextColor.YELLOW))
                                 .append(Component.text(")", NamedTextColor.GRAY))
@@ -106,6 +132,55 @@ class ChannelListCommand(
                                 .clickEvent(ClickEvent.runCommand("/lc channel join ${channel.id}"))
 
                         sender.sendMessage(channelInfo)
+                    }
+
+                    // Display pagination footer
+                    if (totalPages > 1) {
+                        val paginationComponent =
+                            Component
+                                .text()
+                                .append(Component.text("Page ", NamedTextColor.GRAY))
+                                .append(Component.text("$currentPage", NamedTextColor.YELLOW))
+                                .append(Component.text("/", NamedTextColor.GRAY))
+                                .append(Component.text("$totalPages", NamedTextColor.YELLOW))
+
+                        if (currentPage > 1) {
+                            paginationComponent
+                                .append(Component.text("  ", NamedTextColor.GRAY))
+                                .append(
+                                    Component
+                                        .text("[◀]", NamedTextColor.GREEN)
+                                        .clickEvent(ClickEvent.runCommand("/lc channel list ${currentPage - 1}"))
+                                        .hoverEvent(
+                                            HoverEvent.showText(
+                                                Component.text(
+                                                    "Go to page ${currentPage - 1}",
+                                                    NamedTextColor.WHITE,
+                                                ),
+                                            ),
+                                        ),
+                                )
+                        }
+
+                        if (currentPage < totalPages) {
+                            paginationComponent
+                                .append(Component.text("  ", NamedTextColor.GRAY))
+                                .append(
+                                    Component
+                                        .text("[▶]", NamedTextColor.GREEN)
+                                        .clickEvent(ClickEvent.runCommand("/lc channel list ${currentPage + 1}"))
+                                        .hoverEvent(
+                                            HoverEvent.showText(
+                                                Component.text(
+                                                    "Go to page ${currentPage + 1}",
+                                                    NamedTextColor.WHITE,
+                                                ),
+                                            ),
+                                        ),
+                                )
+                        }
+
+                        sender.sendMessage(paginationComponent.build())
                     }
                 }
                 CommandResult.Success

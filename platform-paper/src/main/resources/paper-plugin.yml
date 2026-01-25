@@ -42,5 +42,7 @@ permissions:
 
   lunaticchat.spy:
     default: op
-  lunaticchat.noticeUpdate:
+  lunaticchat.noticeupdate:
+    default: op
+  lunaticchat.channelbypass:
     default: op

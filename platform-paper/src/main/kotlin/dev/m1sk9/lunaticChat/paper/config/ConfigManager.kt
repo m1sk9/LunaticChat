@@ -50,6 +50,9 @@ object ConfigManager {
                         channelChat =
                             ChannelChatFeatureConfig(
                                 enabled = configFile.getBoolean("features.channelChat.enabled", false),
+                                maxChannelsPerServer = configFile.getInt("features.channelChat.maxChannelsPerServer", 0),
+                                maxMembersPerChannel = configFile.getInt("features.channelChat.maxMembersPerChannel", 0),
+                                maxMembershipPerPlayer = configFile.getInt("features.channelChat.maxMembershipPerPlayer", 0),
                             ),
                     ),
                 messageFormat =

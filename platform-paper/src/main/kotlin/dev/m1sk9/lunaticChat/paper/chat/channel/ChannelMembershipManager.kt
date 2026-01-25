@@ -6,12 +6,15 @@ import dev.m1sk9.lunaticChat.engine.exception.ChannelMemberAlreadyException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelNotFoundException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelNotMemberException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelRuntimeException
+import dev.m1sk9.lunaticChat.engine.exception.PlayerChannelLimitExceededException
+import dev.m1sk9.lunaticChat.paper.config.key.ChannelChatFeatureConfig
 import java.util.UUID
 import java.util.logging.Logger
 
 class ChannelMembershipManager(
     private val channelManager: ChannelManager,
     private val logger: Logger,
+    private val config: ChannelChatFeatureConfig,
 ) {
     /**
      * Checks if a player is a member of a channel.
@@ -83,6 +86,7 @@ class ChannelMembershipManager(
      * @return Result indicating success or failure.
      * @throws ChannelNotFoundException if the channel does not exist.
      * @throws ChannelMemberAlreadyException if the player is already a member of this channel.
+     * @throws PlayerChannelLimitExceededException if the player has reached the maximum channel membership limit.
      * @throws ChannelRuntimeException for other runtime errors.
      */
     fun joinChannel(
@@ -118,6 +122,23 @@ class ChannelMembershipManager(
             return Result.failure(
                 ChannelMemberAlreadyException(playerId, channelId),
             )
+        }
+
+        // Check if player has reached max membership limit (0 means unlimited)
+        if (config.maxMembershipPerPlayer > 0) {
+            val playerChannelCount =
+                getPlayerChannels(playerId)
+                    .getOrElse {
+                        return Result.failure(
+                            ChannelRuntimeException("Failed to get player channels for $playerId", it),
+                        )
+                    }.size
+
+            if (playerChannelCount >= config.maxMembershipPerPlayer) {
+                return Result.failure(
+                    PlayerChannelLimitExceededException(playerId, config.maxMembershipPerPlayer),
+                )
+            }
         }
 
         // Add as member

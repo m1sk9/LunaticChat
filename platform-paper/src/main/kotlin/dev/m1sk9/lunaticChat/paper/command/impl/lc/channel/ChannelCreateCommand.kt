@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import dev.m1sk9.lunaticChat.engine.chat.channel.Channel
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
+import dev.m1sk9.lunaticChat.engine.exception.ChannelLimitExceededException
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
@@ -123,12 +124,23 @@ class ChannelCreateCommand(
                 )
             },
             onFailure = { error ->
+                val messageKey =
+                    when (error) {
+                        is ChannelLimitExceededException ->
+                            "channel.create.limitExceeded"
+                        else ->
+                            "channel.create.alreadyExists"
+                    }
+                val params =
+                    when (error) {
+                        is ChannelLimitExceededException ->
+                            mapOf("limit" to error.limit.toString())
+                        else ->
+                            mapOf("id" to channelId)
+                    }
                 CommandResult.Failure(
                     MessageFormatter.formatError(
-                        languageManager.getMessage(
-                            "channel.create.alreadyExists",
-                            mapOf("id" to channelId),
-                        ),
+                        languageManager.getMessage(messageKey, params),
                     ),
                 )
             },

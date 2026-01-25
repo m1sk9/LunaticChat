@@ -5,8 +5,11 @@ import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelContext
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelData
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelMember
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelRole
+import dev.m1sk9.lunaticChat.engine.exception.ChannelLimitExceededException
+import dev.m1sk9.lunaticChat.engine.exception.ChannelMemberLimitExceededException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelNoOwnerPermissionException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelNotFoundException
+import dev.m1sk9.lunaticChat.paper.config.key.ChannelChatFeatureConfig
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
@@ -16,6 +19,7 @@ import kotlin.collections.forEach
 class ChannelManager(
     private val storage: ChannelStorage,
     private val logger: Logger,
+    private val config: ChannelChatFeatureConfig,
 ) {
     private val channelsCache = ConcurrentHashMap<String, Channel>()
     private val membersCache = ConcurrentHashMap<String, CopyOnWriteArrayList<ChannelMember>>()
@@ -47,10 +51,16 @@ class ChannelManager(
      * @param channel The channel to create.
      * @return Result containing the created channel or an error if the channel already exists.
      * @throws ChannelNotFoundException if a channel with the same ID already exists.
+     * @throws ChannelLimitExceededException if the server has reached the maximum channel limit.
      */
     fun createChannel(channel: Channel): Result<Channel> {
         if (channelsCache.containsKey(channel.id)) {
             return Result.failure(ChannelNotFoundException(channel.id))
+        }
+
+        // Check if max channels limit is reached (0 means unlimited)
+        if (config.maxChannelsPerServer > 0 && channelsCache.size >= config.maxChannelsPerServer) {
+            return Result.failure(ChannelLimitExceededException(config.maxChannelsPerServer))
         }
 
         channelsCache[channel.id] = channel
@@ -159,6 +169,7 @@ class ChannelManager(
      * @param role The role of the new member.
      * @return Result indicating success or failure of the operation.
      * @throws ChannelNotFoundException if the channel does not exist.
+     * @throws ChannelMemberLimitExceededException if the channel has reached the maximum member limit.
      */
     fun addMember(
         channelId: String,
@@ -172,6 +183,11 @@ class ChannelManager(
             membersCache.getOrPut(channelId) {
                 CopyOnWriteArrayList()
             }
+
+        // Check if max members limit is reached (0 means unlimited)
+        if (config.maxMembersPerChannel > 0 && members.size >= config.maxMembersPerChannel) {
+            return Result.failure(ChannelMemberLimitExceededException(channelId, config.maxMembersPerChannel))
+        }
         val newMember =
             ChannelMember(
                 channelId = channelId,

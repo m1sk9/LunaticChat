@@ -27,6 +27,8 @@ sealed class LunaticChatPermissionNode(
 
     object ChannelStatus : LunaticChatPermissionNode("lunaticchat.command.lc.channel.status")
 
+    object ChannelInfo : LunaticChatPermissionNode("lunaticchat.command.lc.channel.info")
+
     object ChannelDelete : LunaticChatPermissionNode("lunaticchat.command.lc.channel.delete")
 
     object ChatMode : LunaticChatPermissionNode("lunaticchat.command.lc.chatmode")
@@ -35,5 +37,7 @@ sealed class LunaticChatPermissionNode(
 
     object Spy : LunaticChatPermissionNode("lunaticchat.spy")
 
-    object NoticeUpdate : LunaticChatPermissionNode("lunaticchat.noticeUpdate")
+    object NoticeUpdate : LunaticChatPermissionNode("lunaticchat.noticeupdate")
+
+    object ChannelBypass: LunaticChatPermissionNode("lunaticchat.channelbypass")
 }
