@@ -1,5 +1,7 @@
 package dev.m1sk9.lunaticChat.paper
 
+import dev.m1sk9.lunaticChat.paper.channel.ChannelManager
+import dev.m1sk9.lunaticChat.paper.channel.ChannelMembershipManager
 import dev.m1sk9.lunaticChat.paper.command.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
@@ -15,10 +17,14 @@ import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
  * @property playerSettingsManager Always available (required for DM notifications)
  * @property directMessageHandler Always available (core feature)
  * @property romajiConverter Optional (only when Japanese conversion feature is enabled)
+ * @property channelManager Optional (only when channel chat feature is enabled)
+ * @property channelMembershipManager Optional (only when channel chat feature is enabled)
  */
 data class ServiceContainer(
     val languageManager: LanguageManager,
     val playerSettingsManager: PlayerSettingsManager,
     val directMessageHandler: DirectMessageHandler,
     val romajiConverter: RomanjiConverter? = null,
+    val channelManager: ChannelManager? = null,
+    val channelMembershipManager: ChannelMembershipManager? = null,
 )

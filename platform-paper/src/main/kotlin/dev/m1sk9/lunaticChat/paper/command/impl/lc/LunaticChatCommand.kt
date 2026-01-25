@@ -31,19 +31,37 @@ class LunaticChatCommand(
     override val description: String
         get() = languageManager.getMessage("commandDescription.lc")
 
-    override fun buildCommand(): LiteralArgumentBuilder<CommandSourceStack> =
-        Commands
-            .literal(name)
-            .then(
-                SettingsCommand(
-                    plugin,
-                    settingHandlerRegistry,
-                    languageManager,
-                ).buildWithPermissionCheck(),
-            ).then(
-                StatusCommand(
-                    plugin,
-                    languageManager,
-                ).buildWithPermissionCheck(),
-            )
+    override fun buildCommand(): LiteralArgumentBuilder<CommandSourceStack> {
+        val command =
+            Commands
+                .literal(name)
+                .then(
+                    SettingsCommand(
+                        plugin,
+                        settingHandlerRegistry,
+                        languageManager,
+                    ).buildWithPermissionCheck(),
+                ).then(
+                    StatusCommand(
+                        plugin,
+                        languageManager,
+                    ).buildWithPermissionCheck(),
+                )
+
+        // Add channel command if channel manager is available
+        plugin.channelManager?.let { manager ->
+            plugin.channelMembershipManager?.let { membershipManager ->
+                command.then(
+                    ChannelCommand(
+                        plugin,
+                        manager,
+                        membershipManager,
+                        languageManager,
+                    ).buildWithPermissionCheck(),
+                )
+            }
+        }
+
+        return command
+    }
 }

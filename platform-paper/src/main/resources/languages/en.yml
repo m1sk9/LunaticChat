@@ -36,6 +36,56 @@ status:
 settings:
   availableValues: "Available settings value: {values}"
 
+channel:
+  help:
+    header: "=== Channel Commands ==="
+    create: "/lc channel create <channelId> <name> [description] [isPrivate] - Create a new channel"
+    list: "/lc channel list - List all public channels"
+    join: "/lc channel join <channelId> - Join a channel"
+    leave: "/lc channel leave - Leave the active channel"
+    switch: "/lc channel switch <channelId> - Switch to a channel you're already a member of"
+    status: "/lc channel status - Show your channel status and memberships"
+    delete: "/lc channel delete <channelId> - Delete a channel"
+  create:
+    success: "Created channel '{name}' (ID: {id})"
+    alreadyExists: "Channel ID '{id}' is already in use"
+    invalidId: "Invalid channel ID '{id}'. Must be 3-30 characters using only letters, numbers, underscores, and hyphens"
+  list:
+    header: "=== Public Channels ({count}) ==="
+    empty: "No public channels available"
+    error: "Failed to retrieve channel list"
+    clickToJoin: "Click to join"
+  delete:
+    success: "Deleted channel '{id}'"
+    notFound: "Channel '{id}' not found"
+    noPermission: "You don't have permission to delete this channel. Only the channel owner can delete it"
+    error: "Failed to delete channel"
+  join:
+    success: "Joined channel '{channelName}' (ID: {channelId})"
+    alreadyActive: "Channel '{channelName}' is already your active channel"
+    alreadyMember: "You are already a member of channel '{channelName}'"
+    notFound: "Channel '{channelId}' not found"
+    privateChannel: "This is a private channel and requires an invitation"
+    error: "Failed to join channel"
+  leave:
+    success: "Left channel '{channelName}'"
+    noActiveChannel: "You don't have an active channel"
+    error: "Failed to leave channel"
+  switch:
+    success: "Switched to channel '{channelName}' (ID: {channelId})"
+    alreadyActive: "Channel '{channelName}' is already your active channel"
+    notFound: "Channel '{channelId}' not found"
+    notMember: "You are not a member of channel '{channelId}'"
+    error: "Failed to switch channel"
+  status:
+    header: "=== Your Channel Status ==="
+    activeChannel: "Active Channel"
+    noActiveChannel: "No active channel"
+    channelList: "Your Channels ({count})"
+    noChannels: "You are not a member of any channels"
+    clickToSwitch: "Click to switch"
+    error: "Failed to retrieve channel status"
+
 general:
   playerOnlyCommand: "This command can only be executed by players."
   newUpdateAvailable: "The new version of LunaticChat is now available! You can download it from GitHub or Modrinth."

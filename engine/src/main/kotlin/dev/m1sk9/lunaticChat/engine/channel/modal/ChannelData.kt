@@ -7,4 +7,5 @@ data class ChannelData(
     val version: Int = 1,
     val channels: Map<String, Channel> = emptyMap(),
     val members: Map<String, List<ChannelMember>> = emptyMap(),
+    val activeChannels: Map<String, String> = emptyMap(),
 )

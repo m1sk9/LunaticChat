@@ -1,6 +1,8 @@
 package dev.m1sk9.lunaticChat.paper
 
 import dev.m1sk9.lunaticChat.engine.converter.GoogleIMEClient
+import dev.m1sk9.lunaticChat.paper.channel.ChannelManager
+import dev.m1sk9.lunaticChat.paper.channel.ChannelMembershipManager
 import dev.m1sk9.lunaticChat.paper.channel.ChannelStorage
 import dev.m1sk9.lunaticChat.paper.command.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
@@ -27,6 +29,8 @@ class ServiceInitializer(
     private val logger: Logger,
 ) {
     private var conversionCache: ConversionCache? = null
+    private var channelManager: ChannelManager? = null
+    private var channelMembershipManager: ChannelMembershipManager? = null
 
     /**
      * Initializes all services in dependency order.
@@ -62,10 +66,13 @@ class ServiceInitializer(
                 null
             }
 
-        // 4. Initialize channel storage
-        if (configuration.features.channelChat.enabled) {
-            initializeChannelStorage()
-        }
+        // 4. Initialize channel manager and membership manager
+        val (channelManager, channelMembershipManager) =
+            if (configuration.features.channelChat.enabled) {
+                initializeChannelManager()
+            } else {
+                Pair(null, null)
+            }
 
         // 5. Initialize handlers
         val directMessageHandler =
@@ -79,6 +86,8 @@ class ServiceInitializer(
             playerSettingsManager = playerSettingsManager,
             directMessageHandler = directMessageHandler,
             romajiConverter = romajiConverter,
+            channelManager = channelManager,
+            channelMembershipManager = channelMembershipManager,
         )
     }
 
@@ -143,9 +152,9 @@ class ServiceInitializer(
     }
 
     /**
-     * Initializes channel storage by loading existing data or creating new storage.
+     * Initializes channel manager and membership manager with storage.
      */
-    private fun initializeChannelStorage() {
+    private fun initializeChannelManager(): Pair<ChannelManager, ChannelMembershipManager> {
         val channelsFile = plugin.dataFolder.resolve("channels.json").toPath()
         val storage =
             ChannelStorage(
@@ -154,10 +163,23 @@ class ServiceInitializer(
                 logger = logger,
             )
 
-        val channelData = storage.loadFromDisk()
-        storage.saveToDisk(channelData)
+        val manager =
+            ChannelManager(
+                storage = storage,
+                logger = logger,
+            )
+        manager.initialize()
+        channelManager = manager
 
-        logger.info("Channels storage loaded successfully.")
+        val membershipManager =
+            ChannelMembershipManager(
+                channelManager = manager,
+                logger = logger,
+            )
+        channelMembershipManager = membershipManager
+
+        logger.info("Channel manager and membership manager initialized successfully.")
+        return Pair(manager, membershipManager)
     }
 
     /**
@@ -183,5 +205,6 @@ class ServiceInitializer(
     fun shutdown(services: ServiceContainer) {
         services.playerSettingsManager.saveToDisk()
         conversionCache?.saveToDisk()
+        services.channelManager?.saveToDisk()
     }
 }

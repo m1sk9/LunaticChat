@@ -36,6 +36,56 @@ status:
 settings:
   availableValues: "使用可能な設定値: {values}"
 
+channel:
+  help:
+    header: "=== チャンネルコマンド ==="
+    create: "/lc channel create <チャンネルID> <名前> [説明] [プライベート] - チャンネルを作成します"
+    list: "/lc channel list - 公開チャンネル一覧を表示します"
+    join: "/lc channel join <チャンネルID> - チャンネルに参加します"
+    leave: "/lc channel leave - アクティブチャンネルから退出します"
+    switch: "/lc channel switch <チャンネルID> - 既に参加しているチャンネルに切り替えます"
+    status: "/lc channel status - チャンネルのステータスとメンバーシップを表示します"
+    delete: "/lc channel delete <チャンネルID> - チャンネルを削除します"
+  create:
+    success: "チャンネル '{name}' (ID: {id}) を作成しました"
+    alreadyExists: "チャンネルID '{id}' は既に使用されています"
+    invalidId: "無効なチャンネルID '{id}' です。3-30文字の英数字、アンダースコア、ハイフンのみ使用できます"
+  list:
+    header: "=== 公開チャンネル ({count}件) ==="
+    empty: "公開チャンネルはありません"
+    error: "チャンネル一覧の取得に失敗しました"
+    clickToJoin: "クリックして参加"
+  delete:
+    success: "チャンネル '{id}' を削除しました"
+    notFound: "チャンネル '{id}' が見つかりません"
+    noPermission: "このチャンネルを削除する権限がありません。チャンネルのオーナーのみが削除できます"
+    error: "チャンネルの削除に失敗しました"
+  join:
+    success: "チャンネル '{channelName}' (ID: {channelId}) に参加しました"
+    alreadyActive: "チャンネル '{channelName}' は既にアクティブです"
+    alreadyMember: "既にチャンネル '{channelName}' のメンバーです"
+    notFound: "チャンネル '{channelId}' が見つかりません"
+    privateChannel: "プライベートチャンネルには招待が必要です"
+    error: "チャンネルへの参加に失敗しました"
+  leave:
+    success: "チャンネル '{channelName}' から退出しました"
+    noActiveChannel: "アクティブなチャンネルがありません"
+    error: "チャンネルからの退出に失敗しました"
+  switch:
+    success: "チャンネル '{channelName}' (ID: {channelId}) に切り替えました"
+    alreadyActive: "チャンネル '{channelName}' は既にアクティブです"
+    notFound: "チャンネル '{channelId}' が見つかりません"
+    notMember: "チャンネル '{channelId}' のメンバーではありません"
+    error: "チャンネルの切り替えに失敗しました"
+  status:
+    header: "=== あなたのチャンネルステータス ==="
+    activeChannel: "アクティブチャンネル"
+    noActiveChannel: "アクティブなチャンネルがありません"
+    channelList: "参加中のチャンネル ({count}件)"
+    noChannels: "どのチャンネルにも参加していません"
+    clickToSwitch: "クリックして切り替え"
+    error: "チャンネルステータスの取得に失敗しました"
+
 general:
   playerOnlyCommand: "このコマンドはプレイヤーのみが実行できます"
   newUpdateAvailable: "LunaticChat の新しいバージョンが利用可能です。GitHubまたはModrinthからダウンロードできます"

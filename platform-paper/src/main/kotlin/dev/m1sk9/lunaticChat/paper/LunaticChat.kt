@@ -1,5 +1,7 @@
 package dev.m1sk9.lunaticChat.paper
 
+import dev.m1sk9.lunaticChat.paper.channel.ChannelManager
+import dev.m1sk9.lunaticChat.paper.channel.ChannelMembershipManager
 import dev.m1sk9.lunaticChat.paper.command.core.CommandRegistry
 import dev.m1sk9.lunaticChat.paper.command.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.command.impl.ReplyCommand
@@ -27,6 +29,8 @@ class LunaticChat :
     // Public API - accessed by commands (maintain backward compatibility)
     lateinit var directMessageHandler: DirectMessageHandler
     lateinit var languageManager: LanguageManager
+    var channelManager: ChannelManager? = null
+    var channelMembershipManager: ChannelMembershipManager? = null
 
     // Private services
     private lateinit var services: ServiceContainer
@@ -60,6 +64,8 @@ class LunaticChat :
         // Set public API properties (for command access)
         directMessageHandler = services.directMessageHandler
         languageManager = services.languageManager
+        channelManager = services.channelManager
+        channelMembershipManager = services.channelMembershipManager
 
         // Schedule periodic tasks
         serviceInitializer.schedulePeriodicTasks()

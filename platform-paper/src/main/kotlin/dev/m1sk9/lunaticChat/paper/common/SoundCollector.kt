@@ -46,3 +46,10 @@ fun Player.playDirectMessageNotification() {
 fun Player.playDirectMessageSendNotification() {
     playSound(SoundCollector.LUNATIC_POP_SOUND)
 }
+
+/**
+ * Plays the channel join notification sound to the player.
+ */
+fun Player.playChannelJoinNotification() {
+    playSound(SoundCollector.LUNATIC_SOFT_SOUND)
+}
