@@ -38,7 +38,7 @@ Toggles the use of the [`/reply`](commands/reply.md) command.
 
 - Default: `non OP`
 
-Toggles the use of the [`/lc`](commands/lc/index.md) command.
+Toggles the use of the `/lc` command.
 
 ### `lunaticchat.command.lc.settings`
 

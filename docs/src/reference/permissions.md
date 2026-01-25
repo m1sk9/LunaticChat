@@ -38,7 +38,7 @@ LunaticChat のアップデート通知を受け取ります．
 
 - Default: `non OP`
 
-[`/lc`](commands/lc/index.md) コマンドの使用を切り替えます．
+`/lc` コマンドの使用を切り替えます．
 
 ### `lunaticchat.command.lc.settings`
 

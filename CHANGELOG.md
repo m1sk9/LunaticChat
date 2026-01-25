@@ -4,6 +4,7 @@
 
 ### v0.6.0
 
+- Added experimental feature to Channel Chat support.
 - Fixed broken links to documentation referenced in config.yml
 
 ### v0.5.0

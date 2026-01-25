@@ -104,6 +104,14 @@ export const ja: DefaultTheme.Config = {
                 text: '/lc status',
                 link: '/reference/commands/lc/status',
               },
+                {
+                    text: '/lc channel',
+                    link: '/reference/commands/lc/channel',
+                },
+                {
+                    text: '/lc chatmode',
+                    link: '/reference/commands/lc/chatmode',
+                },
             ],
           },
         ],

@@ -14,5 +14,5 @@ This setting is saved by UUID, so the setting will not be lost even if you chang
 
 | Key       | Description                                                       | Default Value |
 |----------|----------------------------------------------------------|--------|
-| `jp`     | Toggles romanization conversion on or off.                                   | `true` |
+| `japanese`     | Toggles romanization conversion on or off.                                   | `true` |
 | `notice` | Toggles whether to receive notifications when receiving direct messages via `/tell` or `/reply`. | `true` |
