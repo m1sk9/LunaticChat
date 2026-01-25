@@ -9,7 +9,7 @@ export default defineConfig({
   cleanUrls: true,
   srcDir: './src',
   outDir: './dist',
-  head: [['link', { rel: 'icon', href: '/static/favicon.ico' }]],
+  head: [['link', { rel: 'icon', href: '/favicon.ico' }]],
   themeConfig: {
     socialLinks: [
       { icon: 'github', link: 'https://github.com/m1sk9/LunaticChat' },

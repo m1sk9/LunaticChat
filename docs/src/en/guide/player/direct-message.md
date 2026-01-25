@@ -60,6 +60,6 @@ This notification sound depends on the **Players** category volume setting on th
 
 If you cannot hear LunaticChat's notification sound, check your client's volume settings.
 
-![](/static/direct-message/minecraft-player-sound.png)
+![](/direct-message/minecraft-player-sound.png)
 
 :::
