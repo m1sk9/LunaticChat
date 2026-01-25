@@ -113,7 +113,7 @@ class LunaticChat :
         )
 
         // Conditionally register /reply command if quick replies are enabled
-        if (configuration.features.quickRepliesEnabled.enabled) {
+        if (configuration.features.quickReplies.enabled) {
             commandRegistry.registerAll(
                 ReplyCommand(this, services.directMessageHandler, services.languageManager),
             )

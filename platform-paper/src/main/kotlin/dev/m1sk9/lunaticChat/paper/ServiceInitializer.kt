@@ -1,6 +1,7 @@
 package dev.m1sk9.lunaticChat.paper
 
 import dev.m1sk9.lunaticChat.engine.converter.GoogleIMEClient
+import dev.m1sk9.lunaticChat.paper.channel.storage.ChannelStorage
 import dev.m1sk9.lunaticChat.paper.command.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
 import dev.m1sk9.lunaticChat.paper.converter.ConversionCache
@@ -34,7 +35,8 @@ class ServiceInitializer(
      * 1. LanguageManager (required by all features)
      * 2. PlayerSettingsManager (required for DM notifications)
      * 3. Japanese Conversion (optional, config-dependent)
-     * 4. DirectMessageHandler (depends on settings manager and romaji converter)
+     * 4. ChannelStorage
+     * 5. DirectMessageHandler (depends on settings manager and romaji converter)
      *
      * @return ServiceContainer with all initialized services
      */
@@ -60,7 +62,12 @@ class ServiceInitializer(
                 null
             }
 
-        // 4. Initialize handlers
+        // 4. Initialize channel storage
+        if (configuration.features.channelChat.enabled) {
+            initializeChannelStorage()
+        }
+
+        // 5. Initialize handlers
         val directMessageHandler =
             DirectMessageHandler(
                 settingsManager = playerSettingsManager,
@@ -133,6 +140,24 @@ class ServiceInitializer(
 
         logger.info("Japanese conversion feature enabled.")
         return converter
+    }
+
+    /**
+     * Initializes channel storage by loading existing data or creating new storage.
+     */
+    private fun initializeChannelStorage() {
+        val channelsFile = plugin.dataFolder.resolve("channels.json").toPath()
+        val storage =
+            ChannelStorage(
+                channelsFile = channelsFile,
+                plugin = plugin,
+                logger = logger,
+            )
+
+        val channelData = storage.loadFromDisk()
+        storage.saveToDisk(channelData)
+
+        logger.info("Channels storage loaded successfully.")
     }
 
     /**
