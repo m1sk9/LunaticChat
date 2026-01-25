@@ -30,7 +30,7 @@ class DirectMessageNoticeSettingHandler(
         val toggleText = languageManager.getToggleText(enable)
         val message =
             MessageFormatter.formatSuccess(
-                languageManager.getMessage("directMessageNoticeToggle", mapOf("toggle" to toggleText)),
+                languageManager.getMessage("directMessage.noticeToggle", mapOf("toggle" to toggleText)),
             )
 
         player.sendMessage(message)
@@ -44,7 +44,7 @@ class DirectMessageNoticeSettingHandler(
         val toggleText = languageManager.getToggleText(settings.directMessageNotificationEnabled)
         val message =
             MessageFormatter.format(
-                languageManager.getMessage("directMessageNoticeStatus", mapOf("toggle" to toggleText)),
+                languageManager.getMessage("directMessage.noticeStatus", mapOf("toggle" to toggleText)),
             )
 
         player.sendMessage(message)

@@ -58,7 +58,7 @@ class ReplyCommand(
             dmHandler.getReplyTarget(sender)
                 ?: return CommandResult.Failure(
                     MessageFormatter.formatError(
-                        languageManager.getMessage("replyTargetNotFound"),
+                        languageManager.getMessage("directMessage.replyTargetNotFound"),
                     ),
                 )
 

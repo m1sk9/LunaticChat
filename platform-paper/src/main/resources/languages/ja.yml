@@ -18,19 +18,28 @@ commandDescription:
   notice: "ダイレクトメッセージ通知のオン/オフを切り替えます"
   lc: "LunaticChat のメインコマンド"
 
-directMessageNoticeToggle: "ダイレクトメッセージ通知を{toggle}にしました"
-directMessageNoticeStatus: "現在ダイレクトメッセージ通知は{toggle}です"
-playerOnlyCommand: "このコマンドはプレイヤーのみが実行できます"
-replyTargetNotFound: "返信対象のプレイヤーが見つかりません"
-romajiConversionToggle: "かな・ローマ字変換機能を{toggle}にしました"
-romajiConversionStatus: "現在かな・ローマ字変換機能は{toggle}です"
-settingsAvailableValues: "使用可能な設定値: {values}"
-statusHover: "LunaticChat は LunaChatの後継として生まれました。\nオリジナルの作者であるucchyoceanに敬意を込めて。"
-statusRunningVersion: "LunaticChat v{version} が使用されています"
-tellTargetOffline: "プレイヤー '{target}' は現在オフラインです"
-tellYourself: "自分自身にメッセージを送信することはできません"
-newUpdateAvailable: "LunaticChat の新しいバージョンが利用可能です。GitHubまたはModrinthからダウンロードできます"
-noPermission: "このコマンドを実行する権限がありません"
+directMessage:
+  noticeToggle: "ダイレクトメッセージ通知を{toggle}にしました"
+  noticeStatus: "現在ダイレクトメッセージ通知は{toggle}です"
+  targetOffline: "プレイヤー '{target}' は現在オフラインです"
+  yourself: "自分自身にメッセージを送信することはできません"
+  replyTargetNotFound: "返信対象のプレイヤーが見つかりません"
+
+romajiConversion:
+  toggle: "かな・ローマ字変換機能を{toggle}にしました"
+  status: "現在かな・ローマ字変換機能は{toggle}です"
+
+status:
+  hover: "LunaticChat は LunaChatの後継として生まれました。\nオリジナルの作者であるucchyoceanに敬意を込めて。"
+  runningVersion: "LunaticChat v{version} が使用されています"
+
+settings:
+  availableValues: "使用可能な設定値: {values}"
+
+general:
+  playerOnlyCommand: "このコマンドはプレイヤーのみが実行できます"
+  newUpdateAvailable: "LunaticChat の新しいバージョンが利用可能です。GitHubまたはModrinthからダウンロードできます"
+  noPermission: "このコマンドを実行する権限がありません"
 
 toggle:
   on: "有効"

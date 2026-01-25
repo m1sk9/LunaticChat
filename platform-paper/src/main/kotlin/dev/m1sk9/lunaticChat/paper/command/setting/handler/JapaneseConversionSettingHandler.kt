@@ -30,7 +30,7 @@ class JapaneseConversionSettingHandler(
         val toggleText = languageManager.getToggleText(enable)
         val message =
             MessageFormatter.formatSuccess(
-                languageManager.getMessage("romajiConversionToggle", mapOf("toggle" to toggleText)),
+                languageManager.getMessage("romajiConversion.toggle", mapOf("toggle" to toggleText)),
             )
 
         player.sendMessage(message)
@@ -44,7 +44,7 @@ class JapaneseConversionSettingHandler(
         val toggleText = languageManager.getToggleText(settings.japaneseConversionEnabled)
         val message =
             MessageFormatter.format(
-                languageManager.getMessage("romajiConversionStatus", mapOf("toggle" to toggleText)),
+                languageManager.getMessage("romajiConversion.status", mapOf("toggle" to toggleText)),
             )
 
         player.sendMessage(message)

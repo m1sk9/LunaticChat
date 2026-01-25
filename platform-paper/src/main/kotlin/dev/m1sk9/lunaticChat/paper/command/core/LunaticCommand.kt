@@ -98,7 +98,7 @@ abstract class LunaticCommand(
         if (isPlayerOnly && !ctx.isPlayer) {
             return CommandResult.Failure(
                 MessageFormatter.formatError(
-                    plugin.languageManager.getMessage("playerOnlyCommand"),
+                    plugin.languageManager.getMessage("general.playerOnlyCommand"),
                 ),
             )
         }

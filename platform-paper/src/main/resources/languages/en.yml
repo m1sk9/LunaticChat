@@ -18,19 +18,28 @@ commandDescription:
   tell: "Send a direct message to another player"
   lc: "LunaticChat Main Command"
 
-directMessageNoticeStatus: "Direct message notifications are currently {toggle}"
-directMessageNoticeToggle: "Direct message notifications have been set to {toggle}"
-playerOnlyCommand: "This command can only be executed by players."
-replyTargetNotFound: "Reply target player not found."
-romajiConversionToggle: "Romaji-to-kana conversion has been set to {toggle}"
-romajiConversionStatus: "Romaji-to-kana conversion is currently {toggle}"
-settingsAvailableValues: "Available settings value: {values}"
-statusHover: "LunaticChat was born as the successor to LunaChat. With respect to its original creator, uccchyocean."
-statusRunningVersion: "Running LunaticChat v{version}"
-tellTargetOffline: "Player '{target}' is currently offline."
-tellYourself: "You cannot send a message to yourself."
-newUpdateAvailable: "The new version of LunaticChat is now available! You can download it from GitHub or Modrinth."
-noPermission: "You do not have permission to execute this command."
+directMessage:
+  noticeStatus: "Direct message notifications are currently {toggle}"
+  noticeToggle: "Direct message notifications have been set to {toggle}"
+  targetOffline: "Player '{target}' is currently offline."
+  yourself: "You cannot send a message to yourself."
+  replyTargetNotFound: "Reply target player not found."
+
+romajiConversion:
+  toggle: "Romaji-to-kana conversion has been set to {toggle}"
+  status: "Romaji-to-kana conversion is currently {toggle}"
+
+status:
+  hover: "LunaticChat was born as the successor to LunaChat. With respect to its original creator, uccchyocean."
+  runningVersion: "Running LunaticChat v{version}"
+
+settings:
+  availableValues: "Available settings value: {values}"
+
+general:
+  playerOnlyCommand: "This command can only be executed by players."
+  newUpdateAvailable: "The new version of LunaticChat is now available! You can download it from GitHub or Modrinth."
+  noPermission: "You do not have permission to execute this command."
 
 toggle:
   off: "Disabled"

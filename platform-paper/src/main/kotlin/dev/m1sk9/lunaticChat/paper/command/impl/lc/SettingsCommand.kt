@@ -105,7 +105,7 @@ class SettingsCommand(
         val availableKeys = settingHandlerRegistry.getAvailableKeys()
         val helpMessage =
             MessageFormatter.format(
-                languageManager.getMessage("settingsAvailableValues", mapOf("values" to availableKeys.joinToString(", "))),
+                languageManager.getMessage("settings.availableValues", mapOf("values" to availableKeys.joinToString(", "))),
             )
 
         ctx.reply(helpMessage)

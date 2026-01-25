@@ -25,7 +25,7 @@ class PlayerPresenceListener(
         player.sendMessage {
             Component
                 .text(
-                    languageManager.getMessage("newUpdateAvailable"),
+                    languageManager.getMessage("general.newUpdateAvailable"),
                 ).clickEvent(
                     ClickEvent.openUrl("https://github.com/m1sk9/LunaticChat/releases/latest"),
                 )

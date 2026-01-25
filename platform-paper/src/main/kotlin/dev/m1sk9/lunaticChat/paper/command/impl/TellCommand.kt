@@ -69,14 +69,14 @@ class TellCommand(
             Bukkit.getPlayer(targetName)
                 ?: return CommandResult.Failure(
                     MessageFormatter.formatError(
-                        languageManager.getMessage("tellTargetOffline", mapOf("target" to targetName)),
+                        languageManager.getMessage("directMessage.targetOffline", mapOf("target" to targetName)),
                     ),
                 )
 
         if (recipient.uniqueId == sender.uniqueId) {
             return CommandResult.Failure(
                 MessageFormatter.formatError(
-                    languageManager.getMessage("tellYourself"),
+                    languageManager.getMessage("directMessage.yourself"),
                 ),
             )
         }
