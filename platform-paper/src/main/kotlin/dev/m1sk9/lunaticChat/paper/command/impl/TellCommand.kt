@@ -7,17 +7,16 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
+import dev.m1sk9.lunaticChat.paper.chat.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.command.annotation.Command
 import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
 import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
-import dev.m1sk9.lunaticChat.paper.command.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
-import kotlinx.coroutines.runBlocking
 import org.bukkit.Bukkit
 import java.util.concurrent.CompletableFuture
 
@@ -69,21 +68,19 @@ class TellCommand(
             Bukkit.getPlayer(targetName)
                 ?: return CommandResult.Failure(
                     MessageFormatter.formatError(
-                        languageManager.getMessage("tellTargetOffline", mapOf("target" to targetName)),
+                        languageManager.getMessage("directMessage.targetOffline", mapOf("target" to targetName)),
                     ),
                 )
 
         if (recipient.uniqueId == sender.uniqueId) {
             return CommandResult.Failure(
                 MessageFormatter.formatError(
-                    languageManager.getMessage("tellYourself"),
+                    languageManager.getMessage("directMessage.yourself"),
                 ),
             )
         }
 
-        runBlocking {
-            directMessageHandler.sendDirectMessage(sender, recipient, message)
-        }
+        directMessageHandler.sendDirectMessage(sender, recipient, message)
 
         return CommandResult.Success
     }

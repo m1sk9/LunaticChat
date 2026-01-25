@@ -48,8 +48,8 @@ class StatusCommand(
             sendMessage(
                 MessageFormatter
                     .format(
-                        languageManager.getMessage("statusRunningVersion", mapOf("version" to meta.version)),
-                    ).hoverEvent(HoverEvent.showText(Component.text(languageManager.getMessage("statusHover")))),
+                        languageManager.getMessage("status.runningVersion", mapOf("version" to meta.version)),
+                    ).hoverEvent(HoverEvent.showText(Component.text(languageManager.getMessage("status.hover")))),
             )
 
             urls.forEach { (label, url) ->

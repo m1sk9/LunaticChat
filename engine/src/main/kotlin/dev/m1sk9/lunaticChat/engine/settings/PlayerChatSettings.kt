@@ -9,6 +9,7 @@ import java.util.UUID
  * @property uuid The unique identifier of the player
  * @property japaneseConversionEnabled Whether romaji-to-Japanese conversion is enabled for this player
  * @property directMessageNotificationEnabled Whether direct message notifications are enabled for this player
+ * @property channelMessageNotificationEnabled Whether channel message notifications are enabled for this player
  */
 @Serializable
 data class PlayerChatSettings(
@@ -16,4 +17,5 @@ data class PlayerChatSettings(
     val uuid: UUID,
     val japaneseConversionEnabled: Boolean = true,
     val directMessageNotificationEnabled: Boolean = true,
+    val channelMessageNotificationEnabled: Boolean = true,
 )

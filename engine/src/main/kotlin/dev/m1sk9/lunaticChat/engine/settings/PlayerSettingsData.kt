@@ -16,11 +16,15 @@ import java.util.UUID
  * directMessageNotification:
  *   ceaea267-39dd-3bac-931c-761ada671ebe: true
  *   another-uuid-here: false
+ * channelMessageNotification:
+ *   ceaea267-39dd-3bac-931c-761ada671ebe: true
+ *   another-uuid-here: false
  * ```
  *
  * @property version The schema version for future compatibility
  * @property japaneseConversion Map of player UUIDs to their Japanese conversion enabled status
  * @property directMessageNotification Map of player UUIDs to their direct message notification enabled status
+ * @property channelMessageNotification Map of player UUIDs to their channel message notification enabled status
  */
 @Serializable
 data class PlayerSettingsData(
@@ -31,6 +35,11 @@ data class PlayerSettingsData(
         Boolean,
     > = emptyMap(),
     val directMessageNotification: Map<
+        @Serializable(with = UUIDASStringSerializer::class)
+        UUID,
+        Boolean,
+    > = emptyMap(),
+    val channelMessageNotification: Map<
         @Serializable(with = UUIDASStringSerializer::class)
         UUID,
         Boolean,

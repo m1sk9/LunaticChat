@@ -9,6 +9,9 @@ export default defineConfig({
   cleanUrls: true,
   srcDir: './src',
   outDir: './dist',
+  vite: {
+    publicDir: '../.vitepress/public',
+  },
   head: [['link', { rel: 'icon', href: '/favicon.ico' }]],
   themeConfig: {
     socialLinks: [

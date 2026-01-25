@@ -87,13 +87,13 @@ class YamlPlayerSettingsStorage(
      */
     fun queueAsyncSave(data: PlayerSettingsData) {
         if (saveFlag.compareAndSet(false, true)) {
-            Bukkit.getScheduler().runTaskAsynchronously(
+            Bukkit.getScheduler().runTaskLaterAsynchronously(
                 plugin,
                 Runnable {
-                    Thread.sleep(5000) // 5 seconds delay to batch multiple save requests
                     saveFlag.set(false)
                     saveToDisk(data)
                 },
+                100L, // 5 seconds = 100 ticks
             )
         }
     }

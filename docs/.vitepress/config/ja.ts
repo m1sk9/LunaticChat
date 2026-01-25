@@ -37,7 +37,13 @@ export const ja: DefaultTheme.Config = {
         items: [
           {
             text: 'チャンネルチャット',
-            link: '/guide/player/channel-chat',
+              link: "/guide/player/channel-chat/about",
+            items: [
+                {
+                    text: 'チャットモード',
+                    link: '/guide/player/channel-chat/chatmode',
+                }
+            ]
           },
           {
             text: 'ダイレクトメッセージ',
@@ -98,6 +104,14 @@ export const ja: DefaultTheme.Config = {
                 text: '/lc status',
                 link: '/reference/commands/lc/status',
               },
+                {
+                    text: '/lc channel',
+                    link: '/reference/commands/lc/channel',
+                },
+                {
+                    text: '/lc chatmode',
+                    link: '/reference/commands/lc/chatmode',
+                },
             ],
           },
         ],

@@ -19,6 +19,26 @@ permissions:
     default: true
   lunaticchat.command.lc.status:
     default: true
+  lunaticchat.command.lc.channel:
+    default: true
+  lunaticchat.command.lc.channel.create:
+    default: true
+  lunaticchat.command.lc.channel.list:
+    default: true
+  lunaticchat.command.lc.channel.join:
+    default: true
+  lunaticchat.command.lc.channel.leave:
+    default: true
+  lunaticchat.command.lc.channel.switch:
+    default: true
+  lunaticchat.command.lc.channel.status:
+    default: true
+  lunaticchat.command.lc.channel.delete:
+    default: true
+  lunaticchat.command.lc.chatmode:
+    default: true
+  lunaticchat.command.lc.chatmode.toggle:
+    default: true
 
   lunaticchat.spy:
     default: op

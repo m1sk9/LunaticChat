@@ -19,11 +19,17 @@ sealed class SettingKey(
      */
     data object Notice : SettingKey("notice")
 
+    /**
+     * Channel message notification setting
+     * Command: /lc setting chNotice <on|off>
+     */
+    data object ChNotice : SettingKey("chNotice")
+
     companion object {
         /**
          * Returns all available setting keys.
          */
-        fun values(): List<SettingKey> = listOf(Japanese, Notice)
+        fun values(): List<SettingKey> = listOf(Japanese, Notice, ChNotice)
 
         /**
          * Finds a setting key by its string representation.

@@ -1,7 +1,13 @@
 package dev.m1sk9.lunaticChat.paper
 
 import dev.m1sk9.lunaticChat.engine.converter.GoogleIMEClient
-import dev.m1sk9.lunaticChat.paper.command.handler.DirectMessageHandler
+import dev.m1sk9.lunaticChat.paper.chat.ChatModeManager
+import dev.m1sk9.lunaticChat.paper.chat.ChatModeStorage
+import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
+import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMembershipManager
+import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelStorage
+import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelMessageHandler
+import dev.m1sk9.lunaticChat.paper.chat.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
 import dev.m1sk9.lunaticChat.paper.converter.ConversionCache
 import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
@@ -12,6 +18,16 @@ import io.ktor.client.HttpClient
 import org.bukkit.plugin.java.JavaPlugin
 import java.util.logging.Logger
 import kotlin.time.Duration.Companion.milliseconds
+
+/**
+ * Container for channel-related components.
+ */
+private data class ChannelComponents(
+    val channelManager: ChannelManager,
+    val channelMembershipManager: ChannelMembershipManager,
+    val chatModeManager: ChatModeManager,
+    val channelMessageHandler: ChannelMessageHandler,
+)
 
 /**
  * Handles initialization and shutdown of all plugin services.
@@ -26,6 +42,10 @@ class ServiceInitializer(
     private val logger: Logger,
 ) {
     private var conversionCache: ConversionCache? = null
+    private var channelManager: ChannelManager? = null
+    private var channelMembershipManager: ChannelMembershipManager? = null
+    private var chatModeManager: ChatModeManager? = null
+    private var channelMessageHandler: ChannelMessageHandler? = null
 
     /**
      * Initializes all services in dependency order.
@@ -34,7 +54,8 @@ class ServiceInitializer(
      * 1. LanguageManager (required by all features)
      * 2. PlayerSettingsManager (required for DM notifications)
      * 3. Japanese Conversion (optional, config-dependent)
-     * 4. DirectMessageHandler (depends on settings manager and romaji converter)
+     * 4. ChannelStorage
+     * 5. DirectMessageHandler (depends on settings manager and romaji converter)
      *
      * @return ServiceContainer with all initialized services
      */
@@ -60,7 +81,19 @@ class ServiceInitializer(
                 null
             }
 
-        // 4. Initialize handlers
+        // 4. Initialize channel manager, membership manager, chat mode manager, and channel message handler
+        val channelComponents =
+            if (configuration.features.channelChat.enabled) {
+                initializeChannelManager(playerSettingsManager)
+            } else {
+                null
+            }
+        val channelManager = channelComponents?.channelManager
+        val channelMembershipManager = channelComponents?.channelMembershipManager
+        val chatModeManager = channelComponents?.chatModeManager
+        val channelMessageHandler = channelComponents?.channelMessageHandler
+
+        // 5. Initialize handlers
         val directMessageHandler =
             DirectMessageHandler(
                 settingsManager = playerSettingsManager,
@@ -72,6 +105,10 @@ class ServiceInitializer(
             playerSettingsManager = playerSettingsManager,
             directMessageHandler = directMessageHandler,
             romajiConverter = romajiConverter,
+            channelManager = channelManager,
+            channelMembershipManager = channelMembershipManager,
+            chatModeManager = chatModeManager,
+            channelMessageHandler = channelMessageHandler,
         )
     }
 
@@ -136,6 +173,67 @@ class ServiceInitializer(
     }
 
     /**
+     * Initializes channel manager, membership manager, chat mode manager, and channel message handler with storage.
+     */
+    private fun initializeChannelManager(settingsManager: PlayerSettingsManager): ChannelComponents {
+        val channelsFile = plugin.dataFolder.resolve("channels.json").toPath()
+        val storage =
+            ChannelStorage(
+                channelsFile = channelsFile,
+                plugin = plugin,
+                logger = logger,
+            )
+
+        val manager =
+            ChannelManager(
+                storage = storage,
+                logger = logger,
+            )
+        manager.initialize()
+        channelManager = manager
+
+        val membershipManager =
+            ChannelMembershipManager(
+                channelManager = manager,
+                logger = logger,
+            )
+        channelMembershipManager = membershipManager
+
+        val chatModeFile = plugin.dataFolder.resolve("chatmodes.json").toPath()
+        val chatModeStorage =
+            ChatModeStorage(
+                dataFile = chatModeFile,
+                logger = logger,
+            )
+
+        val chatMode =
+            ChatModeManager(
+                storage = chatModeStorage,
+                logger = logger,
+            )
+        chatMode.initialize()
+        chatModeManager = chatMode
+
+        val messageHandler =
+            ChannelMessageHandler(
+                settingsManager = settingsManager,
+                channelManager = manager,
+                logger =
+                    io.ktor.util.logging
+                        .KtorSimpleLogger("ChannelMessageHandler"),
+            )
+        channelMessageHandler = messageHandler
+
+        logger.info("Channel manager, membership manager, chat mode manager, and channel message handler initialized successfully.")
+        return ChannelComponents(
+            channelManager = manager,
+            channelMembershipManager = membershipManager,
+            chatModeManager = chatMode,
+            channelMessageHandler = messageHandler,
+        )
+    }
+
+    /**
      * Schedules periodic tasks such as cache saving.
      */
     fun schedulePeriodicTasks() {
@@ -158,5 +256,7 @@ class ServiceInitializer(
     fun shutdown(services: ServiceContainer) {
         services.playerSettingsManager.saveToDisk()
         conversionCache?.saveToDisk()
+        services.channelManager?.saveToDisk()
+        services.chatModeManager?.shutdown()
     }
 }

@@ -1,11 +1,16 @@
 package dev.m1sk9.lunaticChat.paper
 
+import dev.m1sk9.lunaticChat.paper.chat.ChatModeManager
+import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
+import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMembershipManager
+import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelMessageHandler
+import dev.m1sk9.lunaticChat.paper.chat.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.command.core.CommandRegistry
-import dev.m1sk9.lunaticChat.paper.command.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.command.impl.ReplyCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.TellCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.lc.LunaticChatCommand
 import dev.m1sk9.lunaticChat.paper.command.setting.SettingHandlerRegistry
+import dev.m1sk9.lunaticChat.paper.command.setting.handler.ChannelMessageNoticeSettingHandler
 import dev.m1sk9.lunaticChat.paper.command.setting.handler.DirectMessageNoticeSettingHandler
 import dev.m1sk9.lunaticChat.paper.command.setting.handler.JapaneseConversionSettingHandler
 import dev.m1sk9.lunaticChat.paper.common.UpdateCheckResult
@@ -27,6 +32,10 @@ class LunaticChat :
     // Public API - accessed by commands (maintain backward compatibility)
     lateinit var directMessageHandler: DirectMessageHandler
     lateinit var languageManager: LanguageManager
+    var channelManager: ChannelManager? = null
+    var channelMembershipManager: ChannelMembershipManager? = null
+    var chatModeManager: ChatModeManager? = null
+    var channelMessageHandler: ChannelMessageHandler? = null
 
     // Private services
     private lateinit var services: ServiceContainer
@@ -60,6 +69,10 @@ class LunaticChat :
         // Set public API properties (for command access)
         directMessageHandler = services.directMessageHandler
         languageManager = services.languageManager
+        channelManager = services.channelManager
+        channelMembershipManager = services.channelMembershipManager
+        chatModeManager = services.chatModeManager
+        channelMessageHandler = services.channelMessageHandler
 
         // Schedule periodic tasks
         serviceInitializer.schedulePeriodicTasks()
@@ -96,6 +109,16 @@ class LunaticChat :
             ),
         )
 
+        // Always register channel message notification setting if channel is enabled
+        if (services.channelManager != null) {
+            settingHandlerRegistry.register(
+                ChannelMessageNoticeSettingHandler(
+                    services.playerSettingsManager,
+                    services.languageManager,
+                ),
+            )
+        }
+
         // Conditionally register Japanese conversion setting
         if (services.romajiConverter != null) {
             settingHandlerRegistry.register(
@@ -113,7 +136,7 @@ class LunaticChat :
         )
 
         // Conditionally register /reply command if quick replies are enabled
-        if (configuration.features.quickRepliesEnabled.enabled) {
+        if (configuration.features.quickReplies.enabled) {
             commandRegistry.registerAll(
                 ReplyCommand(this, services.directMessageHandler, services.languageManager),
             )

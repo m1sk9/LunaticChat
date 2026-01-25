@@ -29,14 +29,29 @@ object EventListenerRegistry {
         // Always register these listeners
         pluginManager.registerEvents(SpyPermissionManager, plugin)
         pluginManager.registerEvents(
-            PlayerPresenceListener(plugin, services.languageManager, updateAvailable),
+            PlayerPresenceListener(
+                lunaticChat = plugin,
+                languageManager = services.languageManager,
+                updateCheckerFlag = updateAvailable,
+                playerSettingsManager = services.playerSettingsManager,
+                chatModeManager = services.chatModeManager,
+                channelManager = services.channelManager,
+            ),
             plugin,
         )
 
-        // Conditionally register Japanese conversion listener
-        if (services.romajiConverter != null) {
+        // Conditionally register chat listener when all required components are available
+        if (services.chatModeManager != null &&
+            services.channelMessageHandler != null &&
+            services.romajiConverter != null
+        ) {
             pluginManager.registerEvents(
-                PlayerChatListener(services.romajiConverter, services.playerSettingsManager),
+                PlayerChatListener(
+                    chatModeManager = services.chatModeManager,
+                    channelMessageHandler = services.channelMessageHandler,
+                    romajiConverter = services.romajiConverter,
+                    settingsManager = services.playerSettingsManager,
+                ),
                 plugin,
             )
         }

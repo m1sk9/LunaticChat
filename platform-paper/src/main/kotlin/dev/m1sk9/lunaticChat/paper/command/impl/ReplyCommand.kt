@@ -5,17 +5,16 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
+import dev.m1sk9.lunaticChat.paper.chat.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.command.annotation.Command
 import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
 import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
-import dev.m1sk9.lunaticChat.paper.command.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
-import kotlinx.coroutines.runBlocking
 
 @Command(
     name = "reply",
@@ -58,13 +57,11 @@ class ReplyCommand(
             dmHandler.getReplyTarget(sender)
                 ?: return CommandResult.Failure(
                     MessageFormatter.formatError(
-                        languageManager.getMessage("replyTargetNotFound"),
+                        languageManager.getMessage("directMessage.replyTargetNotFound"),
                     ),
                 )
 
-        runBlocking {
-            dmHandler.sendDirectMessage(sender, target, message)
-        }
+        dmHandler.sendDirectMessage(sender, target, message)
 
         return CommandResult.Success
     }

@@ -60,6 +60,6 @@ v0.4.0 以降，ダイレクトメッセージの通知設定を変更できる�
 
 LunaticChat の通知音が聞こえない場合は，クライアントの音量設定を確認してください．
 
-![](/direct-message/minecraft-player-sound.png)
+![](../../assets/direct-message/minecraft-player-sound.png)
 
 :::

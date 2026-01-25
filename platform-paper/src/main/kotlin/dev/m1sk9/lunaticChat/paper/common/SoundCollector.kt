@@ -31,6 +31,14 @@ object SoundCollector {
             0.6f,
             2.0f,
         )
+
+    val LUNATIC_BELL_SOUND: Sound =
+        Sound.sound(
+            Key.key("block.note_block.bell"),
+            Sound.Source.PLAYER,
+            0.7f,
+            1.2f,
+        )
 }
 
 /**
@@ -43,6 +51,20 @@ fun Player.playDirectMessageNotification() {
 /**
  * Plays the message sent sound to the player.
  */
-fun Player.playDirectMessageSendNotification() {
+fun Player.playMessageSendNotification() {
     playSound(SoundCollector.LUNATIC_POP_SOUND)
+}
+
+/**
+ * Plays the channel join notification sound to the player.
+ */
+fun Player.playChannelJoinNotification() {
+    playSound(SoundCollector.LUNATIC_SOFT_SOUND)
+}
+
+/**
+ * Plays the channel message receive notification sound to the player.
+ */
+fun Player.playChannelReceiveNotification() {
+    playSound(SoundCollector.LUNATIC_BELL_SOUND)
 }

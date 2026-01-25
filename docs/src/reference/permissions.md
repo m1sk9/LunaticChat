@@ -34,6 +34,12 @@ LunaticChat のアップデート通知を受け取ります．
 
 [`/reply`](commands/reply.md) コマンドの使用を切り替えます．
 
+### `lunaticchat.command.lc`
+
+- Default: `non OP`
+
+`/lc` コマンドの使用を切り替えます．
+
 ### `lunaticchat.command.lc.settings`
 
 - Default: `non OP`
@@ -45,6 +51,66 @@ LunaticChat のアップデート通知を受け取ります．
 - Default: `non OP`
 
 [`/lc status`](commands/lc/status.md) コマンドの使用を切り替えます．
+
+### `lunaticchat.command.lc.channel`
+
+- Default: `non OP`
+
+[`/lc channel`](commands/lc/channel.md) コマンドの使用を切り替えます．
+
+### `lunaticchat.command.lc.channel.create`
+
+- Default: `non OP`
+
+[`/lc channel create`](commands/lc/channel.md) コマンドの使用を切り替えます．
+
+### `lunaticchat.command.lc.channel.list`
+
+- Default: `non OP`
+
+[`/lc channel list`](commands/lc/channel.md) コマンドの使用を切り替えます．
+
+### `lunaticchat.command.lc.channel.join`
+
+- Default: `non OP`
+
+[`/lc channel join`](commands/lc/channel.md) コマンドの使用を切り替えます．
+
+### `lunaticchat.command.lc.channel.leave`
+
+- Default: `non OP`
+
+[`/lc channel leave`](commands/lc/channel.md) コマンドの使用を切り替えます．
+
+### `lunaticchat.command.lc.channel.switch`
+
+- Default: `non OP`
+
+[`/lc channel switch`](commands/lc/channel.md) コマンドの使用を切り替えます．
+
+### `lunaticchat.command.lc.channel.status`
+
+- Default: `non OP`
+
+[`/lc channel status`](commands/lc/channel.md) コマンドの使用を切り替えます．
+
+### `lunaticchat.command.lc.channel.delete`
+
+- Default: `non OP`
+
+[`/lc channel delete`](commands/lc/channel.md) コマンドの使用を切り替えます．
+
+### `lunaticchat.command.lc.chatmode`
+
+- Default: `non OP`
+
+[`/lc chatmode`](commands/lc/chatmode.md) コマンドの使用を切り替えます．
+
+### `lunaticchat.command.lc.chatmode.toggle`
+
+- Default: `non OP`
+
+[`/lc chatmode toggle`](commands/lc/chatmode.md) コマンドの使用を切り替えます．
 
 ### `lunaticchat.command.jp` <Badge type="danger" text="非推奨: v1.0.0 で削除予定" />
 

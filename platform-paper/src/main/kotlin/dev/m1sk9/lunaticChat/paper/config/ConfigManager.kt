@@ -1,5 +1,6 @@
 package dev.m1sk9.lunaticChat.paper.config
 
+import dev.m1sk9.lunaticChat.paper.config.key.ChannelChatFeatureConfig
 import dev.m1sk9.lunaticChat.paper.config.key.FeaturesConfig
 import dev.m1sk9.lunaticChat.paper.config.key.JapaneseConversionFeatureConfig
 import dev.m1sk9.lunaticChat.paper.config.key.MessageFormatConfig
@@ -7,6 +8,8 @@ import dev.m1sk9.lunaticChat.paper.config.key.QuickRepliesFeatureConfig
 import dev.m1sk9.lunaticChat.paper.i18n.Language
 import org.bukkit.configuration.file.FileConfiguration
 
+// FIXME: ConfigManager uses mutable static state which makes testing difficult
+// and creates hidden global dependencies. Consider refactoring to dependency injection.
 object ConfigManager {
     private var lunaticChatConfiguration: LunaticChatConfiguration? = null
 
@@ -18,7 +21,7 @@ object ConfigManager {
             LunaticChatConfiguration(
                 features =
                     FeaturesConfig(
-                        quickRepliesEnabled =
+                        quickReplies =
                             QuickRepliesFeatureConfig(
                                 enabled =
                                     configFile.getBoolean("features.quickReplies.enabled", true),
@@ -44,6 +47,10 @@ object ConfigManager {
                                     ),
                                 apiRetryAttempts = configFile.getInt("features.japaneseConversion.api.retryAttempts", 2),
                             ),
+                        channelChat =
+                            ChannelChatFeatureConfig(
+                                enabled = configFile.getBoolean("features.channelChat.enabled", false),
+                            ),
                     ),
                 messageFormat =
                     MessageFormatConfig(
@@ -51,6 +58,11 @@ object ConfigManager {
                             configFile.getString(
                                 "messageFormat.directMessageFormat",
                                 "§7[§e{sender} §7>> §e{recipient}§7] §f{message}",
+                            )!!,
+                        channelMessageFormat =
+                            configFile.getString(
+                                "messageFormat.channelMessageFormat",
+                                "§7[§b#{channel}§7] §e{sender}: §f{message}",
                             )!!,
                     ),
                 debug = configFile.getBoolean("debug", false),
