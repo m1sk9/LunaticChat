@@ -1,7 +1,7 @@
 package dev.m1sk9.lunaticChat.paper
 
 import dev.m1sk9.lunaticChat.engine.converter.GoogleIMEClient
-import dev.m1sk9.lunaticChat.paper.channel.storage.ChannelStorage
+import dev.m1sk9.lunaticChat.paper.channel.ChannelStorage
 import dev.m1sk9.lunaticChat.paper.command.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
 import dev.m1sk9.lunaticChat.paper.converter.ConversionCache
