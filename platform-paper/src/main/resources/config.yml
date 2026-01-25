@@ -48,6 +48,9 @@ features:
       timeout: 3000
       # Specify the number of retry attempts for failed API requests to the Romanization conversion service.
       retryAttempts: 2
+  channelChat:
+    # If enabled, channel-based chat functionality will be activated.
+    enabled: false
 
 # ----------------------------------------------
 # ---------   Message Format Settings   --------

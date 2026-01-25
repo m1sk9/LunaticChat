@@ -1,5 +1,6 @@
 package dev.m1sk9.lunaticChat.paper.config
 
+import dev.m1sk9.lunaticChat.paper.config.key.ChannelChatFeatureConfig
 import dev.m1sk9.lunaticChat.paper.config.key.FeaturesConfig
 import dev.m1sk9.lunaticChat.paper.config.key.JapaneseConversionFeatureConfig
 import dev.m1sk9.lunaticChat.paper.config.key.MessageFormatConfig
@@ -18,7 +19,7 @@ object ConfigManager {
             LunaticChatConfiguration(
                 features =
                     FeaturesConfig(
-                        quickRepliesEnabled =
+                        quickReplies =
                             QuickRepliesFeatureConfig(
                                 enabled =
                                     configFile.getBoolean("features.quickReplies.enabled", true),
@@ -43,6 +44,10 @@ object ConfigManager {
                                         3000,
                                     ),
                                 apiRetryAttempts = configFile.getInt("features.japaneseConversion.api.retryAttempts", 2),
+                            ),
+                        channelChat =
+                            ChannelChatFeatureConfig(
+                                enabled = configFile.getBoolean("features.channelChat.enabled", false),
                             ),
                     ),
                 messageFormat =
