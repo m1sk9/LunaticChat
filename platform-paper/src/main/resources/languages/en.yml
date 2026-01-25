@@ -14,6 +14,7 @@
 commandDescription:
   jp: "Toggle romaji-to-kana conversion on/off"
   notice: "Toggle direct message notifications on/off"
+  chNotice: "Toggle channel message notifications on/off"
   reply: "Reply to the player who last sent/received a direct message"
   tell: "Send a direct message to another player"
   lc: "LunaticChat Main Command"
@@ -28,6 +29,10 @@ directMessage:
 romajiConversion:
   toggle: "Romaji-to-kana conversion has been set to {toggle}"
   status: "Romaji-to-kana conversion is currently {toggle}"
+
+channelMessage:
+  noticeToggle: "Channel message notifications have been set to {toggle}"
+  noticeStatus: "Channel message notifications are currently {toggle}"
 
 status:
   hover: "LunaticChat was born as the successor to LunaChat. With respect to its original creator, uccchyocean."

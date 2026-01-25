@@ -2,6 +2,8 @@ package dev.m1sk9.lunaticChat.paper.chat.handler
 
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.common.SpyPermissionManager
+import dev.m1sk9.lunaticChat.paper.common.playChannelReceiveNotification
+import dev.m1sk9.lunaticChat.paper.common.playMessageSendNotification
 import dev.m1sk9.lunaticChat.paper.config.ConfigManager
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
 import io.ktor.util.logging.Logger
@@ -26,6 +28,14 @@ class ChannelMessageHandler(
                 ?: return false
         val formattedMessage = formatChannelMessage(player.name, context.channel.name, message)
 
+        // Play notification sound to sender if enabled
+        settingsManager?.let { manager ->
+            val senderSettings = manager.getSettings(playerId)
+            if (senderSettings.channelMessageNotificationEnabled) {
+                player.playMessageSendNotification()
+            }
+        }
+
         SpyPermissionManager
             .getDirectMessageSpyPlayers()
             .values
@@ -35,6 +45,16 @@ class ChannelMessageHandler(
             Bukkit.getPlayer(member.playerId)?.let { memberPlayer ->
                 if (memberPlayer.isOnline) {
                     memberPlayer.sendMessage(formattedMessage)
+
+                    // Play notification sound to receiver if enabled and not the sender
+                    if (memberPlayer.uniqueId != playerId) {
+                        settingsManager?.let { manager ->
+                            val receiverSettings = manager.getSettings(memberPlayer.uniqueId)
+                            if (receiverSettings.channelMessageNotificationEnabled) {
+                                memberPlayer.playChannelReceiveNotification()
+                            }
+                        }
+                    }
                 }
             }
         }

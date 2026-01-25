@@ -2,7 +2,7 @@ package dev.m1sk9.lunaticChat.paper.chat.handler
 
 import dev.m1sk9.lunaticChat.paper.common.SpyPermissionManager
 import dev.m1sk9.lunaticChat.paper.common.playDirectMessageNotification
-import dev.m1sk9.lunaticChat.paper.common.playDirectMessageSendNotification
+import dev.m1sk9.lunaticChat.paper.common.playMessageSendNotification
 import dev.m1sk9.lunaticChat.paper.config.ConfigManager
 import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
@@ -118,7 +118,7 @@ class DirectMessageHandler(
         sender.apply {
             sendMessage(userMessage)
             takeIf { senderSettings?.directMessageNotificationEnabled == true }
-                ?.playDirectMessageSendNotification()
+                ?.playMessageSendNotification()
         }
         recipient.apply {
             sendMessage(userMessage)

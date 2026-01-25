@@ -10,6 +10,7 @@ import dev.m1sk9.lunaticChat.paper.command.impl.ReplyCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.TellCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.lc.LunaticChatCommand
 import dev.m1sk9.lunaticChat.paper.command.setting.SettingHandlerRegistry
+import dev.m1sk9.lunaticChat.paper.command.setting.handler.ChannelMessageNoticeSettingHandler
 import dev.m1sk9.lunaticChat.paper.command.setting.handler.DirectMessageNoticeSettingHandler
 import dev.m1sk9.lunaticChat.paper.command.setting.handler.JapaneseConversionSettingHandler
 import dev.m1sk9.lunaticChat.paper.common.UpdateCheckResult
@@ -107,6 +108,16 @@ class LunaticChat :
                 services.languageManager,
             ),
         )
+
+        // Always register channel message notification setting if channel is enabled
+        if (services.channelManager != null) {
+            settingHandlerRegistry.register(
+                ChannelMessageNoticeSettingHandler(
+                    services.playerSettingsManager,
+                    services.languageManager,
+                ),
+            )
+        }
 
         // Conditionally register Japanese conversion setting
         if (services.romajiConverter != null) {

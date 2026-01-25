@@ -16,6 +16,7 @@ commandDescription:
   reply: "最後にダイレクトメッセージを送信/受信したプレイヤーに返信します"
   jp: "かな・ローマ字変換機能のオン/オフを切り替えます"
   notice: "ダイレクトメッセージ通知のオン/オフを切り替えます"
+  chNotice: "チャンネルメッセージ通知のオン/オフを切り替えます"
   lc: "LunaticChat のメインコマンド"
 
 directMessage:
@@ -28,6 +29,10 @@ directMessage:
 romajiConversion:
   toggle: "かな・ローマ字変換機能を{toggle}にしました"
   status: "現在かな・ローマ字変換機能は{toggle}です"
+
+channelMessage:
+  noticeToggle: "チャンネルメッセージ通知を{toggle}にしました"
+  noticeStatus: "現在チャンネルメッセージ通知は{toggle}です"
 
 status:
   hover: "LunaticChat は LunaChatの後継として生まれました。\nオリジナルの作者であるucchyoceanに敬意を込めて。"

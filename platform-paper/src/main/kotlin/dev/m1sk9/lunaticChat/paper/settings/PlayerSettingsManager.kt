@@ -19,6 +19,7 @@ class PlayerSettingsManager(
 ) {
     private val japaneseConversionCache = ConcurrentHashMap<UUID, Boolean>()
     private val directMessageNotificationCache = ConcurrentHashMap<UUID, Boolean>()
+    private val channelMessageNotificationCache = ConcurrentHashMap<UUID, Boolean>()
     private lateinit var settingsData: PlayerSettingsData
 
     /**
@@ -29,6 +30,7 @@ class PlayerSettingsManager(
         settingsData = storage.loadFromDisk()
         japaneseConversionCache.putAll(settingsData.japaneseConversion)
         directMessageNotificationCache.putAll(settingsData.directMessageNotification)
+        channelMessageNotificationCache.putAll(settingsData.channelMessageNotification)
         logger.info("Loaded settings for ${japaneseConversionCache.size} players")
     }
 
@@ -42,10 +44,12 @@ class PlayerSettingsManager(
     fun getSettings(uuid: UUID): PlayerChatSettings {
         val japaneseConversionEnabled = japaneseConversionCache.getOrDefault(uuid, true)
         val directMessageNotificationEnabled = directMessageNotificationCache.getOrDefault(uuid, true)
+        val channelMessageNotificationEnabled = channelMessageNotificationCache.getOrDefault(uuid, true)
         return PlayerChatSettings(
             uuid = uuid,
             japaneseConversionEnabled = japaneseConversionEnabled,
             directMessageNotificationEnabled = directMessageNotificationEnabled,
+            channelMessageNotificationEnabled = channelMessageNotificationEnabled,
         )
     }
 
@@ -57,11 +61,13 @@ class PlayerSettingsManager(
     fun updateSettings(settings: PlayerChatSettings) {
         japaneseConversionCache[settings.uuid] = settings.japaneseConversionEnabled
         directMessageNotificationCache[settings.uuid] = settings.directMessageNotificationEnabled
+        channelMessageNotificationCache[settings.uuid] = settings.channelMessageNotificationEnabled
 
         settingsData =
             settingsData.copy(
                 japaneseConversion = japaneseConversionCache.toMap(),
                 directMessageNotification = directMessageNotificationCache.toMap(),
+                channelMessageNotification = channelMessageNotificationCache.toMap(),
             )
 
         storage.queueAsyncSave(settingsData)
