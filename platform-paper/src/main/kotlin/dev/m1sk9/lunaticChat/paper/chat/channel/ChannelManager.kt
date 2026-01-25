@@ -1,6 +1,7 @@
 package dev.m1sk9.lunaticChat.paper.chat.channel
 
 import dev.m1sk9.lunaticChat.engine.chat.channel.Channel
+import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelContext
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelData
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelMember
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelRole
@@ -247,6 +248,24 @@ class ChannelManager(
      * @return The ID of the active channel or null if none is set.
      */
     fun getPlayerChannel(playerId: UUID): String? = activeChannels[playerId]
+
+    /**
+     * Gets the full channel context (channel and members) of a player's active channel.
+     *
+     * @param playerId The UUID of the player.
+     * @return The ChannelContext of the active channel or null if none is set.
+     */
+    fun getPlayerChannelContext(playerId: UUID): ChannelContext? {
+        val channelId = activeChannels[playerId] ?: return null
+        val channel = channelsCache[channelId] ?: return null
+        val members = membersCache[channelId]?.toList() ?: return null
+
+        return ChannelContext(
+            channelId = channelId,
+            channel = channel,
+            members = members,
+        )
+    }
 
     /**
      * Sets the active channel of a player.

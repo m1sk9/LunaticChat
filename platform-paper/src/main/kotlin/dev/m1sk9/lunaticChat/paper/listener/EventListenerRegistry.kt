@@ -33,10 +33,18 @@ object EventListenerRegistry {
             plugin,
         )
 
-        // Conditionally register Japanese conversion listener
-        if (services.romajiConverter != null) {
+        // Conditionally register chat listener when all required components are available
+        if (services.chatModeManager != null &&
+            services.channelMessageHandler != null &&
+            services.romajiConverter != null
+        ) {
             pluginManager.registerEvents(
-                PlayerChatListener(services.romajiConverter, services.playerSettingsManager),
+                PlayerChatListener(
+                    chatModeManager = services.chatModeManager,
+                    channelMessageHandler = services.channelMessageHandler,
+                    romajiConverter = services.romajiConverter,
+                    settingsManager = services.playerSettingsManager,
+                ),
                 plugin,
             )
         }

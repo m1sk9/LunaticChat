@@ -1,4 +1,4 @@
-package dev.m1sk9.lunaticChat.paper.command.handler
+package dev.m1sk9.lunaticChat.paper.chat.handler
 
 import dev.m1sk9.lunaticChat.paper.common.SpyPermissionManager
 import dev.m1sk9.lunaticChat.paper.common.playDirectMessageNotification

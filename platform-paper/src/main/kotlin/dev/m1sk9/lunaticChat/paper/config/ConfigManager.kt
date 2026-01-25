@@ -57,6 +57,11 @@ object ConfigManager {
                                 "messageFormat.directMessageFormat",
                                 "§7[§e{sender} §7>> §e{recipient}§7] §f{message}",
                             )!!,
+                        channelMessageFormat =
+                            configFile.getString(
+                                "messageFormat.channelMessageFormat",
+                                "§7[§b#{channel}§7] §e{sender}: §f{message}",
+                            )!!,
                     ),
                 debug = configFile.getBoolean("debug", false),
                 checkForUpdates = configFile.getBoolean("checkForUpdates", false),

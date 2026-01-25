@@ -3,8 +3,9 @@ package dev.m1sk9.lunaticChat.paper
 import dev.m1sk9.lunaticChat.paper.chat.ChatModeManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMembershipManager
+import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelMessageHandler
+import dev.m1sk9.lunaticChat.paper.chat.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.command.core.CommandRegistry
-import dev.m1sk9.lunaticChat.paper.command.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.command.impl.ReplyCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.TellCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.lc.LunaticChatCommand
@@ -33,6 +34,7 @@ class LunaticChat :
     var channelManager: ChannelManager? = null
     var channelMembershipManager: ChannelMembershipManager? = null
     var chatModeManager: ChatModeManager? = null
+    var channelMessageHandler: ChannelMessageHandler? = null
 
     // Private services
     private lateinit var services: ServiceContainer
@@ -69,6 +71,7 @@ class LunaticChat :
         channelManager = services.channelManager
         channelMembershipManager = services.channelMembershipManager
         chatModeManager = services.chatModeManager
+        channelMessageHandler = services.channelMessageHandler
 
         // Schedule periodic tasks
         serviceInitializer.schedulePeriodicTasks()

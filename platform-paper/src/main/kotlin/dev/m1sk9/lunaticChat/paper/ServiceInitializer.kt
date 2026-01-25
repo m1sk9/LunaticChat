@@ -6,7 +6,8 @@ import dev.m1sk9.lunaticChat.paper.chat.ChatModeStorage
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMembershipManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelStorage
-import dev.m1sk9.lunaticChat.paper.command.handler.DirectMessageHandler
+import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelMessageHandler
+import dev.m1sk9.lunaticChat.paper.chat.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
 import dev.m1sk9.lunaticChat.paper.converter.ConversionCache
 import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
@@ -17,6 +18,16 @@ import io.ktor.client.HttpClient
 import org.bukkit.plugin.java.JavaPlugin
 import java.util.logging.Logger
 import kotlin.time.Duration.Companion.milliseconds
+
+/**
+ * Container for channel-related components.
+ */
+private data class ChannelComponents(
+    val channelManager: ChannelManager,
+    val channelMembershipManager: ChannelMembershipManager,
+    val chatModeManager: ChatModeManager,
+    val channelMessageHandler: ChannelMessageHandler,
+)
 
 /**
  * Handles initialization and shutdown of all plugin services.
@@ -34,6 +45,7 @@ class ServiceInitializer(
     private var channelManager: ChannelManager? = null
     private var channelMembershipManager: ChannelMembershipManager? = null
     private var chatModeManager: ChatModeManager? = null
+    private var channelMessageHandler: ChannelMessageHandler? = null
 
     /**
      * Initializes all services in dependency order.
@@ -69,13 +81,17 @@ class ServiceInitializer(
                 null
             }
 
-        // 4. Initialize channel manager, membership manager, and chat mode manager
-        val (channelManager, channelMembershipManager, chatModeManager) =
+        // 4. Initialize channel manager, membership manager, chat mode manager, and channel message handler
+        val channelComponents =
             if (configuration.features.channelChat.enabled) {
-                initializeChannelManager()
+                initializeChannelManager(playerSettingsManager)
             } else {
-                Triple(null, null, null)
+                null
             }
+        val channelManager = channelComponents?.channelManager
+        val channelMembershipManager = channelComponents?.channelMembershipManager
+        val chatModeManager = channelComponents?.chatModeManager
+        val channelMessageHandler = channelComponents?.channelMessageHandler
 
         // 5. Initialize handlers
         val directMessageHandler =
@@ -92,6 +108,7 @@ class ServiceInitializer(
             channelManager = channelManager,
             channelMembershipManager = channelMembershipManager,
             chatModeManager = chatModeManager,
+            channelMessageHandler = channelMessageHandler,
         )
     }
 
@@ -156,9 +173,9 @@ class ServiceInitializer(
     }
 
     /**
-     * Initializes channel manager, membership manager, and chat mode manager with storage.
+     * Initializes channel manager, membership manager, chat mode manager, and channel message handler with storage.
      */
-    private fun initializeChannelManager(): Triple<ChannelManager, ChannelMembershipManager, ChatModeManager> {
+    private fun initializeChannelManager(settingsManager: PlayerSettingsManager): ChannelComponents {
         val channelsFile = plugin.dataFolder.resolve("channels.json").toPath()
         val storage =
             ChannelStorage(
@@ -197,8 +214,23 @@ class ServiceInitializer(
         chatMode.initialize()
         chatModeManager = chatMode
 
-        logger.info("Channel manager, membership manager, and chat mode manager initialized successfully.")
-        return Triple(manager, membershipManager, chatMode)
+        val messageHandler =
+            ChannelMessageHandler(
+                settingsManager = settingsManager,
+                channelManager = manager,
+                logger =
+                    io.ktor.util.logging
+                        .KtorSimpleLogger("ChannelMessageHandler"),
+            )
+        channelMessageHandler = messageHandler
+
+        logger.info("Channel manager, membership manager, chat mode manager, and channel message handler initialized successfully.")
+        return ChannelComponents(
+            channelManager = manager,
+            channelMembershipManager = membershipManager,
+            chatModeManager = chatMode,
+            channelMessageHandler = messageHandler,
+        )
     }
 
     /**
