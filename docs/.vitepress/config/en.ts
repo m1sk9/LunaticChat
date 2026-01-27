@@ -30,6 +30,14 @@ export const en: DefaultTheme.Config = {
             text: 'Velocity Integration',
             link: '/en/guide/admin/velocity',
           },
+          {
+            text: 'Channel Chat Deployment Guide',
+            link: '/en/guide/admin/introduction-channel-chat',
+          },
+          {
+            text: 'Data and Logs',
+            link: '/en/guide/admin/data-and-logs',
+          },
         ],
       },
       {
@@ -42,7 +50,15 @@ export const en: DefaultTheme.Config = {
               {
                 text: 'Chat Mode',
                 link: '/en/guide/player/channel-chat/chatmode',
-              }
+              },
+              {
+                text: 'Private Channel',
+                link: '/en/guide/player/channel-chat/private-channel',
+              },
+              {
+                text: 'Moderation',
+                link: '/en/guide/player/channel-chat/moderation',
+              },
             ]
           },
           {
