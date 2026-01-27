@@ -8,9 +8,9 @@ LuckPerms を使用した設定方法に関する詳細は [LuckPerms Wiki](http
 
 - Default: `OP`
 
-[`/tell`](commands/tell.md) / [`/reply`](commands/reply.md) コマンドでのやり取りを可視化します．
+各種プレイヤー間のやり取りを可視化します．
 
-この権限を持つプレイヤーは他プレイヤーの [`/tell`](commands/tell.md) / [`/reply`](commands/reply.md) でのメッセージがブロードキャストされます．
+この権限を持つプレイヤーは他プレイヤーの [`/tell`](commands/tell.md) / [`/reply`](commands/reply.md) でのメッセージ・全チャンネルチャットがブロードキャストされます．
 
 ### `lunaticchat.noticeUpdate`
 
@@ -19,6 +19,12 @@ LuckPerms を使用した設定方法に関する詳細は [LuckPerms Wiki](http
 LunaticChat のアップデート通知を受け取ります．
 
 [受け取るには `checkForUpdates` を有効にしておく](../guide/admin/configuration.md#checkforupdates) 必要があります．
+
+### `lunaticchat.channelbypass`
+
+- Default: `OP`
+
+各チャンネルのモデレート機能やプライベートチャンネルに対する制限を無視します．
 
 ## `lunaticchat.command.*`
 
@@ -94,11 +100,53 @@ LunaticChat のアップデート通知を受け取ります．
 
 [`/lc channel status`](commands/lc/channel.md) コマンドの使用を切り替えます．
 
+### `lunaticchat.command.lc.channel.info`
+
+- Default: `non OP`
+
+[`/lc channel info`](commands/lc/channel.md) コマンドの使用を切り替えます．
+
 ### `lunaticchat.command.lc.channel.delete`
 
 - Default: `non OP`
 
 [`/lc channel delete`](commands/lc/channel.md) コマンドの使用を切り替えます．
+
+### `lunaticchat.command.lc.channel.invite`
+
+- Default: `non OP`
+
+[`/lc channel invite`](commands/lc/channel.md) コマンドの使用を切り替えます．
+
+### `lunaticchat.command.lc.channel.kick`
+
+- Default: `non OP`
+
+[`/lc channel kick`](commands/lc/channel.md) コマンドの使用を切り替えます．
+
+### `lunaticchat.command.lc.channel.ban`
+
+- Default: `non OP`
+
+[`/lc channel ban`](commands/lc/channel.md) コマンドの使用を切り替えます．
+
+### `lunaticchat.command.lc.channel.unban`
+
+- Default: `non OP`
+
+[`/lc channel unban`](commands/lc/channel.md) コマンドの使用を切り替えます．
+
+### `lunaticchat.command.lc.channel.mod`
+
+- Default: `non OP`
+
+[`/lc channel mod`](commands/lc/channel.md) コマンドの使用を切り替えます．
+
+### `lunaticchat.command.lc.channel.ownership`
+
+- Default: `non OP`
+
+[`/lc channel ownership`](commands/lc/channel.md) コマンドの使用を切り替えます．
 
 ### `lunaticchat.command.lc.chatmode`
 

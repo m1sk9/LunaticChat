@@ -3,11 +3,13 @@ package dev.m1sk9.lunaticChat.paper.chat.handler
 import dev.m1sk9.lunaticChat.paper.common.SpyPermissionManager
 import dev.m1sk9.lunaticChat.paper.common.playDirectMessageNotification
 import dev.m1sk9.lunaticChat.paper.common.playMessageSendNotification
-import dev.m1sk9.lunaticChat.paper.config.ConfigManager
+import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
 import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
+import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.ClickEvent
+import net.kyori.adventure.text.event.HoverEvent
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import java.util.UUID
@@ -18,11 +20,11 @@ import java.util.concurrent.ConcurrentHashMap
  * Tracks the last player who messaged each player for /reply functionality.
  */
 class DirectMessageHandler(
+    private val configuration: LunaticChatConfiguration,
     private val settingsManager: PlayerSettingsManager?,
     private val romanjiConverter: RomanjiConverter?,
+    private val languageManager: LanguageManager,
 ) {
-    private var lunaticChatConfiguration = ConfigManager.getConfiguration()
-
     private val lastMessager: ConcurrentHashMap<UUID, UUID> = ConcurrentHashMap()
     private val lastRecipient: ConcurrentHashMap<UUID, UUID> = ConcurrentHashMap()
 
@@ -90,29 +92,39 @@ class DirectMessageHandler(
         val senderSettings = settingsManager?.getSettings(sender.uniqueId)
         val recipientSettings = settingsManager?.getSettings(recipient.uniqueId)
 
-        // Handle romaji conversion if enabled (requires blocking for HTTP call)
+        // Handle romaji conversion if enabled
+        // Uses explicit timeout to prevent long blocking (1s max instead of 3s)
         val displayMessage =
             if (senderSettings?.japaneseConversionEnabled == true && romanjiConverter != null) {
                 runCatching {
                     kotlinx.coroutines.runBlocking {
-                        romanjiConverter
-                            ?.convert(message)
-                            ?.let { "$message §e($it)" }
-                            ?: message
+                        kotlinx.coroutines
+                            .withTimeoutOrNull(1000) {
+                                romanjiConverter!!
+                                    .convert(message)
+                            }?.let { "$message §e($it)" } ?: message
                     }
-                }.getOrNull() ?: message
+                }.getOrElse { message }
             } else {
                 message
             }
 
-        val format = lunaticChatConfiguration.messageFormat.directMessageFormat
+        val format = configuration.messageFormat.directMessageFormat
 
         val spyMessage = formatMessage(format, sender.name, recipient.name, message)
         SpyPermissionManager
             .getDirectMessageSpyPlayers()
             .values
             .filter { it.isOnline && it.uniqueId !in setOf(sender.uniqueId, recipient.uniqueId) }
-            .forEach { it.sendMessage(spyMessage) }
+            .forEach {
+                it.sendMessage(
+                    spyMessage.hoverEvent(
+                        HoverEvent.showText(
+                            Component.text(languageManager.getMessage("general.spyMessage")),
+                        ),
+                    ),
+                )
+            }
 
         val userMessage = formatMessage(format, sender.name, recipient.name, displayMessage)
         sender.apply {

@@ -100,8 +100,10 @@ class ServiceInitializer(
         // 5. Initialize handlers
         val directMessageHandler =
             DirectMessageHandler(
+                configuration = configuration,
                 settingsManager = playerSettingsManager,
                 romanjiConverter = romajiConverter,
+                languageManager = languageManager,
             )
 
         return ServiceContainer(
@@ -227,9 +229,11 @@ class ServiceInitializer(
 
         val messageHandler =
             ChannelMessageHandler(
+                configuration = configuration,
                 settingsManager = settingsManager,
                 channelManager = manager,
                 romanjiConverter = romajiConverter,
+                languageManager = languageManager,
                 logger =
                     io.ktor.util.logging
                         .KtorSimpleLogger("ChannelMessageHandler"),

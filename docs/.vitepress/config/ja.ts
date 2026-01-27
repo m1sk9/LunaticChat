@@ -30,6 +30,14 @@ export const ja: DefaultTheme.Config = {
             text: 'Velocity 連携',
             link: '/guide/admin/velocity',
           },
+            {
+                text: "チャンネルチャット展開ガイド",
+                link: "/guide/admin/introduction-channel-chat",
+            },
+            {
+                text: "データ・ログ",
+                link: "/guide/admin/data-and-logs",
+            }
         ],
       },
       {
@@ -42,7 +50,15 @@ export const ja: DefaultTheme.Config = {
                 {
                     text: 'チャットモード',
                     link: '/guide/player/channel-chat/chatmode',
-                }
+                },
+                {
+                    text: 'プライベートチャンネル',
+                    link: '/guide/player/channel-chat/private-channel',
+                },
+                {
+                    text: 'モデレーション',
+                    link: '/guide/player/channel-chat/moderation',
+                },
             ]
           },
           {

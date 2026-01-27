@@ -54,17 +54,20 @@ class PlayerChatListener(
                 chatModeManager.getChatMode(player.uniqueId)
             }
 
-        // Handle romaji conversion if enabled (requires blocking for HTTP call)
+        // Handle romaji conversion if enabled
+        // Uses explicit timeout to prevent long blocking (1s max instead of 3s)
+        // Note: AsyncChatEvent runs on async thread, so runBlocking here doesn't block main thread
         val displayMessage =
             if (settings.japaneseConversionEnabled) {
                 runCatching {
                     runBlocking {
-                        romajiConverter
-                            .convert(messageWithoutPrefix)
-                            ?.let { "$messageWithoutPrefix §e($it)" }
-                            ?: messageWithoutPrefix
+                        kotlinx.coroutines
+                            .withTimeoutOrNull(1000) {
+                                romajiConverter
+                                    .convert(messageWithoutPrefix)
+                            }?.let { "$messageWithoutPrefix §e($it)" } ?: messageWithoutPrefix
                     }
-                }.getOrNull() ?: messageWithoutPrefix
+                }.getOrElse { messageWithoutPrefix }
             } else {
                 messageWithoutPrefix
             }

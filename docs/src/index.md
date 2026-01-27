@@ -35,7 +35,7 @@ features:
   - title: CoreProtect への対応
     details: LunaticChat のチャットログは CoreProtect と互換性があります
     icon: 🗒️
-  - title: チャンネルチャット機能 (実装予定)
+  - title: チャンネルチャット機能
     details: チャットチャンネルを作成・管理し，特定のプレイヤー間でのプライベートメッセージを送信可能
     icon: ☎️
   - title: マルチプラットフォーム対応 (実装予定)

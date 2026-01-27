@@ -22,6 +22,13 @@ _[Supports Minecraft 1.21.X](https://minecraft.wiki/w/Java_Edition_version_histo
 
 ## Installation
 
+LunaticChat can be obtained from:
+
+- [GitHub](https://github.com/m1sk9/LunaticChat/releases)
+- [Modrinth](https://modrinth.com/project/lunaticchat)
+
+Place the downloaded plugin file in your server's `plugins` folder and restart the server.
+
 See the [Documentation](https://lc.m1sk9.dev/guide/getting-started).
 
 ## Features

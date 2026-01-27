@@ -8,14 +8,11 @@ import dev.m1sk9.lunaticChat.paper.config.key.QuickRepliesFeatureConfig
 import dev.m1sk9.lunaticChat.paper.i18n.Language
 import org.bukkit.configuration.file.FileConfiguration
 
-// FIXME: ConfigManager uses mutable static state which makes testing difficult
-// and creates hidden global dependencies. Consider refactoring to dependency injection.
-object ConfigManager {
-    private var lunaticChatConfiguration: LunaticChatConfiguration? = null
-
-    fun getConfiguration(): LunaticChatConfiguration =
-        lunaticChatConfiguration ?: IllegalStateException("LunaticChat Config not loaded").let { throw it }
-
+/**
+ * Manages loading and parsing of plugin configuration.
+ * Converted from singleton to dependency injection pattern for better testability.
+ */
+class ConfigManager {
     fun loadConfiguration(configFile: FileConfiguration): LunaticChatConfiguration {
         val loadedConfig =
             LunaticChatConfiguration(
@@ -81,7 +78,6 @@ object ConfigManager {
                     ),
             )
 
-        lunaticChatConfiguration = loadedConfig
         return loadedConfig
     }
 }

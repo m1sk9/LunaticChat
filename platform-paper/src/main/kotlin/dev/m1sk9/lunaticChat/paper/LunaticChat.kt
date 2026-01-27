@@ -22,7 +22,7 @@ import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.listener.EventListenerRegistry
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 import java.util.concurrent.atomic.AtomicBoolean
@@ -43,13 +43,15 @@ class LunaticChat :
     private lateinit var services: ServiceContainer
     private lateinit var configuration: LunaticChatConfiguration
     private lateinit var serviceInitializer: ServiceInitializer
+    private lateinit var pluginScope: PluginCoroutineScope
     private var updateChecker: UpdateChecker? = null
 
     private val updateAvailable = AtomicBoolean(false)
 
     override fun onEnable() {
         saveDefaultConfig()
-        configuration = ConfigManager.loadConfiguration(config)
+        val configManager = ConfigManager()
+        configuration = configManager.loadConfiguration(config)
 
         if (configuration.debug) {
             logger.warning("LunaticChat is running in debug mode.")
@@ -57,6 +59,9 @@ class LunaticChat :
         }
 
         val httpClient = HttpClient(CIO)
+
+        // Initialize plugin coroutine scope
+        pluginScope = PluginCoroutineScope(this, logger)
 
         // Initialize all services
         serviceInitializer =
@@ -93,6 +98,7 @@ class LunaticChat :
     }
 
     override fun onDisable() {
+        pluginScope.cancel()
         serviceInitializer.shutdown(services)
         logger.info("LunaticChat disabled.")
     }
@@ -157,6 +163,7 @@ class LunaticChat :
 
     /**
      * Initializes the update checker.
+     * Uses plugin coroutine scope instead of runBlocking for non-blocking async execution.
      */
     private fun initializeUpdateChecker(httpClient: HttpClient) {
         updateChecker =
@@ -165,14 +172,9 @@ class LunaticChat :
                 logger = logger,
                 httpClient = httpClient,
             )
-        server.scheduler.runTaskAsynchronously(
-            this,
-            Runnable {
-                runBlocking {
-                    checkUpdates()
-                }
-            },
-        )
+        pluginScope.scope.launch {
+            checkUpdates()
+        }
     }
 
     private suspend fun checkUpdates() {
