@@ -30,6 +30,14 @@ export const ja: DefaultTheme.Config = {
             text: 'Velocity 連携',
             link: '/guide/admin/velocity',
           },
+            {
+                text: "チャンネルチャット展開ガイド",
+                link: "/guide/admin/introduction-channel-chat",
+            },
+            {
+                text: "データ・ログ",
+                link: "/guide/admin/data-and-logs",
+            }
         ],
       },
       {

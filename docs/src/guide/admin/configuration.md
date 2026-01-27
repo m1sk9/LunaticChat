@@ -54,6 +54,12 @@ features:
   channelChat:
     # If enabled, channel-based chat functionality will be activated.
     enabled: false
+    # Maximum number of channels that can be created per server. Set to 0 for unlimited.
+    maxChannelsPerServer: 0
+    # Maximum number of members allowed in a single channel. Set to 0 for unlimited.
+    maxMembersPerChannel: 0
+    # Maximum number of channels a single player can join. Set to 0 for unlimited.
+    maxMembershipPerPlayer: 0
 
 # ----------------------------------------------
 # ---------   Message Format Settings   --------
@@ -171,12 +177,41 @@ LunaticChat の [`/reply`](../../reference/commands/reply.md) コマンドによ
 
 ローマ字変換 API へのリクエストが失敗した場合の再試行回数を指定します．
 
-### `features.channelChat.enabled`
+### `features.channelChat`
+
+#### `enabled`
 
 - Type: `boolean`
 - Default: `false`
 
 チャンネルチャット機能を有効にします．
+
+#### `maxChannelsPerServer`
+
+- Type: `integer`
+- Default: `0`
+
+サーバーあたりで作成可能なチャンネルの最大数を指定します．
+
+`0` に設定すると無制限になります．
+
+#### `maxMembersPerChannel`
+
+- Type: `integer`
+- Default: `0`
+
+1 つのチャンネルに参加可能なメンバーの最大数を指定します．
+
+`0` に設定すると無制限になります．
+
+#### `maxMembershipPerPlayer`
+
+- Type: `integer`
+- Default: `0`
+
+1 人のプレイヤーが参加可能なチャンネルの最大数を指定します．
+
+`0` に設定すると無制限になります．
 
 ## Message Format Settings
 
