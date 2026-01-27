@@ -42,7 +42,15 @@ export const ja: DefaultTheme.Config = {
                 {
                     text: 'チャットモード',
                     link: '/guide/player/channel-chat/chatmode',
-                }
+                },
+                {
+                    text: 'プライベートチャンネル',
+                    link: '/guide/player/channel-chat/private-channel',
+                },
+                {
+                    text: 'モデレーション',
+                    link: '/guide/player/channel-chat/moderation',
+                },
             ]
           },
           {
