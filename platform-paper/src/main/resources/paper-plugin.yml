@@ -33,7 +33,21 @@ permissions:
     default: true
   lunaticchat.command.lc.channel.status:
     default: true
+  lunaticchat.command.lc.channel.info:
+    default: true
   lunaticchat.command.lc.channel.delete:
+    default: true
+  lunaticchat.command.lc.channel.invite:
+    default: true
+  lunaticchat.command.lc.channel.kick:
+    default: true
+  lunaticchat.command.lc.channel.ban:
+    default: true
+  lunaticchat.command.lc.channel.unban:
+    default: true
+  lunaticchat.command.lc.channel.mod:
+    default: true
+  lunaticchat.command.lc.channel.ownership:
     default: true
   lunaticchat.command.lc.chatmode:
     default: true
@@ -42,5 +56,7 @@ permissions:
 
   lunaticchat.spy:
     default: op
-  lunaticchat.noticeUpdate:
+  lunaticchat.noticeupdate:
+    default: op
+  lunaticchat.channelbypass:
     default: op

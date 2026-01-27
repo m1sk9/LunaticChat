@@ -5,13 +5,18 @@ import dev.m1sk9.lunaticChat.engine.exception.ChannelAlreadyActiveException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelMemberAlreadyException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelNotFoundException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelNotMemberException
+import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerBannedException
+import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerMembershipLimitExceededException
+import dev.m1sk9.lunaticChat.engine.exception.ChannelPrivateRequiresInvitationException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelRuntimeException
+import dev.m1sk9.lunaticChat.paper.config.key.ChannelChatFeatureConfig
 import java.util.UUID
 import java.util.logging.Logger
 
 class ChannelMembershipManager(
     private val channelManager: ChannelManager,
     private val logger: Logger,
+    private val config: ChannelChatFeatureConfig,
 ) {
     /**
      * Checks if a player is a member of a channel.
@@ -48,6 +53,23 @@ class ChannelMembershipManager(
         }
 
     /**
+     * Gets the role of a member in a channel without throwing exceptions.
+     *
+     * @param playerId The UUID of the player.
+     * @param channelId The ID of the channel.
+     * @return The ChannelRole if the player is a member, null otherwise.
+     */
+    fun getMemberRoleOrNull(
+        playerId: UUID,
+        channelId: String,
+    ): ChannelRole? =
+        channelManager
+            .getChannelMembers(channelId)
+            .getOrNull()
+            ?.find { it.playerId == playerId }
+            ?.role
+
+    /**
      * Checks if a player has a specific role or higher in a channel.
      *
      * @param playerId The UUID of the player.
@@ -80,14 +102,17 @@ class ChannelMembershipManager(
      *
      * @param playerId The UUID of the player.
      * @param channelId The ID of the channel.
+     * @param bypassPrivateCheck If true, allows joining private channels without invitation (used for invites).
      * @return Result indicating success or failure.
      * @throws ChannelNotFoundException if the channel does not exist.
      * @throws ChannelMemberAlreadyException if the player is already a member of this channel.
+     * @throws ChannelPlayerMembershipLimitExceededException if the player has reached the maximum channel membership limit.
      * @throws ChannelRuntimeException for other runtime errors.
      */
     fun joinChannel(
         playerId: UUID,
         channelId: String,
+        bypassPrivateCheck: Boolean = false,
     ): Result<Unit> {
         // Check if channel exists
         val channel =
@@ -102,6 +127,21 @@ class ChannelMembershipManager(
         if (currentActiveChannel == channelId) {
             return Result.failure(
                 ChannelAlreadyActiveException(playerId, channelId),
+            )
+        }
+
+        // Check if player is banned
+        val isBanned = channelManager.isPlayerBanned(channelId, playerId).getOrElse { false }
+        if (isBanned) {
+            return Result.failure(
+                ChannelPlayerBannedException(playerId, channelId),
+            )
+        }
+
+        // Check if this is a private channel (only invited members can join)
+        if (channel.isPrivate && !bypassPrivateCheck) {
+            return Result.failure(
+                ChannelPrivateRequiresInvitationException(playerId, channelId),
             )
         }
 
@@ -120,6 +160,23 @@ class ChannelMembershipManager(
             )
         }
 
+        // Check if player has reached max membership limit (0 means unlimited)
+        if (config.maxMembershipPerPlayer > 0) {
+            val playerChannelCount =
+                getPlayerChannels(playerId)
+                    .getOrElse {
+                        return Result.failure(
+                            ChannelRuntimeException("Failed to get player channels for $playerId", it),
+                        )
+                    }.size
+
+            if (playerChannelCount >= config.maxMembershipPerPlayer) {
+                return Result.failure(
+                    ChannelPlayerMembershipLimitExceededException(playerId, config.maxMembershipPerPlayer),
+                )
+            }
+        }
+
         // Add as member
         channelManager.addMember(channelId, playerId, ChannelRole.MEMBER).getOrElse {
             return Result.failure(it)
@@ -132,8 +189,8 @@ class ChannelMembershipManager(
     }
 
     /**
-     * Clears the player's active channel without removing them from channel membership.
-     * The player remains a member of the channel and can rejoin by using the join command.
+     * Removes the player from the active channel completely.
+     * The player will be removed from the channel membership and the active channel will be cleared.
      *
      * @param playerId The UUID of the player.
      * @return Result indicating success or failure.
@@ -146,9 +203,14 @@ class ChannelMembershipManager(
                     ChannelNotMemberException(playerId, "no active channel"),
                 )
 
+        // Remove from channel members
+        channelManager.removeMember(currentChannel, playerId).getOrElse {
+            return Result.failure(it)
+        }
+
         // Clear active channel
         channelManager.setPlayerChannel(playerId, null)
-        logger.info("Player $playerId left active channel $currentChannel (still a member)")
+        logger.info("Player $playerId left channel $currentChannel (removed from members)")
         return Result.success(Unit)
     }
 

@@ -11,6 +11,7 @@ import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
 import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.lc.chatmode.ChatModeToggleCommand
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
+import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
 import net.kyori.adventure.text.Component
@@ -69,9 +70,10 @@ class ChatModeCommand(
             }
 
         sender.sendMessage(
-            Component
-                .text(languageManager.getMessage("chatmode.current") + ": ", NamedTextColor.GRAY)
-                .append(Component.text(languageManager.getMessage(modeKey), modeColor)),
+            MessageFormatter
+                .format(
+                    languageManager.getMessage("chatmode.current") + ": ",
+                ).append(Component.text(languageManager.getMessage(modeKey), modeColor)),
         )
 
         return CommandResult.Success

@@ -4,6 +4,7 @@ import dev.m1sk9.lunaticChat.paper.chat.ChatModeManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMembershipManager
 import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelMessageHandler
+import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelNotificationHandler
 import dev.m1sk9.lunaticChat.paper.chat.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
@@ -23,6 +24,7 @@ import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
  * @property channelMembershipManager Optional (only when channel chat feature is enabled)
  * @property chatModeManager Optional (only when channel chat feature is enabled)
  * @property channelMessageHandler Optional (only when channel chat feature is enabled)
+ * @property channelNotificationHandler Optional (only when channel chat feature is enabled)
  */
 data class ServiceContainer(
     val languageManager: LanguageManager,
@@ -33,4 +35,5 @@ data class ServiceContainer(
     val channelMembershipManager: ChannelMembershipManager? = null,
     val chatModeManager: ChatModeManager? = null,
     val channelMessageHandler: ChannelMessageHandler? = null,
+    val channelNotificationHandler: ChannelNotificationHandler? = null,
 )

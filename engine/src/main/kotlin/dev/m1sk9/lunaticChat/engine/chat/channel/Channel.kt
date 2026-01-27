@@ -13,6 +13,7 @@ import java.util.UUID
  * @property isPrivate Indicates whether the channel is private or public.
  * @property ownerId UUID of the user who owns the channel.
  * @property createdAt Timestamp of when the channel was created.
+ * @property bannedPlayers Set of UUIDs of players who are banned from the channel.
  */
 @Serializable
 data class Channel(
@@ -23,6 +24,10 @@ data class Channel(
     @Serializable(with = UUIDSerializer::class)
     val ownerId: UUID,
     val createdAt: Long = System.currentTimeMillis(),
+    val bannedPlayers: Set<
+        @Serializable(with = UUIDSerializer::class)
+        UUID,
+    > = emptySet(),
 ) {
     init {
         require(id.matches(CHANNEL_ID_PATTERN)) {

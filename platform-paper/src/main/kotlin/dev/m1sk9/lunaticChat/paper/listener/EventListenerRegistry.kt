@@ -42,15 +42,18 @@ object EventListenerRegistry {
 
         // Conditionally register chat listener when all required components are available
         if (services.chatModeManager != null &&
+            services.channelManager != null &&
             services.channelMessageHandler != null &&
             services.romajiConverter != null
         ) {
             pluginManager.registerEvents(
                 PlayerChatListener(
                     chatModeManager = services.chatModeManager,
+                    channelManager = services.channelManager,
                     channelMessageHandler = services.channelMessageHandler,
                     romajiConverter = services.romajiConverter,
                     settingsManager = services.playerSettingsManager,
+                    languageManager = services.languageManager,
                 ),
                 plugin,
             )

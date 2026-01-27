@@ -63,11 +63,13 @@ class PlayerPresenceListener(
             val context = manager.getPlayerChannelContext(player.uniqueId)
             context?.let {
                 val notification =
-                    languageManager.getMessage(
-                        "channel.notification.login",
-                        mapOf("channelName" to it.channel.name),
+                    MessageFormatter.format(
+                        languageManager.getMessage(
+                            "channel.notification.login",
+                            mapOf("channelName" to it.channel.name),
+                        ),
                     )
-                player.sendMessage(Component.text(notification))
+                player.sendMessage(notification)
             }
         }
     }

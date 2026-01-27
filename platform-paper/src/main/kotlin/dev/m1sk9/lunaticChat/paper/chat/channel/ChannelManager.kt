@@ -5,8 +5,13 @@ import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelContext
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelData
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelMember
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelRole
+import dev.m1sk9.lunaticChat.engine.exception.ChannelLimitExceededException
+import dev.m1sk9.lunaticChat.engine.exception.ChannelMemberLimitExceededException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelNoOwnerPermissionException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelNotFoundException
+import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerAlreadyBannedException
+import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerNotBannedException
+import dev.m1sk9.lunaticChat.paper.config.key.ChannelChatFeatureConfig
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
@@ -16,6 +21,7 @@ import kotlin.collections.forEach
 class ChannelManager(
     private val storage: ChannelStorage,
     private val logger: Logger,
+    private val config: ChannelChatFeatureConfig,
 ) {
     private val channelsCache = ConcurrentHashMap<String, Channel>()
     private val membersCache = ConcurrentHashMap<String, CopyOnWriteArrayList<ChannelMember>>()
@@ -47,10 +53,16 @@ class ChannelManager(
      * @param channel The channel to create.
      * @return Result containing the created channel or an error if the channel already exists.
      * @throws ChannelNotFoundException if a channel with the same ID already exists.
+     * @throws ChannelLimitExceededException if the server has reached the maximum channel limit.
      */
     fun createChannel(channel: Channel): Result<Channel> {
         if (channelsCache.containsKey(channel.id)) {
             return Result.failure(ChannelNotFoundException(channel.id))
+        }
+
+        // Check if max channels limit is reached (0 means unlimited)
+        if (config.maxChannelsPerServer > 0 && channelsCache.size >= config.maxChannelsPerServer) {
+            return Result.failure(ChannelLimitExceededException(config.maxChannelsPerServer))
         }
 
         channelsCache[channel.id] = channel
@@ -76,18 +88,20 @@ class ChannelManager(
      *
      * @param channelId The ID of the channel to delete.
      * @param requesterId The ID of the player requesting the deletion.
+     * @param hasBypassPermission Whether the requester has bypass permission.
      * @return Result indicating success or failure of the deletion.
      * @throws ChannelNotFoundException if the channel does not exist.
      */
     fun deleteChannel(
         channelId: String,
         requesterId: UUID,
+        hasBypassPermission: Boolean = false,
     ): Result<Unit> {
         val channel =
             channelsCache[channelId]
                 ?: return Result.failure(ChannelNotFoundException(channelId))
 
-        if (channel.ownerId != requesterId) {
+        if (channel.ownerId != requesterId && !hasBypassPermission) {
             return Result.failure(ChannelNoOwnerPermissionException(requesterId))
         }
 
@@ -159,6 +173,7 @@ class ChannelManager(
      * @param role The role of the new member.
      * @return Result indicating success or failure of the operation.
      * @throws ChannelNotFoundException if the channel does not exist.
+     * @throws ChannelMemberLimitExceededException if the channel has reached the maximum member limit.
      */
     fun addMember(
         channelId: String,
@@ -172,6 +187,11 @@ class ChannelManager(
             membersCache.getOrPut(channelId) {
                 CopyOnWriteArrayList()
             }
+
+        // Check if max members limit is reached (0 means unlimited)
+        if (config.maxMembersPerChannel > 0 && members.size >= config.maxMembersPerChannel) {
+            return Result.failure(ChannelMemberLimitExceededException(channelId, config.maxMembersPerChannel))
+        }
         val newMember =
             ChannelMember(
                 channelId = channelId,
@@ -212,6 +232,162 @@ class ChannelManager(
 
         saveToStorage()
         return Result.success(Unit)
+    }
+
+    /**
+     * Checks if a player is banned from a channel.
+     *
+     * @param channelId The ID of the channel.
+     * @param playerId The UUID of the player to check.
+     * @return Result containing true if banned, false otherwise.
+     * @throws ChannelNotFoundException if the channel does not exist.
+     */
+    fun isPlayerBanned(
+        channelId: String,
+        playerId: UUID,
+    ): Result<Boolean> {
+        val channel =
+            channelsCache[channelId]
+                ?: return Result.failure(ChannelNotFoundException(channelId))
+
+        return Result.success(channel.bannedPlayers.contains(playerId))
+    }
+
+    /**
+     * Bans a player from a channel.
+     *
+     * @param channelId The ID of the channel.
+     * @param playerId The UUID of the player to ban.
+     * @return Result containing the updated channel or an error.
+     * @throws ChannelNotFoundException if the channel does not exist.
+     */
+    fun banPlayer(
+        channelId: String,
+        playerId: UUID,
+    ): Result<Channel> {
+        val channel =
+            channelsCache[channelId]
+                ?: return Result.failure(ChannelNotFoundException(channelId))
+
+        // Check if player is already banned
+        if (channel.bannedPlayers.contains(playerId)) {
+            return Result.failure(ChannelPlayerAlreadyBannedException(playerId, channelId))
+        }
+
+        // Add player to banned list
+        val updatedChannel = channel.copy(bannedPlayers = channel.bannedPlayers + playerId)
+        channelsCache[channelId] = updatedChannel
+
+        // Remove from members if currently a member
+        membersCache[channelId]?.removeIf { it.playerId == playerId }
+
+        // Clear active channel if this was the player's active channel
+        if (activeChannels[playerId] == channelId) {
+            activeChannels.remove(playerId)
+        }
+
+        saveToStorage()
+        logger.info("Player $playerId banned from channel $channelId.")
+        return Result.success(updatedChannel)
+    }
+
+    /**
+     * Unbans a player from a channel.
+     *
+     * @param channelId The ID of the channel.
+     * @param playerId The UUID of the player to unban.
+     * @return Result containing the updated channel or an error.
+     * @throws ChannelNotFoundException if the channel does not exist.
+     * @throws ChannelPlayerNotBannedException if the player is not banned.
+     */
+    fun unbanPlayer(
+        channelId: String,
+        playerId: UUID,
+    ): Result<Channel> {
+        val channel =
+            channelsCache[channelId]
+                ?: return Result.failure(ChannelNotFoundException(channelId))
+
+        // Check if player is actually banned
+        if (!channel.bannedPlayers.contains(playerId)) {
+            return Result.failure(ChannelPlayerNotBannedException(playerId, channelId))
+        }
+
+        // Remove player from banned list
+        val updatedChannel = channel.copy(bannedPlayers = channel.bannedPlayers - playerId)
+        channelsCache[channelId] = updatedChannel
+
+        saveToStorage()
+        logger.info("Player $playerId unbanned from channel $channelId.")
+        return Result.success(updatedChannel)
+    }
+
+    /**
+     * Updates a member's role in a channel.
+     *
+     * @param channelId The ID of the channel.
+     * @param playerId The UUID of the player whose role to update.
+     * @param newRole The new role for the member.
+     * @return Result indicating success or failure of the operation.
+     * @throws ChannelNotFoundException if the channel does not exist.
+     */
+    fun updateMemberRole(
+        channelId: String,
+        playerId: UUID,
+        newRole: ChannelRole,
+    ): Result<Unit> {
+        channelsCache[channelId]
+            ?: return Result.failure(ChannelNotFoundException(channelId))
+
+        val members =
+            membersCache[channelId]
+                ?: return Result.failure(ChannelNotFoundException(channelId))
+
+        val member = members.find { it.playerId == playerId } ?: return Result.failure(ChannelNotFoundException(channelId))
+
+        // Update member role
+        members.remove(member)
+        members.add(member.copy(role = newRole))
+
+        saveToStorage()
+        return Result.success(Unit)
+    }
+
+    /**
+     * Updates the channel owner.
+     *
+     * @param channelId The ID of the channel.
+     * @param newOwnerId The UUID of the new owner.
+     * @return Result containing the updated channel or an error.
+     * @throws ChannelNotFoundException if the channel does not exist.
+     */
+    fun updateChannelOwner(
+        channelId: String,
+        newOwnerId: UUID,
+    ): Result<Channel> {
+        val channel =
+            channelsCache[channelId]
+                ?: return Result.failure(ChannelNotFoundException(channelId))
+
+        // Update channel owner
+        val updatedChannel = channel.copy(ownerId = newOwnerId)
+        channelsCache[channelId] = updatedChannel
+
+        // Update member roles - new owner becomes OWNER, old owner becomes MODERATOR
+        val members = membersCache[channelId]
+        if (members != null) {
+            members.replaceAll { member ->
+                when (member.playerId) {
+                    newOwnerId -> member.copy(role = ChannelRole.OWNER)
+                    channel.ownerId -> member.copy(role = ChannelRole.MODERATOR)
+                    else -> member
+                }
+            }
+        }
+
+        saveToStorage()
+        logger.info("Channel $channelId owner changed from ${channel.ownerId} to $newOwnerId.")
+        return Result.success(updatedChannel)
     }
 
     /**

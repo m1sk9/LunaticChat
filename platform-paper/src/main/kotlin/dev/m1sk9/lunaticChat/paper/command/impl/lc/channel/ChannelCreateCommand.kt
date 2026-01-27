@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import dev.m1sk9.lunaticChat.engine.chat.channel.Channel
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
+import dev.m1sk9.lunaticChat.engine.exception.ChannelLimitExceededException
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
@@ -113,22 +114,42 @@ class ChannelCreateCommand(
         val result = channelManager.createChannel(channel)
         return result.fold(
             onSuccess = {
+                val successMessage =
+                    languageManager.getMessage(
+                        "channel.create.success",
+                        mapOf("name" to name, "id" to channelId),
+                    )
+
+                val message =
+                    if (isPrivate) {
+                        val privateNotice = languageManager.getMessage("channel.create.privateNotice")
+                        "$successMessage\n$privateNotice"
+                    } else {
+                        successMessage
+                    }
+
                 CommandResult.SuccessWithMessage(
-                    MessageFormatter.format(
-                        languageManager.getMessage(
-                            "channel.create.success",
-                            mapOf("name" to name, "id" to channelId),
-                        ),
-                    ),
+                    MessageFormatter.format(message),
                 )
             },
             onFailure = { error ->
+                val messageKey =
+                    when (error) {
+                        is ChannelLimitExceededException ->
+                            "channel.create.limitExceeded"
+                        else ->
+                            "channel.create.alreadyExists"
+                    }
+                val params =
+                    when (error) {
+                        is ChannelLimitExceededException ->
+                            mapOf("limit" to error.limit.toString())
+                        else ->
+                            mapOf("id" to channelId)
+                    }
                 CommandResult.Failure(
                     MessageFormatter.formatError(
-                        languageManager.getMessage(
-                            "channel.create.alreadyExists",
-                            mapOf("id" to channelId),
-                        ),
+                        languageManager.getMessage(messageKey, params),
                     ),
                 )
             },

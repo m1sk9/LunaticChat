@@ -7,6 +7,7 @@ import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMembershipManager
+import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelNotificationHandler
 import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
@@ -21,6 +22,7 @@ class ChannelLeaveCommand(
     plugin: LunaticChat,
     private val channelManager: ChannelManager,
     private val membershipManager: ChannelMembershipManager,
+    private val notificationHandler: ChannelNotificationHandler,
     private val languageManager: LanguageManager,
 ) : LunaticCommand(plugin) {
     fun buildWithPermissionCheck(): LiteralArgumentBuilder<CommandSourceStack> {
@@ -48,6 +50,11 @@ class ChannelLeaveCommand(
         val result = membershipManager.leaveChannel(sender.uniqueId)
         return result.fold(
             onSuccess = {
+                // Broadcast leave notification to all channel members
+                if (currentChannelId != null) {
+                    notificationHandler.broadcastLeave(currentChannelId, sender.name)
+                }
+
                 CommandResult.SuccessWithMessage(
                     MessageFormatter.format(
                         languageManager.getMessage(

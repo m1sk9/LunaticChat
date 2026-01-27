@@ -51,6 +51,12 @@ features:
   channelChat:
     # If enabled, channel-based chat functionality will be activated.
     enabled: false
+    # Maximum number of channels that can be created per server. Set to 0 for unlimited.
+    maxChannelsPerServer: 0
+    # Maximum number of members allowed in a single channel. Set to 0 for unlimited.
+    maxMembersPerChannel: 0
+    # Maximum number of channels a single player can join. Set to 0 for unlimited.
+    maxMembershipPerPlayer: 0
 
 # ----------------------------------------------
 # ---------   Message Format Settings   --------
