@@ -2,7 +2,7 @@ package dev.m1sk9.lunaticChat.engine.exception
 
 import java.util.UUID
 
-class PlayerChannelLimitExceededException(
+class ChannelPlayerMembershipLimitExceededException(
     val playerId: UUID,
     val limit: Int,
 ) : Exception(
