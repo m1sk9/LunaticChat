@@ -191,6 +191,7 @@ general:
   playerOnlyCommand: "このコマンドはプレイヤーのみが実行できます"
   newUpdateAvailable: "LunaticChat の新しいバージョンが利用可能です。GitHubまたはModrinthからダウンロードできます"
   noPermission: "このコマンドを実行する権限がありません"
+  spyMessage: "あなたに権限が付与されているため、このメッセージはスパイ状態で表示されています"
 
 toggle:
   on: "有効"

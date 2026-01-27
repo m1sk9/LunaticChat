@@ -1,3 +1,7 @@
+<div align="right">
+  <img src="docs/.vitepress/public/icon.png" alt="LunaticChat Icon" width="200"/>
+</div>
+
 # LunaticChat
 
 [![CI](https://github.com/m1sk9/LunaticChat/actions/workflows/ci.yaml/badge.svg)](https://github.com/m1sk9/LunaticChat/actions/workflows/ci.yaml)
