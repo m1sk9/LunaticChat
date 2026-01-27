@@ -7,6 +7,7 @@ import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMembershipManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelStorage
 import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelMessageHandler
+import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelNotificationHandler
 import dev.m1sk9.lunaticChat.paper.chat.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
 import dev.m1sk9.lunaticChat.paper.converter.ConversionCache
@@ -27,6 +28,7 @@ private data class ChannelComponents(
     val channelMembershipManager: ChannelMembershipManager,
     val chatModeManager: ChatModeManager,
     val channelMessageHandler: ChannelMessageHandler,
+    val channelNotificationHandler: ChannelNotificationHandler,
 )
 
 /**
@@ -46,6 +48,7 @@ class ServiceInitializer(
     private var channelMembershipManager: ChannelMembershipManager? = null
     private var chatModeManager: ChatModeManager? = null
     private var channelMessageHandler: ChannelMessageHandler? = null
+    private var channelNotificationHandler: ChannelNotificationHandler? = null
 
     /**
      * Initializes all services in dependency order.
@@ -81,10 +84,10 @@ class ServiceInitializer(
                 null
             }
 
-        // 4. Initialize channel manager, membership manager, chat mode manager, and channel message handler
+        // 4. Initialize channel manager, membership manager, chat mode manager, channel message handler, and notification handler
         val channelComponents =
             if (configuration.features.channelChat.enabled) {
-                initializeChannelManager(playerSettingsManager, romajiConverter)
+                initializeChannelManager(playerSettingsManager, romajiConverter, languageManager)
             } else {
                 null
             }
@@ -92,6 +95,7 @@ class ServiceInitializer(
         val channelMembershipManager = channelComponents?.channelMembershipManager
         val chatModeManager = channelComponents?.chatModeManager
         val channelMessageHandler = channelComponents?.channelMessageHandler
+        val channelNotificationHandler = channelComponents?.channelNotificationHandler
 
         // 5. Initialize handlers
         val directMessageHandler =
@@ -109,6 +113,7 @@ class ServiceInitializer(
             channelMembershipManager = channelMembershipManager,
             chatModeManager = chatModeManager,
             channelMessageHandler = channelMessageHandler,
+            channelNotificationHandler = channelNotificationHandler,
         )
     }
 
@@ -173,11 +178,12 @@ class ServiceInitializer(
     }
 
     /**
-     * Initializes channel manager, membership manager, chat mode manager, and channel message handler with storage.
+     * Initializes channel manager, membership manager, chat mode manager, channel message handler, and notification handler with storage.
      */
     private fun initializeChannelManager(
         settingsManager: PlayerSettingsManager,
         romajiConverter: RomanjiConverter?,
+        languageManager: LanguageManager,
     ): ChannelComponents {
         val channelsFile = plugin.dataFolder.resolve("channels.json").toPath()
         val storage =
@@ -230,12 +236,23 @@ class ServiceInitializer(
             )
         channelMessageHandler = messageHandler
 
-        logger.info("Channel manager, membership manager, chat mode manager, and channel message handler initialized successfully.")
+        val notificationHandler =
+            ChannelNotificationHandler(
+                channelManager = manager,
+                languageManager = languageManager,
+            )
+        channelNotificationHandler = notificationHandler
+
+        logger.info(
+            "Channel manager, membership manager, chat mode manager, " +
+                "channel message handler, and notification handler initialized successfully.",
+        )
         return ChannelComponents(
             channelManager = manager,
             channelMembershipManager = membershipManager,
             chatModeManager = chatMode,
             channelMessageHandler = messageHandler,
+            channelNotificationHandler = notificationHandler,
         )
     }
 

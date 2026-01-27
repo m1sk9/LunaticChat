@@ -51,14 +51,17 @@ class LunaticChatCommand(
         // Add channel command if channel manager is available
         plugin.channelManager?.let { manager ->
             plugin.channelMembershipManager?.let { membershipManager ->
-                command.then(
-                    ChannelCommand(
-                        plugin,
-                        manager,
-                        membershipManager,
-                        languageManager,
-                    ).buildWithPermissionCheck(),
-                )
+                plugin.channelNotificationHandler?.let { notificationHandler ->
+                    command.then(
+                        ChannelCommand(
+                            plugin,
+                            manager,
+                            membershipManager,
+                            notificationHandler,
+                            languageManager,
+                        ).buildWithPermissionCheck(),
+                    )
+                }
             }
         }
 

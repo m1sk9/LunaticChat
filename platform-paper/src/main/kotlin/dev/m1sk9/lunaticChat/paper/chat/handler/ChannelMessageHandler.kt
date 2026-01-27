@@ -54,10 +54,12 @@ class ChannelMessageHandler(
             player.playMessageSendNotification()
         }
 
+        // Send to spy players (exclude sender and channel members)
+        val memberIds = context.members.map { it.playerId }.toSet()
         SpyPermissionManager
             .getDirectMessageSpyPlayers()
             .values
-            .filter { it.isOnline && it.uniqueId != playerId }
+            .filter { it.isOnline && it.uniqueId != playerId && it.uniqueId !in memberIds }
             .forEach { it.sendMessage(spyMessage) }
         context.members.forEach { member ->
             Bukkit.getPlayer(member.playerId)?.let { memberPlayer ->

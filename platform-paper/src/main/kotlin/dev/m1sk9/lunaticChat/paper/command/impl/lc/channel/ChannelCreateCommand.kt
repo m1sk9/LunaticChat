@@ -114,13 +114,22 @@ class ChannelCreateCommand(
         val result = channelManager.createChannel(channel)
         return result.fold(
             onSuccess = {
+                val successMessage =
+                    languageManager.getMessage(
+                        "channel.create.success",
+                        mapOf("name" to name, "id" to channelId),
+                    )
+
+                val message =
+                    if (isPrivate) {
+                        val privateNotice = languageManager.getMessage("channel.create.privateNotice")
+                        "$successMessage\n$privateNotice"
+                    } else {
+                        successMessage
+                    }
+
                 CommandResult.SuccessWithMessage(
-                    MessageFormatter.format(
-                        languageManager.getMessage(
-                            "channel.create.success",
-                            mapOf("name" to name, "id" to channelId),
-                        ),
-                    ),
+                    MessageFormatter.format(message),
                 )
             },
             onFailure = { error ->

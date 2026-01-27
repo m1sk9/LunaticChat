@@ -35,7 +35,33 @@ class ChannelDeleteCommand(
             .then(
                 Commands
                     .argument("channelId", StringArgumentType.word())
-                    .executes { ctx ->
+                    .suggests { ctx, builder ->
+                        val player = ctx.source.executor as? org.bukkit.entity.Player
+                        if (player != null) {
+                            val hasBypass =
+                                player.hasPermission(
+                                    LunaticChatPermissionNode.ChannelBypass.permissionNode,
+                                )
+
+                            val channels =
+                                if (hasBypass) {
+                                    // Show all channels if has bypass permission
+                                    channelManager.getAllChannels().getOrNull() ?: emptyList()
+                                } else {
+                                    // Show only owned channels
+                                    channelManager
+                                        .getAllChannels()
+                                        .getOrNull()
+                                        ?.filter { it.ownerId == player.uniqueId }
+                                        ?: emptyList()
+                                }
+
+                            channels.forEach { channel ->
+                                builder.suggest(channel.id)
+                            }
+                        }
+                        builder.buildFuture()
+                    }.executes { ctx ->
                         val context = wrapContext(ctx)
                         checkPlayerOnly(context)?.let { return@executes handleResult(context, it) }
 
@@ -51,8 +77,9 @@ class ChannelDeleteCommand(
         channelId: String,
     ): CommandResult {
         val sender = ctx.requirePlayer()
+        val hasBypass = sender.hasPermission(LunaticChatPermissionNode.ChannelBypass.permissionNode)
 
-        val result = channelManager.deleteChannel(channelId, sender.uniqueId)
+        val result = channelManager.deleteChannel(channelId, sender.uniqueId, hasBypass)
         return result.fold(
             onSuccess = {
                 CommandResult.SuccessWithMessage(

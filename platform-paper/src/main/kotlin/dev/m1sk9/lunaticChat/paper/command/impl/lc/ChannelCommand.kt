@@ -6,18 +6,25 @@ import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMembershipManager
+import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelNotificationHandler
 import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
 import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
+import dev.m1sk9.lunaticChat.paper.command.impl.lc.channel.ChannelBanCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.lc.channel.ChannelCreateCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.lc.channel.ChannelDeleteCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.lc.channel.ChannelInfoCommand
+import dev.m1sk9.lunaticChat.paper.command.impl.lc.channel.ChannelInviteCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.lc.channel.ChannelJoinCommand
+import dev.m1sk9.lunaticChat.paper.command.impl.lc.channel.ChannelKickCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.lc.channel.ChannelLeaveCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.lc.channel.ChannelListCommand
+import dev.m1sk9.lunaticChat.paper.command.impl.lc.channel.ChannelModCommand
+import dev.m1sk9.lunaticChat.paper.command.impl.lc.channel.ChannelOwnershipCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.lc.channel.ChannelStatusCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.lc.channel.ChannelSwitchCommand
+import dev.m1sk9.lunaticChat.paper.command.impl.lc.channel.ChannelUnbanCommand
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import io.papermc.paper.command.brigadier.CommandSourceStack
@@ -29,6 +36,7 @@ class ChannelCommand(
     plugin: LunaticChat,
     private val channelManager: ChannelManager,
     private val membershipManager: ChannelMembershipManager,
+    private val notificationHandler: ChannelNotificationHandler,
     private val languageManager: LanguageManager,
 ) : LunaticCommand(plugin) {
     fun buildWithPermissionCheck(): LiteralArgumentBuilder<CommandSourceStack> {
@@ -59,6 +67,7 @@ class ChannelCommand(
                     plugin,
                     channelManager,
                     membershipManager,
+                    notificationHandler,
                     languageManager,
                 ).buildWithPermissionCheck(),
             ).then(
@@ -66,6 +75,7 @@ class ChannelCommand(
                     plugin,
                     channelManager,
                     membershipManager,
+                    notificationHandler,
                     languageManager,
                 ).buildWithPermissionCheck(),
             ).then(
@@ -92,6 +102,50 @@ class ChannelCommand(
                 ChannelDeleteCommand(
                     plugin,
                     channelManager,
+                    languageManager,
+                ).buildWithPermissionCheck(),
+            ).then(
+                ChannelInviteCommand(
+                    plugin,
+                    channelManager,
+                    membershipManager,
+                    languageManager,
+                ).buildWithPermissionCheck(),
+            ).then(
+                ChannelKickCommand(
+                    plugin,
+                    channelManager,
+                    membershipManager,
+                    notificationHandler,
+                    languageManager,
+                ).buildWithPermissionCheck(),
+            ).then(
+                ChannelBanCommand(
+                    plugin,
+                    channelManager,
+                    membershipManager,
+                    notificationHandler,
+                    languageManager,
+                ).buildWithPermissionCheck(),
+            ).then(
+                ChannelUnbanCommand(
+                    plugin,
+                    channelManager,
+                    membershipManager,
+                    languageManager,
+                ).buildWithPermissionCheck(),
+            ).then(
+                ChannelModCommand(
+                    plugin,
+                    channelManager,
+                    membershipManager,
+                    languageManager,
+                ).buildWithPermissionCheck(),
+            ).then(
+                ChannelOwnershipCommand(
+                    plugin,
+                    channelManager,
+                    membershipManager,
                     languageManager,
                 ).buildWithPermissionCheck(),
             )
@@ -185,6 +239,60 @@ class ChannelCommand(
                 .append(
                     MessageFormatter.formatSuccess(
                         languageManager.getMessage("channel.help.delete"),
+                    ),
+                ),
+        )
+        sender.sendMessage(
+            Component
+                .text("  ")
+                .append(
+                    MessageFormatter.formatSuccess(
+                        languageManager.getMessage("channel.help.invite"),
+                    ),
+                ),
+        )
+        sender.sendMessage(
+            Component
+                .text("  ")
+                .append(
+                    MessageFormatter.formatSuccess(
+                        languageManager.getMessage("channel.help.kick"),
+                    ),
+                ),
+        )
+        sender.sendMessage(
+            Component
+                .text("  ")
+                .append(
+                    MessageFormatter.formatSuccess(
+                        languageManager.getMessage("channel.help.ban"),
+                    ),
+                ),
+        )
+        sender.sendMessage(
+            Component
+                .text("  ")
+                .append(
+                    MessageFormatter.formatSuccess(
+                        languageManager.getMessage("channel.help.unban"),
+                    ),
+                ),
+        )
+        sender.sendMessage(
+            Component
+                .text("  ")
+                .append(
+                    MessageFormatter.formatSuccess(
+                        languageManager.getMessage("channel.help.mod"),
+                    ),
+                ),
+        )
+        sender.sendMessage(
+            Component
+                .text("  ")
+                .append(
+                    MessageFormatter.formatSuccess(
+                        languageManager.getMessage("channel.help.ownership"),
                     ),
                 ),
         )

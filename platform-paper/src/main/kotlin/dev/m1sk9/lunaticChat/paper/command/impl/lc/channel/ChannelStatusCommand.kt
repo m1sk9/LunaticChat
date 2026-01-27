@@ -1,6 +1,7 @@
 package dev.m1sk9.lunaticChat.paper.command.impl.lc.channel
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
+import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelRole
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
@@ -100,7 +101,14 @@ class ChannelStatusCommand(
             if (activeMembers.isNotEmpty()) {
                 val memberNames =
                     activeMembers.mapNotNull { member ->
-                        Bukkit.getOfflinePlayer(member.playerId).name
+                        val playerName = Bukkit.getOfflinePlayer(member.playerId).name ?: return@mapNotNull null
+                        val roleText =
+                            when (member.role) {
+                                ChannelRole.OWNER -> " [OWNER]"
+                                ChannelRole.MODERATOR -> " [MOD]"
+                                ChannelRole.MEMBER -> ""
+                            }
+                        playerName + roleText
                     }
 
                 val membersText =
@@ -113,16 +121,24 @@ class ChannelStatusCommand(
                             )
                         Component
                             .text("    ")
-                            .append(Component.text(languageManager.getMessage("channel.info.members"), NamedTextColor.GRAY))
-                            .append(Component.text(": ", NamedTextColor.GRAY))
+                            .append(
+                                Component.text(
+                                    languageManager.getMessage("channel.info.members"),
+                                    NamedTextColor.GRAY,
+                                ),
+                            ).append(Component.text(": ", NamedTextColor.GRAY))
                             .append(Component.text(displayNames.joinToString(", "), NamedTextColor.WHITE))
                             .append(Component.text(" ... ", NamedTextColor.GRAY))
                             .append(Component.text("($message)", NamedTextColor.YELLOW))
                     } else {
                         Component
                             .text("    ")
-                            .append(Component.text(languageManager.getMessage("channel.info.members"), NamedTextColor.GRAY))
-                            .append(Component.text(": ", NamedTextColor.GRAY))
+                            .append(
+                                Component.text(
+                                    languageManager.getMessage("channel.info.members"),
+                                    NamedTextColor.GRAY,
+                                ),
+                            ).append(Component.text(": ", NamedTextColor.GRAY))
                             .append(Component.text(memberNames.joinToString(", "), NamedTextColor.WHITE))
                     }
 
