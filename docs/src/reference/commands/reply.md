@@ -1,4 +1,4 @@
-# /reply　<Badge type="tip" text="v0.1.0" />　<Badge type="tip" text="Paper" />
+# /reply　<Badge type="tip" text="v0.1.0" />　<Badge type="tip" text="Paper/Velocity" />
 
 ### `/reply <メッセージ>`
 
