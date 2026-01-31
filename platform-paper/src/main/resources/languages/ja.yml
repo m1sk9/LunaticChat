@@ -18,6 +18,7 @@ commandDescription:
   notice: "ダイレクトメッセージ通知のオン/オフを切り替えます"
   chNotice: "チャンネルメッセージ通知のオン/オフを切り替えます"
   lc: "LunaticChat のメインコマンド"
+  lcv: "LunaticChat Velocity 連携コマンド"
 
 directMessage:
   noticeToggle: "ダイレクトメッセージ通知を{toggle}にしました"
@@ -196,3 +197,14 @@ general:
 toggle:
   on: "有効"
   off: "無効"
+
+velocity:
+  status:
+    paperVersion: "Paper プラグインバージョン: v{version}"
+    velocityVersion: "Velocity プラグインバージョン: v{version}"
+    protocolVersion: "プロトコルバージョン: v{version}"
+    connectionState: "接続状態"
+    error: "エラー"
+    checkingLiveStatus: "ライブステータスを確認中..."
+    liveStatusSuccess: "ライブステータス: Velocity v{version}, プロトコル v{protocol}, オンライン: {online}"
+    liveStatusFailed: "ライブステータスチェックに失敗しました"

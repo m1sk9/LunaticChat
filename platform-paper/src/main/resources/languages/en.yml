@@ -18,6 +18,7 @@ commandDescription:
   reply: "Reply to the player who last sent/received a direct message"
   tell: "Send a direct message to another player"
   lc: "LunaticChat Main Command"
+  lcv: "LunaticChat Velocity Integration Command"
 
 directMessage:
   noticeStatus: "Direct message notifications are currently {toggle}"
@@ -196,3 +197,15 @@ general:
 toggle:
   off: "Disabled"
   on: "Enabled"
+
+velocity:
+  status:
+    paperVersion: "Paper Plugin Version: v{version}"
+    velocityVersion: "Velocity Plugin Version: v{version}"
+    protocolVersion: "Protocol Version: v{version}"
+    connectionState: "Connection State"
+    error: "Error"
+    checkingLiveStatus: "Checking live status..."
+    liveStatusSuccess: "Live status: Velocity v{version}, Protocol v{protocol}, Online: {online}"
+    liveStatusFailed: "Live status check failed"
+

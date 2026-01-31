@@ -5,6 +5,7 @@ import dev.m1sk9.lunaticChat.paper.config.key.FeaturesConfig
 import dev.m1sk9.lunaticChat.paper.config.key.JapaneseConversionFeatureConfig
 import dev.m1sk9.lunaticChat.paper.config.key.MessageFormatConfig
 import dev.m1sk9.lunaticChat.paper.config.key.QuickRepliesFeatureConfig
+import dev.m1sk9.lunaticChat.paper.config.key.VelocityIntegrationConfig
 import dev.m1sk9.lunaticChat.paper.i18n.Language
 import org.bukkit.configuration.file.FileConfiguration
 
@@ -50,6 +51,10 @@ class ConfigManager {
                                 maxChannelsPerServer = configFile.getInt("features.channelChat.maxChannelsPerServer", 0),
                                 maxMembersPerChannel = configFile.getInt("features.channelChat.maxMembersPerChannel", 0),
                                 maxMembershipPerPlayer = configFile.getInt("features.channelChat.maxMembershipPerPlayer", 0),
+                            ),
+                        velocityIntegration =
+                            VelocityIntegrationConfig(
+                                enabled = configFile.getBoolean("features.velocityIntegration.enabled", false),
                             ),
                     ),
                 messageFormat =

@@ -10,6 +10,7 @@ import dev.m1sk9.lunaticChat.paper.command.core.CommandRegistry
 import dev.m1sk9.lunaticChat.paper.command.impl.ReplyCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.TellCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.lc.LunaticChatCommand
+import dev.m1sk9.lunaticChat.paper.command.impl.lcv.VelocityStatusCommand
 import dev.m1sk9.lunaticChat.paper.command.setting.SettingHandlerRegistry
 import dev.m1sk9.lunaticChat.paper.command.setting.handler.ChannelMessageNoticeSettingHandler
 import dev.m1sk9.lunaticChat.paper.command.setting.handler.DirectMessageNoticeSettingHandler
@@ -148,6 +149,13 @@ class LunaticChat :
         if (configuration.features.quickReplies.enabled) {
             commandRegistry.registerAll(
                 ReplyCommand(this, services.directMessageHandler, services.languageManager),
+            )
+        }
+
+        // Conditionally register /lcv command if Velocity integration is enabled
+        services.velocityConnectionManager?.let { velocityManager ->
+            commandRegistry.registerAll(
+                VelocityStatusCommand(this, velocityManager, services.languageManager),
             )
         }
 
