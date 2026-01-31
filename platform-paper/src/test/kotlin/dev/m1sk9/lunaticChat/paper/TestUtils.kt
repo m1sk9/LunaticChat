@@ -10,6 +10,7 @@ import dev.m1sk9.lunaticChat.paper.config.key.FeaturesConfig
 import dev.m1sk9.lunaticChat.paper.config.key.JapaneseConversionFeatureConfig
 import dev.m1sk9.lunaticChat.paper.config.key.MessageFormatConfig
 import dev.m1sk9.lunaticChat.paper.config.key.QuickRepliesFeatureConfig
+import dev.m1sk9.lunaticChat.paper.config.key.VelocityIntegrationConfig
 import dev.m1sk9.lunaticChat.paper.i18n.Language
 import io.mockk.mockk
 import org.bukkit.entity.Player
@@ -82,6 +83,10 @@ object TestUtils {
                             maxChannelsPerServer = maxChannelsPerServer,
                             maxMembersPerChannel = maxMembersPerChannel,
                             maxMembershipPerPlayer = maxMembershipPerPlayer,
+                        ),
+                    velocityIntegration =
+                        VelocityIntegrationConfig(
+                            enabled = false,
                         ),
                 ),
             messageFormat =
