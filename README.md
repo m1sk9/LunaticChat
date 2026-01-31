@@ -36,10 +36,9 @@ See the [Documentation](https://lc.m1sk9.dev/guide/getting-started).
 - 1on1 Direct Messaging System (`/tell`, `/msg`)
 - Quick Reply Functionality (`/reply`)
 - Romaji to Japanese Conversion
-- CoreProtect-compatible chat logging
+- Channel Chat System
 - Multi-platform support (Paper, Velocity) (coming soon)
   - Spigot? No problem, just use Paper!
-- Channel Chat System (coming soon)
 
 ## License
 

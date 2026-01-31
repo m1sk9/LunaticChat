@@ -32,9 +32,6 @@ features:
   - title: かな・ローマ字変換
     details: ローマ字で入力したメッセージを，自動的に日本語に変換
     icon: 🌍
-  - title: CoreProtect への対応
-    details: LunaticChat のチャットログは CoreProtect と互換性があります
-    icon: 🗒️
   - title: チャンネルチャット機能
     details: チャットチャンネルを作成・管理し，特定のプレイヤー間でのプライベートメッセージを送信可能
     icon: ☎️

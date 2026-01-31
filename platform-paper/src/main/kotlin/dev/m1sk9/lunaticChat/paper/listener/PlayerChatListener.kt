@@ -13,6 +13,7 @@ import kotlinx.coroutines.runBlocking
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 
 class PlayerChatListener(
@@ -25,7 +26,7 @@ class PlayerChatListener(
 ) : Listener {
     private val plainTextSerializer = PlainTextComponentSerializer.plainText()
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun onChat(event: AsyncChatEvent) {
         val player = event.player
         val settings = settingsManager.getSettings(player.uniqueId)
@@ -81,8 +82,13 @@ class PlayerChatListener(
                 val hasActiveChannel = channelManager.getPlayerChannel(player.uniqueId) != null
 
                 if (hasActiveChannel) {
-                    // Send to channel as normal
+                    // Cancel event and clear all data to prevent other plugins from capturing it
+                    // Even MONITOR priority listeners with ignoreCancelled=false won't get useful data
+                    // Message will be delivered by ChannelMessageHandler instead
+                    // Logging is handled by our own ChannelMessageLogger
                     event.isCancelled = true
+                    event.viewers().clear()
+                    event.message(Component.empty())
                     channelMessageHandler.sendChannelMessage(player, messageWithoutPrefix)
                 } else {
                     // Auto-fallback to global chat

@@ -5,6 +5,7 @@ import dev.m1sk9.lunaticChat.paper.chat.ChatModeManager
 import dev.m1sk9.lunaticChat.paper.chat.ChatModeStorage
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMembershipManager
+import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMessageLogger
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelStorage
 import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelMessageHandler
 import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelNotificationHandler
@@ -49,6 +50,7 @@ class ServiceInitializer(
     private var chatModeManager: ChatModeManager? = null
     private var channelMessageHandler: ChannelMessageHandler? = null
     private var channelNotificationHandler: ChannelNotificationHandler? = null
+    private var channelMessageLogger: ChannelMessageLogger? = null
 
     /**
      * Initializes all services in dependency order.
@@ -227,6 +229,28 @@ class ServiceInitializer(
         chatMode.initialize()
         chatModeManager = chatMode
 
+        // Initialize channel message logger if enabled
+        val messageLogger =
+            if (configuration.features.channelChat.messageLogging.enabled) {
+                val logsDir = plugin.dataFolder.resolve("logs/channelchat").toPath()
+                ChannelMessageLogger(
+                    logsDirectory = logsDir,
+                    plugin = plugin,
+                    logger =
+                        io.ktor.util.logging
+                            .KtorSimpleLogger("ChannelMessageLogger"),
+                    maxFileSizeBytes = configuration.features.channelChat.messageLogging.maxFileSizeMB * 1024L * 1024L,
+                    retentionDays = configuration.features.channelChat.messageLogging.retentionDays,
+                ).also {
+                    channelMessageLogger = it
+                    logger.info(
+                        "Channel message logging enabled (retention: ${configuration.features.channelChat.messageLogging.retentionDays} days)",
+                    )
+                }
+            } else {
+                null
+            }
+
         val messageHandler =
             ChannelMessageHandler(
                 configuration = configuration,
@@ -234,6 +258,7 @@ class ServiceInitializer(
                 channelManager = manager,
                 romanjiConverter = romajiConverter,
                 languageManager = languageManager,
+                messageLogger = messageLogger,
                 logger =
                     io.ktor.util.logging
                         .KtorSimpleLogger("ChannelMessageHandler"),
@@ -285,5 +310,6 @@ class ServiceInitializer(
         conversionCache?.saveToDisk()
         services.channelManager?.saveToDisk()
         services.chatModeManager?.shutdown()
+        channelMessageLogger?.shutdown()
     }
 }

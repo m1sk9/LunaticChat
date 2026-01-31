@@ -2,6 +2,19 @@
 
 ## v0
 
+### v0.7.0
+
+#### Breaking Changes
+
+- Other plugins such as CoreProtect can no longer intercept channel chat.
+  - This has broken the integration functionality with CoreProtect.
+  - Channel Chat logs are now uniformly accessible via a text-based viewing method.
+
+----
+
+- Channel chat logging functionality has been implemented.
+    - Logs are now recorded daily in `plugins/LunaticChat/logs/channelchat/`.
+
 ### v0.6.0
 
 - Added experimental feature to Channel Chat support.

@@ -1,6 +1,8 @@
 package dev.m1sk9.lunaticChat.paper.chat.handler
 
+import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelMessageLogEntry
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
+import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMessageLogger
 import dev.m1sk9.lunaticChat.paper.common.SpyPermissionManager
 import dev.m1sk9.lunaticChat.paper.common.playChannelReceiveNotification
 import dev.m1sk9.lunaticChat.paper.common.playMessageSendNotification
@@ -20,6 +22,7 @@ class ChannelMessageHandler(
     private val channelManager: ChannelManager,
     private val romanjiConverter: RomanjiConverter?,
     private val languageManager: LanguageManager,
+    private val messageLogger: ChannelMessageLogger?,
     private val logger: Logger,
 ) {
     fun sendChannelMessage(
@@ -92,6 +95,19 @@ class ChannelMessageHandler(
         }
 
         logger.info("Channel Message from ${player.name} in ${context.channel.name}: $message")
+
+        // Log message to file if logging is enabled
+        messageLogger?.let {
+            val logEntry =
+                ChannelMessageLogEntry.create(
+                    playerId = player.uniqueId,
+                    playerName = player.name,
+                    channelId = context.channelId,
+                    message = message,
+                )
+            it.logMessage(logEntry)
+        }
+
         return true
     }
 

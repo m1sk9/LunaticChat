@@ -54,6 +54,20 @@ features:
   channelChat:
     # If enabled, channel-based chat functionality will be activated.
     enabled: false
+    # Maximum number of channels that can be created per server. Set to 0 for unlimited.
+    maxChannelsPerServer: 0
+    # Maximum number of members allowed in a single channel. Set to 0 for unlimited.
+    maxMembersPerChannel: 0
+    # Maximum number of channels a single player can join. Set to 0 for unlimited.
+    maxMembershipPerPlayer: 0
+    # Channel message logging configuration
+    messageLogging:
+      # If enabled, all channel messages will be logged to NDJSON files for analysis and archival.
+      enabled: true
+      # Number of days to retain log files. Set to 0 to keep logs indefinitely.
+      retentionDays: 30
+      # Maximum size of a single log file in megabytes. Files exceeding this size will stop accepting new entries.
+      maxFileSizeMB: 100
 
 # ----------------------------------------------
 # ---------   Message Format Settings   --------
@@ -171,12 +185,66 @@ Specifies the timeout duration (in milliseconds) for API requests to the romaniz
 
 Specifies the number of retry attempts for failed API requests to the romanization conversion service.
 
-### `features.channelChat.enabled`
+### `features.channelChat`
+
+#### `enabled`
 
 - Type: `boolean`
 - Default: `false`
 
 Enables channel-based chat functionality.
+
+#### `maxChannelsPerServer`
+
+- Type: `integer`
+- Default: `0`
+
+Specifies the maximum number of channels that can be created per server.
+
+Set to `0` for unlimited.
+
+#### `maxMembersPerChannel`
+
+- Type: `integer`
+- Default: `0`
+
+Specifies the maximum number of members that can join a single channel.
+
+Set to `0` for unlimited.
+
+#### `maxMembershipPerPlayer`
+
+- Type: `integer`
+- Default: `0`
+
+Specifies the maximum number of channels a single player can join.
+
+Set to `0` for unlimited.
+
+#### `messageLogging.enabled`
+
+- Type: `boolean`
+- Default: `true`
+
+Specifies whether to log channel chat messages in NDJSON format.
+
+#### `messageLogging.retentionDays`
+
+- Type: `integer`
+- Default: `30`
+
+Specifies the number of days to retain channel chat log files.
+
+Set to `0` to never delete log files.
+
+#### `messageLogging.maxFileSizeMB`
+
+- Type: `integer`
+- Default: `100`
+
+Specifies the maximum size (in megabytes) of channel chat log files.
+
+Log files exceeding `maxFileSizeMB` will stop accepting new entries.
 
 ## Message Format Settings
 
