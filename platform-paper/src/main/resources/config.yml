@@ -65,6 +65,10 @@ features:
       retentionDays: 30
       # Maximum size of a single log file in megabytes. Files exceeding this size will stop accepting new entries.
       maxFileSizeMB: 100
+  velocityIntegration:
+    # If enabled, enables integration with Velocity proxy plugin.
+    # This allows Paper and Velocity instances to communicate and verify compatibility.
+    enabled: false
 
 # ----------------------------------------------
 # ---------   Message Format Settings   --------

@@ -10,7 +10,8 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       version: ${{ steps.get_version.outputs.version }}
-      jar_name: ${{ steps.get_version.outputs.jar_name }}
+      paper_jar_name: ${{ steps.get_version.outputs.paper_jar_name }}
+      velocity_jar_name: ${{ steps.get_version.outputs.velocity_jar_name }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -20,7 +21,8 @@ jobs:
         run: |
           VERSION=$(grep '    version = ' build.gradle.kts | sed 's/.*version = "\(.*\)"/\1/')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "jar_name=LunaticChat-$VERSION-paper.jar" >> $GITHUB_OUTPUT
+          echo "paper_jar_name=LunaticChat-$VERSION-paper.jar" >> $GITHUB_OUTPUT
+          echo "velocity_jar_name=LunaticChat-$VERSION-velocity.jar" >> $GITHUB_OUTPUT
           echo "Extracted version: $VERSION"
 
       - name: Validate tag matches version
@@ -62,13 +64,15 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with shadowJar
-        run: ./gradlew :platform-paper:shadowJar --parallel --no-daemon
+        run: ./gradlew :platform-paper:shadowJar :platform-velocity:shadowJar --parallel --no-daemon
 
-      - name: Upload build artifact
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v6
         with:
           name: LunaticChat-v${{ needs.validate.outputs.version }}
-          path: platform-paper/build/libs/${{ needs.validate.outputs.jar_name }}
+          path: |
+            platform-paper/build/libs/${{ needs.validate.outputs.paper_jar_name }}
+            platform-velocity/build/libs/${{ needs.validate.outputs.velocity_jar_name }}
           retention-days: 90
 
   release:
@@ -95,10 +99,12 @@ jobs:
         run: |
           TAG_NAME=${GITHUB_REF#refs/tags/}
           VERSION=${{ needs.validate.outputs.version }}
-          JAR_NAME=${{ needs.validate.outputs.jar_name }}
+          PAPER_JAR_NAME=${{ needs.validate.outputs.paper_jar_name }}
+          VELOCITY_JAR_NAME=${{ needs.validate.outputs.velocity_jar_name }}
 
           gh release create "$TAG_NAME" \
-            "$JAR_NAME" \
+            "$PAPER_JAR_NAME" \
+            "$VELOCITY_JAR_NAME" \
             --title "$TAG_NAME" \
             --draft \
             --notes ""
@@ -113,7 +119,11 @@ jobs:
           channel: beta
           changelog: |
             Please refer to the [GitHub release](https://github.com/m1sk9/LunaticChat/releases/tag/v${{ needs.validate.outputs.version }}) for update details.
-          loaders: paper
+          loaders: |
+            paper
+            velocity
           game-versions: "1.21.x"
-          files: ${{ needs.validate.outputs.jar_name }}
+          files: |
+            ${{ needs.validate.outputs.paper_jar_name }}
+            ${{ needs.validate.outputs.velocity_jar_name }}
 

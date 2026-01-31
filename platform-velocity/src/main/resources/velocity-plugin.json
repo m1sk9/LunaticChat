@@ -1,0 +1,11 @@
+{
+  "id": "lunaticchat",
+  "name": "LunaticChat",
+  "version": "${version}",
+  "description": "Next-generation channel chat plugin for Paper/Velocity",
+  "url": "https://lc.m1sk9.dev",
+  "authors": [
+    "m1sk9"
+  ],
+  "main": "dev.m1sk9.lunaticChat.velocity.LunaticChat"
+}

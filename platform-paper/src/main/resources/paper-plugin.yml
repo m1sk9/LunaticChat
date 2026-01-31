@@ -60,3 +60,5 @@ permissions:
     default: op
   lunaticchat.channelbypass:
     default: op
+  lunaticchat.command.lcv.status:
+    default: op

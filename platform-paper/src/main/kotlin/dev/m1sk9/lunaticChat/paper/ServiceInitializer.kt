@@ -16,8 +16,13 @@ import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
 import dev.m1sk9.lunaticChat.paper.settings.YamlPlayerSettingsStorage
+import dev.m1sk9.lunaticChat.paper.velocity.VelocityConnectionManager
 import io.ktor.client.HttpClient
+import org.bukkit.event.EventHandler
+import org.bukkit.event.Listener
+import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.plugin.java.JavaPlugin
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.logging.Logger
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -51,6 +56,8 @@ class ServiceInitializer(
     private var channelMessageHandler: ChannelMessageHandler? = null
     private var channelNotificationHandler: ChannelNotificationHandler? = null
     private var channelMessageLogger: ChannelMessageLogger? = null
+    private var velocityConnectionManager: VelocityConnectionManager? = null
+    private val handshakeCompleted = AtomicBoolean(false)
 
     /**
      * Initializes all services in dependency order.
@@ -108,6 +115,14 @@ class ServiceInitializer(
                 languageManager = languageManager,
             )
 
+        // 6. Initialize Velocity integration (optional)
+        val velocityManager =
+            if (configuration.features.velocityIntegration.enabled) {
+                initializeVelocityIntegration()
+            } else {
+                null
+            }
+
         return ServiceContainer(
             languageManager = languageManager,
             playerSettingsManager = playerSettingsManager,
@@ -118,6 +133,7 @@ class ServiceInitializer(
             chatModeManager = chatModeManager,
             channelMessageHandler = channelMessageHandler,
             channelNotificationHandler = channelNotificationHandler,
+            velocityConnectionManager = velocityManager,
         )
     }
 
@@ -286,6 +302,83 @@ class ServiceInitializer(
     }
 
     /**
+     * Initializes Velocity integration with handshake on first player join.
+     */
+    private fun initializeVelocityIntegration(): VelocityConnectionManager {
+        val pluginVersion = plugin.pluginMeta.version
+        val manager =
+            VelocityConnectionManager(
+                plugin = plugin,
+                pluginVersion = pluginVersion,
+                logger = logger,
+            )
+        manager.initialize()
+        velocityConnectionManager = manager
+
+        // Register listener for first player join
+        plugin.server.pluginManager.registerEvents(
+            object : Listener {
+                @EventHandler
+                fun onPlayerJoin(event: PlayerJoinEvent) {
+                    // Only perform handshake once
+                    if (!handshakeCompleted.getAndSet(true)) {
+                        // Schedule handshake 1 second after first player joins
+                        plugin.server.scheduler.runTaskLater(
+                            plugin,
+                            Runnable {
+                                performVelocityHandshake(event.player, manager)
+                            },
+                            20L,
+                        )
+                    }
+                }
+            },
+            plugin,
+        )
+
+        logger.info("Velocity integration initialized. Waiting for first player join to perform handshake.")
+        return manager
+    }
+
+    /**
+     * Performs handshake with Velocity proxy.
+     */
+    private fun performVelocityHandshake(
+        player: org.bukkit.entity.Player,
+        manager: VelocityConnectionManager,
+    ) {
+        manager
+            .performHandshake(player)
+            .thenAccept { result ->
+                when (result) {
+                    is VelocityConnectionManager.HandshakeResult.Success -> {
+                        logger.info("Velocity handshake successful with version ${result.velocityVersion}")
+                    }
+                    is VelocityConnectionManager.HandshakeResult.Error -> {
+                        logger.severe("Velocity handshake failed: ${result.message}")
+                        logger.severe("Disabling plugin due to Velocity integration failure")
+                        plugin.server.scheduler.runTask(
+                            plugin,
+                            Runnable {
+                                plugin.server.pluginManager.disablePlugin(plugin)
+                            },
+                        )
+                    }
+                }
+            }.exceptionally { throwable ->
+                logger.severe("Velocity handshake exception: ${throwable.message}")
+                throwable.printStackTrace()
+                plugin.server.scheduler.runTask(
+                    plugin,
+                    Runnable {
+                        plugin.server.pluginManager.disablePlugin(plugin)
+                    },
+                )
+                null
+            }
+    }
+
+    /**
      * Schedules periodic tasks such as cache saving.
      */
     fun schedulePeriodicTasks() {
@@ -311,5 +404,6 @@ class ServiceInitializer(
         services.channelManager?.saveToDisk()
         services.chatModeManager?.shutdown()
         channelMessageLogger?.shutdown()
+        services.velocityConnectionManager?.shutdown()
     }
 }

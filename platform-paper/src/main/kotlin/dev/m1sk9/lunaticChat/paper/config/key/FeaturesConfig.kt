@@ -4,4 +4,5 @@ data class FeaturesConfig(
     val quickReplies: QuickRepliesFeatureConfig,
     val japaneseConversion: JapaneseConversionFeatureConfig,
     val channelChat: ChannelChatFeatureConfig,
+    val velocityIntegration: VelocityIntegrationConfig,
 )

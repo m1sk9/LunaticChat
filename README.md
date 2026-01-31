@@ -37,7 +37,7 @@ See the [Documentation](https://lc.m1sk9.dev/guide/getting-started).
 - Quick Reply Functionality (`/reply`)
 - Romaji to Japanese Conversion
 - Channel Chat System
-- Multi-platform support (Paper, Velocity) (coming soon)
+- Multi-platform support (Paper, Velocity)
   - Spigot? No problem, just use Paper!
 
 ## License

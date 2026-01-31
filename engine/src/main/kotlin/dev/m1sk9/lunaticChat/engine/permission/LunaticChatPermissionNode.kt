@@ -47,6 +47,8 @@ sealed class LunaticChatPermissionNode(
 
     object ChatModeToggle : LunaticChatPermissionNode("lunaticchat.command.lc.chatmode.toggle")
 
+    object VelocityStatus : LunaticChatPermissionNode("lunaticchat.command.lcv.status")
+
     object Spy : LunaticChatPermissionNode("lunaticchat.spy")
 
     object NoticeUpdate : LunaticChatPermissionNode("lunaticchat.noticeupdate")

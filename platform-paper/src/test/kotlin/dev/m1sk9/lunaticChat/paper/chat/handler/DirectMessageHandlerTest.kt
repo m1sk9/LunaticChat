@@ -2,6 +2,7 @@ package dev.m1sk9.lunaticChat.paper.chat.handler
 
 import dev.m1sk9.lunaticChat.paper.TestUtils
 import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
+import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
 import io.mockk.coEvery
 import io.mockk.every
@@ -18,9 +19,11 @@ class DirectMessageHandlerTest {
         configuration: dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration? = null,
         settingsManager: PlayerSettingsManager? = null,
         romanjiConverter: RomanjiConverter? = null,
+        languageManager: LanguageManager? = null,
     ): DirectMessageHandler {
         val config = configuration ?: TestUtils.createTestConfiguration()
-        return DirectMessageHandler(config, settingsManager, romanjiConverter)
+        val langManager = languageManager ?: mockk<LanguageManager>(relaxed = true)
+        return DirectMessageHandler(config, settingsManager, romanjiConverter, langManager)
     }
 
     @Test
@@ -104,7 +107,8 @@ class DirectMessageHandlerTest {
     @Test
     fun `handler can be created with injected configuration`() {
         val config = TestUtils.createTestConfiguration(debug = true)
-        val handler = DirectMessageHandler(config, null, null)
+        val languageManager = mockk<LanguageManager>(relaxed = true)
+        val handler = DirectMessageHandler(config, null, null, languageManager)
 
         // Handler should accept configuration via constructor (DI pattern)
         // This validates Issue #1 refactoring - ConfigManager DI
@@ -120,10 +124,11 @@ class DirectMessageHandlerTest {
         val config = TestUtils.createTestConfiguration()
         val settingsManager = mockk<PlayerSettingsManager>(relaxed = true)
         val romanjiConverter = mockk<RomanjiConverter>(relaxed = true)
+        val languageManager = mockk<LanguageManager>(relaxed = true)
 
         every { settingsManager.getSettings(any()) } returns TestUtils.createTestPlayerSettings()
 
-        val handler = DirectMessageHandler(config, settingsManager, romanjiConverter)
+        val handler = DirectMessageHandler(config, settingsManager, romanjiConverter, languageManager)
 
         val sender = TestUtils.createMockPlayer()
         val recipient = TestUtils.createMockPlayer()

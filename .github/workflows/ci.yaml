@@ -41,17 +41,19 @@ jobs:
         run: .github/scripts/post-test-results.sh
 
       - name: Build with shadowJar
-        run: ./gradlew :platform-paper:shadowJar --parallel --no-daemon
+        run: ./gradlew :platform-paper:shadowJar :platform-velocity:shadowJar --parallel --no-daemon
 
       - name: Generate Dokka
         run: ./gradlew :dokka:dokkaGenerate --no-daemon
 
-      - name: Upload build artifact
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v6
         if: success()
         with:
           name: LunaticChat-${{ github.sha }}
-          path: platform-paper/build/libs/*.jar
+          path: |
+            platform-paper/build/libs/*.jar
+            platform-velocity/build/libs/*.jar
           retention-days: 7
 
   build_docs:

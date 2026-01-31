@@ -1,10 +1,35 @@
 services:
+  velocity:
+    image: itzg/mc-proxy:java21
+    container_name: debug-velocity
+    ports:
+      - "25577:25577"
+    volumes:
+      - lunatic-debug-velocity-data:/server
+      - ../platform-velocity/build/libs:/plugins:ro
+      - ./velocity.toml:/server/velocity.toml
+    environment:
+      TYPE: "VELOCITY"
+      MEMORY: "512M"
+      ONLINE_MODE: "false"
+    depends_on:
+      minecraft:
+        condition: service_healthy
+    healthcheck:
+      test: mc-health
+      start_period: 60s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - minecraft-network
+
   minecraft:
     image: itzg/minecraft-server:java21
     container_name: debug-server
-    user: "0:0"
+    expose:
+      - "25565"
     ports:
-      - "25565:25565"
       - "25575:25575"
     volumes:
       - lunatic-debug-minecraft-data:/data
@@ -36,8 +61,15 @@ services:
       MAX_PLAYERS: "3"
       ONLINE_MODE: "false"
       SYNC_SKIP_NEWER_IN_DESTINATION: "false"
+    networks:
+      - minecraft-network
     tty: true
     stdin_open: true
 
+networks:
+  minecraft-network:
+    driver: bridge
+
 volumes:
   lunatic-debug-minecraft-data:
+  lunatic-debug-velocity-data:

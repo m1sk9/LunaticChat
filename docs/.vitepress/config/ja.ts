@@ -126,6 +126,15 @@ export const ja: DefaultTheme.Config = {
               },
             ],
           },
+          {
+            text: '/lcv',
+            items: [
+              {
+                text: '/lc status',
+                link: '/en/reference/commands/lcv/status',
+              },
+            ],
+          },
         ],
       },
     ],
