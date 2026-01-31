@@ -10,11 +10,12 @@ Usage: ./x <command>
 
 Commands:
     start      Build with gradlew and start docker compose
-    restart    Restart minecraft container
+    restart    Restart minecraft and velocity containers
     stop       Stop docker compose
     clean      Stop docker compose and remove volumes
     rcon       Open rcon-cli for minecraft container
     logs       Show minecraft container logs
+    vlogs      Show velocity container logs
     help       Show this help message
 
 EOF
@@ -22,11 +23,11 @@ EOF
 
 case "${1:-}" in
     start)
-        ./gradlew :platform-paper:clean :platform-paper:shadowJar
+        ./gradlew :platform-paper:clean :platform-paper:shadowJar :platform-velocity:clean :platform-velocity:shadowJar
         $DOCKER_COMPOSE up
         ;;
     restart)
-        $DOCKER_COMPOSE restart minecraft
+        $DOCKER_COMPOSE restart minecraft velocity
         ;;
     stop)
         $DOCKER_COMPOSE down
@@ -39,6 +40,9 @@ case "${1:-}" in
         ;;
     logs)
         $DOCKER_COMPOSE logs -f minecraft
+        ;;
+    vlogs)
+        $DOCKER_COMPOSE logs -f velocity
         ;;
     help|"")
         help

@@ -1,0 +1,8 @@
+# Paper Global Configuration
+# https://docs.papermc.io/paper/reference/global-configuration
+
+proxies:
+  velocity:
+    enabled: true
+    online-mode: false
+    secret: ""
