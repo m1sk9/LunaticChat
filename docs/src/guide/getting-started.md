@@ -73,4 +73,6 @@ LunaticChat のパーミッションを LuckPerms などのパーミッション
 ## 次は?
 
 - [キャッシュシステム](./admin/cache.md): LunaticChat のキャッシュシステムについて説明します．
-- []
+- [チャンネルチャット](./admin/channel-chat/introduction.md): チャンネルチャット機能の概要を説明します．
+- [コマンド一覧](../reference/index.md): LunaticChat のコマンド一覧を確認します．
+- [パーミッション一覧](../reference/permissions.md): LunaticChat のパーミッションノード一覧を確認します．

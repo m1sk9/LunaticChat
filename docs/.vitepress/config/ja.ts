@@ -80,19 +80,6 @@ export const ja: DefaultTheme.Config = {
           },
         ],
       },
-      {
-        text: 'パッチノート',
-        items: [
-          {
-            text: 'プラグイン',
-            link: '/guide/patch-notes/plugin',
-          },
-          {
-            text: 'キャッシュファイル',
-            link: '/guide/patch-notes/cache-file',
-          },
-        ],
-      },
     ],
     '/reference/': [
       {

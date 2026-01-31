@@ -27,3 +27,16 @@ Basic permissions can be configured using Paper or Velocity's default permission
 
 - For details on permission nodes, refer to the [Permissions Guide](../reference/permissions.md).
 - For permission nodes corresponding to each command feature, refer to the [Command Reference](../reference/index.md).
+
+## Restart the server
+
+After completing the configuration, restart the server to apply the changes.
+
+This completes the basic setup of LunaticChat.
+
+## What's next?
+
+- [Cache System](./admin/cache.md): Explains LunaticChat's cache system.
+- [Channel Chat](./admin/channel-chat/introduction.md): Overview of the channel chat feature.
+- [Command List](../reference/index.md): View the list of LunaticChat commands.
+- [Permissions List](../reference/permissions.md): View LunaticChat's permission nodes.

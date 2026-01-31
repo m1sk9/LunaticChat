@@ -80,19 +80,6 @@ export const en: DefaultTheme.Config = {
           },
         ],
       },
-      {
-        text: 'Patch Notes',
-        items: [
-          {
-            text: 'Plugin',
-            link: '/en/guide/patch-notes/plugin',
-          },
-          {
-            text: 'Cache File',
-            link: '/en/guide/patch-notes/cache-file',
-          },
-        ],
-      },
     ],
     '/en/reference/': [
       {
