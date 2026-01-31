@@ -26,7 +26,7 @@ class PlayerChatListener(
 ) : Listener {
     private val plainTextSerializer = PlainTextComponentSerializer.plainText()
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun onChat(event: AsyncChatEvent) {
         val player = event.player
         val settings = settingsManager.getSettings(player.uniqueId)

@@ -1,4 +1,4 @@
-# Channel Chat Deployment Guide
+# Channel Chat: Deployment Guide
 
 This guide explains how to deploy channel chat.
 
@@ -6,7 +6,7 @@ This guide explains how to deploy channel chat.
 
 Channel chat is a feature that allows players to create channels and share chat among specific players.
 
-For detailed features, please refer to the [Player Guide](../player/channel-chat/about.md).
+For detailed features, please refer to the [Player Guide](../../player/channel-chat/about.md).
 
 ## Preparing to Deploy Channel Chat
 
@@ -43,9 +43,21 @@ Recommended settings are as follows:
 
 :::
 
+## Channel Chat Logging
+
+::: warning Compatibility with Plugins like CoreProtect
+
+As of v0.7.0, LunaticChat's channel chat feature is not compatible with logging plugins like CoreProtect.
+
+:::
+
+Channel chat logging is enabled by default.
+
+For more details, see [Channel Chat: Logs](logs.md).
+
 ## Channel Management
 
-Basically, [players manage channels themselves](../player/channel-chat/moderation.md).
+Basically, [players manage channels themselves](../../player/channel-chat/moderation.md).
 
 However, as a server administrator, please note the following:
 
@@ -54,3 +66,9 @@ However, as a server administrator, please note the following:
 - If inappropriate channels or member behavior occurs, take appropriate action.
 
 If you want to avoid troubles related to channel management, consider restricting moderate commands such as `/lc channel ban`.
+
+## Plugins that Intercept Channel Chat
+
+Logging plugins like CoreProtect do not intercept LunaticChat's channel chat messages by default.
+
+However, plugins that use Paper API's `originalMessage()` to retrieve messages may intercept LunaticChat's channel chat messages.

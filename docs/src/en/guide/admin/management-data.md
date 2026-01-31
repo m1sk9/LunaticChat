@@ -105,15 +105,3 @@ If the version does not match, LunaticChat recognizes the cache file as **old fo
 ```json
 {"version":"1","entries":{}}
 ```
-
-## About CoreProtect
-
-Various chat logs in LunaticChat can also be recorded in CoreProtect without requiring an API.
-
-Logs for each feature can be checked with the following actions. When using the `/co lookup` command, specify the following actions:
-
-- Direct messages: `command`
-- Global chat and channel chat: `chat`
-  - Japanese and romanization conversion is saved according to the player's settings.
-
-

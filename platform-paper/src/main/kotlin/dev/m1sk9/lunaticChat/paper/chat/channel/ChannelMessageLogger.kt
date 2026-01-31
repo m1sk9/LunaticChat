@@ -28,22 +28,27 @@ import kotlin.io.path.name
  * @property plugin Bukkit plugin instance for scheduling tasks
  * @property logger Logger for diagnostic messages
  * @property maxFileSizeBytes Maximum size of a single log file
+ * @property retentionDays Number of days to retain log files (0 = keep forever)
  */
 class ChannelMessageLogger(
     private val logsDirectory: Path,
     private val plugin: Plugin,
     private val logger: Logger,
     private val maxFileSizeBytes: Long,
+    private val retentionDays: Int,
 ) {
     private val pendingEntries = ConcurrentLinkedQueue<ChannelMessageLogEntry>()
     private val json = Json { encodeDefaults = true }
     private var flushTaskId: Int? = null
+    private var cleanupTaskId: Int? = null
 
     companion object {
         private const val LOG_FILE_PREFIX = "channel-messages-"
         private const val LOG_FILE_EXTENSION = ".json"
         private val DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
         private const val FLUSH_INTERVAL_TICKS = 20L // 1 second
+        private const val CLEANUP_INTERVAL_TICKS = 24 * 60 * 60 * 20L // 24 hours
+        private const val CLEANUP_INITIAL_DELAY_TICKS = 5 * 60 * 20L // 5 minutes
     }
 
     init {
@@ -52,6 +57,7 @@ class ChannelMessageLogger(
             Files.createDirectories(logsDirectory)
             logger.info("Channel message logger initialized at: $logsDirectory")
             schedulePeriodicFlush()
+            schedulePeriodicCleanup()
         } catch (e: Exception) {
             logger.error("Failed to initialize channel message logger", e)
         }
@@ -81,8 +87,34 @@ class ChannelMessageLogger(
     }
 
     /**
-     * Flushes all pending entries to the current day's log file.
+     * Schedules periodic cleanup of old log files.
      */
+    private fun schedulePeriodicCleanup() {
+        if (retentionDays <= 0) {
+            logger.info("Log retention disabled (retentionDays = $retentionDays)")
+            return
+        }
+
+        cleanupTaskId =
+            plugin.server.scheduler
+                .runTaskTimerAsynchronously(
+                    plugin,
+                    Runnable { cleanupOldLogs(retentionDays) },
+                    CLEANUP_INITIAL_DELAY_TICKS,
+                    CLEANUP_INTERVAL_TICKS,
+                ).taskId
+
+        logger.info("Scheduled log cleanup task (retention: $retentionDays days)")
+    }
+
+    /**
+     * Flushes all pending entries to the current day's log file.
+     * Automatically creates new files with suffixes when size limit is exceeded.
+     *
+     * This method is synchronized to prevent race conditions between periodic
+     * flush operations and shutdown flush.
+     */
+    @Synchronized
     private fun flushPendingEntries() {
         if (pendingEntries.isEmpty()) {
             return
@@ -100,12 +132,6 @@ class ChannelMessageLogger(
 
         try {
             val logFile = getCurrentLogFile()
-
-            // Check file size before writing
-            if (Files.exists(logFile) && logFile.fileSize() >= maxFileSizeBytes) {
-                logger.warn("Log file ${logFile.name} exceeded maximum size, skipping flush")
-                return
-            }
 
             BufferedWriter(
                 Files.newBufferedWriter(
@@ -128,20 +154,22 @@ class ChannelMessageLogger(
     }
 
     /**
-     * Synchronously flushes all pending entries.
+     * Shuts down the logger by cancelling scheduled tasks and flushing pending entries.
      * Should be called during plugin shutdown.
      */
-    fun flushSync() {
-        // Cancel scheduled task
+    fun shutdown() {
+        // Cancel scheduled tasks
         flushTaskId?.let { plugin.server.scheduler.cancelTask(it) }
+        cleanupTaskId?.let { plugin.server.scheduler.cancelTask(it) }
 
         // Flush remaining entries
         flushPendingEntries()
-        logger.info("Channel message logger flushed all pending entries")
+        logger.info("Channel message logger shut down (flushed all pending entries)")
     }
 
     /**
      * Deletes log files older than the specified retention period.
+     * Handles both base files (YYYY-MM-DD.json) and suffixed files (YYYY-MM-DD-N.json).
      *
      * @param retentionDays Number of days to retain log files
      */
@@ -154,20 +182,28 @@ class ChannelMessageLogger(
             val cutoffDate = LocalDate.now(ZoneOffset.UTC).minusDays(retentionDays.toLong())
             val logFiles = logsDirectory.listDirectoryEntries("$LOG_FILE_PREFIX*$LOG_FILE_EXTENSION")
 
+            // Pattern: channel-messages-YYYY-MM-DD(-N)?.json
+            val datePattern = Regex("""${Regex.escape(LOG_FILE_PREFIX)}(\d{4}-\d{2}-\d{2})(?:-\d+)?${Regex.escape(LOG_FILE_EXTENSION)}""")
+
             var deletedCount = 0
             for (logFile in logFiles) {
                 val fileName = logFile.name
-                val dateStr = fileName.removePrefix(LOG_FILE_PREFIX).removeSuffix(LOG_FILE_EXTENSION)
+                val matchResult = datePattern.matchEntire(fileName)
 
-                try {
-                    val fileDate = LocalDate.parse(dateStr, DATE_FORMATTER)
-                    if (fileDate.isBefore(cutoffDate)) {
-                        logFile.deleteIfExists()
-                        deletedCount++
-                        logger.info("Deleted old log file: $fileName")
+                if (matchResult != null) {
+                    val dateStr = matchResult.groupValues[1]
+                    try {
+                        val fileDate = LocalDate.parse(dateStr, DATE_FORMATTER)
+                        if (fileDate.isBefore(cutoffDate)) {
+                            logFile.deleteIfExists()
+                            deletedCount++
+                            logger.info("Deleted old log file: $fileName")
+                        }
+                    } catch (e: Exception) {
+                        logger.warn("Failed to parse date from log file: $fileName", e)
                     }
-                } catch (e: Exception) {
-                    logger.warn("Failed to parse date from log file: $fileName", e)
+                } else {
+                    logger.warn("Log file name does not match expected pattern: $fileName")
                 }
             }
 
@@ -181,11 +217,31 @@ class ChannelMessageLogger(
 
     /**
      * Gets the log file path for the current UTC date.
+     * If the current file exceeds the size limit, returns a new file with a suffix.
+     * Filenames follow the pattern: channel-messages-YYYY-MM-DD(-N).json
      */
     private fun getCurrentLogFile(): Path {
         val currentDate = LocalDate.now(ZoneOffset.UTC)
         val dateStr = currentDate.format(DATE_FORMATTER)
-        val fileName = "$LOG_FILE_PREFIX$dateStr$LOG_FILE_EXTENSION"
-        return logsDirectory.resolve(fileName)
+
+        // Try base filename first
+        var fileName = "$LOG_FILE_PREFIX$dateStr$LOG_FILE_EXTENSION"
+        var logFile = logsDirectory.resolve(fileName)
+
+        // If file exists and exceeds size limit, find next available suffix
+        var suffix = 1
+        while (Files.exists(logFile) && logFile.fileSize() >= maxFileSizeBytes) {
+            fileName = "$LOG_FILE_PREFIX$dateStr-$suffix$LOG_FILE_EXTENSION"
+            logFile = logsDirectory.resolve(fileName)
+            suffix++
+
+            // Safety limit to prevent infinite loop
+            if (suffix > 1000) {
+                logger.error("Too many log files for date $dateStr (limit: 1000), using latest")
+                break
+            }
+        }
+
+        return logFile
     }
 }

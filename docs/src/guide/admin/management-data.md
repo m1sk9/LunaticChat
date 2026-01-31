@@ -105,15 +105,3 @@ channelMessageNotification:
 ```json
 {"version":"1","entries":{}}
 ```
-
-## CoreProtect について
-
-LunaticChat の各種チャットログは API 不要で CoreProtect でも記録することができます．
-
-各機能のログは次のアクションで確認できます． `/co lookup` コマンド使用時に以下のアクションを指定してください：
-
-- ダイレクトメッセージ: `command`
-- 全体チャット・チャンネルチャット: `chat`
-  - かな・ローマ字変換はそのプレイヤーの設定状況により保存されます．
-
-

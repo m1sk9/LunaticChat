@@ -19,6 +19,19 @@ export const en: DefaultTheme.Config = {
         text: 'For Server Administrators',
         items: [
           {
+            text: 'Channel Chat',
+            items: [
+              {
+                text: 'Deployment Guide',
+                link: '/en/guide/admin/channel-chat/introduction',
+              },
+              {
+                text: 'Logs',
+                link: '/en/guide/admin/channel-chat/logs',
+              },
+            ],
+          },
+          {
             text: 'Cache System',
             link: '/en/guide/admin/cache',
           },
@@ -31,12 +44,8 @@ export const en: DefaultTheme.Config = {
             link: '/en/guide/admin/velocity',
           },
           {
-            text: 'Channel Chat Deployment Guide',
-            link: '/en/guide/admin/introduction-channel-chat',
-          },
-          {
-            text: 'Data and Logs',
-            link: '/en/guide/admin/data-and-logs',
+            text: 'Data Management',
+            link: '/en/guide/admin/management-data',
           },
         ],
       },
@@ -59,7 +68,7 @@ export const en: DefaultTheme.Config = {
                 text: 'Moderation',
                 link: '/en/guide/player/channel-chat/moderation',
               },
-            ]
+            ],
           },
           {
             text: 'Direct Messages',

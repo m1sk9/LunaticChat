@@ -240,6 +240,7 @@ class ServiceInitializer(
                         io.ktor.util.logging
                             .KtorSimpleLogger("ChannelMessageLogger"),
                     maxFileSizeBytes = configuration.features.channelChat.messageLogging.maxFileSizeMB * 1024L * 1024L,
+                    retentionDays = configuration.features.channelChat.messageLogging.retentionDays,
                 ).also {
                     channelMessageLogger = it
                     logger.info(
@@ -299,26 +300,6 @@ class ServiceInitializer(
                 saveInterval,
             )
         }
-
-        // Schedule cleanup of old channel message logs
-        if (configuration.features.channelChat.messageLogging.enabled &&
-            configuration.features.channelChat.messageLogging.retentionDays > 0 &&
-            channelMessageLogger != null
-        ) {
-            val cleanupInterval = 24 * 60 * 60 * 20L // 24 hours in ticks
-            val initialDelay = 5 * 60 * 20L // 5 minutes after startup
-
-            plugin.server.scheduler.runTaskTimerAsynchronously(
-                plugin,
-                Runnable {
-                    channelMessageLogger?.cleanupOldLogs(
-                        configuration.features.channelChat.messageLogging.retentionDays,
-                    )
-                },
-                initialDelay,
-                cleanupInterval,
-            )
-        }
     }
 
     /**
@@ -329,6 +310,6 @@ class ServiceInitializer(
         conversionCache?.saveToDisk()
         services.channelManager?.saveToDisk()
         services.chatModeManager?.shutdown()
-        channelMessageLogger?.flushSync()
+        channelMessageLogger?.shutdown()
     }
 }

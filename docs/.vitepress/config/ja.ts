@@ -19,6 +19,19 @@ export const ja: DefaultTheme.Config = {
         text: 'サーバー管理者向け',
         items: [
           {
+            text: 'チャンネルチャット',
+            items: [
+              {
+                text: '展開ガイド',
+                link: '/guide/admin/channel-chat/introduction',
+              },
+              {
+                text: 'ログ',
+                link: '/guide/admin/channel-chat/logs',
+              },
+            ],
+          },
+          {
             text: 'キャッシュシステム',
             link: '/guide/admin/cache',
           },
@@ -30,14 +43,10 @@ export const ja: DefaultTheme.Config = {
             text: 'Velocity 連携',
             link: '/guide/admin/velocity',
           },
-            {
-                text: "チャンネルチャット展開ガイド",
-                link: "/guide/admin/introduction-channel-chat",
-            },
-            {
-                text: "データ・ログ",
-                link: "/guide/admin/data-and-logs",
-            }
+          {
+            text: 'データの管理',
+            link: '/guide/admin/management-data',
+          },
         ],
       },
       {
@@ -45,21 +54,21 @@ export const ja: DefaultTheme.Config = {
         items: [
           {
             text: 'チャンネルチャット',
-              link: "/guide/player/channel-chat/about",
+            link: '/guide/player/channel-chat/about',
             items: [
-                {
-                    text: 'チャットモード',
-                    link: '/guide/player/channel-chat/chatmode',
-                },
-                {
-                    text: 'プライベートチャンネル',
-                    link: '/guide/player/channel-chat/private-channel',
-                },
-                {
-                    text: 'モデレーション',
-                    link: '/guide/player/channel-chat/moderation',
-                },
-            ]
+              {
+                text: 'チャットモード',
+                link: '/guide/player/channel-chat/chatmode',
+              },
+              {
+                text: 'プライベートチャンネル',
+                link: '/guide/player/channel-chat/private-channel',
+              },
+              {
+                text: 'モデレーション',
+                link: '/guide/player/channel-chat/moderation',
+              },
+            ],
           },
           {
             text: 'ダイレクトメッセージ',
@@ -120,14 +129,14 @@ export const ja: DefaultTheme.Config = {
                 text: '/lc status',
                 link: '/reference/commands/lc/status',
               },
-                {
-                    text: '/lc channel',
-                    link: '/reference/commands/lc/channel',
-                },
-                {
-                    text: '/lc chatmode',
-                    link: '/reference/commands/lc/chatmode',
-                },
+              {
+                text: '/lc channel',
+                link: '/reference/commands/lc/channel',
+              },
+              {
+                text: '/lc chatmode',
+                link: '/reference/commands/lc/chatmode',
+              },
             ],
           },
         ],

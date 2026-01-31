@@ -32,9 +32,6 @@ features:
   - title: Japanese Romanization Conversion
     details: Automatically converts messages input in romaji to Japanese
     icon: 🌍
-  - title: CoreProtect Support
-    details: LunaticChat's chat logs are compatible with CoreProtect
-    icon: 🗒️
   - title: Channel Chat Feature (Planned)
     details: Create and manage chat channels, send private messages between specific players
     icon: ☎️

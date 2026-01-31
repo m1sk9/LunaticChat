@@ -60,6 +60,14 @@ features:
     maxMembersPerChannel: 0
     # Maximum number of channels a single player can join. Set to 0 for unlimited.
     maxMembershipPerPlayer: 0
+    # Channel message logging configuration
+    messageLogging:
+      # If enabled, all channel messages will be logged to NDJSON files for analysis and archival.
+      enabled: true
+      # Number of days to retain log files. Set to 0 to keep logs indefinitely.
+      retentionDays: 30
+      # Maximum size of a single log file in megabytes. Files exceeding this size will stop accepting new entries.
+      maxFileSizeMB: 100
 
 # ----------------------------------------------
 # ---------   Message Format Settings   --------
@@ -212,6 +220,31 @@ LunaticChat の [`/reply`](../../reference/commands/reply.md) コマンドによ
 1 人のプレイヤーが参加可能なチャンネルの最大数を指定します．
 
 `0` に設定すると無制限になります．
+
+#### `messageLogging.enabled`
+
+- Type: `boolean`
+- Default: `true`
+
+チャンネルチャットのメッセージを NDJSON 形式でログに記録するかどうかを指定します．
+
+#### `messageLogging.retentionDays`
+
+- Type: `integer`
+- Default: `30`
+
+チャンネルチャットのログファイルを保存する日数を指定します．
+
+`0` に設定すると，ログファイルは削除されません．
+
+#### `messageLogging.maxFileSizeMB`
+
+- Type: `integer`
+- Default: `100`
+
+チャンネルチャットのログファイルの最大サイズ（メガバイト）を指定します．
+
+`maxFileSizeMB` を超えたログファイルは新しいエントリを受け付けなくなります．
 
 ## Message Format Settings
 
