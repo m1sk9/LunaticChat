@@ -1,0 +1,4 @@
+# Exclude build and tool scripts from language statistics
+x linguist-vendored=true
+gradlew linguist-vendored=true
+.github/scripts/post-test-results.sh linguist-vendored=true

@@ -197,7 +197,9 @@ class VelocityConnectionManager(
      * Handles status response
      */
     private fun handleStatusResponse(response: PluginMessage.StatusResponse) {
-        logger.info("Received status response from Velocity: version=${response.velocityVersion}, protocol=${response.protocolVersion}, online=${response.online}")
+        logger.info(
+            "Received status response from Velocity: version=${response.velocityVersion}, protocol=${response.protocolVersion}, online=${response.online}",
+        )
 
         val future = statusFuture
         if (future != null) {
