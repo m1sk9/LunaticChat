@@ -57,6 +57,14 @@ features:
     maxMembersPerChannel: 0
     # Maximum number of channels a single player can join. Set to 0 for unlimited.
     maxMembershipPerPlayer: 0
+    # Channel message logging configuration
+    messageLogging:
+      # If enabled, all channel messages will be logged to NDJSON files for analysis and archival.
+      enabled: true
+      # Number of days to retain log files. Set to 0 to keep logs indefinitely.
+      retentionDays: 30
+      # Maximum size of a single log file in megabytes. Files exceeding this size will stop accepting new entries.
+      maxFileSizeMB: 100
 
 # ----------------------------------------------
 # ---------   Message Format Settings   --------
