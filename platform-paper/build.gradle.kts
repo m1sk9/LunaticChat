@@ -19,7 +19,7 @@ dependencies {
     // Paper-specific dependencies
     compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     implementation("com.charleskorn.kaml:kaml:0.104.0") // YAML configuration
-    implementation("org.jetbrains.kotlin:kotlin-reflect:2.3.0") // Annotation processing
+    implementation("org.jetbrains.kotlin:kotlin-reflect:2.3.10") // Annotation processing
 
     // Test dependencies
     testImplementation("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
