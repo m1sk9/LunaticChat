@@ -4,8 +4,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "2.3.0" apply false
-    kotlin("plugin.serialization") version "2.3.0" apply false
+    kotlin("jvm") version "2.3.10" apply false
+    kotlin("plugin.serialization") version "2.3.10" apply false
     id("com.gradleup.shadow") version "9.3.1" apply false
     id("xyz.jpenilla.run-paper") version "3.0.2" apply false
     id("org.jlleitschuh.gradle.ktlint") version "14.0.1" apply false
