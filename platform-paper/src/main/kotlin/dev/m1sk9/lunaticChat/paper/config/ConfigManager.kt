@@ -55,6 +55,21 @@ class ConfigManager {
                         velocityIntegration =
                             VelocityIntegrationConfig(
                                 enabled = configFile.getBoolean("features.velocityIntegration.enabled", false),
+                                crossServerGlobalChat =
+                                    configFile.getBoolean(
+                                        "features.velocityIntegration.crossServerGlobalChat",
+                                        false,
+                                    ),
+                                serverName =
+                                    configFile.getString(
+                                        "features.velocityIntegration.serverName",
+                                        "Unknown",
+                                    ) ?: "Unknown",
+                                messageDeduplicationCacheSize =
+                                    configFile.getInt(
+                                        "features.velocityIntegration.messageDeduplicationCacheSize",
+                                        100,
+                                    ),
                             ),
                     ),
                 messageFormat =
@@ -68,6 +83,11 @@ class ConfigManager {
                             configFile.getString(
                                 "messageFormat.channelMessageFormat",
                                 "§7[§b#{channel}§7] §e{sender}: §f{message}",
+                            )!!,
+                        crossServerGlobalChatFormat =
+                            configFile.getString(
+                                "messageFormat.crossServerGlobalChatFormat",
+                                "§7[§6{server}§7] §e{sender}: §f{message}",
                             )!!,
                     ),
                 debug = configFile.getBoolean("debug", false),

@@ -16,6 +16,7 @@ class VelocityConnectionManager(
     private val plugin: Plugin,
     private val pluginVersion: String,
     private val logger: Logger,
+    private var crossServerChatManager: CrossServerChatManager? = null,
 ) : PluginMessageListener {
     companion object {
         private const val CHANNEL = "lunaticchat:main"
@@ -58,6 +59,16 @@ class VelocityConnectionManager(
         plugin.server.messenger.registerOutgoingPluginChannel(plugin, CHANNEL)
         plugin.server.messenger.registerIncomingPluginChannel(plugin, CHANNEL, this)
         logger.info("Velocity integration channel registered: $CHANNEL")
+    }
+
+    /**
+     * Sets the cross-server chat manager
+     * Called after initialization to avoid circular dependency
+     *
+     * @param manager Cross-server chat manager
+     */
+    fun setCrossServerChatManager(manager: CrossServerChatManager) {
+        this.crossServerChatManager = manager
     }
 
     /**
@@ -150,6 +161,10 @@ class VelocityConnectionManager(
 
     /**
      * Plugin message received
+     *
+     * @param channel plugin message channel
+     * @param player player who sent the message
+     * @param message message byte array
      */
     override fun onPluginMessageReceived(
         channel: String,
@@ -159,11 +174,10 @@ class VelocityConnectionManager(
         if (channel != CHANNEL) return
 
         try {
-            val pluginMessage = PluginMessageCodec.decode(message)
-
-            when (pluginMessage) {
+            when (val pluginMessage = PluginMessageCodec.decode(message)) {
                 is PluginMessage.HandshakeResponse -> handleHandshakeResponse(pluginMessage)
                 is PluginMessage.StatusResponse -> handleStatusResponse(pluginMessage)
+                is PluginMessage.GlobalChatMessage -> handleGlobalChatMessage(pluginMessage)
                 else -> logger.warning("Unexpected message type: ${pluginMessage::class.simpleName}")
             }
         } catch (e: Exception) {
@@ -174,6 +188,8 @@ class VelocityConnectionManager(
 
     /**
      * Handles handshake response
+     *
+     * @param response Handshake response message
      */
     private fun handleHandshakeResponse(response: PluginMessage.HandshakeResponse) {
         val future = handshakeFuture ?: return
@@ -195,6 +211,8 @@ class VelocityConnectionManager(
 
     /**
      * Handles status response
+     *
+     * @param response Status response message
      */
     private fun handleStatusResponse(response: PluginMessage.StatusResponse) {
         logger.info(
@@ -211,6 +229,20 @@ class VelocityConnectionManager(
     }
 
     /**
+     * Handles global chat message from Velocity
+     *
+     * @param message Global chat message
+     */
+    private fun handleGlobalChatMessage(message: PluginMessage.GlobalChatMessage) {
+        val manager = crossServerChatManager
+        if (manager != null) {
+            manager.handleIncomingMessage(message)
+        } else {
+            logger.warning("Received global chat message but CrossServerChatManager is not initialized")
+        }
+    }
+
+    /**
      * Shutdown
      */
     fun shutdown() {
@@ -221,16 +253,22 @@ class VelocityConnectionManager(
 
     /**
      * Gets current connection state
+     *
+     * @return Connection state
      */
     fun getState(): ConnectionState = state
 
     /**
      * Gets Velocity version (if connected)
+     *
+     * @return Velocity version or null if not connected
      */
     fun getVelocityVersion(): String? = velocityVersion
 
     /**
      * Gets last error message
+     *
+     * @return Last error message or null if none
      */
     fun getLastError(): String? = lastError
 }

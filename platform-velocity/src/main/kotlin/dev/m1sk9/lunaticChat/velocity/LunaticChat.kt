@@ -6,6 +6,7 @@ import com.velocitypowered.api.event.proxy.ProxyInitializeEvent
 import com.velocitypowered.api.event.proxy.ProxyShutdownEvent
 import com.velocitypowered.api.plugin.Plugin
 import com.velocitypowered.api.proxy.ProxyServer
+import dev.m1sk9.lunaticChat.velocity.messaging.CrossServerChatRelay
 import dev.m1sk9.lunaticChat.velocity.messaging.PluginMessageHandler
 import org.slf4j.Logger
 
@@ -29,10 +30,18 @@ class LunaticChat
         private val logger: Logger,
     ) {
         private var messageHandler: PluginMessageHandler? = null
+        private var crossServerChatRelay: CrossServerChatRelay? = null
 
         @Subscribe
         fun onProxyInitialization(event: ProxyInitializeEvent) {
             logger.info("Initializing LunaticChat Velocity plugin")
+
+            // Initialize cross-server chat relay
+            crossServerChatRelay =
+                CrossServerChatRelay(
+                    server = server,
+                    logger = logger,
+                )
 
             // Initialize plugin message handler
             messageHandler =
@@ -41,6 +50,7 @@ class LunaticChat
                     server = server,
                     logger = logger,
                     pluginVersion = "0.8.0",
+                    crossServerChatRelay = crossServerChatRelay!!,
                 )
             messageHandler?.initialize()
 

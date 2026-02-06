@@ -18,6 +18,7 @@ class PluginMessageHandler(
     private val server: ProxyServer,
     private val logger: Logger,
     private val pluginVersion: String,
+    private val crossServerChatRelay: CrossServerChatRelay,
 ) {
     companion object {
         private val CHANNEL = MinecraftChannelIdentifier.create("lunaticchat", "main")
@@ -46,14 +47,15 @@ class PluginMessageHandler(
         }
 
         try {
-            val message = PluginMessageCodec.decode(event.data)
-
-            when (message) {
+            when (val message = PluginMessageCodec.decode(event.data)) {
                 is PluginMessage.Handshake -> {
                     handleHandshake(source, message)
                 }
                 is PluginMessage.StatusRequest -> {
                     handleStatusRequest(source)
+                }
+                is PluginMessage.GlobalChatMessage -> {
+                    handleGlobalChatMessage(source, message)
                 }
                 else -> {
                     logger.warn("Unexpected message type from Paper: ${message::class.simpleName}")
@@ -149,6 +151,21 @@ class PluginMessageHandler(
         connection.sendPluginMessage(CHANNEL, data)
 
         logger.info("Sent status response to ${connection.serverInfo.name}")
+    }
+
+    /**
+     * Handles global chat message and relays to other servers
+     */
+    private fun handleGlobalChatMessage(
+        connection: ServerConnection,
+        message: PluginMessage.GlobalChatMessage,
+    ) {
+        logger.info(
+            "Received global chat message from ${connection.serverInfo.name}: " +
+                "messageId=${message.messageId}, player=${message.playerName}",
+        )
+
+        crossServerChatRelay.relayGlobalMessage(message, connection.server)
     }
 
     /**
