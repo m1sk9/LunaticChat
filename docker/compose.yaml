@@ -7,13 +7,16 @@ services:
     volumes:
       - lunatic-debug-velocity-data:/server
       - ../platform-velocity/build/libs:/plugins:ro
+      - ./plugins-velocity:/data/plugins
       - ./velocity.toml:/server/velocity.toml
     environment:
       TYPE: "VELOCITY"
       MEMORY: "512M"
       ONLINE_MODE: "false"
     depends_on:
-      minecraft:
+      s1:
+        condition: service_healthy
+      s2:
         condition: service_healthy
     healthcheck:
       test: mc-health
@@ -24,17 +27,17 @@ services:
     networks:
       - minecraft-network
 
-  minecraft:
+  s1:
     image: itzg/minecraft-server:java21
-    container_name: debug-server
+    container_name: debug-server-s1
     expose:
       - "25565"
     ports:
       - "25575:25575"
     volumes:
-      - lunatic-debug-minecraft-data:/data
+      - lunatic-debug-s1-data:/data
       - ../platform-paper/build/libs:/plugins:ro
-      - ./plugins:/data/plugins
+      - ./plugins-paper-s1:/data/plugins
       - ./bukkit.yml:/data/bukkit.yml
     environment:
       EULA: "TRUE"
@@ -63,6 +66,60 @@ services:
       SYNC_SKIP_NEWER_IN_DESTINATION: "false"
     networks:
       - minecraft-network
+    healthcheck:
+      test: mc-health
+      start_period: 60s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    tty: true
+    stdin_open: true
+
+  s2:
+    image: itzg/minecraft-server:java21
+    container_name: debug-server-s2
+    expose:
+      - "25565"
+    ports:
+      - "25576:25575"
+    volumes:
+      - lunatic-debug-s2-data:/data
+      - ../platform-paper/build/libs:/plugins:ro
+      - ./plugins-paper-s2:/data/plugins
+      - ./bukkit.yml:/data/bukkit.yml
+    environment:
+      EULA: "TRUE"
+      TYPE: "PAPER"
+      VERSION: "1.21.11"
+      MEMORY: "1G"
+
+      # デバッグ用高速化設定
+      LEVEL_TYPE: "flat"
+      VIEW_DISTANCE: "3"
+      SIMULATION_DISTANCE: "3"
+      GENERATE_STRUCTURES: "false"
+      SPAWN_PROTECTION: "0"
+      ALLOW_NETHER: "false"
+
+      # 権限関連
+      OVERRIDE_SERVER_PROPERTIES: "true"
+
+      ENABLE_RCON: "true"
+      RCON_PASSWORD: "minecraft"
+      RCON_PORT: 25575
+
+      DIFFICULTY: "peaceful"
+      MAX_PLAYERS: "3"
+      ONLINE_MODE: "false"
+      SYNC_SKIP_NEWER_IN_DESTINATION: "false"
+    networks:
+      - minecraft-network
+    healthcheck:
+      test: mc-health
+      start_period: 60s
+      interval: 10s
+      timeout: 5s
+      retries: 3
     tty: true
     stdin_open: true
 
@@ -71,5 +128,6 @@ networks:
     driver: bridge
 
 volumes:
-  lunatic-debug-minecraft-data:
+  lunatic-debug-s1-data:
+  lunatic-debug-s2-data:
   lunatic-debug-velocity-data:
