@@ -55,4 +55,24 @@ sealed interface PluginMessage {
         val protocolVersion: String,
         val online: Boolean,
     ) : PluginMessage
+
+    /**
+     * Global chat message (Paper ↔ Velocity ↔ Paper)
+     *
+     * @property messageId UUID for deduplication
+     * @property serverName Source server identifier
+     * @property playerId UUID as string
+     * @property playerName Player name
+     * @property message Chat message content
+     * @property timestamp Message timestamp (milliseconds since epoch)
+     */
+    @Serializable
+    data class GlobalChatMessage(
+        val messageId: String,
+        val serverName: String,
+        val playerId: String,
+        val playerName: String,
+        val message: String,
+        val timestamp: Long = System.currentTimeMillis(),
+    ) : PluginMessage
 }
