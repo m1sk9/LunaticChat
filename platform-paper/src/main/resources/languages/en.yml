@@ -44,7 +44,7 @@ settings:
 
 channel:
   help:
-    header: "=== Channel Commands ==="
+    header: "--- Channel Commands ---"
     create: "/lc channel create <channelId> <name> [description] [isPrivate] - Create a new channel"
     list: "/lc channel list - List all public channels"
     join: "/lc channel join <channelId> - Join a channel"
@@ -66,7 +66,7 @@ channel:
     invalidId: "Invalid channel ID '{id}'. Must be 3-30 characters using only letters, numbers, underscores, and hyphens"
     limitExceeded: "Cannot create channel: server has reached the maximum limit of {limit} channels"
   list:
-    header: "=== Public Channels ({count}) ==="
+    header: "--- Public Channels ({count}) ---"
     empty: "No public channels available"
     error: "Failed to retrieve channel list"
     clickToJoin: "Click to join"
@@ -96,7 +96,7 @@ channel:
     notMember: "You are not a member of channel '{channelId}'"
     error: "Failed to switch channel"
   status:
-    header: "=== Your Channel Status ==="
+    header: "--- Your Channel Status ---"
     activeChannel: "Active Channel"
     noActiveChannel: "No active channel"
     channelList: "Your Channels ({count})"
@@ -104,7 +104,7 @@ channel:
     clickToSwitch: "Click to switch"
     error: "Failed to retrieve channel status"
   info:
-    header: "=== Channel Information ==="
+    header: "--- Channel Information ---"
     name: "Name"
     id: "ID"
     owner: "Owner"
@@ -119,7 +119,6 @@ channel:
     playerLeft: "{player} left {channel}"
     playerKicked: "{player} was kicked from {channel} by {kicker}"
     playerBanned: "{player} was banned from {channel} by {banner}"
-  autoFallback: "No active channel - message sent to global chat"
   invite:
     success: "Invited {player} to {channel}"
     noActiveChannel: "You don't have an active channel"

@@ -128,13 +128,6 @@ class PlayerChatListener(
                     } else {
                         // Auto-fallback to global chat
                         event.message(Component.text(displayMessage))
-
-                        // Send warning to player
-                        player.sendMessage(
-                            MessageFormatter.format(
-                                languageManager.getMessage("channel.autoFallback"),
-                            ),
-                        )
                     }
                 } else {
                     // Channel chat not available, fallback to normal chat

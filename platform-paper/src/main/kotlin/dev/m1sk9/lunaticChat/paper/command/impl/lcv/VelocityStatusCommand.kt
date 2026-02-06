@@ -11,7 +11,6 @@ import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
 import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
-import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import dev.m1sk9.lunaticChat.paper.velocity.VelocityConnectionManager
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
@@ -59,21 +58,17 @@ class VelocityStatusCommand(
 
         // Paper plugin version
         sender.sendMessage(
-            MessageFormatter.format(
-                languageManager.getMessage(
-                    "velocity.status.paperVersion",
-                    mapOf("version" to meta.version),
-                ),
+            languageManager.getMessage(
+                "velocity.status.paperVersion",
+                mapOf("version" to meta.version),
             ),
         )
 
         // Protocol version
         sender.sendMessage(
-            MessageFormatter.format(
-                languageManager.getMessage(
-                    "velocity.status.protocolVersion",
-                    mapOf("version" to ProtocolVersion.version),
-                ),
+            languageManager.getMessage(
+                "velocity.status.protocolVersion",
+                mapOf("version" to ProtocolVersion.version),
             ),
         )
 
@@ -105,11 +100,9 @@ class VelocityStatusCommand(
         // Velocity version (if connected)
         velocityConnectionManager.getVelocityVersion()?.let { velocityVersion ->
             sender.sendMessage(
-                MessageFormatter.format(
-                    languageManager.getMessage(
-                        "velocity.status.velocityVersion",
-                        mapOf("version" to velocityVersion),
-                    ),
+                languageManager.getMessage(
+                    "velocity.status.velocityVersion",
+                    mapOf("version" to velocityVersion),
                 ),
             )
         }
@@ -127,23 +120,19 @@ class VelocityStatusCommand(
         // Live status check (if connected)
         if (state == VelocityConnectionManager.ConnectionState.CONNECTED) {
             sender.sendMessage(
-                MessageFormatter.format(
-                    languageManager.getMessage("velocity.status.checkingLiveStatus"),
-                ),
+                languageManager.getMessage("velocity.status.checkingLiveStatus"),
             )
 
             velocityConnectionManager
                 .requestStatus(sender)
                 .thenAccept { response ->
                     sender.sendMessage(
-                        MessageFormatter.format(
-                            languageManager.getMessage(
-                                "velocity.status.liveStatusSuccess",
-                                mapOf(
-                                    "version" to response.velocityVersion,
-                                    "protocol" to response.protocolVersion,
-                                    "online" to response.online.toString(),
-                                ),
+                        languageManager.getMessage(
+                            "velocity.status.liveStatusSuccess",
+                            mapOf(
+                                "version" to response.velocityVersion,
+                                "protocol" to response.protocolVersion,
+                                "online" to response.online.toString(),
                             ),
                         ),
                     )
