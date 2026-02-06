@@ -32,10 +32,10 @@ features:
   - title: Japanese Romanization Conversion
     details: Automatically converts messages input in romaji to Japanese
     icon: 🌍
-  - title: Channel Chat Feature (Planned)
+  - title: Channel Chat Feature
     details: Create and manage chat channels, send private messages between specific players
     icon: ☎️
-  - title: Multi-Platform Support (Planned)
+  - title: Multi-Platform Support
     details: Support for multi-platform Paper and Velocity, enabling cross-server chat
     icon: 🚀
   - title: High-Speed Performance with Caching

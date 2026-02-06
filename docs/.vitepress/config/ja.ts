@@ -130,8 +130,8 @@ export const ja: DefaultTheme.Config = {
             text: '/lcv',
             items: [
               {
-                text: '/lc status',
-                link: '/en/reference/commands/lcv/status',
+                text: '/lcv status',
+                link: '/reference/commands/lcv/status',
               },
             ],
           },

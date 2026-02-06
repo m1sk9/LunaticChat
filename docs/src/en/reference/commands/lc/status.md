@@ -2,8 +2,8 @@
 
 ### `/lc status`
 
-| Permission                      |
-|------------------------------|
-| `lunaticchat.command.status` |
+| Permission                         |
+|---------------------------------|
+| `lunaticchat.command.lc.status` |
 
 Displays the status of LunaticChat.
