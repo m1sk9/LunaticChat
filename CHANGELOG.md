@@ -5,6 +5,7 @@
 ### v0.8.0
 
 - Velocity integration is now available.
+- Fixed the header design for certain commands such as `/lc channel`.
 
 ### v0.7.0
 

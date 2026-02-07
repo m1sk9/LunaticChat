@@ -68,6 +68,19 @@ features:
       retentionDays: 30
       # Maximum size of a single log file in megabytes. Files exceeding this size will stop accepting new entries.
       maxFileSizeMB: 100
+  velocityIntegration:
+    # If enabled, enables integration with Velocity proxy plugin.
+    # This allows Paper and Velocity instances to communicate and verify compatibility.
+    enabled: false
+    # If enabled, global chat messages will be shared across all Paper servers connected to the Velocity proxy.
+    # Players on different servers can communicate through the GLOBAL chat mode.
+    crossServerGlobalChat: false
+    # Server name to display in cross-server chat (e.g., "survival", "creative", "lobby").
+    # This should match the server name defined in your Velocity configuration.
+    serverName: "Unknown"
+    # Size of the message deduplication cache to prevent duplicate messages from appearing.
+    # Keeps track of the most recent N message IDs to filter out duplicates.
+    messageDeduplicationCacheSize: 100
 
 # ----------------------------------------------
 # ---------   Message Format Settings   --------
@@ -80,6 +93,7 @@ features:
 # {recipient} - The name of the message recipient
 # {message} - The content of the message
 # {channel} - The name of the chat channel (only for channel chat)
+# {server} - The name of the server (only for Velocity cross-server chat)
 # ----------------------------------------------
 
 messageFormat:
@@ -87,6 +101,8 @@ messageFormat:
   directMessageFormat: "§7[§e{sender} §7>> §e{recipient}§7] §f{message}"
   # Configure the format for messages sent in channel chat
   channelMessageFormat: "§7[§b#{channel}§7] §e{sender}: §f{message}"
+  # Configure the format for global chat messages in Velocity integration
+  crossServerGlobalChatFormat: "§7[§6{server}§7] §e{sender}: §f{message}"
 ```
 
 ## General Settings
@@ -245,6 +261,38 @@ LunaticChat の [`/reply`](../../reference/commands/reply.md) コマンドによ
 チャンネルチャットのログファイルの最大サイズ（メガバイト）を指定します．
 
 `maxFileSizeMB` を超えたログファイルは新しいエントリを受け付けなくなります．
+
+### `features.velocityIntegration`
+
+#### `enabled`
+
+- Type: `boolean`
+- Default: `false`
+
+Velocity プロキシプラグインとの連携を有効にします．
+
+#### `crossServerGlobalChat`
+
+- Type: `boolean`
+- Default: `false`
+
+Velocity プロキシに接続されたすべての Paper サーバー間でチャットメッセージを共有するかどうかを指定します．
+
+#### `serverName`
+
+- Type: `string`
+- Default: `Unknown`
+
+Velocity クロスサーバーチャットで表示されるサーバー名を指定します．
+
+例: `survival`, `creative`, `lobby`
+
+#### `messageDeduplicationCacheSize`
+
+- Type: `integer`
+- Default: `100`
+
+メッセージの重複排除キャッシュのサイズを指定します．
 
 ## Message Format Settings
 

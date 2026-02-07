@@ -68,6 +68,19 @@ features:
       retentionDays: 30
       # Maximum size of a single log file in megabytes. Files exceeding this size will stop accepting new entries.
       maxFileSizeMB: 100
+  velocityIntegration:
+    # If enabled, enables integration with Velocity proxy plugin.
+    # This allows Paper and Velocity instances to communicate and verify compatibility.
+    enabled: false
+    # If enabled, global chat messages will be shared across all Paper servers connected to the Velocity proxy.
+    # Players on different servers can communicate through the GLOBAL chat mode.
+    crossServerGlobalChat: false
+    # Server name to display in cross-server chat (e.g., "survival", "creative", "lobby").
+    # This should match the server name defined in your Velocity configuration.
+    serverName: "Unknown"
+    # Size of the message deduplication cache to prevent duplicate messages from appearing.
+    # Keeps track of the most recent N message IDs to filter out duplicates.
+    messageDeduplicationCacheSize: 100
 
 # ----------------------------------------------
 # ---------   Message Format Settings   --------
@@ -80,6 +93,7 @@ features:
 # {recipient} - The name of the message recipient
 # {message} - The content of the message
 # {channel} - The name of the chat channel (only for channel chat)
+# {server} - The name of the server (only for Velocity cross-server chat)
 # ----------------------------------------------
 
 messageFormat:
@@ -87,6 +101,8 @@ messageFormat:
   directMessageFormat: "§7[§e{sender} §7>> §e{recipient}§7] §f{message}"
   # Configure the format for messages sent in channel chat
   channelMessageFormat: "§7[§b#{channel}§7] §e{sender}: §f{message}"
+  # Configure the format for global chat messages in Velocity integration
+  crossServerGlobalChatFormat: "§7[§6{server}§7] §e{sender}: §f{message}"
 ```
 
 ## General Settings
@@ -246,6 +262,38 @@ Specifies the maximum size (in megabytes) of channel chat log files.
 
 Log files exceeding `maxFileSizeMB` will stop accepting new entries.
 
+### `features.velocityIntegration`
+
+#### `enabled`
+
+- Type: `boolean`
+- Default: `false`
+
+Enables integration with Velocity proxy plugin.
+
+#### `crossServerGlobalChat`
+
+- Type: `boolean`
+- Default: `false`
+
+Specifies whether to share chat messages across all Paper servers connected to the Velocity proxy.
+
+#### `serverName`
+
+- Type: `string`
+- Default: `Unknown`
+
+Specifies the server name to display in Velocity cross-server chat.
+
+Examples: `survival`, `creative`, `lobby`
+
+#### `messageDeduplicationCacheSize`
+
+- Type: `integer`
+- Default: `100`
+
+Specifies the size of the message deduplication cache.
+
 ## Message Format Settings
 
 Available placeholders:
@@ -254,6 +302,7 @@ Available placeholders:
 - `{recipient}`: Name of the message recipient
 - `{message}`: Content of the message
 - `{channel}`: Name of the chat channel (only for channel chat)
+- `{server}`: Name of the server (only for Velocity cross-server chat)
 
 ### `messageFormat.directMessageFormat`
 
@@ -268,3 +317,10 @@ Specifies the format for messages sent via direct message ([`/tell`](../../refer
 - Default: `§7[§b#{channel}§7] §e{sender}: §f{message}`
 
 Specifies the format for messages sent in channel chat.
+
+### `messageFormat.crossServerGlobalChatFormat`
+
+- Type: `string`
+- Default: `§7[§6{server}§7] §e{sender}: §f{message}`
+
+Specifies the format for messages sent via Velocity cross-server global chat.

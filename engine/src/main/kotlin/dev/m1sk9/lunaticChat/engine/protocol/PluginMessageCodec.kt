@@ -23,6 +23,7 @@ object PluginMessageCodec {
         const val HANDSHAKE_RESPONSE = "handshake_response"
         const val STATUS_REQUEST = "status_request"
         const val STATUS_RESPONSE = "status_response"
+        const val GLOBAL_CHAT = "global_chat"
     }
 
     /**
@@ -48,6 +49,9 @@ object PluginMessageCodec {
                 }
                 is PluginMessage.StatusResponse -> {
                     SubChannel.STATUS_RESPONSE to json.encodeToString(message)
+                }
+                is PluginMessage.GlobalChatMessage -> {
+                    SubChannel.GLOBAL_CHAT to json.encodeToString(message)
                 }
             }
 
@@ -83,6 +87,9 @@ object PluginMessageCodec {
             }
             SubChannel.STATUS_RESPONSE -> {
                 json.decodeFromString<PluginMessage.StatusResponse>(messageJson)
+            }
+            SubChannel.GLOBAL_CHAT -> {
+                json.decodeFromString<PluginMessage.GlobalChatMessage>(messageJson)
             }
             else -> throw IllegalArgumentException("Unknown sub-channel: $subChannel")
         }

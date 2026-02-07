@@ -2,8 +2,8 @@
 
 ### `/lc status`
 
-| パーミッション                      |
-|------------------------------|
-| `lunaticchat.command.status` |
+| パーミッション                         |
+|---------------------------------|
+| `lunaticchat.command.lc.status` |
 
 LunaticChat のステータスを表示します．

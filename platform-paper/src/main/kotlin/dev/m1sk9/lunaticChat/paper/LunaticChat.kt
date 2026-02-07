@@ -31,7 +31,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 class LunaticChat :
     JavaPlugin(),
     Listener {
-    // Public API - accessed by commands (maintain backward compatibility)
     lateinit var directMessageHandler: DirectMessageHandler
     lateinit var languageManager: LanguageManager
     var channelManager: ChannelManager? = null
@@ -40,7 +39,6 @@ class LunaticChat :
     var channelMessageHandler: ChannelMessageHandler? = null
     var channelNotificationHandler: ChannelNotificationHandler? = null
 
-    // Private services
     private lateinit var services: ServiceContainer
     private lateinit var configuration: LunaticChatConfiguration
     private lateinit var serviceInitializer: ServiceInitializer
@@ -166,7 +164,7 @@ class LunaticChat :
      * Registers all event listeners.
      */
     private fun registerEventListeners() {
-        EventListenerRegistry.registerAll(this, services, updateAvailable)
+        EventListenerRegistry.registerAll(this, services, configuration, updateAvailable)
     }
 
     /**

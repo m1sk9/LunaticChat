@@ -60,11 +60,12 @@ show-plugins = false
 [servers]
 # Configure your servers here. Each key represents the server's name, and the value
 # represents the IP address of the server to connect to.
-minecraft = "minecraft:25565"
+s1 = "s1:25565"
+s2 = "s2:25565"
 
 # In what order we should try servers when a player logs in or is kicked from a server.
 try = [
-    "minecraft"
+    "s1"
 ]
 
 [forced-hosts]

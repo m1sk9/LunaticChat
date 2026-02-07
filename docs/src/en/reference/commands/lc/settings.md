@@ -2,9 +2,9 @@
 
 ### `/lc settings <key> [value]`
 
-| Permission                        |
-|--------------------------------|
-| `lunaticchat.command.settings` |
+| Permission                           |
+|-----------------------------------|
+| `lunaticchat.command.lc.settings` |
 
 Manages player settings for LunaticChat. If no value is specified, the current setting value will be displayed.
 
@@ -16,3 +16,4 @@ This setting is saved by UUID, so the setting will not be lost even if you chang
 |----------|----------------------------------------------------------|--------|
 | `japanese`     | Toggles romanization conversion on or off.                                   | `true` |
 | `notice` | Toggles whether to receive notifications when receiving direct messages via `/tell` or `/reply`. | `true` |
+| `chNotice` | Toggles whether to receive notifications when receiving channel chat messages. | `true` |

@@ -16,6 +16,7 @@ import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
 import dev.m1sk9.lunaticChat.paper.settings.YamlPlayerSettingsStorage
+import dev.m1sk9.lunaticChat.paper.velocity.CrossServerChatManager
 import dev.m1sk9.lunaticChat.paper.velocity.VelocityConnectionManager
 import io.ktor.client.HttpClient
 import org.bukkit.event.EventHandler
@@ -57,6 +58,7 @@ class ServiceInitializer(
     private var channelNotificationHandler: ChannelNotificationHandler? = null
     private var channelMessageLogger: ChannelMessageLogger? = null
     private var velocityConnectionManager: VelocityConnectionManager? = null
+    private var crossServerChatManager: CrossServerChatManager? = null
     private val handshakeCompleted = AtomicBoolean(false)
 
     /**
@@ -123,6 +125,17 @@ class ServiceInitializer(
                 null
             }
 
+        // 7. Initialize cross-server chat manager (optional)
+        val crossServerManager =
+            if (configuration.features.velocityIntegration.enabled &&
+                configuration.features.velocityIntegration.crossServerGlobalChat &&
+                velocityManager != null
+            ) {
+                initializeCrossServerChatManager(velocityManager)
+            } else {
+                null
+            }
+
         return ServiceContainer(
             languageManager = languageManager,
             playerSettingsManager = playerSettingsManager,
@@ -134,6 +147,7 @@ class ServiceInitializer(
             channelMessageHandler = channelMessageHandler,
             channelNotificationHandler = channelNotificationHandler,
             velocityConnectionManager = velocityManager,
+            crossServerChatManager = crossServerManager,
         )
     }
 
@@ -337,6 +351,31 @@ class ServiceInitializer(
         )
 
         logger.info("Velocity integration initialized. Waiting for first player join to perform handshake.")
+        return manager
+    }
+
+    /**
+     * Initializes cross-server chat manager.
+     *
+     * @param velocityManager The Velocity connection manager
+     * @return The initialized CrossServerChatManager
+     */
+    private fun initializeCrossServerChatManager(velocityManager: VelocityConnectionManager): CrossServerChatManager {
+        val manager =
+            CrossServerChatManager(
+                plugin = plugin,
+                logger = logger,
+                configuration = configuration,
+                cacheSize = configuration.features.velocityIntegration.messageDeduplicationCacheSize,
+            )
+        crossServerChatManager = manager
+
+        // Set the manager in VelocityConnectionManager to handle incoming messages
+        velocityManager.setCrossServerChatManager(manager)
+
+        logger.info(
+            "Cross-server global chat initialized (cache size: ${configuration.features.velocityIntegration.messageDeduplicationCacheSize})",
+        )
         return manager
     }
 

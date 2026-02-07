@@ -6,17 +6,19 @@ DOCKER_COMPOSE="docker compose -f docker/compose.yaml"
 
 help() {
     cat <<EOF
-Usage: ./x <command>
+Usage: ./x <command> [options]
 
 Commands:
-    start      Build with gradlew and start docker compose
-    restart    Restart minecraft and velocity containers
-    stop       Stop docker compose
-    clean      Stop docker compose and remove volumes
-    rcon       Open rcon-cli for minecraft container
-    logs       Show minecraft container logs
-    vlogs      Show velocity container logs
-    help       Show this help message
+    start           Build with gradlew and start docker compose
+    restart         Restart s1, s2 and velocity containers
+    stop            Stop docker compose
+    clean           Stop docker compose and remove volumes
+    rcon [server]   Open rcon-cli for server container (default: s1)
+                    Available servers: s1, s2
+    logs [server]   Show server container logs (default: s1)
+                    Available servers: s1, s2
+    vlogs           Show velocity container logs
+    help            Show this help message
 
 EOF
 }
@@ -27,7 +29,7 @@ case "${1:-}" in
         $DOCKER_COMPOSE up
         ;;
     restart)
-        $DOCKER_COMPOSE restart minecraft velocity
+        $DOCKER_COMPOSE restart s1 s2 velocity
         ;;
     stop)
         $DOCKER_COMPOSE down
@@ -36,10 +38,20 @@ case "${1:-}" in
         $DOCKER_COMPOSE down -v
         ;;
     rcon)
-        $DOCKER_COMPOSE exec minecraft rcon-cli
+        SERVER="${2:-s1}"
+        if [[ "$SERVER" != "s1" && "$SERVER" != "s2" ]]; then
+            echo "Error: Invalid server '$SERVER'. Available servers: s1, s2"
+            exit 1
+        fi
+        $DOCKER_COMPOSE exec $SERVER rcon-cli
         ;;
     logs)
-        $DOCKER_COMPOSE logs -f minecraft
+        SERVER="${2:-s1}"
+        if [[ "$SERVER" != "s1" && "$SERVER" != "s2" ]]; then
+            echo "Error: Invalid server '$SERVER'. Available servers: s1, s2"
+            exit 1
+        fi
+        $DOCKER_COMPOSE logs -f $SERVER
         ;;
     vlogs)
         $DOCKER_COMPOSE logs -f velocity
