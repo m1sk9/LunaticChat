@@ -6,6 +6,7 @@
 
 - Velocity integration is now available.
 - Fixed the header design for certain commands such as `/lc channel`.
+- When converting to Roman letters, if kana characters are included, those conversions should be skipped.
 
 ### v0.7.0
 

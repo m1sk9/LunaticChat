@@ -254,6 +254,75 @@ object KanaConverter {
     }
 
     /**
+     * Checks if the input can be fully converted to hiragana without any remaining alphabetic characters.
+     * This validates that the input is valid romaji before attempting conversion.
+     *
+     * @param input The text to validate
+     * @return true if the input is valid romaji, false otherwise
+     */
+    fun isValidRomaji(input: String): Boolean {
+        val lowerInput = input.lowercase()
+        var i = 0
+
+        while (i < lowerInput.length) {
+            val char = lowerInput[i]
+
+            // Non-alphabetic characters are allowed (spaces, numbers, symbols)
+            if (char !in 'a'..'z') {
+                i++
+                continue
+            }
+
+            // Check for double consonant (valid in romaji for っ)
+            if (i + 1 < lowerInput.length) {
+                val next = lowerInput[i + 1]
+                if (char == next && char in "bcdfghjklmpqrstvwxyz") {
+                    i++
+                    continue
+                }
+            }
+
+            // Try to find the longest match in the trie
+            var node: TrieNode = romanjiTrie
+            var matchLength = 0
+            var j = i
+
+            while (j < lowerInput.length && lowerInput[j] in 'a'..'z') {
+                node =
+                    when (node) {
+                        is TrieNode.Branch -> {
+                            if (node.value != null) {
+                                matchLength = j - i
+                            }
+                            node.children[lowerInput[j]] ?: break
+                        }
+                        is TrieNode.Leaf -> {
+                            matchLength = j - i
+                            break
+                        }
+                    }
+                j++
+            }
+
+            // Check for terminal match
+            if (node is TrieNode.Leaf) {
+                matchLength = j - i
+            } else if (node is TrieNode.Branch && node.value != null) {
+                matchLength = j - i
+            }
+
+            // If no match found, this character cannot be converted - not valid romaji
+            if (matchLength == 0) {
+                return false
+            }
+
+            i += matchLength
+        }
+
+        return true
+    }
+
+    /**
      * Converts romanji text to hiragana.
      *
      * @param input The romanji text to convert

@@ -2,6 +2,8 @@ package dev.m1sk9.lunaticChat.engine.converter
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class KanaConverterTest {
     @Test
@@ -289,5 +291,88 @@ class KanaConverterTest {
         val input = "watashi wa nihongo wo benkyou shiteimasu"
         val expected = "わたし わ にほんご を べんきょう しています"
         assertEquals(expected, KanaConverter.toHiragana(input))
+    }
+
+    // isValidRomaji tests
+
+    @Test
+    fun `isValidRomaji should return true for valid romaji words`() {
+        assertTrue(KanaConverter.isValidRomaji("konnichiwa"))
+        assertTrue(KanaConverter.isValidRomaji("arigatou"))
+        assertTrue(KanaConverter.isValidRomaji("ohayou"))
+        assertTrue(KanaConverter.isValidRomaji("sumimasen"))
+        assertTrue(KanaConverter.isValidRomaji("ganbatte"))
+    }
+
+    @Test
+    fun `isValidRomaji should return true for single vowels`() {
+        assertTrue(KanaConverter.isValidRomaji("a"))
+        assertTrue(KanaConverter.isValidRomaji("i"))
+        assertTrue(KanaConverter.isValidRomaji("u"))
+        assertTrue(KanaConverter.isValidRomaji("e"))
+        assertTrue(KanaConverter.isValidRomaji("o"))
+    }
+
+    @Test
+    fun `isValidRomaji should return true for double consonants`() {
+        assertTrue(KanaConverter.isValidRomaji("kitte"))
+        assertTrue(KanaConverter.isValidRomaji("gakkou"))
+        assertTrue(KanaConverter.isValidRomaji("sappari"))
+    }
+
+    @Test
+    fun `isValidRomaji should return true for phrases with spaces`() {
+        assertTrue(KanaConverter.isValidRomaji("watashi wa nihongo wo benkyou shiteimasu"))
+    }
+
+    @Test
+    fun `isValidRomaji should return true for input with numbers and symbols`() {
+        assertTrue(KanaConverter.isValidRomaji("arigatou123"))
+        assertTrue(KanaConverter.isValidRomaji("konnichiwa!"))
+        assertTrue(KanaConverter.isValidRomaji("hai?"))
+    }
+
+    @Test
+    fun `isValidRomaji should return false for English words`() {
+        // These contain consonants that cannot be converted (e.g., 's' alone, 'v', 'c' without vowel pattern)
+        assertFalse(KanaConverter.isValidRomaji("This"))
+        assertFalse(KanaConverter.isValidRomaji("server"))
+        assertFalse(KanaConverter.isValidRomaji("version"))
+        assertFalse(KanaConverter.isValidRomaji("running"))
+        assertFalse(KanaConverter.isValidRomaji("Paper"))
+    }
+
+    @Test
+    fun `isValidRomaji should return false for words with unconvertable consonant endings`() {
+        // 's', 'r', 'c', 'v', 'l', 'x' alone or in non-romaji patterns cannot be converted
+        assertFalse(KanaConverter.isValidRomaji("test"))
+        assertFalse(KanaConverter.isValidRomaji("cat"))
+        assertFalse(KanaConverter.isValidRomaji("fix"))
+    }
+
+    @Test
+    fun `isValidRomaji should return true for n at word end`() {
+        assertTrue(KanaConverter.isValidRomaji("san"))
+        assertTrue(KanaConverter.isValidRomaji("nihon"))
+        assertTrue(KanaConverter.isValidRomaji("ramen"))
+    }
+
+    @Test
+    fun `isValidRomaji should handle uppercase input`() {
+        assertTrue(KanaConverter.isValidRomaji("KONNICHIWA"))
+        assertFalse(KanaConverter.isValidRomaji("THIS"))
+        assertFalse(KanaConverter.isValidRomaji("SERVER"))
+    }
+
+    @Test
+    fun `isValidRomaji should return true for empty string`() {
+        assertTrue(KanaConverter.isValidRomaji(""))
+    }
+
+    @Test
+    fun `isValidRomaji should return true for only numbers and symbols`() {
+        assertTrue(KanaConverter.isValidRomaji("123"))
+        assertTrue(KanaConverter.isValidRomaji("!@#"))
+        assertTrue(KanaConverter.isValidRomaji("1.21.11-110"))
     }
 }
