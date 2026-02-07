@@ -199,6 +199,7 @@ toggle:
 
 velocity:
   status:
+    header: "--- LunaticChat Velocity Cooperation Status ---"
     paperVersion: "Paper Plugin Version: v{version}"
     velocityVersion: "Velocity Plugin Version: v{version}"
     protocolVersion: "Protocol Version: v{version}"

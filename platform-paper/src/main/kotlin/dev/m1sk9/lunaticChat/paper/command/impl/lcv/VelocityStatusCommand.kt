@@ -11,6 +11,7 @@ import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
 import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
+import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import dev.m1sk9.lunaticChat.paper.velocity.VelocityConnectionManager
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
@@ -56,22 +57,6 @@ class VelocityStatusCommand(
         val sender = ctx.requirePlayer()
         val meta = plugin.pluginMeta
 
-        // Paper plugin version
-        sender.sendMessage(
-            languageManager.getMessage(
-                "velocity.status.paperVersion",
-                mapOf("version" to meta.version),
-            ),
-        )
-
-        // Protocol version
-        sender.sendMessage(
-            languageManager.getMessage(
-                "velocity.status.protocolVersion",
-                mapOf("version" to ProtocolVersion.version),
-            ),
-        )
-
         // Connection state
         val state = velocityConnectionManager.getState()
         val stateMessage =
@@ -90,20 +75,44 @@ class VelocityStatusCommand(
                 }
             }
 
+        // Header
+        sender.sendMessage(
+            MessageFormatter.format(
+                languageManager.getMessage("velocity.status.header"),
+            ),
+        )
+
+        // Paper plugin version
         sender.sendMessage(
             Component
-                .text(languageManager.getMessage("velocity.status.connectionState"))
-                .append(Component.text(": "))
+                .text("  • ", NamedTextColor.GRAY)
+                .append(Component.text("Paper Version: ", NamedTextColor.GRAY))
+                .append(Component.text(meta.version, NamedTextColor.AQUA)),
+        )
+
+        // Protocol version
+        sender.sendMessage(
+            Component
+                .text("  • ", NamedTextColor.GRAY)
+                .append(Component.text("Protocol Version: ", NamedTextColor.GRAY))
+                .append(Component.text(ProtocolVersion.version, NamedTextColor.AQUA)),
+        )
+
+        // Connection state
+        sender.sendMessage(
+            Component
+                .text("  • ", NamedTextColor.GRAY)
+                .append(Component.text("Connection State: ", NamedTextColor.GRAY))
                 .append(stateMessage),
         )
 
         // Velocity version (if connected)
         velocityConnectionManager.getVelocityVersion()?.let { velocityVersion ->
             sender.sendMessage(
-                languageManager.getMessage(
-                    "velocity.status.velocityVersion",
-                    mapOf("version" to velocityVersion),
-                ),
+                Component
+                    .text("  • ", NamedTextColor.GRAY)
+                    .append(Component.text("Velocity Version: ", NamedTextColor.GRAY))
+                    .append(Component.text(velocityVersion, NamedTextColor.AQUA)),
             )
         }
 
@@ -111,8 +120,8 @@ class VelocityStatusCommand(
         velocityConnectionManager.getLastError()?.let { error ->
             sender.sendMessage(
                 Component
-                    .text(languageManager.getMessage("velocity.status.error"))
-                    .append(Component.text(": ", NamedTextColor.RED))
+                    .text("  • ", NamedTextColor.GRAY)
+                    .append(Component.text("Error: ", NamedTextColor.GRAY))
                     .append(Component.text(error, NamedTextColor.RED)),
             )
         }
@@ -120,28 +129,26 @@ class VelocityStatusCommand(
         // Live status check (if connected)
         if (state == VelocityConnectionManager.ConnectionState.CONNECTED) {
             sender.sendMessage(
-                languageManager.getMessage("velocity.status.checkingLiveStatus"),
+                Component
+                    .text("  • ", NamedTextColor.GRAY)
+                    .append(Component.text("Checking live status...", NamedTextColor.YELLOW)),
             )
 
             velocityConnectionManager
                 .requestStatus(sender)
                 .thenAccept { response ->
                     sender.sendMessage(
-                        languageManager.getMessage(
-                            "velocity.status.liveStatusSuccess",
-                            mapOf(
-                                "version" to response.velocityVersion,
-                                "protocol" to response.protocolVersion,
-                                "online" to response.online.toString(),
-                            ),
-                        ),
+                        Component
+                            .text("  ✓ ", NamedTextColor.GREEN)
+                            .append(Component.text("Online Players: ", NamedTextColor.GRAY))
+                            .append(Component.text(response.online.toString(), NamedTextColor.YELLOW)),
                     )
                 }.exceptionally { throwable ->
                     sender.sendMessage(
                         Component
-                            .text(languageManager.getMessage("velocity.status.liveStatusFailed"))
-                            .color(NamedTextColor.RED)
-                            .append(Component.text(": ${throwable.message}", NamedTextColor.RED)),
+                            .text("  ✗ ", NamedTextColor.RED)
+                            .append(Component.text("Live status check failed: ", NamedTextColor.GRAY))
+                            .append(Component.text(throwable.message ?: "Unknown error", NamedTextColor.RED)),
                     )
                     null
                 }

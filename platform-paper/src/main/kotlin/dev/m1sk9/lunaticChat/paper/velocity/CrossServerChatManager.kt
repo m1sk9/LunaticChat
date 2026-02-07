@@ -7,6 +7,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.plugin.Plugin
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import java.util.logging.Level
 import java.util.logging.Logger
 
 /**
@@ -61,27 +62,36 @@ class CrossServerChatManager(
                     message = message,
                 )
 
-            // Send to Velocity
-            val player = plugin.server.getPlayer(playerId)
-            if (player != null) {
-                player.sendPluginMessage(
-                    plugin,
-                    "lunaticchat:main",
-                    dev.m1sk9.lunaticChat.engine.protocol.PluginMessageCodec
-                        .encode(globalChatMessage),
-                )
-                logger.info("Sent global chat message to Velocity: messageId=$messageId, player=$playerName")
-            } else {
-                logger.warning("Cannot send global chat message: player $playerId not found")
-            }
+            // Schedule Bukkit API calls on the main server thread
+            plugin.server.scheduler.runTask(
+                plugin,
+                Runnable {
+                    try {
+                        // Send to Velocity
+                        val player = plugin.server.getPlayer(playerId)
+                        if (player != null) {
+                            player.sendPluginMessage(
+                                plugin,
+                                "lunaticchat:main",
+                                dev.m1sk9.lunaticChat.engine.protocol.PluginMessageCodec
+                                    .encode(globalChatMessage),
+                            )
+                            logger.info("Sent global chat message to Velocity: messageId=$messageId, player=$playerName")
+                        } else {
+                            logger.warning("Cannot send global chat message: player $playerId not found")
+                        }
+                    } catch (e: Exception) {
+                        logger.log(Level.SEVERE, "Failed to send plugin message on main thread", e)
+                    }
+                },
+            )
 
             // Cleanup old messages if cache is too large
             if (processedMessages.size > cacheSize) {
                 cleanupOldMessages()
             }
         } catch (e: Exception) {
-            logger.severe("Failed to send global chat message: ${e.message}")
-            e.printStackTrace()
+            logger.log(Level.SEVERE, "Failed to send global chat message", e)
         }
     }
 
@@ -123,8 +133,7 @@ class CrossServerChatManager(
                 cleanupOldMessages()
             }
         } catch (e: Exception) {
-            logger.severe("Failed to handle incoming global chat message: ${e.message}")
-            e.printStackTrace()
+            logger.log(Level.SEVERE, "Failed to handle incoming global chat message", e)
         }
     }
 
@@ -162,17 +171,21 @@ class CrossServerChatManager(
             val currentTime = System.currentTimeMillis()
             val cutoffTime = currentTime - CLEANUP_THRESHOLD_MILLIS
 
-            val iterator = processedMessages.entries.iterator()
-            var removedCount = 0
-
-            while (iterator.hasNext()) {
-                val entry = iterator.next()
+            // Collect keys to remove (ConcurrentHashMap iterator doesn't support remove())
+            val keysToRemove = mutableListOf<String>()
+            processedMessages.entries.forEach { entry ->
                 if (entry.value < cutoffTime) {
-                    iterator.remove()
-                    removedCount++
+                    keysToRemove.add(entry.key)
                 }
             }
 
+            // Remove expired entries
+            keysToRemove.forEach { key ->
+                processedMessages.remove(key)
+            }
+            var removedCount = keysToRemove.size
+
+            // If still over cache size, remove oldest entries
             if (processedMessages.size > cacheSize) {
                 val sortedEntries = processedMessages.entries.sortedBy { it.value }
                 val toRemove = processedMessages.size - cacheSize
@@ -187,7 +200,7 @@ class CrossServerChatManager(
                 logger.fine("Cleaned up $removedCount old messages from deduplication cache")
             }
         } catch (e: Exception) {
-            logger.warning("Failed to cleanup old messages: ${e.message}")
+            logger.log(Level.WARNING, "Failed to cleanup old messages", e)
         }
     }
 }

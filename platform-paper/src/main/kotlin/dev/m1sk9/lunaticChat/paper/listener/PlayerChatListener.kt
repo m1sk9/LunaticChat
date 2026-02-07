@@ -6,14 +6,12 @@ import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelMessageHandler
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
 import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
-import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
 import dev.m1sk9.lunaticChat.paper.velocity.CrossServerChatManager
 import io.papermc.paper.event.player.AsyncChatEvent
 import kotlinx.coroutines.runBlocking
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
-import org.bukkit.Bukkit
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -24,11 +22,37 @@ class PlayerChatListener(
     private val channelMessageHandler: ChannelMessageHandler?,
     private val romajiConverter: RomanjiConverter?,
     private val settingsManager: PlayerSettingsManager,
-    private val languageManager: LanguageManager,
     private val configuration: LunaticChatConfiguration,
     private val crossServerChatManager: CrossServerChatManager?,
 ) : Listener {
     private val plainTextSerializer = PlainTextComponentSerializer.plainText()
+
+    /**
+     * Handles global chat message routing.
+     * Checks if Velocity cross-server chat is enabled and routes accordingly.
+     */
+    private fun handleGlobalChat(
+        event: AsyncChatEvent,
+        displayMessage: String,
+    ) {
+        val velocityIntegrationEnabled = configuration.features.velocityIntegration.enabled
+        val crossServerChatEnabled = configuration.features.velocityIntegration.crossServerGlobalChat
+
+        if (velocityIntegrationEnabled && crossServerChatEnabled && crossServerChatManager != null) {
+            // Send to Velocity for cross-server broadcast
+            crossServerChatManager.sendGlobalMessage(
+                event.player.uniqueId,
+                event.player.name,
+                displayMessage,
+            )
+
+            // Display as normal chat on the sender's server (no special formatting)
+            event.message(Component.text(displayMessage))
+        } else {
+            // Existing behavior: normal Minecraft chat
+            event.message(Component.text(displayMessage))
+        }
+    }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun onChat(event: AsyncChatEvent) {
@@ -85,30 +109,7 @@ class PlayerChatListener(
         // Route message based on chat mode
         when (effectiveMode) {
             ChatMode.GLOBAL -> {
-                val velocityIntegrationEnabled = configuration.features.velocityIntegration.enabled
-                val crossServerChatEnabled = configuration.features.velocityIntegration.crossServerGlobalChat
-
-                Bukkit.getLogger().info(
-                    "[LunaticChat DEBUG] Chat mode: GLOBAL, " +
-                        "velocityEnabled=$velocityIntegrationEnabled, " +
-                        "crossServerEnabled=$crossServerChatEnabled, " +
-                        "managerNull=${crossServerChatManager == null}",
-                )
-
-                if (velocityIntegrationEnabled && crossServerChatEnabled && crossServerChatManager != null) {
-                    // Send to Velocity for cross-server broadcast
-                    crossServerChatManager.sendGlobalMessage(
-                        player.uniqueId,
-                        player.name,
-                        displayMessage,
-                    )
-
-                    // Display as normal chat on the sender's server (no special formatting)
-                    event.message(Component.text(displayMessage))
-                } else {
-                    // Existing behavior: normal Minecraft chat
-                    event.message(Component.text(displayMessage))
-                }
+                handleGlobalChat(event, displayMessage)
             }
             ChatMode.CHANNEL -> {
                 // Channel chat requires channelManager and channelMessageHandler
@@ -125,12 +126,12 @@ class PlayerChatListener(
                         event.message(Component.empty())
                         channelMessageHandler.sendChannelMessage(player, messageWithoutPrefix)
                     } else {
-                        // Auto-fallback to global chat
-                        event.message(Component.text(displayMessage))
+                        // Auto-fallback to global chat (with Velocity support if enabled)
+                        handleGlobalChat(event, displayMessage)
                     }
                 } else {
-                    // Channel chat not available, fallback to normal chat
-                    event.message(Component.text(displayMessage))
+                    // Channel chat not available, fallback to global chat (with Velocity support if enabled)
+                    handleGlobalChat(event, displayMessage)
                 }
             }
         }
