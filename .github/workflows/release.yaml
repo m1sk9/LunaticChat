@@ -117,13 +117,13 @@ jobs:
           project: ${{ secrets.MODRINTH_PROJECT_ID }}
           version: ${{ needs.validate.outputs.version }}
           channel: beta
-          changelog: |
+          changelog: |-
             Please refer to the [GitHub release](https://github.com/m1sk9/LunaticChat/releases/tag/v${{ needs.validate.outputs.version }}) for update details.
-          loaders: |
+          loaders: |-
             paper
             velocity
           game-versions: "1.21.x"
-          files: |
+          files: |-
             platform-paper/build/libs/${{ needs.validate.outputs.paper_jar_name }}
             platform-velocity/build/libs/${{ needs.validate.outputs.velocity_jar_name }}
 
