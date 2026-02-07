@@ -48,11 +48,18 @@ class RomanjiConverter(
                 continue
             }
 
+            // Pre-validate: Check if the word is valid romaji before attempting conversion
+            // This prevents partial conversion of English words (e.g., "This" -> "てぃs")
+            if (!KanaConverter.isValidRomaji(word)) {
+                if (debugMode) {
+                    logger.info("Word is not valid romaji, keeping original: $word")
+                }
+                results.add(word)
+                continue
+            }
+
             // Step 1: Romanji -> Hiragana
             val hiragana = KanaConverter.toHiragana(word)
-            if (debugMode) {
-                logger.info("Romanji -> Hiragana: $word -> $hiragana")
-            }
 
             // Step 2: Hiragana -> Kanji/Kana
             val converted =
