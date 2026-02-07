@@ -103,8 +103,8 @@ jobs:
           VELOCITY_JAR_NAME=${{ needs.validate.outputs.velocity_jar_name }}
 
           gh release create "$TAG_NAME" \
-            "$PAPER_JAR_NAME" \
-            "$VELOCITY_JAR_NAME" \
+            "platform-paper/build/libs/$PAPER_JAR_NAME" \
+            "platform-velocity/build/libs/$VELOCITY_JAR_NAME" \
             --title "$TAG_NAME" \
             --draft \
             --notes ""
@@ -124,6 +124,6 @@ jobs:
             velocity
           game-versions: "1.21.x"
           files: |
-            ${{ needs.validate.outputs.paper_jar_name }}
-            ${{ needs.validate.outputs.velocity_jar_name }}
+            platform-paper/build/libs/${{ needs.validate.outputs.paper_jar_name }}
+            platform-velocity/build/libs/${{ needs.validate.outputs.velocity_jar_name }}
 
