@@ -62,68 +62,70 @@ class VelocityStatusCommand(
         val stateMessage =
             when (state) {
                 VelocityConnectionManager.ConnectionState.DISCONNECTED -> {
-                    Component.text("Disconnected", NamedTextColor.GRAY)
+                    Component
+                        .text(languageManager.getMessage("velocity.state.disconnected"), NamedTextColor.GRAY)
+                        .hoverEvent(Component.text(languageManager.getMessage("velocity.hoverInfo.disconnected"), NamedTextColor.GRAY))
                 }
                 VelocityConnectionManager.ConnectionState.HANDSHAKING -> {
-                    Component.text("Handshaking...", NamedTextColor.YELLOW)
+                    Component
+                        .text(languageManager.getMessage("velocity.state.handshaking"), NamedTextColor.YELLOW)
+                        .hoverEvent(Component.text(languageManager.getMessage("velocity.hoverInfo.handshaking"), NamedTextColor.YELLOW))
                 }
                 VelocityConnectionManager.ConnectionState.CONNECTED -> {
-                    Component.text("Connected", NamedTextColor.GREEN)
+                    Component
+                        .text(languageManager.getMessage("velocity.state.connected"), NamedTextColor.GREEN)
+                        .hoverEvent(Component.text(languageManager.getMessage("velocity.hoverInfo.connected"), NamedTextColor.GREEN))
                 }
                 VelocityConnectionManager.ConnectionState.FAILED -> {
-                    Component.text("Failed", NamedTextColor.RED)
+                    Component
+                        .text(languageManager.getMessage("velocity.state.failed"), NamedTextColor.RED)
+                        .hoverEvent(Component.text(languageManager.getMessage("velocity.hoverInfo.failed"), NamedTextColor.RED))
                 }
             }
 
-        // Header
-        sender.sendMessage(
-            MessageFormatter.format(
-                languageManager.getMessage("velocity.status.header"),
-            ),
-        )
-
-        // Paper plugin version
-        sender.sendMessage(
+        val connectionStatus: List<Component?> = listOf(
+            // Paper plugin version
             Component
                 .text("  • ", NamedTextColor.GRAY)
-                .append(Component.text("Paper Version: ", NamedTextColor.GRAY))
+                .append(Component.text("${languageManager.getMessage("velocity.status.label.paperVersion")}: ", NamedTextColor.GRAY))
                 .append(Component.text(meta.version, NamedTextColor.AQUA)),
-        )
-
-        // Protocol version
-        sender.sendMessage(
+            // Velocity version (if connected)
+            velocityConnectionManager.getVelocityVersion()?.let { velocityVersion ->
+                Component
+                    .text("  • ", NamedTextColor.GRAY)
+                    .append(Component.text("${languageManager.getMessage("velocity.status.label.velocityVersion")}: ", NamedTextColor.GRAY))
+                    .append(Component.text(velocityVersion, NamedTextColor.AQUA))
+            },
+            // Protocol version
             Component
                 .text("  • ", NamedTextColor.GRAY)
-                .append(Component.text("Protocol Version: ", NamedTextColor.GRAY))
+                .append(Component.text("${languageManager.getMessage("velocity.status.label.protocolVersion")}: ", NamedTextColor.GRAY))
                 .append(Component.text(ProtocolVersion.version, NamedTextColor.AQUA)),
-        )
-
-        // Connection state
-        sender.sendMessage(
+            // Connection state
             Component
                 .text("  • ", NamedTextColor.GRAY)
-                .append(Component.text("Connection State: ", NamedTextColor.GRAY))
+                .append(Component.text("${languageManager.getMessage("velocity.status.label.connectionState")}: ", NamedTextColor.GRAY))
                 .append(stateMessage),
+            // Error message (if failed)
+            velocityConnectionManager.getLastError()?.let { error ->
+                Component
+                    .text("  • ", NamedTextColor.GRAY)
+                    .append(Component.text("${languageManager.getMessage("velocity.status.error")}: ", NamedTextColor.GRAY))
+                    .append(Component.text(error, NamedTextColor.RED))
+            }
         )
 
-        // Velocity version (if connected)
-        velocityConnectionManager.getVelocityVersion()?.let { velocityVersion ->
-            sender.sendMessage(
-                Component
-                    .text("  • ", NamedTextColor.GRAY)
-                    .append(Component.text("Velocity Version: ", NamedTextColor.GRAY))
-                    .append(Component.text(velocityVersion, NamedTextColor.AQUA)),
+        sender.apply {
+            // Header
+            sendMessage(
+                MessageFormatter.format(
+                    languageManager.getMessage("velocity.status.header"),
+                ),
             )
-        }
-
-        // Error message (if failed)
-        velocityConnectionManager.getLastError()?.let { error ->
-            sender.sendMessage(
-                Component
-                    .text("  • ", NamedTextColor.GRAY)
-                    .append(Component.text("Error: ", NamedTextColor.GRAY))
-                    .append(Component.text(error, NamedTextColor.RED)),
-            )
+            // Connection status details
+            connectionStatus.forEach { line ->
+                line?.let { sendMessage(it) }
+            }
         }
 
         // Live status check (if connected)
@@ -131,7 +133,7 @@ class VelocityStatusCommand(
             sender.sendMessage(
                 Component
                     .text("  • ", NamedTextColor.GRAY)
-                    .append(Component.text("Checking live status...", NamedTextColor.YELLOW)),
+                    .append(Component.text(languageManager.getMessage("velocity.status.checkingLiveStatus"), NamedTextColor.YELLOW)),
             )
 
             velocityConnectionManager
@@ -140,14 +142,14 @@ class VelocityStatusCommand(
                     sender.sendMessage(
                         Component
                             .text("  ✓ ", NamedTextColor.GREEN)
-                            .append(Component.text("Online Players: ", NamedTextColor.GRAY))
+                            .append(Component.text("${languageManager.getMessage("velocity.status.label.onlinePlayers")}: ", NamedTextColor.GRAY))
                             .append(Component.text(response.online.toString(), NamedTextColor.YELLOW)),
                     )
                 }.exceptionally { throwable ->
                     sender.sendMessage(
                         Component
                             .text("  ✗ ", NamedTextColor.RED)
-                            .append(Component.text("Live status check failed: ", NamedTextColor.GRAY))
+                            .append(Component.text("${languageManager.getMessage("velocity.status.liveStatusFailed")}: ", NamedTextColor.GRAY))
                             .append(Component.text(throwable.message ?: "Unknown error", NamedTextColor.RED)),
                     )
                     null

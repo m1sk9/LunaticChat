@@ -198,13 +198,24 @@ toggle:
   off: "無効"
 
 velocity:
+  state:
+    disconnected: "切断済み"
+    handshaking: "ハンドシェイク中..."
+    connected: "接続済み"
+    failed: "接続失敗"
   status:
     header: "--- LunaticChat Velocity 連携ステータス ---"
-    paperVersion: "Paper プラグインバージョン: v{version}"
-    velocityVersion: "Velocity プラグインバージョン: v{version}"
-    protocolVersion: "プロトコルバージョン: v{version}"
-    connectionState: "接続状態"
     error: "エラー"
     checkingLiveStatus: "ライブステータスを確認中..."
-    liveStatusSuccess: "ライブステータス: Velocity v{version}, プロトコル v{protocol}, オンライン: {online}"
     liveStatusFailed: "ライブステータスチェックに失敗しました"
+    label:
+      paperVersion: "Paper バージョン"
+      velocityVersion: "Velocity バージョン"
+      protocolVersion: "プロトコルバージョン"
+      connectionState: "接続状態"
+      onlinePlayers: "オンラインプレイヤー"
+  hoverInfo:
+    disconnected: "LunaticChat と Velocity サーバ間の接続が切断されています。再接続するにはサーバを再起動する必要があります"
+    handshaking: "現在 LunaticChat と Velocity サーバ間の接続を確立中です。接続が完了するまで各種連携機能は利用できません"
+    connected: "LunaticChat は Velocity サーバと正常に接続されています。各種連携機能が利用可能です"
+    failed: "LunaticChat と Velocity サーバ間の接続に失敗しました。再接続するにはサーバを再起動する必要があります"
