@@ -21,13 +21,8 @@ To enable Velocity integration, follow these steps:
 For Velocity and Paper's LunaticChat to integrate correctly, both plugin versions and protocol versions must be compatible.
 
 - Ensure that the LunaticChat versions on Velocity and Paper sides are the same.
-  - Generally, the same version of LunaticChat is compatible.
-  - Releases are made simultaneously for Velocity and Paper versions, so version numbers will not differ.
-  - However, compatibility may not be guaranteed when using beta or development versions.
+  - Compatibility may not be guaranteed when using beta or development versions.
 - Ensure that protocol versions match.
-  - LunaticChat uses protocol versions to ensure compatibility between different versions.
-  - Verify that the protocol versions of LunaticChat on Velocity and Paper sides match.
-  - Note that when protocol versions change, it is considered a **breaking change**, requiring simultaneous updates of both Velocity and Paper versions of LunaticChat.
 
 ::: danger Regarding LunaticChat versions prior to v0.7.0
 
@@ -37,34 +32,36 @@ They cannot be used together, so if you are using LunaticChat prior to v0.7.0, d
 
 :::
 
-::: tip Version Rules
-
-LunaticChat follows these version rules:
-
-- Plugin version: Exact match required
-  - Paper 0.7.0, Velocity 0.7.0 → ✓ PASS
-  - Paper 0.7.0, Velocity 0.6.0 → ✗ FAIL
-- Protocol version: MAJOR.MINOR must match
-  - Paper 1.0.0, Velocity 1.0.1 → ✓ PASS (PATCH difference is OK)
-  - Paper 1.0.0, Velocity 1.1.0 → ✗ FAIL (MINOR difference)
-  - Paper 1.0.0, Velocity 2.0.0 → ✗ FAIL (MAJOR difference)
-
-:::
-
 ## How to Check Integration Status
 
 To verify that Velocity integration is working properly, use the `/lcv status` command.
 
 The current protocol version and connection state will be displayed.
 
+::: warning Behavior When Versions Mismatch
+
+When the version or protocol version does not match, the Velocity integration feature is disabled, but **the plugin itself continues to operate**.
+
+You can check the connection state and error details using the `/lcv status` command. To reconnect, ensure that the LunaticChat version / protocol version on Velocity and Paper sides match.
+
+:::
+
+::: tip About Velocity Integration Timing
+
+LunaticChat connects to Velocity **when the first player joins the server** after startup.
+
+Therefore, if you run the `/lcv status` command immediately after server startup, the Velocity integration may not be established yet.
+
+:::
+
 ## Troubleshooting
 
 If you encounter issues with Velocity integration, check the following:
 
+- **Run the `/lcv status` command to check the connection state**. If there are errors such as version mismatches, an error message will be displayed.
 - Ensure that the LunaticChat version / protocol version on Velocity and Paper sides are the same.
 - Verify that LunaticChat settings are correct.
 - Ensure that network connection between Velocity server and Paper servers is working properly.
-- Check LunaticChat logs for error messages or warnings.
 
 ## Cross-Server Chat
 

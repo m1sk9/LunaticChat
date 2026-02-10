@@ -10,6 +10,7 @@ Usage: ./x <command> [options]
 
 Commands:
     start           Build with gradlew and start docker compose
+    start-s1        Build Paper and start only s1 container
     restart         Restart s1, s2 and velocity containers
     stop            Stop docker compose
     clean           Stop docker compose and remove volumes
@@ -26,7 +27,17 @@ EOF
 case "${1:-}" in
     start)
         ./gradlew :platform-paper:clean :platform-paper:shadowJar :platform-velocity:clean :platform-velocity:shadowJar
+        # Copy built JARs to plugin directories
+        cp platform-paper/build/libs/*.jar docker/plugins-paper-s1/
+        cp platform-paper/build/libs/*.jar docker/plugins-paper-s2/
+        cp platform-velocity/build/libs/*.jar docker/plugins-velocity/
         $DOCKER_COMPOSE up
+        ;;
+    start-s1)
+        ./gradlew :platform-paper:clean :platform-paper:shadowJar
+        # Copy built JAR to s1 plugin directory
+        cp platform-paper/build/libs/*.jar docker/plugins-paper-s1/
+        $DOCKER_COMPOSE up s1
         ;;
     restart)
         $DOCKER_COMPOSE restart s1 s2 velocity

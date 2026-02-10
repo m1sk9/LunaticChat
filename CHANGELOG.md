@@ -2,9 +2,16 @@
 
 ## v0
 
-### v0.8.1
+### v0.9.0
 
 - Modrinth releases are now split per Loader.
+- Allow LunaticChat for Velocity to run standalone when launch fails due to version mismatch
+- Prevent `/lcv status` from becoming disabled when Velocity integration fails due to version mismatch
+- Enable checking Velocity integration errors via `/lcv status`
+- Add hover text to `/lcv status` indicating current integration status
+- Fixed an issue where metadata linked to the Velocity version of LunaticChat build was incorrect.
+- Enabled execution of `/lcv status` from the console.
+  - Live status display requires the Player API and is therefore not supported.
 
 ### v0.8.0
 

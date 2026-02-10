@@ -198,14 +198,25 @@ toggle:
   on: "Enabled"
 
 velocity:
+  state:
+    disconnected: "Disconnected"
+    handshaking: "Handshaking..."
+    connected: "Connected"
+    failed: "Failed"
   status:
     header: "--- LunaticChat Velocity Cooperation Status ---"
-    paperVersion: "Paper Plugin Version: v{version}"
-    velocityVersion: "Velocity Plugin Version: v{version}"
-    protocolVersion: "Protocol Version: v{version}"
-    connectionState: "Connection State"
     error: "Error"
     checkingLiveStatus: "Checking live status..."
-    liveStatusSuccess: "Live status: Velocity v{version}, Protocol v{protocol}, Online: {online}"
     liveStatusFailed: "Live status check failed"
-
+    consoleNoLiveStatus: "Live status check is not available from console (execute as a player)"
+    label:
+      paperVersion: "Paper Version"
+      velocityVersion: "Velocity Version"
+      protocolVersion: "Protocol Version"
+      connectionState: "Connection State"
+      onlinePlayers: "Online Players"
+  hoverInfo:
+    disconnected: "The connection between LunaticChat and the Velocity server is disconnected. A server restart is required to reconnect"
+    handshaking: "Currently establishing connection between LunaticChat and the Velocity server"
+    connected: "LunaticChat is successfully connected to the Velocity server"
+    failed: "Failed to establish connection between LunaticChat and the Velocity server. You need to resolve the error to reconnect"
