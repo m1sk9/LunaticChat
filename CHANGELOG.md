@@ -5,7 +5,7 @@
 ### v0.8.1
 
 - Modrinth releases are now split per Loader.
-- When LunaticChat for Velocity fails to launch due to version mismatch, enable the plugin to run standalone without modification
+- Allow LunaticChat for Velocity to run standalone when launch fails due to version mismatch
 - Prevent `/lcv status` from becoming disabled when Velocity integration fails due to version mismatch
 - Enable checking Velocity integration errors via `/lcv status`
 - Add hover text to `/lcv status` indicating current integration status

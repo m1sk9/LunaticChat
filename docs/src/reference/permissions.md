@@ -162,7 +162,7 @@ LunaticChat のアップデート通知を受け取ります．
 
 ### `lunaticchat.command.lcv.status`
 
-- Default: `non OP`
+- Default: `OP`
 
 [`/lcv status`](commands/lcv/status.md) コマンドの使用を切り替えます．
 

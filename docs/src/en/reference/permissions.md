@@ -162,7 +162,7 @@ Toggles the use of the [`/lc chatmode toggle`](commands/lc/chatmode.md) command.
 
 ### `lunaticchat.command.lcv.status`
 
-- Default: `non OP`
+- Default: `OP`
 
 Toggles the use of the [`/lcv status`](commands/lcv/status.md) command.
 
