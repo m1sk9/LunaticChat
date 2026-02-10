@@ -2,7 +2,7 @@
 
 ## v0
 
-### v0.8.1
+### v0.9.0
 
 - Modrinth releases are now split per Loader.
 - Allow LunaticChat for Velocity to run standalone when launch fails due to version mismatch
