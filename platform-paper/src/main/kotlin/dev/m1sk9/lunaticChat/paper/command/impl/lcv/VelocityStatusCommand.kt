@@ -15,6 +15,7 @@ import dev.m1sk9.lunaticChat.paper.velocity.VelocityConnectionManager
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.event.HoverEvent
 import net.kyori.adventure.text.format.NamedTextColor
 
 /**
@@ -61,22 +62,38 @@ class VelocityStatusCommand(
                 VelocityConnectionManager.ConnectionState.DISCONNECTED -> {
                     Component
                         .text(languageManager.getMessage("velocity.state.disconnected"), NamedTextColor.GRAY)
-                        .hoverEvent(Component.text(languageManager.getMessage("velocity.hoverInfo.disconnected"), NamedTextColor.GRAY))
+                        .hoverEvent(
+                            HoverEvent.showText(
+                                Component.text(languageManager.getMessage("velocity.hoverInfo.disconnected"), NamedTextColor.GRAY),
+                            ),
+                        )
                 }
                 VelocityConnectionManager.ConnectionState.HANDSHAKING -> {
                     Component
                         .text(languageManager.getMessage("velocity.state.handshaking"), NamedTextColor.YELLOW)
-                        .hoverEvent(Component.text(languageManager.getMessage("velocity.hoverInfo.handshaking"), NamedTextColor.YELLOW))
+                        .hoverEvent(
+                            HoverEvent.showText(
+                                Component.text(languageManager.getMessage("velocity.hoverInfo.handshaking"), NamedTextColor.YELLOW),
+                            ),
+                        )
                 }
                 VelocityConnectionManager.ConnectionState.CONNECTED -> {
                     Component
                         .text(languageManager.getMessage("velocity.state.connected"), NamedTextColor.GREEN)
-                        .hoverEvent(Component.text(languageManager.getMessage("velocity.hoverInfo.connected"), NamedTextColor.GREEN))
+                        .hoverEvent(
+                            HoverEvent.showText(
+                                Component.text(languageManager.getMessage("velocity.hoverInfo.connected"), NamedTextColor.GREEN),
+                            ),
+                        )
                 }
                 VelocityConnectionManager.ConnectionState.FAILED -> {
                     Component
                         .text(languageManager.getMessage("velocity.state.failed"), NamedTextColor.RED)
-                        .hoverEvent(Component.text(languageManager.getMessage("velocity.hoverInfo.failed"), NamedTextColor.RED))
+                        .hoverEvent(
+                            HoverEvent.showText(
+                                Component.text(languageManager.getMessage("velocity.hoverInfo.failed"), NamedTextColor.RED),
+                            ),
+                        )
                 }
             }
 
