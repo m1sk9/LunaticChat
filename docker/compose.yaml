@@ -6,8 +6,7 @@ services:
       - "25577:25577"
     volumes:
       - lunatic-debug-velocity-data:/server
-      - ../platform-velocity/build/libs:/plugins:ro
-      - ./plugins-velocity:/data/plugins
+      - ./plugins-velocity:/server/plugins
       - ./velocity.toml:/server/velocity.toml
     environment:
       TYPE: "VELOCITY"
@@ -36,7 +35,6 @@ services:
       - "25575:25575"
     volumes:
       - lunatic-debug-s1-data:/data
-      - ../platform-paper/build/libs:/plugins:ro
       - ./plugins-paper-s1:/data/plugins
       - ./bukkit.yml:/data/bukkit.yml
     environment:
@@ -84,7 +82,6 @@ services:
       - "25576:25575"
     volumes:
       - lunatic-debug-s2-data:/data
-      - ../platform-paper/build/libs:/plugins:ro
       - ./plugins-paper-s2:/data/plugins
       - ./bukkit.yml:/data/bukkit.yml
     environment:
