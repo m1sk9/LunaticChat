@@ -80,6 +80,9 @@ jobs:
     needs: [validate, build]
     permissions:
       contents: write
+    env:
+      MODRINTH_CHANNEL: beta
+      MODRINTH_GAME_VERSIONS: "1.21.x"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -109,21 +112,31 @@ jobs:
             --draft \
             --notes ""
 
-      - name: Publish to Modrinth
+      - name: Publish to Modrinth (Paper)
         uses: cloudnode-pro/modrinth-publish@0a5268ad092d4727bb6424326746fa2fe88761ff # v2
         with:
           token: ${{ secrets.MODRINTH_TOKEN }}
-          name: LunaticChat v${{ needs.validate.outputs.version }}
+          name: LunaticChat v${{ needs.validate.outputs.version }} (Paper)
           project: ${{ secrets.MODRINTH_PROJECT_ID }}
-          version: ${{ needs.validate.outputs.version }}
-          channel: beta
+          version: ${{ needs.validate.outputs.version }}-paper
+          channel: ${{ env.MODRINTH_CHANNEL }}
           changelog: |-
             Please refer to the [GitHub release](https://github.com/m1sk9/LunaticChat/releases/tag/v${{ needs.validate.outputs.version }}) for update details.
-          loaders: |-
-            paper
-            velocity
-          game-versions: "1.21.x"
-          files: |-
-            platform-paper/build/libs/${{ needs.validate.outputs.paper_jar_name }}
-            platform-velocity/build/libs/${{ needs.validate.outputs.velocity_jar_name }}
+          loaders: paper
+          game-versions: ${{ env.MODRINTH_GAME_VERSIONS }}
+          files: platform-paper/build/libs/${{ needs.validate.outputs.paper_jar_name }}
+
+      - name: Publish to Modrinth (Velocity)
+        uses: cloudnode-pro/modrinth-publish@0a5268ad092d4727bb6424326746fa2fe88761ff # v2
+        with:
+          token: ${{ secrets.MODRINTH_TOKEN }}
+          name: LunaticChat v${{ needs.validate.outputs.version }} (Velocity)
+          project: ${{ secrets.MODRINTH_PROJECT_ID }}
+          version: ${{ needs.validate.outputs.version }}-velocity
+          channel: ${{ env.MODRINTH_CHANNEL }}
+          changelog: |-
+            Please refer to the [GitHub release](https://github.com/m1sk9/LunaticChat/releases/tag/v${{ needs.validate.outputs.version }}) for update details.
+          loaders: velocity
+          game-versions: ${{ env.MODRINTH_GAME_VERSIONS }}
+          files: platform-velocity/build/libs/${{ needs.validate.outputs.velocity_jar_name }}
 
