@@ -208,6 +208,7 @@ velocity:
     error: "エラー"
     checkingLiveStatus: "ライブステータスを確認中..."
     liveStatusFailed: "ライブステータスチェックに失敗しました"
+    consoleNoLiveStatus: "ライブステータスチェックはコンソールからは利用できません (プレイヤーとして実行してください)"
     label:
       paperVersion: "Paper バージョン"
       velocityVersion: "Velocity バージョン"
@@ -216,6 +217,6 @@ velocity:
       onlinePlayers: "オンラインプレイヤー"
   hoverInfo:
     disconnected: "LunaticChat と Velocity サーバ間の接続が切断されています。再接続するにはサーバを再起動する必要があります"
-    handshaking: "現在 LunaticChat と Velocity サーバ間の接続を確立中です。接続が完了するまで各種連携機能は利用できません"
-    connected: "LunaticChat は Velocity サーバと正常に接続されています。各種連携機能が利用可能です"
-    failed: "LunaticChat と Velocity サーバ間の接続に失敗しました。再接続するにはサーバを再起動する必要があります"
+    handshaking: "現在 LunaticChat と Velocity サーバ間の接続を確立中です"
+    connected: "LunaticChat は Velocity サーバと正常に接続されています"
+    failed: "LunaticChat と Velocity サーバ間の接続に失敗しました。再接続するにはエラーを解決する必要があります"

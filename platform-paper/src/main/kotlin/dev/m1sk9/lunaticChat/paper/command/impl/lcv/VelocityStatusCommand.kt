@@ -7,7 +7,6 @@ import dev.m1sk9.lunaticChat.engine.protocol.ProtocolVersion
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.command.annotation.Command
 import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
-import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
 import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
@@ -29,7 +28,6 @@ import net.kyori.adventure.text.format.NamedTextColor
     description = "Velocity integration status",
 )
 @Permission(LunaticChatPermissionNode.VelocityStatus::class)
-@PlayerOnly
 class VelocityStatusCommand(
     plugin: LunaticChat,
     private val velocityConnectionManager: VelocityConnectionManager,
@@ -46,15 +44,14 @@ class VelocityStatusCommand(
                     .literal("status")
                     .executes { ctx ->
                         val context = wrapContext(ctx)
-                        checkPlayerOnly(context)?.let { return@executes handleResult(context, it) }
-
                         val result = execute(context)
                         handleResult(context, result)
                     },
             )
 
     private fun execute(ctx: CommandContext): CommandResult {
-        val sender = ctx.requirePlayer()
+        val sender = ctx.sender
+        val player = ctx.player
         val meta = plugin.pluginMeta
 
         // Connection state
@@ -128,32 +125,41 @@ class VelocityStatusCommand(
             }
         }
 
-        // Live status check (if connected)
+        // Live status check (only available for players when connected)
         if (state == VelocityConnectionManager.ConnectionState.CONNECTED) {
-            sender.sendMessage(
-                Component
-                    .text("  • ", NamedTextColor.GRAY)
-                    .append(Component.text(languageManager.getMessage("velocity.status.checkingLiveStatus"), NamedTextColor.YELLOW)),
-            )
+            if (player != null) {
+                sender.sendMessage(
+                    Component
+                        .text("  • ", NamedTextColor.GRAY)
+                        .append(Component.text(languageManager.getMessage("velocity.status.checkingLiveStatus"), NamedTextColor.YELLOW)),
+                )
 
-            velocityConnectionManager
-                .requestStatus(sender)
-                .thenAccept { response ->
-                    sender.sendMessage(
-                        Component
-                            .text("  ✓ ", NamedTextColor.GREEN)
-                            .append(Component.text("${languageManager.getMessage("velocity.status.label.onlinePlayers")}: ", NamedTextColor.GRAY))
-                            .append(Component.text(response.online.toString(), NamedTextColor.YELLOW)),
-                    )
-                }.exceptionally { throwable ->
-                    sender.sendMessage(
-                        Component
-                            .text("  ✗ ", NamedTextColor.RED)
-                            .append(Component.text("${languageManager.getMessage("velocity.status.liveStatusFailed")}: ", NamedTextColor.GRAY))
-                            .append(Component.text(throwable.message ?: "Unknown error", NamedTextColor.RED)),
-                    )
-                    null
-                }
+                velocityConnectionManager
+                    .requestStatus(player)
+                    .thenAccept { response ->
+                        sender.sendMessage(
+                            Component
+                                .text("  ✓ ", NamedTextColor.GREEN)
+                                .append(Component.text("${languageManager.getMessage("velocity.status.label.onlinePlayers")}: ", NamedTextColor.GRAY))
+                                .append(Component.text(response.online.toString(), NamedTextColor.YELLOW)),
+                        )
+                    }.exceptionally { throwable ->
+                        sender.sendMessage(
+                            Component
+                                .text("  ✗ ", NamedTextColor.RED)
+                                .append(Component.text("${languageManager.getMessage("velocity.status.liveStatusFailed")}: ", NamedTextColor.GRAY))
+                                .append(Component.text(throwable.message ?: "Unknown error", NamedTextColor.RED)),
+                        )
+                        null
+                    }
+            } else {
+                // Console cannot perform live status check
+                sender.sendMessage(
+                    Component
+                        .text("  • ", NamedTextColor.GRAY)
+                        .append(Component.text(languageManager.getMessage("velocity.status.consoleNoLiveStatus"), NamedTextColor.GRAY)),
+                )
+            }
         }
 
         return CommandResult.Success

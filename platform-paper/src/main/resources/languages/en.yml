@@ -208,6 +208,7 @@ velocity:
     error: "Error"
     checkingLiveStatus: "Checking live status..."
     liveStatusFailed: "Live status check failed"
+    consoleNoLiveStatus: "Live status check is not available from console (execute as a player)"
     label:
       paperVersion: "Paper Version"
       velocityVersion: "Velocity Version"
@@ -216,6 +217,6 @@ velocity:
       onlinePlayers: "Online Players"
   hoverInfo:
     disconnected: "The connection between LunaticChat and the Velocity server is disconnected. A server restart is required to reconnect"
-    handshaking: "Currently establishing connection between LunaticChat and the Velocity server. Integration features are unavailable until the connection is complete"
-    connected: "LunaticChat is successfully connected to the Velocity server. Integration features are available"
-    failed: "Failed to establish connection between LunaticChat and the Velocity server. A server restart is required to reconnect"
+    handshaking: "Currently establishing connection between LunaticChat and the Velocity server"
+    connected: "LunaticChat is successfully connected to the Velocity server"
+    failed: "Failed to establish connection between LunaticChat and the Velocity server. You need to resolve the error to reconnect"

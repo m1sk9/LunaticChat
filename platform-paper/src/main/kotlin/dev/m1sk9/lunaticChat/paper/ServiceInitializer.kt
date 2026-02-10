@@ -395,24 +395,13 @@ class ServiceInitializer(
                     }
                     is VelocityConnectionManager.HandshakeResult.Error -> {
                         logger.severe("Velocity handshake failed: ${result.message}")
-                        logger.severe("Disabling plugin due to Velocity integration failure")
-                        plugin.server.scheduler.runTask(
-                            plugin,
-                            Runnable {
-                                plugin.server.pluginManager.disablePlugin(plugin)
-                            },
-                        )
+                        logger.severe("Velocity integration is disabled. Use /lcv status to check the status.")
                     }
                 }
             }.exceptionally { throwable ->
                 logger.severe("Velocity handshake exception: ${throwable.message}")
+                logger.severe("Velocity integration is disabled. Use /lcv status to check the status.")
                 throwable.printStackTrace()
-                plugin.server.scheduler.runTask(
-                    plugin,
-                    Runnable {
-                        plugin.server.pluginManager.disablePlugin(plugin)
-                    },
-                )
                 null
             }
     }
