@@ -20,6 +20,12 @@ Receives LunaticChat update notifications.
 
 [You must have `checkForUpdates` enabled](../guide/admin/configuration.md#checkforupdates) to receive notifications.
 
+### `lunaticchat.channelbypass`
+
+- Default: `OP`
+
+Bypasses moderation features and restrictions on private channels.
+
 ## `lunaticchat.command.*`
 
 ### `lunaticchat.command.tell`
@@ -94,11 +100,53 @@ Toggles the use of the [`/lc channel switch`](commands/lc/channel.md) command.
 
 Toggles the use of the [`/lc channel status`](commands/lc/channel.md) command.
 
+### `lunaticchat.command.lc.channel.info`
+
+- Default: `non OP`
+
+Toggles the use of the [`/lc channel info`](commands/lc/channel.md) command.
+
 ### `lunaticchat.command.lc.channel.delete`
 
 - Default: `non OP`
 
 Toggles the use of the [`/lc channel delete`](commands/lc/channel.md) command.
+
+### `lunaticchat.command.lc.channel.invite`
+
+- Default: `non OP`
+
+Toggles the use of the [`/lc channel invite`](commands/lc/channel.md) command.
+
+### `lunaticchat.command.lc.channel.kick`
+
+- Default: `non OP`
+
+Toggles the use of the [`/lc channel kick`](commands/lc/channel.md) command.
+
+### `lunaticchat.command.lc.channel.ban`
+
+- Default: `non OP`
+
+Toggles the use of the [`/lc channel ban`](commands/lc/channel.md) command.
+
+### `lunaticchat.command.lc.channel.unban`
+
+- Default: `non OP`
+
+Toggles the use of the [`/lc channel unban`](commands/lc/channel.md) command.
+
+### `lunaticchat.command.lc.channel.mod`
+
+- Default: `non OP`
+
+Toggles the use of the [`/lc channel mod`](commands/lc/channel.md) command.
+
+### `lunaticchat.command.lc.channel.ownership`
+
+- Default: `non OP`
+
+Toggles the use of the [`/lc channel ownership`](commands/lc/channel.md) command.
 
 ### `lunaticchat.command.lc.chatmode`
 
@@ -111,6 +159,12 @@ Toggles the use of the [`/lc chatmode`](commands/lc/chatmode.md) command.
 - Default: `non OP`
 
 Toggles the use of the [`/lc chatmode toggle`](commands/lc/chatmode.md) command.
+
+### `lunaticchat.command.lcv.status`
+
+- Default: `non OP`
+
+Toggles the use of the [`/lcv status`](commands/lcv/status.md) command.
 
 ### `lunaticchat.command.jp` <Badge type="danger" text="Deprecated: Will be removed in v1.0.0" />
 

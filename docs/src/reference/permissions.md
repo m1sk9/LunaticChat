@@ -160,6 +160,12 @@ LunaticChat のアップデート通知を受け取ります．
 
 [`/lc chatmode toggle`](commands/lc/chatmode.md) コマンドの使用を切り替えます．
 
+### `lunaticchat.command.lcv.status`
+
+- Default: `non OP`
+
+[`/lcv status`](commands/lcv/status.md) コマンドの使用を切り替えます．
+
 ### `lunaticchat.command.jp` <Badge type="danger" text="非推奨: v1.0.0 で削除予定" />
 
 - Default: `non OP`
