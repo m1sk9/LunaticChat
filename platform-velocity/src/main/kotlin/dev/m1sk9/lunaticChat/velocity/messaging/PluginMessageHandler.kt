@@ -14,6 +14,12 @@ import org.slf4j.Logger
  * Handles plugin messages from Paper servers
  */
 class PluginMessageHandler(
+    /**
+     * Plugin instance used for event registration.
+     * Type is [Any] because Velocity's EventManager.register() accepts Object.
+     * Could be made generic, but provides little practical benefit since the API itself is not type-safe.
+     * Typically the main plugin instance is passed here.
+     */
     private val plugin: Any,
     private val server: ProxyServer,
     private val logger: Logger,
