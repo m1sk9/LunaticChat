@@ -116,7 +116,7 @@ jobs:
         uses: cloudnode-pro/modrinth-publish@0a5268ad092d4727bb6424326746fa2fe88761ff # v2
         with:
           token: ${{ secrets.MODRINTH_TOKEN }}
-          name: v${{ needs.validate.outputs.version }} (Paper ${{ env.MODRINTH_GAME_VERSIONS }})
+          name: v${{ needs.validate.outputs.version }} (Paper v${{ env.MODRINTH_GAME_VERSIONS }})
           project: ${{ secrets.MODRINTH_PROJECT_ID }}
           version: ${{ needs.validate.outputs.version }}-paper
           channel: ${{ env.MODRINTH_CHANNEL }}
@@ -130,7 +130,7 @@ jobs:
         uses: cloudnode-pro/modrinth-publish@0a5268ad092d4727bb6424326746fa2fe88761ff # v2
         with:
           token: ${{ secrets.MODRINTH_TOKEN }}
-          name: v${{ needs.validate.outputs.version }} (Velocity ${{ env.MODRINTH_GAME_VERSIONS }})
+          name: v${{ needs.validate.outputs.version }} (Velocity v${{ env.MODRINTH_GAME_VERSIONS }})
           project: ${{ secrets.MODRINTH_PROJECT_ID }}
           version: ${{ needs.validate.outputs.version }}-velocity
           channel: ${{ env.MODRINTH_CHANNEL }}

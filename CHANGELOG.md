@@ -2,6 +2,10 @@
 
 ## v0
 
+### v0.8.1
+
+- Modrinth releases are now split per Loader.
+
 ### v0.8.0
 
 - Velocity integration is now available.
