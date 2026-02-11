@@ -2,6 +2,10 @@
 
 ## v0
 
+### v0.9.1
+
+- Fixed an issue where update notification messages were not formatted correctly.
+
 ### v0.9.0
 
 - Modrinth releases are now split per Loader.
