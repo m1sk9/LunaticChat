@@ -21,6 +21,5 @@ gradle-app.setting
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
 
-.idea/modules
-.idea/*.xml
+.idea/
 docs/.vitepress/cache/deps
