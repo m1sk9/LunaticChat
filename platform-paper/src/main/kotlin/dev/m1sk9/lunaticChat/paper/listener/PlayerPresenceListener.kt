@@ -9,7 +9,6 @@ import dev.m1sk9.lunaticChat.paper.common.hasAnyPermission
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
-import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.ClickEvent
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -31,14 +30,11 @@ class PlayerPresenceListener(
 
         // Send update notification if available
         if (updateCheckerFlag.get() && player.hasAnyPermission { +LunaticChatPermissionNode.NoticeUpdate }) {
-            player.sendMessage {
-                Component
-                    .text(
-                        languageManager.getMessage("general.newUpdateAvailable"),
-                    ).clickEvent(
-                        ClickEvent.openUrl("https://github.com/m1sk9/LunaticChat/releases/latest"),
-                    )
-            }
+            player.sendMessage(
+                MessageFormatter
+                    .format(languageManager.getMessage("general.newUpdateAvailable"))
+                    .clickEvent(ClickEvent.openUrl("https://github.com/m1sk9/LunaticChat/releases/latest")),
+            )
         }
 
         // Send chat mode notification
