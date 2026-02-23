@@ -8,8 +8,8 @@ This command was deprecated in v0.5.0. Please use the [`/lc settings`](lc/settin
 
 :::
 
-| Permission                     | Aliases       |
-|-----------------------------|-------------|
+| Permission                   | Aliases     |
+| ---------------------------- | ----------- |
 | `lunaticchat.command.notice` | `/dmnotice` |
 
 Toggles notifications for direct messages sent via [`/tell`](tell.md) or [`/reply`](reply.md) commands on or off.

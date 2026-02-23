@@ -18,16 +18,16 @@ LunaChat is no longer being developed and does not support the latest Minecraft 
 
 ## Comparison
 
-| | LunaticChat | LunaChat                               |
-| ----- |-------------|----------------------------------------|
-| Development Status | Actively Developed     | Development Ended                                   |
-| Supported Platforms | Paper / Velocity | Bukkit / Spigot / BungeeCord           |
-| Supported Versions | 1.21.x ~    | Up to 1.16.x                              |
-| Language | Kotlin      | Java                                   |
-| Plugin Dependencies | None          | EssentialsX, etc.                         |
-| Caching | Yes          | No                                     |
-| Documentation | Yes          | No                                     |
-| License | GNU General Public License v3.0 | GNU Lesser General Public License v3.0 |
+|                     | LunaticChat                     | LunaChat                               |
+| ------------------- | ------------------------------- | -------------------------------------- |
+| Development Status  | Actively Developed              | Development Ended                      |
+| Supported Platforms | Paper / Velocity                | Bukkit / Spigot / BungeeCord           |
+| Supported Versions  | 1.21.x ~                        | Up to 1.16.x                           |
+| Language            | Kotlin                          | Java                                   |
+| Plugin Dependencies | None                            | EssentialsX, etc.                      |
+| Caching             | Yes                             | No                                     |
+| Documentation       | Yes                             | No                                     |
+| License             | GNU General Public License v3.0 | GNU Lesser General Public License v3.0 |
 
 ## FAQ
 

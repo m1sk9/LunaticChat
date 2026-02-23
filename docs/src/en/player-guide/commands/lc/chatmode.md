@@ -2,16 +2,16 @@
 
 ### `/lc chatmode`
 
-| Permission                           |
-|-----------------------------------|
+| Permission                        |
+| --------------------------------- |
 | `lunaticchat.command.lc.chatmode` |
 
 Displays the current chat mode.
 
 ### `/lc chatmode toggle`
 
-| Permission                            |
-|------------------------------------|
+| Permission                               |
+| ---------------------------------------- |
 | `lunaticchat.command.lc.chatmode.toggle` |
 
 Toggles the chat mode.

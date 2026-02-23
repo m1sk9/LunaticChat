@@ -37,5 +37,5 @@ The file used for disk cache includes a `version` field, which handles changes t
 If the version does not match, LunaticChat recognizes the cache file as **an old format cache**, ignores its contents, and recreates it in the new format.
 
 ```json
-{"version":"1","entries":{}}
+{ "version": "1", "entries": {} }
 ```

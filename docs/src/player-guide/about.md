@@ -19,16 +19,16 @@ LunaticChat は Minecraft サーバソフトウェアである Paper / Velocity 
 
 ## 比較
 
-| | LunaticChat | LunaChat                               |
-| ----- |-------------|----------------------------------------|
-| 開発状況 | 継続的に開発中     | 開発終了                                   |
-| 対応プラットフォーム | Paper / Velocity | Bukkit / Spigot / BungeeCord           |
-| サポートバージョン | 1.21.x ~    | 1.16.x まで                              |
-| 使用言語 | Kotlin      | Java                                   |
-| 依存プラグイン | なし          | EssentialsX など                         |
-| キャッシュ | あり          | なし                                     |
-| ドキュメント | あり          | なし                                     |
-| ライセンス | GNU General Public License v3.0 | GNU Lesser General Public License v3.0 |
+|                      | LunaticChat                     | LunaChat                               |
+| -------------------- | ------------------------------- | -------------------------------------- |
+| 開発状況             | 継続的に開発中                  | 開発終了                               |
+| 対応プラットフォーム | Paper / Velocity                | Bukkit / Spigot / BungeeCord           |
+| サポートバージョン   | 1.21.x ~                        | 1.16.x まで                            |
+| 使用言語             | Kotlin                          | Java                                   |
+| 依存プラグイン       | なし                            | EssentialsX など                       |
+| キャッシュ           | あり                            | なし                                   |
+| ドキュメント         | あり                            | なし                                   |
+| ライセンス           | GNU General Public License v3.0 | GNU Lesser General Public License v3.0 |
 
 ## FAQ
 

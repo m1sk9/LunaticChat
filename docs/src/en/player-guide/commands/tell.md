@@ -2,8 +2,8 @@
 
 ### `/tell <player ID> <message>`
 
-| Permission | Aliases |
-| ---- | ---- |
+| Permission                 | Aliases                              |
+| -------------------------- | ------------------------------------ |
 | `lunaticchat.command.tell` | `/t`, `/msg`, `/m`, `/w`, `/whisper` |
 
 Sends a message to the specified player.

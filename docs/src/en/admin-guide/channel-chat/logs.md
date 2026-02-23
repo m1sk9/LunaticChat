@@ -1,4 +1,4 @@
-# Channel Chat: Logs  <Badge type="tip" text="v0.7.0" />
+# Channel Chat: Logs <Badge type="tip" text="v0.7.0" />
 
 Channel chat logs are a record of all messages and activities that occur within the chat.
 

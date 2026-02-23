@@ -2,9 +2,9 @@
 
 ### `/reply <message>`
 
-| Permission                     | Aliases |
-|-----------------------------|-------|
-| `lunaticchat.command.reply` | `/r` |
+| Permission                  | Aliases |
+| --------------------------- | ------- |
+| `lunaticchat.command.reply` | `/r`    |
 
 Replies to the player with whom you most recently communicated using [`/tell`](tell.md).
 

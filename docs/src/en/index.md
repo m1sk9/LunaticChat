@@ -3,7 +3,7 @@
 layout: home
 
 hero:
-  name: "LunaticChat"
+  name: 'LunaticChat'
   tagline: A next-generation chat plugin for Paper, Folia and Velocity.
   actions:
     - theme: brand
@@ -42,4 +42,3 @@ features:
     details: Reduces dependencies on other plugins, always supporting the latest Minecraft versions
     icon: ⛏️️
 ---
-

@@ -2,8 +2,8 @@
 
 ### `/lcv status`
 
-| Permission                      |
-|------------------------------|
+| Permission                       |
+| -------------------------------- |
 | `lunaticchat.command.lcv.status` |
 
 Displays the current LunaticChat Velocity integration status.

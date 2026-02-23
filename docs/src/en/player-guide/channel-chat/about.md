@@ -43,7 +43,7 @@ Use the [`/lc channnel create`](../commands/lc/channel.md#lc-channel-create-chan
 Channel IDs must follow these requirements:
 
 - Must be between 3 and 30 characters long
-- Can only contain alphanumeric characters, underscores (_), and hyphens (-)
+- Can only contain alphanumeric characters, underscores (\_), and hyphens (-)
 
 :::
 

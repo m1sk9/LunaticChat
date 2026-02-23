@@ -27,30 +27,28 @@ The `channels.json` file stores information about channels managed by LunaticCha
 
 ```json
 {
-    "channels": {
-        "general-channel": {
-            "id": "general-channel",
-            "name": "General Channel",
-            "ownerId": "a01e3843-e521-3998-958a-f459800e4d11",
-            "createdAt": 1769507213150,
-            "bannedPlayers": [
-                "ceaea267-39dd-3bac-931c-761ada671ebe"
-            ]
-        }
-    },
-    "members": {
-        "general-channel": [
-            {
-                "channelId": "test2",
-                "playerId": "a01e3843-e521-3998-958a-f459800e4d11",
-                "role": "OWNER",
-                "joinedAt": 1769507213150
-            }
-        ]
-    },
-    "activeChannels": {
-        "a01e3843-e521-3998-958a-f459800e4d11": "test2"
+  "channels": {
+    "general-channel": {
+      "id": "general-channel",
+      "name": "General Channel",
+      "ownerId": "a01e3843-e521-3998-958a-f459800e4d11",
+      "createdAt": 1769507213150,
+      "bannedPlayers": ["ceaea267-39dd-3bac-931c-761ada671ebe"]
     }
+  },
+  "members": {
+    "general-channel": [
+      {
+        "channelId": "test2",
+        "playerId": "a01e3843-e521-3998-958a-f459800e4d11",
+        "role": "OWNER",
+        "joinedAt": 1769507213150
+      }
+    ]
+  },
+  "activeChannels": {
+    "a01e3843-e521-3998-958a-f459800e4d11": "test2"
+  }
 }
 ```
 
@@ -75,9 +73,8 @@ The `conversion_cache.json` file stores cache for channel conversion. This file 
 
 For more information about the cache system, see [here](./cache.md).
 
-
 ```json
-{"version":"1","entries":{"hi":"日"}}
+{ "version": "1", "entries": { "hi": "日" } }
 ```
 
 ### `player-settings.yaml`
@@ -87,13 +84,13 @@ The `player-settings.yaml` file stores player-specific settings. This file conta
 ```yaml
 version: 1
 japaneseConversion:
-  "aed5efd4-551b-3965-bc28-ae21aa072a66": false
-  "ceaea267-39dd-3bac-931c-761ada671ebe": false
+  'aed5efd4-551b-3965-bc28-ae21aa072a66': false
+  'ceaea267-39dd-3bac-931c-761ada671ebe': false
 directMessageNotification:
-  "aed5efd4-551b-3965-bc28-ae21aa072a66": true
-  "ceaea267-39dd-3bac-931c-761ada671ebe": true
+  'aed5efd4-551b-3965-bc28-ae21aa072a66': true
+  'ceaea267-39dd-3bac-931c-761ada671ebe': true
 channelMessageNotification:
-  "ceaea267-39dd-3bac-931c-761ada671ebe": true
+  'ceaea267-39dd-3bac-931c-761ada671ebe': true
 ```
 
 ## Cache Version
@@ -103,5 +100,5 @@ Files used for disk caching include a `version` field to accommodate changes in 
 If the version does not match, LunaticChat recognizes the cache file as **old format cache**, ignores the contents, and recreates it in the new format.
 
 ```json
-{"version":"1","entries":{}}
+{ "version": "1", "entries": {} }
 ```

@@ -8,8 +8,8 @@ This command was deprecated in v0.5.0. Please use the [`/lc settings`](lc/settin
 
 :::
 
-| Permission                  |
-|--------------------------|
+| Permission               |
+| ------------------------ |
 | `lunaticchat.command.jp` |
 
 Toggles the romanization conversion setting.

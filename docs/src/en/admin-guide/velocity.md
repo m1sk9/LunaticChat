@@ -71,8 +71,8 @@ When Velocity integration is enabled, chat messages are shared across all server
 
 The main features available during Velocity integration are as follows:
 
-|            | Compatibility | Behavior | Notes |
-|------------| --- | --- | --- |
-| Direct Messages | × | `/tell` and `/reply` commands operate only within the server | Direct messages do not support Velocity integration. |
-| Channel Chat | × | Channel chat operates only within the server | Channel chat does not support Velocity integration. |
-| Kana/Romanization | ◯ | Kana/Romanization works across all servers |  |
+|                   | Compatibility | Behavior                                                     | Notes                                                |
+| ----------------- | ------------- | ------------------------------------------------------------ | ---------------------------------------------------- |
+| Direct Messages   | ×             | `/tell` and `/reply` commands operate only within the server | Direct messages do not support Velocity integration. |
+| Channel Chat      | ×             | Channel chat operates only within the server                 | Channel chat does not support Velocity integration.  |
+| Kana/Romanization | ◯             | Kana/Romanization works across all servers                   |                                                      |

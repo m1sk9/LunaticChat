@@ -20,13 +20,13 @@
 debug: false
 
 # Path to the YAML file storing player settings
-userSettingsFilePath: "player-settings.yaml"
+userSettingsFilePath: 'player-settings.yaml'
 
 # If enabled, LunaticChat will check for updates on startup.
 checkForUpdates: true
 
 # Plugin Configuration Language. This setting applies only to player feedback and does not affect plugin logs or similar outputs.
-language: "en"
+language: 'en'
 
 # ----------------------------------------------
 # -----------   Features Settings   ------------
@@ -45,7 +45,7 @@ features:
       # Specify the interval (in seconds) for saving the Romanization conversion cache to disk.
       saveIntervalSeconds: 300
       # Specify the file path where the cache for Romanization conversion is saved.
-      filePath: "conversion_cache.json"
+      filePath: 'conversion_cache.json'
     api:
       # Specify the timeout duration (in milliseconds) for API requests to the Romanization conversion service.
       timeout: 3000
@@ -77,7 +77,7 @@ features:
     crossServerGlobalChat: false
     # Server name to display in cross-server chat (e.g., "survival", "creative", "lobby").
     # This should match the server name defined in your Velocity configuration.
-    serverName: "Unknown"
+    serverName: 'Unknown'
     # Size of the message deduplication cache to prevent duplicate messages from appearing.
     # Keeps track of the most recent N message IDs to filter out duplicates.
     messageDeduplicationCacheSize: 100
@@ -98,11 +98,11 @@ features:
 
 messageFormat:
   # Configure the format for direct messages sent via /tell or /msg
-  directMessageFormat: "§7[§e{sender} §7>> §e{recipient}§7] §f{message}"
+  directMessageFormat: '§7[§e{sender} §7>> §e{recipient}§7] §f{message}'
   # Configure the format for messages sent in channel chat
-  channelMessageFormat: "§7[§b#{channel}§7] §e{sender}: §f{message}"
+  channelMessageFormat: '§7[§b#{channel}§7] §e{sender}: §f{message}'
   # Configure the format for global chat messages in Velocity integration
-  crossServerGlobalChatFormat: "§7[§6{server}§7] §e{sender}: §f{message}"
+  crossServerGlobalChatFormat: '§7[§6{server}§7] §e{sender}: §f{message}'
 ```
 
 ## General Settings

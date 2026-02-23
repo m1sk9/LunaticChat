@@ -21,4 +21,3 @@
 - <Badge type="tip" text="Paper" /> : この機能が Paper 環境で利用可能であることを示します．
 - <Badge type="tip" text="Velocity" /> : この機能が Velocity 環境で利用可能であることを示します．
 - <Badge type="tip" text="Paper / Velocity" /> : この機能が Paper / Velocity 環境で利用可能であることを示します．
-

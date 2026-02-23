@@ -87,8 +87,8 @@ Executing this command will transfer all owner permissions to the specified play
 ::: danger Important Notes on Execution
 
 - Owner permission transfer is an irreversible operation.
-    - Once transferred, the original owner cannot regain owner permissions unless the player with owner permissions transfers them again.
-    - This applies even to server administrators.
+  - Once transferred, the original owner cannot regain owner permissions unless the player with owner permissions transfers them again.
+  - This applies even to server administrators.
 - The recipient of owner permissions must be a member of the channel.
 - Owner permissions can use all moderation features and delete the channel, which is a powerful privilege. Choose carefully to whom you transfer permissions.
 
