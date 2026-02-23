@@ -36,7 +36,7 @@ features:
     details: チャットチャンネルを作成・管理し，特定のプレイヤー間でのプライベートメッセージを送信可能
     icon: ☎️
   - title: マルチプラットフォーム対応
-    details: Paper と Velocity のマルチプラットフォームに対応し，サーバ間チャットを実現します
+    details: Paper, Folia と Velocity のマルチプラットフォームに対応し，サーバ間チャットを実現します
     icon: 🚀
   - title: キャッシュによる高速動作
     details: ローマ字から日本語の変換はキャッシュを使用し，従来の LunaChat よりも高速に動作します

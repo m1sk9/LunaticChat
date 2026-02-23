@@ -1,4 +1,4 @@
-# /lc settings <Badge type="tip" text="v0.5.0" /> <Badge type="tip" text="Paper" />
+# /lc settings <Badge type="tip" text="v0.5.0" /> <Badge type="tip" text="Paper/Folia" />
 
 ### `/lc settings <key> [value]`
 

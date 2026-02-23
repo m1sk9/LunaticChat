@@ -1,4 +1,4 @@
-# /lc channel <Badge type="tip" text="v0.6.0" /> <Badge type="tip" text="Paper" />
+# /lc channel <Badge type="tip" text="v0.6.0" /> <Badge type="tip" text="Paper/Folia" />
 
 ### `/lc channel create <チャンネルID> <チャンネル名> [チャンネルの説明] [プライベート設定]`
 

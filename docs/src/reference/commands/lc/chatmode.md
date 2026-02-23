@@ -1,4 +1,4 @@
-# /lc chatmode <Badge type="tip" text="v0.6.0" /> <Badge type="tip" text="Paper" />
+# /lc chatmode <Badge type="tip" text="v0.6.0" /> <Badge type="tip" text="Paper/Folia" />
 
 ### `/lc chatmode`
 
