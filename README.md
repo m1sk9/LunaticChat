@@ -6,7 +6,7 @@
 [![GNU General Public License v3.0](https://img.shields.io/github/license/m1sk9/LunaticChat?color=%239944ee)](https://github.com/m1sk9/LunaticChat/blob/main/LICENSE)
 ![Modrinth Downloads](https://img.shields.io/modrinth/dt/MBeAdO4L)
 
-Next-generation channel chat plugin for Paper/Velocity.
+A next-generation chat plugin for Paper, Folia and Velocity.
 
 - [Documentation](https://lc.m1sk9.dev)
 - [API Documentation](https://lc.api.m1sk9.dev)
@@ -18,16 +18,20 @@ cd LunaticChat
 ./gradlew shadowJar
 ```
 
-_[Supports Minecraft 1.21.X](https://minecraft.wiki/w/Java_Edition_version_history#1.21) | [Requires Java 21+ and Gradle 9+](.github/CONTRIBUTING.md#開発環境)_
+_[Supports Minecraft 1.21.11](https://minecraft.wiki/w/Java_Edition_version_history#1.21) | [Requires Java 21+ and Gradle 9+](.github/CONTRIBUTING.md#開発環境)_
 
 ## Installation
 
-LunaticChat can be obtained from:
+LunaticChat is compatible with the following platforms:
+
+- Paper
+- Velocity
+- Folia
+
+Pre-built artifacts can be installed from the following locations. Place the downloaded plugin file in your server's `plugins` folder and restart the server.
 
 - [GitHub](https://github.com/m1sk9/LunaticChat/releases)
 - [Modrinth](https://modrinth.com/project/lunaticchat)
-
-Place the downloaded plugin file in your server's `plugins` folder and restart the server.
 
 See the [Documentation](https://lc.m1sk9.dev/guide/getting-started).
 
@@ -37,7 +41,7 @@ See the [Documentation](https://lc.m1sk9.dev/guide/getting-started).
 - Quick Reply Functionality (`/reply`)
 - Romaji to Japanese Conversion
 - Channel Chat System
-- Multi-platform support (Paper, Velocity)
+- Multi-platform support (Paper, Folia, Velocity)
 
 ## License
 

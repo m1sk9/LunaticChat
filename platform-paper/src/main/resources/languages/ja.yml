@@ -36,7 +36,6 @@ channelMessage:
   noticeStatus: "現在チャンネルメッセージ通知は{toggle}です"
 
 status:
-  hover: "LunaticChat は LunaChatの後継として生まれました。\nオリジナルの作者であるucchyoceanに敬意を込めて。"
   runningVersion: "LunaticChat v{version} が使用されています"
 
 settings:

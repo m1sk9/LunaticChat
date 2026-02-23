@@ -1,149 +1,135 @@
 import type { DefaultTheme } from 'vitepress';
 
 export const ja: DefaultTheme.Config = {
-  nav: [
-    { text: 'ガイド', link: '/guide/getting-started' },
-    { text: 'リファレンス', link: '/reference' },
-  ],
-  sidebar: {
-    '/guide/': [
-      {
-        text: 'はじめる',
-        link: '/guide/getting-started',
-      },
-      {
-        text: 'LunaticChat について',
-        link: '/guide/about',
-      },
-      {
-        text: 'サーバー管理者向け',
-        items: [
-          {
-            text: 'チャンネルチャット',
-            items: [
-              {
-                text: '展開ガイド',
-                link: '/guide/admin/channel-chat/introduction',
-              },
-              {
-                text: 'ログ',
-                link: '/guide/admin/channel-chat/logs',
-              },
-            ],
-          },
-          {
-            text: 'キャッシュシステム',
-            link: '/guide/admin/cache',
-          },
-          {
-            text: '設定',
-            link: '/guide/admin/configuration',
-          },
-          {
-            text: 'Velocity 連携',
-            link: '/guide/admin/velocity',
-          },
-          {
-            text: 'データの管理',
-            link: '/guide/admin/management-data',
-          },
-        ],
-      },
-      {
-        text: 'プレイヤー向け',
-        items: [
-          {
-            text: 'チャンネルチャット',
-            link: '/guide/player/channel-chat/about',
-            items: [
-              {
-                text: 'チャットモード',
-                link: '/guide/player/channel-chat/chatmode',
-              },
-              {
-                text: 'プライベートチャンネル',
-                link: '/guide/player/channel-chat/private-channel',
-              },
-              {
-                text: 'モデレーション',
-                link: '/guide/player/channel-chat/moderation',
-              },
-            ],
-          },
-          {
-            text: 'ダイレクトメッセージ',
-            link: '/guide/player/direct-message',
-          },
-          {
-            text: 'ローマ字変換',
-            link: '/guide/player/japanese-romanization',
-          },
-        ],
-      },
-    ],
-    '/reference/': [
-      {
-        text: 'パーミッション',
-        link: '/reference/permissions',
-      },
-      {
-        text: 'コマンド',
-        items: [
-          {
-            text: '/tell',
-            link: '/reference/commands/tell',
-          },
-          {
-            text: '/reply',
-            link: '/reference/commands/reply',
-          },
-          {
-            text: '/jp',
-            link: '/reference/commands/jp',
-          },
-          {
-            text: '/notice',
-            link: '/reference/commands/notice',
-          },
-          {
-            text: '/lc',
-            items: [
-              {
-                text: '/lc settings',
-                link: '/reference/commands/lc/settings',
-              },
-              {
-                text: '/lc status',
-                link: '/reference/commands/lc/status',
-              },
-              {
-                text: '/lc channel',
-                link: '/reference/commands/lc/channel',
-              },
-              {
-                text: '/lc chatmode',
-                link: '/reference/commands/lc/chatmode',
-              },
-            ],
-          },
-          {
-            text: '/lcv',
-            items: [
-              {
-                text: '/lcv status',
-                link: '/reference/commands/lcv/status',
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
   editLink: {
     pattern: 'https://github.com/m1sk9/LunaticChat/edit/main/docs/src/:path',
     text: 'GitHub で編集',
   },
   footer: {
     copyright: 'Copyright © 2026 m1sk9',
+  },
+  nav: [
+    { link: '/player-guide/getting-started', text: 'プレイヤーガイド' },
+    { link: '/admin-guide/getting-started', text: '管理者ガイド' },
+  ],
+  sidebar: {
+    '/admin-guide/': [
+      {
+        link: '/admin-guide/getting-started',
+        text: 'はじめる',
+      },
+      {
+        link: '/admin-guide/configuration',
+        text: '設定',
+      },
+      {
+        link: '/admin-guide/permissions',
+        text: 'パーミッション',
+      },
+      {
+        items: [
+          {
+            link: '/admin-guide/channel-chat/introduction',
+            text: '展開ガイド',
+          },
+          {
+            link: '/admin-guide/channel-chat/logs',
+            text: 'ログ',
+          },
+        ],
+        text: 'チャンネルチャット',
+      },
+      {
+        link: '/admin-guide/velocity',
+        text: 'Velocity 連携',
+      },
+      {
+        link: '/admin-guide/cache',
+        text: 'キャッシュシステム',
+      },
+      {
+        link: '/admin-guide/management-data',
+        text: 'データの管理',
+      },
+    ],
+    '/player-guide/': [
+      {
+        link: '/player-guide/getting-started',
+        text: 'はじめる',
+      },
+      {
+        link: '/player-guide/about',
+        text: 'LunaticChat について',
+      },
+      {
+        items: [
+          {
+            link: '/player-guide/channel-chat/chatmode',
+            text: 'チャットモード',
+          },
+          {
+            link: '/player-guide/channel-chat/private-channel',
+            text: 'プライベートチャンネル',
+          },
+          {
+            link: '/player-guide/channel-chat/moderation',
+            text: 'モデレーション',
+          },
+        ],
+        link: '/player-guide/channel-chat/about',
+        text: 'チャンネルチャット',
+      },
+      {
+        link: '/player-guide/direct-message',
+        text: 'ダイレクトメッセージ',
+      },
+      {
+        link: '/player-guide/japanese-romanization',
+        text: 'ローマ字変換',
+      },
+      {
+        items: [
+          {
+            link: '/player-guide/commands/tell',
+            text: '/tell',
+          },
+          {
+            link: '/player-guide/commands/reply',
+            text: '/reply',
+          },
+          {
+            items: [
+              {
+                link: '/player-guide/commands/lc/settings',
+                text: '/lc settings',
+              },
+              {
+                link: '/player-guide/commands/lc/status',
+                text: '/lc status',
+              },
+              {
+                link: '/player-guide/commands/lc/channel',
+                text: '/lc channel',
+              },
+              {
+                link: '/player-guide/commands/lc/chatmode',
+                text: '/lc chatmode',
+              },
+            ],
+            text: '/lc',
+          },
+          {
+            items: [
+              {
+                link: '/player-guide/commands/lcv/status',
+                text: '/lcv status',
+              },
+            ],
+            text: '/lcv',
+          },
+        ],
+        text: 'コマンド',
+      },
+    ],
   },
 };

@@ -1,34 +1,34 @@
 import { defineConfig } from 'vitepress';
-import { ja } from './config/ja';
 import { en } from './config/en';
+import { ja } from './config/ja';
 
 export default defineConfig({
-  title: 'LunaticChat Docs',
-  titleTemplate: 'LunaticChat',
-  description: 'Next-generation channel chat plugin for Paper/Velocity',
   cleanUrls: true,
-  srcDir: './src',
-  outDir: './dist',
-  vite: {
-    publicDir: '../.vitepress/public',
-  },
-  head: [['link', { rel: 'icon', href: '/favicon.ico' }]],
-  themeConfig: {
-    socialLinks: [
-      { icon: 'github', link: 'https://github.com/m1sk9/LunaticChat' },
-    ],
-  },
+  description: 'Next-generation channel chat plugin for Paper/Velocity',
+  head: [['link', { href: '/favicon.ico', rel: 'icon' }]],
   locales: {
-    root: {
-      label: '日本語',
-      lang: 'ja-JP',
-      themeConfig: ja,
-    },
     en: {
       label: 'English',
       lang: 'en-US',
       link: '/en/',
       themeConfig: en,
     },
+    root: {
+      label: '日本語',
+      lang: 'ja-JP',
+      themeConfig: ja,
+    },
+  },
+  outDir: './dist',
+  srcDir: './src',
+  themeConfig: {
+    socialLinks: [
+      { icon: 'github', link: 'https://github.com/m1sk9/LunaticChat' },
+    ],
+  },
+  title: 'LunaticChat Docs',
+  titleTemplate: 'LunaticChat',
+  vite: {
+    publicDir: '../.vitepress/public',
   },
 });

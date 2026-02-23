@@ -1,149 +1,143 @@
 import type { DefaultTheme } from 'vitepress';
 
 export const en: DefaultTheme.Config = {
-  nav: [
-    { text: 'Guide', link: '/en/guide/getting-started' },
-    { text: 'Reference', link: '/en/reference' },
-  ],
-  sidebar: {
-    '/en/guide/': [
-      {
-        text: 'Getting Started',
-        link: '/en/guide/getting-started',
-      },
-      {
-        text: 'About LunaticChat',
-        link: '/en/guide/about',
-      },
-      {
-        text: 'For Server Administrators',
-        items: [
-          {
-            text: 'Channel Chat',
-            items: [
-              {
-                text: 'Deployment Guide',
-                link: '/en/guide/admin/channel-chat/introduction',
-              },
-              {
-                text: 'Logs',
-                link: '/en/guide/admin/channel-chat/logs',
-              },
-            ],
-          },
-          {
-            text: 'Cache System',
-            link: '/en/guide/admin/cache',
-          },
-          {
-            text: 'Configuration',
-            link: '/en/guide/admin/configuration',
-          },
-          {
-            text: 'Velocity Integration',
-            link: '/en/guide/admin/velocity',
-          },
-          {
-            text: 'Data Management',
-            link: '/en/guide/admin/management-data',
-          },
-        ],
-      },
-      {
-        text: 'For Players',
-        items: [
-          {
-            text: 'Channel Chat',
-            link: '/en/guide/player/channel-chat/about',
-            items: [
-              {
-                text: 'Chat Mode',
-                link: '/en/guide/player/channel-chat/chatmode',
-              },
-              {
-                text: 'Private Channel',
-                link: '/en/guide/player/channel-chat/private-channel',
-              },
-              {
-                text: 'Moderation',
-                link: '/en/guide/player/channel-chat/moderation',
-              },
-            ],
-          },
-          {
-            text: 'Direct Messages',
-            link: '/en/guide/player/direct-message',
-          },
-          {
-            text: 'Romanization Conversion',
-            link: '/en/guide/player/japanese-romanization',
-          },
-        ],
-      },
-    ],
-    '/en/reference/': [
-      {
-        text: 'Permissions',
-        link: '/en/reference/permissions',
-      },
-      {
-        text: 'Commands',
-        items: [
-          {
-            text: '/tell',
-            link: '/en/reference/commands/tell',
-          },
-          {
-            text: '/reply',
-            link: '/en/reference/commands/reply',
-          },
-          {
-            text: '/jp',
-            link: '/en/reference/commands/jp',
-          },
-          {
-            text: '/notice',
-            link: '/en/reference/commands/notice',
-          },
-          {
-            text: '/lc',
-            items: [
-              {
-                text: '/lc settings',
-                link: '/en/reference/commands/lc/settings',
-              },
-              {
-                text: '/lc status',
-                link: '/en/reference/commands/lc/status',
-              },
-              {
-                text: '/lc channel',
-                link: '/en/reference/commands/lc/channel',
-              },
-              {
-                text: '/lc chatmode',
-                link: '/en/reference/commands/lc/chatmode',
-              },
-            ],
-          },
-          {
-            text: '/lcv',
-            items: [
-              {
-                text: '/lcv status',
-                link: '/en/reference/commands/lcv/status',
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
   editLink: {
     pattern: 'https://github.com/m1sk9/LunaticChat/edit/main/docs/src/:path',
     text: 'Edit this page on GitHub',
   },
   footer: {
     copyright: 'Copyright © 2026 m1sk9',
+  },
+  nav: [
+    { link: '/en/player-guide/getting-started', text: 'Player Guide' },
+    { link: '/en/admin-guide/getting-started', text: 'Admin Guide' },
+  ],
+  sidebar: {
+    '/en/admin-guide/': [
+      {
+        link: '/en/admin-guide/getting-started',
+        text: 'Getting Started',
+      },
+      {
+        link: '/en/admin-guide/configuration',
+        text: 'Configuration',
+      },
+      {
+        link: '/en/admin-guide/permissions',
+        text: 'Permissions',
+      },
+      {
+        items: [
+          {
+            link: '/en/admin-guide/channel-chat/introduction',
+            text: 'Deployment Guide',
+          },
+          {
+            link: '/en/admin-guide/channel-chat/logs',
+            text: 'Logs',
+          },
+        ],
+        text: 'Channel Chat',
+      },
+      {
+        link: '/en/admin-guide/velocity',
+        text: 'Velocity Integration',
+      },
+      {
+        link: '/en/admin-guide/cache',
+        text: 'Cache System',
+      },
+      {
+        link: '/en/admin-guide/management-data',
+        text: 'Data Management',
+      },
+    ],
+    '/en/player-guide/': [
+      {
+        link: '/en/player-guide/getting-started',
+        text: 'Getting Started',
+      },
+      {
+        link: '/en/player-guide/about',
+        text: 'About LunaticChat',
+      },
+      {
+        items: [
+          {
+            link: '/en/player-guide/channel-chat/chatmode',
+            text: 'Chat Mode',
+          },
+          {
+            link: '/en/player-guide/channel-chat/private-channel',
+            text: 'Private Channel',
+          },
+          {
+            link: '/en/player-guide/channel-chat/moderation',
+            text: 'Moderation',
+          },
+        ],
+        link: '/en/player-guide/channel-chat/about',
+        text: 'Channel Chat',
+      },
+      {
+        link: '/en/player-guide/direct-message',
+        text: 'Direct Messages',
+      },
+      {
+        link: '/en/player-guide/japanese-romanization',
+        text: 'Romanization Conversion',
+      },
+      {
+        items: [
+          {
+            link: '/en/player-guide/commands/tell',
+            text: '/tell',
+          },
+          {
+            link: '/en/player-guide/commands/reply',
+            text: '/reply',
+          },
+          {
+            link: '/en/player-guide/commands/jp',
+            text: '/jp',
+          },
+          {
+            link: '/en/player-guide/commands/notice',
+            text: '/notice',
+          },
+          {
+            items: [
+              {
+                link: '/en/player-guide/commands/lc/settings',
+                text: '/lc settings',
+              },
+              {
+                link: '/en/player-guide/commands/lc/status',
+                text: '/lc status',
+              },
+              {
+                link: '/en/player-guide/commands/lc/channel',
+                text: '/lc channel',
+              },
+              {
+                link: '/en/player-guide/commands/lc/chatmode',
+                text: '/lc chatmode',
+              },
+            ],
+            text: '/lc',
+          },
+          {
+            items: [
+              {
+                link: '/en/player-guide/commands/lcv/status',
+                text: '/lcv status',
+              },
+            ],
+            text: '/lcv',
+          },
+        ],
+        text: 'Commands',
+      },
+    ],
   },
 };
