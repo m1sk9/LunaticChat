@@ -29,7 +29,7 @@ dependencies {
 
 tasks {
     shadowJar {
-        archiveClassifier.set("paper")
+        archiveClassifier.set("")
         archiveBaseName.set("LunaticChat")
     }
 

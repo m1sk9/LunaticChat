@@ -2,6 +2,10 @@
 
 ## v0
 
+### v0.10.0
+
+- Added support for Folia 1.21 and later.
+
 ### v0.9.1
 
 - Fixed an issue where update notification messages were not formatted correctly.
