@@ -36,8 +36,26 @@ channelMessage:
   noticeStatus: "Channel message notifications are currently {toggle}"
 
 status:
-  hover: "LunaticChat was born as the successor to LunaChat. With respect to its original creator, uccchyocean."
   runningVersion: "Running LunaticChat v{version}"
+  clickToCopy: "Click to copy version"
+  clickToOpen: "Click to open"
+  label:
+    health: "Health"
+    features: "--- Features ---"
+    config: "--- Configuration ---"
+  feature:
+    quickReplies: "Quick Replies"
+    japaneseConversion: "Japanese Conversion"
+    channelChat: "Channel Chat"
+    velocityIntegration: "Velocity Integration"
+  config:
+    debug: "Debug Mode"
+    checkForUpdates: "Update Check"
+    language: "Language"
+  health:
+    ok: "OK"
+    degraded: "Degraded"
+    degradedHover: "Velocity integration is enabled but the connection failed. Use /lcv status for details."
 
 settings:
   availableValues: "Available settings value: {values}"

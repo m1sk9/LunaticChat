@@ -21,6 +21,7 @@ import dev.m1sk9.lunaticChat.paper.config.ConfigManager
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.listener.EventListenerRegistry
+import dev.m1sk9.lunaticChat.paper.velocity.VelocityConnectionManager
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import kotlinx.coroutines.launch
@@ -38,6 +39,7 @@ class LunaticChat :
     var chatModeManager: ChatModeManager? = null
     var channelMessageHandler: ChannelMessageHandler? = null
     var channelNotificationHandler: ChannelNotificationHandler? = null
+    var velocityConnectionManager: VelocityConnectionManager? = null
 
     private lateinit var services: ServiceContainer
     private lateinit var configuration: LunaticChatConfiguration
@@ -80,6 +82,7 @@ class LunaticChat :
         chatModeManager = services.chatModeManager
         channelMessageHandler = services.channelMessageHandler
         channelNotificationHandler = services.channelNotificationHandler
+        velocityConnectionManager = services.velocityConnectionManager
 
         // Schedule periodic tasks
         serviceInitializer.schedulePeriodicTasks()
@@ -140,7 +143,7 @@ class LunaticChat :
         // Register core commands
         commandRegistry.registerAll(
             TellCommand(this, services.directMessageHandler, services.languageManager),
-            LunaticChatCommand(this, settingHandlerRegistry, services.languageManager),
+            LunaticChatCommand(this, settingHandlerRegistry, services.languageManager, configuration),
         )
 
         // Conditionally register /reply command if quick replies are enabled

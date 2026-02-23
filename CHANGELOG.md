@@ -5,6 +5,11 @@
 ### v0.10.0
 
 - Added support for Folia 1.21 and later.
+- We have revised the document structure.
+- We have added Folia-related references.
+- The current health status is now displayed in the status shown when you run `/lc status`.
+- The current configuration status is now displayed in the status shown when you run `/lc status`.
+- You can now copy the version by clicking on the status displayed when you run `/lc status`.
 
 ### v0.9.1
 
