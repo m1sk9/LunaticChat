@@ -84,16 +84,13 @@ class ChannelStorage(
      * @throws ChannelStorageSaveException if there is an error saving the data.
      */
     fun queueAsyncSave(data: ChannelData) {
-        plugin.server.scheduler.runTaskAsynchronously(
-            plugin,
-            Runnable {
-                try {
-                    saveToDisk(data)
-                } catch (e: ChannelStorageSaveException) {
-                    logger.severe("Error saving channel data asynchronously: ${e.message}")
-                    e.printStackTrace()
-                }
-            },
-        )
+        plugin.server.asyncScheduler.runNow(plugin) {
+            try {
+                saveToDisk(data)
+            } catch (e: ChannelStorageSaveException) {
+                logger.severe("Error saving channel data asynchronously: ${e.message}")
+                e.printStackTrace()
+            }
+        }
     }
 }

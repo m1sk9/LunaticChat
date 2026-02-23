@@ -1,0 +1,47 @@
+services:
+  folia:
+    image: itzg/minecraft-server:java21
+    container_name: debug-folia
+    ports:
+      - "25565:25565"
+      - "25575:25575"
+    volumes:
+      - lunatic-debug-folia-data:/data
+      - ./plugins:/data/plugins
+      - ./bukkit.yml:/data/bukkit.yml
+    environment:
+      EULA: "TRUE"
+      TYPE: "FOLIA"
+      VERSION: "1.21.11"
+      MEMORY: "2G"
+
+      # デバッグ用高速化設定
+      LEVEL_TYPE: "flat"
+      VIEW_DISTANCE: "3"
+      SIMULATION_DISTANCE: "3"
+      GENERATE_STRUCTURES: "false"
+      SPAWN_PROTECTION: "0"
+      ALLOW_NETHER: "false"
+
+      # 権限関連
+      OVERRIDE_SERVER_PROPERTIES: "true"
+
+      ENABLE_RCON: "true"
+      RCON_PASSWORD: "minecraft"
+      RCON_PORT: 25575
+
+      DIFFICULTY: "peaceful"
+      MAX_PLAYERS: "3"
+      ONLINE_MODE: "false"
+      SYNC_SKIP_NEWER_IN_DESTINATION: "false"
+    healthcheck:
+      test: mc-health
+      start_period: 90s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    tty: true
+    stdin_open: true
+
+volumes:
+  lunatic-debug-folia-data:

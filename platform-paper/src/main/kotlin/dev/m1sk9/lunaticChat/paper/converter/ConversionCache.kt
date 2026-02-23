@@ -2,10 +2,10 @@ package dev.m1sk9.lunaticChat.paper.converter
 
 import dev.m1sk9.lunaticChat.engine.converter.CacheData
 import kotlinx.serialization.json.Json
-import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.logging.Logger
 import kotlin.io.path.bufferedReader
@@ -110,13 +110,14 @@ class ConversionCache(
 
     private fun queueSaveToDisk() {
         if (conversionSaveQueue.compareAndSet(false, true)) {
-            Bukkit.getScheduler().runTaskLaterAsynchronously(
+            plugin.server.asyncScheduler.runDelayed(
                 plugin,
-                Runnable {
+                {
                     conversionSaveQueue.set(false)
                     saveToDisk()
                 },
-                100L, // 5 seconds = 100 ticks
+                5,
+                TimeUnit.SECONDS,
             )
         }
     }

@@ -2,6 +2,7 @@ name: LunaticChat
 version: ${version}
 main: dev.m1sk9.lunaticChat.paper.LunaticChat
 api-version: '1.21'
+folia-supported: true
 prefix: LunaticChat
 load: STARTUP
 authors: [ m1sk9 ]

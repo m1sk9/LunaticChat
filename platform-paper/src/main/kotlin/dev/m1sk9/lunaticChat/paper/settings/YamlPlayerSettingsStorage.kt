@@ -2,9 +2,9 @@ package dev.m1sk9.lunaticChat.paper.settings
 
 import com.charleskorn.kaml.Yaml
 import dev.m1sk9.lunaticChat.engine.settings.PlayerSettingsData
-import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
 import java.nio.file.Path
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.logging.Logger
 import kotlin.io.path.bufferedReader
@@ -87,13 +87,14 @@ class YamlPlayerSettingsStorage(
      */
     fun queueAsyncSave(data: PlayerSettingsData) {
         if (saveFlag.compareAndSet(false, true)) {
-            Bukkit.getScheduler().runTaskLaterAsynchronously(
+            plugin.server.asyncScheduler.runDelayed(
                 plugin,
-                Runnable {
+                {
                     saveFlag.set(false)
                     saveToDisk(data)
                 },
-                100L, // 5 seconds = 100 ticks
+                5,
+                TimeUnit.SECONDS,
             )
         }
     }
