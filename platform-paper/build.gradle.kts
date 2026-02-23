@@ -42,10 +42,22 @@ tasks {
     }
 
     processResources {
-        val props = mapOf("version" to project.version)
+        val gitCommitHash =
+            providers
+                .exec {
+                    commandLine("git", "rev-parse", "--short", "HEAD")
+                }.standardOutput
+                .asText
+                .get()
+                .trim()
+
+        val props = mapOf("version" to project.version, "gitCommitHash" to gitCommitHash)
         inputs.properties(props)
         filteringCharset = "UTF-8"
         filesMatching("paper-plugin.yml") {
+            expand(props)
+        }
+        filesMatching("build-info.properties") {
             expand(props)
         }
     }

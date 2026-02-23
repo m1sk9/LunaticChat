@@ -8,6 +8,7 @@ import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
 import dev.m1sk9.lunaticChat.paper.command.setting.SettingHandlerRegistry
+import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
@@ -27,6 +28,7 @@ class LunaticChatCommand(
     plugin: LunaticChat,
     private val settingHandlerRegistry: SettingHandlerRegistry,
     private val languageManager: LanguageManager,
+    private val configuration: LunaticChatConfiguration,
 ) : LunaticCommand(plugin) {
     override val description: String
         get() = languageManager.getMessage("commandDescription.lc")
@@ -45,6 +47,7 @@ class LunaticChatCommand(
                     StatusCommand(
                         plugin,
                         languageManager,
+                        configuration,
                     ).buildWithPermissionCheck(),
                 )
 

@@ -37,6 +37,25 @@ channelMessage:
 
 status:
   runningVersion: "LunaticChat v{version} が使用されています"
+  clickToCopy: "クリックしてバージョンをコピー"
+  clickToOpen: "クリックして開く"
+  label:
+    health: "ヘルス"
+    features: "--- 機能 ---"
+    config: "--- 設定 ---"
+  feature:
+    quickReplies: "クイックリプライ"
+    japaneseConversion: "かな・ローマ字変換"
+    channelChat: "チャンネルチャット"
+    velocityIntegration: "Velocity 連携"
+  config:
+    debug: "デバッグモード"
+    checkForUpdates: "アップデートチェック"
+    language: "言語"
+  health:
+    ok: "正常"
+    degraded: "問題あり"
+    degradedHover: "Velocity 連携が有効ですが接続に失敗しました。/lcv status を確認してください。"
 
 settings:
   availableValues: "使用可能な設定値: {values}"
