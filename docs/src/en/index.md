@@ -4,17 +4,14 @@ layout: home
 
 hero:
   name: "LunaticChat"
-  tagline: Next-generation chat plugin for Paper/Velocity.
+  tagline: A next-generation chat plugin for Paper, Folia and Velocity.
   actions:
     - theme: brand
-      text: Getting Started
-      link: /en/guide/getting-started
+      text: Player Guide
+      link: /en/player-guide/channel-chat/about
     - theme: brand
-      text: About LunaticChat
-      link: /en/guide/about
-    - theme: brand
-      text: Reference
-      link: /en/reference
+      text: Admin Guide
+      link: /en/admin-guide/getting-started
     - theme: alt
       text: GitHub
       link: https://github.com/m1sk9/LunaticChat
@@ -36,7 +33,7 @@ features:
     details: Create and manage chat channels, send private messages between specific players
     icon: ☎️
   - title: Multi-Platform Support
-    details: Support for multi-platform Paper and Velocity, enabling cross-server chat
+    details: Support for multi-platform Paper, Folia and Velocity, enabling cross-server chat
     icon: 🚀
   - title: High-Speed Performance with Caching
     details: Uses caching for romaji-to-Japanese conversion, operating faster than traditional LunaChat

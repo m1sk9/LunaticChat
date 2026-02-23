@@ -4,17 +4,14 @@ layout: home
 
 hero:
   name: "LunaticChat"
-  tagline: Next-generation chat plugin for Paper/Velocity.
+  tagline: A next-generation chat plugin for Paper, Folia and Velocity.
   actions:
     - theme: brand
-      text: はじめる
-      link: /guide/getting-started
+      text: プレイヤーガイド
+      link: /player-guide/channel-chat/about
     - theme: brand
-      text: LunaticChat について
-      link: /guide/about
-    - theme: brand
-      text: リファレンス
-      link: /reference
+      text: 管理者ガイド
+      link: /admin-guide/getting-started
     - theme: alt
       text: GitHub
       link: https://github.com/m1sk9/LunaticChat

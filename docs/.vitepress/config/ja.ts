@@ -2,127 +2,74 @@ import type { DefaultTheme } from 'vitepress';
 
 export const ja: DefaultTheme.Config = {
   nav: [
-    { text: 'ガイド', link: '/guide/getting-started' },
-    { text: 'リファレンス', link: '/reference' },
+    { text: 'プレイヤーガイド', link: '/player-guide/getting-started' },
+    { text: '管理者ガイド', link: '/admin-guide/getting-started' },
   ],
   sidebar: {
-    '/guide/': [
+    '/player-guide/': [
       {
         text: 'はじめる',
-        link: '/guide/getting-started',
+        link: '/player-guide/getting-started',
       },
       {
         text: 'LunaticChat について',
-        link: '/guide/about',
+        link: '/player-guide/about',
       },
       {
-        text: 'サーバー管理者向け',
+        text: 'チャンネルチャット',
+        link: '/player-guide/channel-chat/about',
         items: [
           {
-            text: 'チャンネルチャット',
-            items: [
-              {
-                text: '展開ガイド',
-                link: '/guide/admin/channel-chat/introduction',
-              },
-              {
-                text: 'ログ',
-                link: '/guide/admin/channel-chat/logs',
-              },
-            ],
+            text: 'チャットモード',
+            link: '/player-guide/channel-chat/chatmode',
           },
           {
-            text: 'キャッシュシステム',
-            link: '/guide/admin/cache',
+            text: 'プライベートチャンネル',
+            link: '/player-guide/channel-chat/private-channel',
           },
           {
-            text: '設定',
-            link: '/guide/admin/configuration',
-          },
-          {
-            text: 'Velocity 連携',
-            link: '/guide/admin/velocity',
-          },
-          {
-            text: 'データの管理',
-            link: '/guide/admin/management-data',
+            text: 'モデレーション',
+            link: '/player-guide/channel-chat/moderation',
           },
         ],
       },
       {
-        text: 'プレイヤー向け',
-        items: [
-          {
-            text: 'チャンネルチャット',
-            link: '/guide/player/channel-chat/about',
-            items: [
-              {
-                text: 'チャットモード',
-                link: '/guide/player/channel-chat/chatmode',
-              },
-              {
-                text: 'プライベートチャンネル',
-                link: '/guide/player/channel-chat/private-channel',
-              },
-              {
-                text: 'モデレーション',
-                link: '/guide/player/channel-chat/moderation',
-              },
-            ],
-          },
-          {
-            text: 'ダイレクトメッセージ',
-            link: '/guide/player/direct-message',
-          },
-          {
-            text: 'ローマ字変換',
-            link: '/guide/player/japanese-romanization',
-          },
-        ],
+        text: 'ダイレクトメッセージ',
+        link: '/player-guide/direct-message',
       },
-    ],
-    '/reference/': [
       {
-        text: 'パーミッション',
-        link: '/reference/permissions',
+        text: 'ローマ字変換',
+        link: '/player-guide/japanese-romanization',
       },
       {
         text: 'コマンド',
         items: [
           {
             text: '/tell',
-            link: '/reference/commands/tell',
+            link: '/player-guide/commands/tell',
           },
           {
             text: '/reply',
-            link: '/reference/commands/reply',
-          },
-          {
-            text: '/jp',
-            link: '/reference/commands/jp',
-          },
-          {
-            text: '/notice',
-            link: '/reference/commands/notice',
+            link: '/player-guide/commands/reply',
           },
           {
             text: '/lc',
             items: [
               {
                 text: '/lc settings',
-                link: '/reference/commands/lc/settings',
+                link: '/player-guide/commands/lc/settings',
               },
               {
                 text: '/lc status',
-                link: '/reference/commands/lc/status',
+                link: '/player-guide/commands/lc/status',
               },
               {
                 text: '/lc channel',
-                link: '/reference/commands/lc/channel',
+                link: '/player-guide/commands/lc/channel',
               },
               {
                 text: '/lc chatmode',
-                link: '/reference/commands/lc/chatmode',
+                link: '/player-guide/commands/lc/chatmode',
               },
             ],
           },
@@ -131,11 +78,50 @@ export const ja: DefaultTheme.Config = {
             items: [
               {
                 text: '/lcv status',
-                link: '/reference/commands/lcv/status',
+                link: '/player-guide/commands/lcv/status',
               },
             ],
           },
         ],
+      },
+    ],
+    '/admin-guide/': [
+      {
+        text: 'はじめる',
+        link: '/admin-guide/getting-started',
+      },
+      {
+        text: '設定',
+        link: '/admin-guide/configuration',
+      },
+      {
+        text: 'パーミッション',
+        link: '/admin-guide/permissions',
+      },
+      {
+        text: 'チャンネルチャット',
+        items: [
+          {
+            text: '展開ガイド',
+            link: '/admin-guide/channel-chat/introduction',
+          },
+          {
+            text: 'ログ',
+            link: '/admin-guide/channel-chat/logs',
+          },
+        ],
+      },
+      {
+        text: 'Velocity 連携',
+        link: '/admin-guide/velocity',
+      },
+      {
+        text: 'キャッシュシステム',
+        link: '/admin-guide/cache',
+      },
+      {
+        text: 'データの管理',
+        link: '/admin-guide/management-data',
       },
     ],
   },
