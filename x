@@ -45,6 +45,7 @@ folia_cmd() {
         start)
             ./gradlew :platform-paper:clean :platform-paper:shadowJar
             ensure_plugin_dir docker/folia/plugins
+            rm -f docker/folia/plugins/*.jar
             cp platform-paper/build/libs/*.jar docker/folia/plugins/
             $DC_FOLIA up
             ;;
@@ -82,6 +83,9 @@ case "${1:-}" in
         ensure_plugin_dir docker/velocity/plugins-paper-s1
         ensure_plugin_dir docker/velocity/plugins-paper-s2
         ensure_plugin_dir docker/velocity/plugins-velocity
+        rm -f docker/velocity/plugins-paper-s1/*.jar
+        rm -f docker/velocity/plugins-paper-s2/*.jar
+        rm -f docker/velocity/plugins-velocity/*.jar
         cp platform-paper/build/libs/*.jar docker/velocity/plugins-paper-s1/
         cp platform-paper/build/libs/*.jar docker/velocity/plugins-paper-s2/
         cp platform-velocity/build/libs/*.jar docker/velocity/plugins-velocity/
@@ -90,6 +94,7 @@ case "${1:-}" in
     start-s1)
         ./gradlew :platform-paper:clean :platform-paper:shadowJar
         ensure_plugin_dir docker/velocity/plugins-paper-s1
+        rm -f docker/velocity/plugins-paper-s1/*.jar
         cp platform-paper/build/libs/*.jar docker/velocity/plugins-paper-s1/
         $DC_VELOCITY up s1
         ;;
