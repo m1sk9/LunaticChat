@@ -52,7 +52,7 @@ jobs:
         with:
           name: LunaticChat-${{ github.sha }}
           path: |
-            platform-paper/build/libs/LunaticChat-*-paper.jar
+            platform-paper/build/libs/LunaticChat-*.jar
             platform-velocity/build/libs/LunaticChat-*-velocity.jar
           retention-days: 7
 
