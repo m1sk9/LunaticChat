@@ -23,6 +23,7 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.plugin.java.JavaPlugin
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.logging.Logger
 import kotlin.time.Duration.Companion.milliseconds
@@ -337,12 +338,13 @@ class ServiceInitializer(
                     // Only perform handshake once
                     if (!handshakeCompleted.getAndSet(true)) {
                         // Schedule handshake 1 second after first player joins
-                        plugin.server.scheduler.runTaskLater(
+                        plugin.server.asyncScheduler.runDelayed(
                             plugin,
-                            Runnable {
+                            {
                                 performVelocityHandshake(event.player, manager)
                             },
-                            20L,
+                            1,
+                            TimeUnit.SECONDS,
                         )
                     }
                 }
@@ -408,17 +410,20 @@ class ServiceInitializer(
 
     /**
      * Schedules periodic tasks such as cache saving.
+     * Uses Folia-compatible AsyncScheduler API.
      */
     fun schedulePeriodicTasks() {
         if (configuration.features.japaneseConversion.enabled && conversionCache != null) {
-            val saveInterval = configuration.features.japaneseConversion.cacheSaveIntervalSeconds * 20L
-            plugin.server.scheduler.runTaskTimerAsynchronously(
+            val intervalSeconds =
+                configuration.features.japaneseConversion
+                    .cacheSaveIntervalSeconds
+                    .toLong()
+            plugin.server.asyncScheduler.runAtFixedRate(
                 plugin,
-                Runnable {
-                    conversionCache?.saveToDisk()
-                },
-                saveInterval,
-                saveInterval,
+                { conversionCache?.saveToDisk() },
+                intervalSeconds,
+                intervalSeconds,
+                TimeUnit.SECONDS,
             )
         }
     }

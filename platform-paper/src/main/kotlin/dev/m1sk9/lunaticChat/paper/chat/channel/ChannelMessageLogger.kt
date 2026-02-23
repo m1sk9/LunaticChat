@@ -2,6 +2,7 @@ package dev.m1sk9.lunaticChat.paper.chat.channel
 
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelMessageLogEntry
 import io.ktor.util.logging.Logger
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.bukkit.plugin.Plugin
@@ -13,6 +14,7 @@ import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.TimeUnit
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.fileSize
 import kotlin.io.path.listDirectoryEntries
@@ -39,16 +41,16 @@ class ChannelMessageLogger(
 ) {
     private val pendingEntries = ConcurrentLinkedQueue<ChannelMessageLogEntry>()
     private val json = Json { encodeDefaults = true }
-    private var flushTaskId: Int? = null
-    private var cleanupTaskId: Int? = null
+    private var flushTask: ScheduledTask? = null
+    private var cleanupTask: ScheduledTask? = null
 
     companion object {
         private const val LOG_FILE_PREFIX = "channel-messages-"
         private const val LOG_FILE_EXTENSION = ".json"
         private val DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-        private const val FLUSH_INTERVAL_TICKS = 20L // 1 second
-        private const val CLEANUP_INTERVAL_TICKS = 24 * 60 * 60 * 20L // 24 hours
-        private const val CLEANUP_INITIAL_DELAY_TICKS = 5 * 60 * 20L // 5 minutes
+        private const val FLUSH_INTERVAL_SECONDS = 1L
+        private const val CLEANUP_INTERVAL_SECONDS = 24 * 60 * 60L // 24 hours
+        private const val CLEANUP_INITIAL_DELAY_SECONDS = 5 * 60L // 5 minutes
     }
 
     init {
@@ -74,20 +76,22 @@ class ChannelMessageLogger(
 
     /**
      * Schedules periodic flushing of pending log entries.
+     * Uses Folia-compatible AsyncScheduler API.
      */
     private fun schedulePeriodicFlush() {
-        flushTaskId =
-            plugin.server.scheduler
-                .runTaskTimerAsynchronously(
-                    plugin,
-                    Runnable { flushPendingEntries() },
-                    FLUSH_INTERVAL_TICKS,
-                    FLUSH_INTERVAL_TICKS,
-                ).taskId
+        flushTask =
+            plugin.server.asyncScheduler.runAtFixedRate(
+                plugin,
+                { flushPendingEntries() },
+                FLUSH_INTERVAL_SECONDS,
+                FLUSH_INTERVAL_SECONDS,
+                TimeUnit.SECONDS,
+            )
     }
 
     /**
      * Schedules periodic cleanup of old log files.
+     * Uses Folia-compatible AsyncScheduler API.
      */
     private fun schedulePeriodicCleanup() {
         if (retentionDays <= 0) {
@@ -95,14 +99,14 @@ class ChannelMessageLogger(
             return
         }
 
-        cleanupTaskId =
-            plugin.server.scheduler
-                .runTaskTimerAsynchronously(
-                    plugin,
-                    Runnable { cleanupOldLogs(retentionDays) },
-                    CLEANUP_INITIAL_DELAY_TICKS,
-                    CLEANUP_INTERVAL_TICKS,
-                ).taskId
+        cleanupTask =
+            plugin.server.asyncScheduler.runAtFixedRate(
+                plugin,
+                { cleanupOldLogs(retentionDays) },
+                CLEANUP_INITIAL_DELAY_SECONDS,
+                CLEANUP_INTERVAL_SECONDS,
+                TimeUnit.SECONDS,
+            )
 
         logger.info("Scheduled log cleanup task (retention: $retentionDays days)")
     }
@@ -159,8 +163,8 @@ class ChannelMessageLogger(
      */
     fun shutdown() {
         // Cancel scheduled tasks
-        flushTaskId?.let { plugin.server.scheduler.cancelTask(it) }
-        cleanupTaskId?.let { plugin.server.scheduler.cancelTask(it) }
+        flushTask?.cancel()
+        cleanupTask?.cancel()
 
         // Flush remaining entries
         flushPendingEntries()
