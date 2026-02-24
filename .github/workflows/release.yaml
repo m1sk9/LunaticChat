@@ -116,7 +116,7 @@ jobs:
             --notes ""
 
       - name: Publish to Modrinth (Paper)
-        uses: cloudnode-pro/modrinth-publish@0a5268ad092d4727bb6424326746fa2fe88761ff # v2
+        uses: cloudnode-pro/modrinth-publish@482deb71067c5207ce5ba263de0c36968d5c2b7b # v2
         with:
           token: ${{ secrets.MODRINTH_TOKEN }}
           name: v${{ needs.validate.outputs.version }} (Paper v${{ env.MODRINTH_MC_VERSION }})
@@ -130,7 +130,7 @@ jobs:
           files: platform-paper/build/libs/${{ needs.validate.outputs.paper_jar_name }}
 
       - name: Publish to Modrinth (Folia)
-        uses: cloudnode-pro/modrinth-publish@0a5268ad092d4727bb6424326746fa2fe88761ff # v2
+        uses: cloudnode-pro/modrinth-publish@482deb71067c5207ce5ba263de0c36968d5c2b7b # v2
         with:
           token: ${{ secrets.MODRINTH_TOKEN }}
           name: v${{ needs.validate.outputs.version }} (Folia v${{ env.MODRINTH_MC_VERSION }})
@@ -144,7 +144,7 @@ jobs:
           files: platform-paper/build/libs/${{ needs.validate.outputs.folia_jar_name }}
 
       - name: Publish to Modrinth (Velocity)
-        uses: cloudnode-pro/modrinth-publish@0a5268ad092d4727bb6424326746fa2fe88761ff # v2
+        uses: cloudnode-pro/modrinth-publish@482deb71067c5207ce5ba263de0c36968d5c2b7b # v2
         with:
           token: ${{ secrets.MODRINTH_TOKEN }}
           name: v${{ needs.validate.outputs.version }} (Velocity)
