@@ -2,6 +2,12 @@
 
 ## v0
 
+### v0.10.1
+
+- Codecov was introduced to expand test coverage.
+- The release steps for Paper and Folia in Modrinth were consolidated.
+  - This is because both loaders use the same build, eliminating the need for separate steps. The v0.10.0 release was merged on 2026/02/26 1:00 (UTC+9).
+
 ### v0.10.0
 
 - Added support for Folia 1.21 and later.
