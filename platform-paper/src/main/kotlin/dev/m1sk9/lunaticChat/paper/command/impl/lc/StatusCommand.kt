@@ -39,7 +39,7 @@ class StatusCommand(
             handleResult(context, result)
         }
 
-    private fun execute(ctx: CommandContext): CommandResult {
+    internal fun execute(ctx: CommandContext): CommandResult {
         val sender = ctx.requirePlayer()
         val features = configuration.features
 

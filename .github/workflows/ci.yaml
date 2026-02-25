@@ -29,16 +29,18 @@ jobs:
         run: ./gradlew ktlintCheck --no-daemon
 
       - name: Run tests
-        run: ./gradlew test --no-daemon
-        continue-on-error: true
+        run: ./gradlew test jacocoTestReport --no-daemon
 
-      - name: Post test results to PR
-        if: github.event_name == 'pull_request' && always()
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_REF: ${{ github.ref }}
-        run: .github/scripts/post-test-results.sh
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: |
+            engine/build/reports/jacoco/test/jacocoTestReport.xml,
+            platform-paper/build/reports/jacoco/test/jacocoTestReport.xml,
+            platform-velocity/build/reports/jacoco/test/jacocoTestReport.xml
+          fail_ci_if_error: false
 
       - name: Build with shadowJar
         run: ./gradlew :platform-paper:shadowJar :platform-velocity:shadowJar --parallel --no-daemon

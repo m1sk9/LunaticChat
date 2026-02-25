@@ -68,7 +68,7 @@ class ChannelBanCommand(
                     },
             )
 
-    private fun execute(
+    internal fun execute(
         ctx: CommandContext,
         playerName: String,
     ): CommandResult {

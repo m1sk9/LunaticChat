@@ -5,6 +5,7 @@
 [![Deploy Dokka](https://github.com/m1sk9/LunaticChat/actions/workflows/dokka.yaml/badge.svg)](https://github.com/m1sk9/LunaticChat/actions/workflows/dokka.yaml)
 [![GNU General Public License v3.0](https://img.shields.io/github/license/m1sk9/LunaticChat?color=%239944ee)](https://github.com/m1sk9/LunaticChat/blob/main/LICENSE)
 ![Modrinth Downloads](https://img.shields.io/modrinth/dt/MBeAdO4L)
+[![codecov](https://codecov.io/github/m1sk9/LunaticChat/graph/badge.svg?token=M3CJYTADYD)](https://codecov.io/github/m1sk9/LunaticChat)
 
 A next-generation chat plugin for Paper, Folia and Velocity.
 

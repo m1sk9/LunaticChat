@@ -72,7 +72,7 @@ class ChannelDeleteCommand(
                     },
             )
 
-    private fun execute(
+    internal fun execute(
         ctx: CommandContext,
         channelId: String,
     ): CommandResult {

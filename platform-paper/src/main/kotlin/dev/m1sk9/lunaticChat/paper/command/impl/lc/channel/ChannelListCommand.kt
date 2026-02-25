@@ -58,7 +58,7 @@ class ChannelListCommand(
                     },
             )
 
-    private fun execute(
+    internal fun execute(
         ctx: CommandContext,
         page: Int,
     ): CommandResult {
