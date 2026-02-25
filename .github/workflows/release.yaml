@@ -123,7 +123,7 @@ jobs:
           channel: ${{ env.MODRINTH_CHANNEL }}
           changelog: |-
             Please refer to the [GitHub release](https://github.com/m1sk9/LunaticChat/releases/tag/v${{ needs.validate.outputs.version }}) for update details.
-          loaders: |
+          loaders: |-
             paper
             folia
           game-versions: ${{ env.MODRINTH_GAME_VERSIONS }}
