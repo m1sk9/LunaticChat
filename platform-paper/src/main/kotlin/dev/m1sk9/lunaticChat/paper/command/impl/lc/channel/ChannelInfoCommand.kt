@@ -63,7 +63,7 @@ class ChannelInfoCommand(
                     },
             )
 
-    private fun execute(
+    internal fun execute(
         ctx: CommandContext,
         channelIdArg: String?,
     ): CommandResult {

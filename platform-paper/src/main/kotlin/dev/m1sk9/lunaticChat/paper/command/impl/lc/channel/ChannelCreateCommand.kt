@@ -81,7 +81,7 @@ class ChannelCreateCommand(
                     ),
             )
 
-    private fun execute(
+    internal fun execute(
         ctx: CommandContext,
         channelId: String,
         name: String,

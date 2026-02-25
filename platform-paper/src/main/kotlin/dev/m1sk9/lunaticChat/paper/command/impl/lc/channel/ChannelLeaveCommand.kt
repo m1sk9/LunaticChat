@@ -40,7 +40,7 @@ class ChannelLeaveCommand(
             handleResult(context, result)
         }
 
-    private fun execute(ctx: CommandContext): CommandResult {
+    internal fun execute(ctx: CommandContext): CommandResult {
         val sender = ctx.requirePlayer()
 
         // Get current channel before leaving
