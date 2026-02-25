@@ -12,7 +12,6 @@ jobs:
       version: ${{ steps.get_version.outputs.version }}
       paper_jar_name: ${{ steps.get_version.outputs.paper_jar_name }}
       velocity_jar_name: ${{ steps.get_version.outputs.velocity_jar_name }}
-      folia_jar_name: ${{ steps.get_version.outputs.folia_jar_name }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -24,7 +23,6 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "paper_jar_name=LunaticChat-$VERSION.jar" >> $GITHUB_OUTPUT
           echo "velocity_jar_name=LunaticChat-$VERSION-velocity.jar" >> $GITHUB_OUTPUT
-          echo "folia_jar_name=LunaticChat-$VERSION.jar" >> $GITHUB_OUTPUT
           echo "Extracted version: $VERSION"
 
       - name: Validate tag matches version
@@ -115,33 +113,19 @@ jobs:
             --draft \
             --notes ""
 
-      - name: Publish to Modrinth (Paper)
+      - name: Publish to Modrinth (Paper/Folia)
         uses: cloudnode-pro/modrinth-publish@482deb71067c5207ce5ba263de0c36968d5c2b7b # v2
         with:
           token: ${{ secrets.MODRINTH_TOKEN }}
-          name: v${{ needs.validate.outputs.version }} (Paper v${{ env.MODRINTH_MC_VERSION }})
+          name: v${{ needs.validate.outputs.version }} (Paper/Folia v${{ env.MODRINTH_MC_VERSION }})
           project: ${{ secrets.MODRINTH_PROJECT_ID }}
-          version: ${{ needs.validate.outputs.version }}-paper
+          version: ${{ needs.validate.outputs.version }}
           channel: ${{ env.MODRINTH_CHANNEL }}
           changelog: |-
             Please refer to the [GitHub release](https://github.com/m1sk9/LunaticChat/releases/tag/v${{ needs.validate.outputs.version }}) for update details.
-          loaders: paper
+          loaders: paper, folia
           game-versions: ${{ env.MODRINTH_GAME_VERSIONS }}
           files: platform-paper/build/libs/${{ needs.validate.outputs.paper_jar_name }}
-
-      - name: Publish to Modrinth (Folia)
-        uses: cloudnode-pro/modrinth-publish@482deb71067c5207ce5ba263de0c36968d5c2b7b # v2
-        with:
-          token: ${{ secrets.MODRINTH_TOKEN }}
-          name: v${{ needs.validate.outputs.version }} (Folia v${{ env.MODRINTH_MC_VERSION }})
-          project: ${{ secrets.MODRINTH_PROJECT_ID }}
-          version: ${{ needs.validate.outputs.version }}-folia
-          channel: ${{ env.MODRINTH_CHANNEL }}
-          changelog: |-
-            Please refer to the [GitHub release](https://github.com/m1sk9/LunaticChat/releases/tag/v${{ needs.validate.outputs.version }}) for update details.
-          loaders: folia
-          game-versions: ${{ env.MODRINTH_GAME_VERSIONS }}
-          files: platform-paper/build/libs/${{ needs.validate.outputs.folia_jar_name }}
 
       - name: Publish to Modrinth (Velocity)
         uses: cloudnode-pro/modrinth-publish@482deb71067c5207ce5ba263de0c36968d5c2b7b # v2
