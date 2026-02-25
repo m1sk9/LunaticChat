@@ -12,4 +12,6 @@ dependencies {
 
     // Adventure API (provided by platform implementations)
     compileOnly("net.kyori:adventure-api:4.26.1")
+
+    testImplementation("net.kyori:adventure-api:4.26.1")
 }
