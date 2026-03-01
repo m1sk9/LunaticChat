@@ -2,16 +2,20 @@
   "scripts": {
     "dev": "vitepress dev",
     "build": "vitepress build",
-    "preview": "vitepress preview",
+    "preview": "wrangler dev",
     "format": "biome format --write .",
     "format:check": "biome ci .",
     "lint": "biome lint .",
     "lint:fix": "biome lint --write .",
-    "check": "biome check --write ."
+    "check": "biome check --write .",
+    "deploy": "wrangler deploy"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.4",
     "husky": "^9.1.7",
     "vitepress": "^1.6.4"
+  },
+  "dependencies": {
+    "wrangler": "^4.69.0"
   }
 }
