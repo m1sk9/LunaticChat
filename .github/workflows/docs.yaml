@@ -6,14 +6,17 @@ on:
       - main
     paths:
       - "docs/**"
+      - "mise.toml"
   workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-24.04
+    concurrency:
+      group: docs-${{ github.ref }}
+      cancel-in-progress: true
     permissions:
       contents: read
-      deployments: write
     defaults:
       run:
         working-directory: "./docs"
