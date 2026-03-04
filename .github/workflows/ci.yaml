@@ -49,7 +49,7 @@ jobs:
         run: ./gradlew :dokka:dokkaGenerate --no-daemon
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: success()
         with:
           name: LunaticChat-${{ github.sha }}
