@@ -39,7 +39,9 @@ const currentLocale = computed(
   () => site.value.locales[site.value.localeIndex]?.link?.replace(/\//g, '') || '',
 );
 
-const pathSegments = computed(() => router.route.data.relativePath.split('/'));
+const pathSegments = computed(() =>
+  router.route.path.replace(/^\/|\/$/g, '').split('/'),
+);
 
 const activeVersion = computed(() => {
   const { currentVersion } = props.versioningPlugin;
