@@ -1,0 +1,21 @@
+.version-banner {
+  display: none;
+}
+
+@media (min-width: 960px) {
+  .version-banner {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 30;
+    padding: 12px 24px;
+    background-color: var(--vp-c-warning-soft);
+    color: var(--vp-c-warning-1);
+    text-align: center;
+    font-size: 14px;
+    line-height: 1.6;
+    border-bottom: 1px solid var(--vp-c-warning-2);
+  }
+}

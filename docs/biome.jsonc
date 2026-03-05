@@ -2,7 +2,12 @@
   "$schema": "https://biomejs.dev/schemas/2.4.5/schema.json",
   "files": {
     "ignoreUnknown": true,
-    "includes": [".vitepress/config.mts", "biome.jsonc", ".vitepress/config/**"]
+    "includes": [
+      ".vitepress/config.mts",
+      "biome.jsonc",
+      ".vitepress/config/**",
+      ".vitepress/theme/*.ts"
+    ]
   },
   "formatter": {
     "enabled": true,

@@ -1,8 +1,8 @@
-import { defineConfig } from 'vitepress';
+import { defineVersionedConfig } from '@viteplus/versions';
 import { en } from './config/en';
 import { ja } from './config/ja';
 
-export default defineConfig({
+export default defineVersionedConfig({
   cleanUrls: true,
   description: 'Next-generation channel chat plugin for Paper/Velocity',
   head: [['link', { href: '/favicon.ico', rel: 'icon' }]],
@@ -20,7 +20,6 @@ export default defineConfig({
     },
   },
   outDir: './dist',
-  srcDir: './src',
   themeConfig: {
     socialLinks: [
       { icon: 'github', link: 'https://github.com/m1sk9/LunaticChat' },
@@ -28,7 +27,13 @@ export default defineConfig({
   },
   title: 'LunaticChat Docs',
   titleTemplate: 'LunaticChat',
+  versionsConfig: {
+    current: 'v0 (1.21.x) - Latest',
+    sources: 'src',
+    archive: 'archive',
+    versionSwitcher: false,
+  },
   vite: {
-    publicDir: '../.vitepress/public',
+    publicDir: '.vitepress/public',
   },
 });
