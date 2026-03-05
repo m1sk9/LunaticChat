@@ -16,6 +16,7 @@
     "vitepress": "^1.6.4"
   },
   "dependencies": {
+    "@viteplus/versions": "^2.0.6",
     "wrangler": "^4.69.0"
   }
 }

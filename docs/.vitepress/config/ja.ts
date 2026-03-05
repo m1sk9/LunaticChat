@@ -11,6 +11,7 @@ export const ja: DefaultTheme.Config = {
   nav: [
     { link: '/player-guide/getting-started', text: 'プレイヤーガイド' },
     { link: '/admin-guide/getting-started', text: '管理者ガイド' },
+    { component: 'VersionSwitcher' },
   ],
   sidebar: {
     '/admin-guide/': [
