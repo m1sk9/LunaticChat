@@ -2,3 +2,4 @@
 x linguist-vendored=true
 gradlew linguist-vendored=true
 .github/scripts/post-test-results.sh linguist-vendored=true
+docs/.vitepress/theme/*.vue linguist-vendored=true
