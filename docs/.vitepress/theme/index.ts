@@ -1,6 +1,6 @@
 import DefaultTheme from 'vitepress/theme';
-import VersionSwitcher from './VersionSwitcher.vue';
 import Layout from './Layout.vue';
+import VersionSwitcher from './VersionSwitcher.vue';
 import './custom.css';
 
 export default {
