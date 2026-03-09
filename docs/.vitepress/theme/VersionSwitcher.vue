@@ -47,7 +47,8 @@ const activeVersion = computed(() => {
   const { currentVersion } = props.versioningPlugin;
   const segments = pathSegments.value;
   const locale = currentLocale.value;
-  const versionCandidate = segments[0] === locale ? segments[1] : segments[0];
+  const hasLocalePrefix = locale !== '' && segments[0] === locale;
+  const versionCandidate = hasLocalePrefix ? segments[1] : segments[0];
   return versionSet.value.has(versionCandidate) ? versionCandidate : currentVersion;
 });
 
@@ -64,7 +65,8 @@ const shouldShowCurrentVersion = computed(
 );
 
 function isLocaleFirst(segments: string[]): boolean {
-  return segments[0] === currentLocale.value;
+  const locale = currentLocale.value;
+  return locale !== '' && segments[0] === locale;
 }
 
 function removeVersionSegments(segments: string[]): string[] {
