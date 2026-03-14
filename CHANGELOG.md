@@ -1,10 +1,19 @@
 # LunaticChat Changelog
 
-## v0
+## v1
 
-### v0.10.2
+### v1.0.0 (Unreleased)
+
+#### Features
+
+- Paper 26.1 (Minecraft 26.1) is now supported.
+  - Support for Paper 1.21.X, Folia 1.21.X (and later) has been dropped.
+
+#### Feature Improvements
 
 - Optimization of internal logic.
+
+## v0
 
 ### v0.10.1
 

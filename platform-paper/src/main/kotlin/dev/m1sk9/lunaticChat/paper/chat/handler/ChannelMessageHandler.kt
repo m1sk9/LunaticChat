@@ -51,7 +51,7 @@ class ChannelMessageHandler(
                 it.sendMessage(
                     formattedMessage.hoverEvent(
                         HoverEvent.showText(
-                            Component.text(languageManager.getMessage("general.formattedMessage")),
+                            Component.text(languageManager.getMessage("general.spyMessage")),
                         ),
                     ),
                 )

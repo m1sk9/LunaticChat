@@ -54,7 +54,7 @@ class ChannelManager(
      *
      * @param channel The channel to create.
      * @return Result containing the created channel or an error if the channel already exists.
-     * @throws ChannelNotFoundException if a channel with the same ID already exists.
+     * @throws ChannelAlreadyExistsException if a channel with the same ID already exists.
      * @throws ChannelLimitExceededException if the server has reached the maximum channel limit.
      */
     fun createChannel(channel: Channel): Result<Channel> {
