@@ -14,7 +14,7 @@ plugins {
 
 allprojects {
     group = "dev.m1sk9"
-    version = "0.10.1"
+    version = "0.10.2"
 
     repositories {
         mavenCentral()

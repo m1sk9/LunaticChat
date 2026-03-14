@@ -41,9 +41,4 @@ class PluginCoroutineScope(
         scope.cancel()
         logger.info("Plugin coroutine scope cancelled.")
     }
-
-    /**
-     * Returns true if the scope is still active.
-     */
-    fun isActive(): Boolean = job.isActive
 }

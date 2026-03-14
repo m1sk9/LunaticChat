@@ -17,6 +17,7 @@ object MessageFormatter {
     private val PLACEHOLDER_COLOR = NamedTextColor.YELLOW
     private val ERROR_COLOR = NamedTextColor.RED
     private val SUCCESS_COLOR = NamedTextColor.GREEN
+    private val PLACEHOLDER_REGEX = Regex("""\{([^}]+)}""")
 
     /**
      * Formats a message with the standard prefix and gray text.
@@ -92,7 +93,7 @@ object MessageFormatter {
         baseColor: NamedTextColor,
     ): Component {
         val result = Component.text()
-        val regex = Regex("""\{([^}]+)}""")
+        val regex = PLACEHOLDER_REGEX
         var lastIndex = 0
 
         regex.findAll(message).forEach { match ->

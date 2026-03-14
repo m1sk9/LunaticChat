@@ -99,7 +99,7 @@ class ServiceInitializer(
         // 4. Initialize channel manager, membership manager, chat mode manager, channel message handler, and notification handler
         val channelComponents =
             if (configuration.features.channelChat.enabled) {
-                initializeChannelManager(playerSettingsManager, romajiConverter, languageManager)
+                initializeChannelManager(playerSettingsManager, languageManager)
             } else {
                 null
             }
@@ -217,7 +217,6 @@ class ServiceInitializer(
      */
     private fun initializeChannelManager(
         settingsManager: PlayerSettingsManager,
-        romajiConverter: RomanjiConverter?,
         languageManager: LanguageManager,
     ): ChannelComponents {
         val channelsFile = plugin.dataFolder.resolve("channels.json").toPath()
@@ -287,7 +286,6 @@ class ServiceInitializer(
                 configuration = configuration,
                 settingsManager = settingsManager,
                 channelManager = manager,
-                romanjiConverter = romajiConverter,
                 languageManager = languageManager,
                 messageLogger = messageLogger,
                 logger =
