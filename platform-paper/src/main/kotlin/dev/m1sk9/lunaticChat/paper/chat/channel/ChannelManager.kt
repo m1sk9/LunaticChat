@@ -5,8 +5,10 @@ import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelContext
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelData
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelMember
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelRole
+import dev.m1sk9.lunaticChat.engine.exception.ChannelAlreadyExistsException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelLimitExceededException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelMemberLimitExceededException
+import dev.m1sk9.lunaticChat.engine.exception.ChannelMemberNotFoundException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelNoOwnerPermissionException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelNotFoundException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerAlreadyBannedException
@@ -57,7 +59,7 @@ class ChannelManager(
      */
     fun createChannel(channel: Channel): Result<Channel> {
         if (channelsCache.containsKey(channel.id)) {
-            return Result.failure(ChannelNotFoundException(channel.id))
+            return Result.failure(ChannelAlreadyExistsException(channel.id))
         }
 
         // Check if max channels limit is reached (0 means unlimited)
@@ -227,7 +229,7 @@ class ChannelManager(
 
         val removed = members.removeIf { it.playerId == playerId }
         if (!removed) {
-            return Result.failure(ChannelNotFoundException(channelId))
+            return Result.failure(ChannelMemberNotFoundException(channelId))
         }
 
         saveToStorage()

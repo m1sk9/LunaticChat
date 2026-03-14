@@ -287,7 +287,6 @@ class ServiceInitializer(
                 configuration = configuration,
                 settingsManager = settingsManager,
                 channelManager = manager,
-                romanjiConverter = romajiConverter,
                 languageManager = languageManager,
                 messageLogger = messageLogger,
                 logger =

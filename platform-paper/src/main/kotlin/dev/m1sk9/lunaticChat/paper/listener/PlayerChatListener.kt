@@ -6,10 +6,10 @@ import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelMessageHandler
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
 import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
+import dev.m1sk9.lunaticChat.paper.converter.convertWithRomaji
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
 import dev.m1sk9.lunaticChat.paper.velocity.CrossServerChatManager
 import io.papermc.paper.event.player.AsyncChatEvent
-import kotlinx.coroutines.runBlocking
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.event.EventHandler
@@ -88,20 +88,9 @@ class PlayerChatListener(
                 ChatMode.GLOBAL
             }
 
-        // Handle romaji conversion if enabled
-        // Uses explicit timeout to prevent long blocking (1s max instead of 3s)
-        // Note: AsyncChatEvent runs on async thread, so runBlocking here doesn't block main thread
         val displayMessage =
             if (settings.japaneseConversionEnabled && romajiConverter != null) {
-                runCatching {
-                    runBlocking {
-                        kotlinx.coroutines
-                            .withTimeoutOrNull(1000) {
-                                romajiConverter
-                                    ?.convert(messageWithoutPrefix)
-                            }?.let { "$messageWithoutPrefix §e($it)" } ?: messageWithoutPrefix
-                    }
-                }.getOrElse { messageWithoutPrefix }
+                convertWithRomaji(messageWithoutPrefix, romajiConverter)
             } else {
                 messageWithoutPrefix
             }
@@ -124,7 +113,7 @@ class PlayerChatListener(
                         event.isCancelled = true
                         event.viewers().clear()
                         event.message(Component.empty())
-                        channelMessageHandler.sendChannelMessage(player, messageWithoutPrefix)
+                        channelMessageHandler.sendChannelMessage(player, displayMessage)
                     } else {
                         // Auto-fallback to global chat (with Velocity support if enabled)
                         handleGlobalChat(event, displayMessage)

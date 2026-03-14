@@ -7,7 +7,6 @@ import dev.m1sk9.lunaticChat.paper.common.SpyPermissionManager
 import dev.m1sk9.lunaticChat.paper.common.playChannelReceiveNotification
 import dev.m1sk9.lunaticChat.paper.common.playMessageSendNotification
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
-import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
 import io.ktor.util.logging.Logger
@@ -20,7 +19,6 @@ class ChannelMessageHandler(
     private val configuration: LunaticChatConfiguration,
     private val settingsManager: PlayerSettingsManager?,
     private val channelManager: ChannelManager,
-    private val romanjiConverter: RomanjiConverter?,
     private val languageManager: LanguageManager,
     private val messageLogger: ChannelMessageLogger?,
     private val logger: Logger,
@@ -36,25 +34,7 @@ class ChannelMessageHandler(
 
         val senderSettings = settingsManager?.getSettings(playerId)
 
-        // Handle romaji conversion if enabled
-        // Uses explicit timeout to prevent long blocking (1s max instead of 3s)
-        val displayMessage =
-            if (senderSettings?.japaneseConversionEnabled == true && romanjiConverter != null) {
-                runCatching {
-                    kotlinx.coroutines.runBlocking {
-                        kotlinx.coroutines
-                            .withTimeoutOrNull(1000) {
-                                romanjiConverter!!
-                                    .convert(message)
-                            }?.let { "$message §e($it)" } ?: message
-                    }
-                }.getOrElse { message }
-            } else {
-                message
-            }
-
-        val formattedMessage = formatChannelMessage(player.name, context.channel.name, displayMessage)
-        val spyMessage = formatChannelMessage(player.name, context.channel.name, message)
+        val formattedMessage = formatChannelMessage(player.name, context.channel.name, message)
 
         // Play notification sound to sender if enabled
         if (senderSettings?.channelMessageNotificationEnabled == true) {
@@ -69,9 +49,9 @@ class ChannelMessageHandler(
             .filter { it.isOnline && it.uniqueId != playerId && it.uniqueId !in memberIds }
             .forEach {
                 it.sendMessage(
-                    spyMessage.hoverEvent(
+                    formattedMessage.hoverEvent(
                         HoverEvent.showText(
-                            Component.text(languageManager.getMessage("general.spyMessage")),
+                            Component.text(languageManager.getMessage("general.formattedMessage")),
                         ),
                     ),
                 )

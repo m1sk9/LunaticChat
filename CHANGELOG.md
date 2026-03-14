@@ -2,6 +2,10 @@
 
 ## v0
 
+### v0.10.2
+
+- Optimization of internal logic.
+
 ### v0.10.1
 
 - Codecov was introduced to expand test coverage.

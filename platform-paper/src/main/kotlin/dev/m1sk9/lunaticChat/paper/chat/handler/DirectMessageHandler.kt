@@ -5,6 +5,7 @@ import dev.m1sk9.lunaticChat.paper.common.playDirectMessageNotification
 import dev.m1sk9.lunaticChat.paper.common.playMessageSendNotification
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
 import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
+import dev.m1sk9.lunaticChat.paper.converter.convertWithRomaji
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
 import net.kyori.adventure.text.Component
@@ -92,19 +93,9 @@ class DirectMessageHandler(
         val senderSettings = settingsManager?.getSettings(sender.uniqueId)
         val recipientSettings = settingsManager?.getSettings(recipient.uniqueId)
 
-        // Handle romaji conversion if enabled
-        // Uses explicit timeout to prevent long blocking (1s max instead of 3s)
         val displayMessage =
             if (senderSettings?.japaneseConversionEnabled == true && romanjiConverter != null) {
-                runCatching {
-                    kotlinx.coroutines.runBlocking {
-                        kotlinx.coroutines
-                            .withTimeoutOrNull(1000) {
-                                romanjiConverter!!
-                                    .convert(message)
-                            }?.let { "$message §e($it)" } ?: message
-                    }
-                }.getOrElse { message }
+                convertWithRomaji(message, romanjiConverter)
             } else {
                 message
             }

@@ -3,6 +3,7 @@ package dev.m1sk9.lunaticChat.paper.chat.channel
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelData
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelMember
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelRole
+import dev.m1sk9.lunaticChat.engine.exception.ChannelAlreadyExistsException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelLimitExceededException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelMemberLimitExceededException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelNoOwnerPermissionException
@@ -122,7 +123,7 @@ class ChannelManagerTest {
 
         val result = manager.createChannel(channel)
         assertTrue(result.isFailure)
-        assertIs<ChannelNotFoundException>(result.exceptionOrNull())
+        assertIs<ChannelAlreadyExistsException>(result.exceptionOrNull())
     }
 
     @Test

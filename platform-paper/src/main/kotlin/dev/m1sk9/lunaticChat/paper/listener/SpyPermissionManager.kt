@@ -23,11 +23,6 @@ object SpyPermissionManager : Listener {
     fun getDirectMessageSpyPlayers(): Map<UUID, Player> = directMessageSpyPlayers.toMap()
 
     /**
-     * Gets all player UUIDs with spy permission.
-     */
-    fun getDirectMessageSpyPlayerIds(): Set<UUID> = directMessageSpyPlayers.keys
-
-    /**
      * Updates the cache of players with direct message spy permission.
      * Call this on player join/quit/permission change events.
      */
