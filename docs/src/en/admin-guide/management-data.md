@@ -11,7 +11,6 @@ These data files are essential to the operation of LunaticChat. Direct editing m
 LunaticChat saves channel data and configuration information to local disk.
 
 - `channels.json`: Stores channel information.
-- `chatmodes.json`: Stores player chat mode settings.
 - `conversion_cache.json`: Stores cache for channel conversion.
 - `player-settings.yaml`: Stores player-specific settings.
 
@@ -23,7 +22,7 @@ To ensure the safety of your LunaticChat data, we recommend creating regular bac
 
 ### `channels.json`
 
-The `channels.json` file stores information about channels managed by LunaticChat. This file contains information such as channel names, participant lists, and chat modes.
+The `channels.json` file stores information about channels managed by LunaticChat. This file contains information such as channel names and participant lists.
 
 ```json
 {
@@ -48,21 +47,6 @@ The `channels.json` file stores information about channels managed by LunaticCha
   },
   "activeChannels": {
     "a01e3843-e521-3998-958a-f459800e4d11": "test2"
-  }
-}
-```
-
-### `chatmodes.json`
-
-The `chatmodes.json` file stores player chat mode settings. This file contains chat mode information for each player.
-
-```json
-{
-  "modes": {
-    "aed5efd4-551b-3965-bc28-ae21aa072a66": "CHANNEL",
-    "ceaea267-39dd-3bac-931c-761ada671ebe": "CHANNEL",
-    "a01e3843-e521-3998-958a-f459800e4d11": "CHANNEL",
-    "681f539b-8bb8-3f85-85e5-a2945f6c6539": "GLOBAL"
   }
 }
 ```
