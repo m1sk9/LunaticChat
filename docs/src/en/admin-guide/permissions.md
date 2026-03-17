@@ -148,18 +148,6 @@ Toggles the use of the [`/lc channel mod`](../player-guide/commands/lc/channel.m
 
 Toggles the use of the [`/lc channel ownership`](../player-guide/commands/lc/channel.md) command.
 
-### `lunaticchat.command.lc.chatmode`
-
-- Default: `non OP`
-
-Toggles the use of the [`/lc chatmode`](../player-guide/commands/lc/chatmode.md) command.
-
-### `lunaticchat.command.lc.chatmode.toggle`
-
-- Default: `non OP`
-
-Toggles the use of the [`/lc chatmode toggle`](../player-guide/commands/lc/chatmode.md) command.
-
 ### `lunaticchat.command.lcv.status`
 
 - Default: `OP`

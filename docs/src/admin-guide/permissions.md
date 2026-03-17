@@ -148,18 +148,6 @@ LunaticChat のアップデート通知を受け取ります．
 
 [`/lc channel ownership`](../player-guide/commands/lc/channel.md) コマンドの使用を切り替えます．
 
-### `lunaticchat.command.lc.chatmode`
-
-- Default: `non OP`
-
-[`/lc chatmode`](../player-guide/commands/lc/chatmode.md) コマンドの使用を切り替えます．
-
-### `lunaticchat.command.lc.chatmode.toggle`
-
-- Default: `non OP`
-
-[`/lc chatmode toggle`](../player-guide/commands/lc/chatmode.md) コマンドの使用を切り替えます．
-
 ### `lunaticchat.command.lcv.status`
 
 - Default: `OP`
