@@ -39,12 +39,15 @@ class PlayerPresenceListener(
             val context = manager.getPlayerChannelContext(player.uniqueId)
             context?.let {
                 val notification =
-                    MessageFormatter.format(
-                        languageManager.getMessage(
-                            "channel.notification.login",
-                            mapOf("channelName" to it.channel.name),
-                        ),
-                    )
+                    MessageFormatter
+                        .format(
+                            languageManager.getMessage(
+                                "channel.notification.login",
+                                mapOf("channelName" to it.channel.name),
+                            ),
+                        ).clickEvent(
+                            ClickEvent.runCommand("/lc channel status"),
+                        )
                 player.sendMessage(notification)
             }
         }

@@ -20,11 +20,12 @@
 
 #### Features
 
-- We have added a notification that appears when you log in to the server while already in a channel.
+- Clicking the notification message now displays the channel's status.
 
 #### Feature Improvements
 
 - Optimization of internal logic.
+- We have improved the notification message that appears when you login to the server while in a channel.
 
 ### v0.10.1
 

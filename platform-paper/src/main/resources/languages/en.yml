@@ -132,7 +132,7 @@ channel:
     noActiveChannel: "You don't have an active channel. Please specify a channel ID"
     error: "Failed to retrieve channel information"
   notification:
-    login: "You are in channel '{channelName}'"
+    login: "You are currently in the channel '{channelName}'. You can check the channel's status by typing /lc channel status."
     playerJoined: "{player} joined {channel}"
     playerLeft: "{player} left {channel}"
     playerKicked: "{player} was kicked from {channel} by {kicker}"

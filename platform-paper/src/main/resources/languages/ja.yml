@@ -132,7 +132,7 @@ channel:
     noActiveChannel: "アクティブなチャンネルがありません。チャンネルIDを指定してください"
     error: "チャンネル情報の取得に失敗しました"
   notification:
-    login: "チャンネル '{channelName}' に入室中です"
+    login: "現在、チャンネル '{channelName}' に入室中です。チャンネルの状態は /lc channel status で確認できます"
     playerJoined: "{player}がチャンネル {channel} に参加しました"
     playerLeft: "{player}がチャンネル {channel} から退出しました"
     playerKicked: "{player}は{kicker}によってチャンネル {channel} から追放されました"
