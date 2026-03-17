@@ -65,10 +65,6 @@ export const ja: DefaultTheme.Config = {
       {
         items: [
           {
-            link: '/player-guide/channel-chat/chatmode',
-            text: 'チャットモード',
-          },
-          {
             link: '/player-guide/channel-chat/private-channel',
             text: 'プライベートチャンネル',
           },
@@ -111,10 +107,6 @@ export const ja: DefaultTheme.Config = {
               {
                 link: '/player-guide/commands/lc/channel',
                 text: '/lc channel',
-              },
-              {
-                link: '/player-guide/commands/lc/chatmode',
-                text: '/lc chatmode',
               },
             ],
             text: '/lc',

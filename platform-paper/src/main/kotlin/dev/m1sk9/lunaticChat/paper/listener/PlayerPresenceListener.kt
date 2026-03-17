@@ -1,9 +1,7 @@
 package dev.m1sk9.lunaticChat.paper.listener
 
-import dev.m1sk9.lunaticChat.engine.chat.ChatMode
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
-import dev.m1sk9.lunaticChat.paper.chat.ChatModeManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.common.hasAnyPermission
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
@@ -21,7 +19,6 @@ class PlayerPresenceListener(
     private val languageManager: LanguageManager,
     private val updateCheckerFlag: AtomicBoolean,
     private val playerSettingsManager: PlayerSettingsManager,
-    private val chatModeManager: ChatModeManager? = null,
     private val channelManager: ChannelManager? = null,
 ) : Listener {
     @EventHandler(ignoreCancelled = true)
@@ -35,23 +32,6 @@ class PlayerPresenceListener(
                     .format(languageManager.getMessage("general.newUpdateAvailable"))
                     .clickEvent(ClickEvent.openUrl("https://github.com/m1sk9/LunaticChat/releases/latest")),
             )
-        }
-
-        // Send chat mode notification
-        chatModeManager?.let { manager ->
-            val chatMode = manager.getChatMode(player.uniqueId)
-            val modeKey =
-                when (chatMode) {
-                    ChatMode.GLOBAL -> "chatmode.mode.global"
-                    ChatMode.CHANNEL -> "chatmode.mode.channel"
-                }
-            val modeText = languageManager.getMessage(modeKey)
-            val notification =
-                languageManager.getMessage(
-                    "chatmode.notification.login",
-                    mapOf("mode" to modeText),
-                )
-            player.sendMessage(MessageFormatter.format(notification))
         }
 
         // Send channel notification if in a channel
@@ -81,10 +61,7 @@ class PlayerPresenceListener(
         // 2. Clear active channel for this player
         channelManager?.setPlayerChannel(playerId, null)
 
-        // 3. Trigger async save of chat mode data
-        chatModeManager?.saveToDisk()
-
-        // 4. Trigger async save of player settings
+        // 3. Trigger async save of player settings
         playerSettingsManager.saveToDisk()
     }
 }

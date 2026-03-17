@@ -69,7 +69,7 @@ To join a created channel, use the [`/lc channel join`](../commands/lc/channel.m
 /lc channel join <channel-id>
 ```
 
-When you join a channel, your chat mode will switch from global chat to channel chat.
+When you join a channel, all your chat messages will be visible only to players in that channel.
 
 ## Viewing the Channel List
 
@@ -81,16 +81,15 @@ To view the list of channels you can join, use the [`/lc channel list`](../comma
 
 A list of available channels will be displayed in the chat. You can click on them or use the [`/lc channel join`](#joining-a-channel) command to join a channel.
 
-## Chat Modes
+## Sending to Global Chat
 
-In LunaticChat, there are two types of chat modes for players when sending chat messages:
+While in a channel, all your chat messages are visible only to players in that channel.
 
-1. Global chat mode: Share chat with all players.
-2. Channel chat mode: Share chat with players in a specific channel you have joined.
+To temporarily send a message to global chat, prefix your message with `!`.
 
-Channel chat primarily uses chat mode `2`.
-
-For more details, see [here](./chatmode.md).
+```
+!Hello everyone, how are you?
+```
 
 ## Difference Between Active Channel and Membership Status
 

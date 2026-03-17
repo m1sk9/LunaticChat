@@ -37,19 +37,15 @@ object EventListenerRegistry {
                 languageManager = services.languageManager,
                 updateCheckerFlag = updateAvailable,
                 playerSettingsManager = services.playerSettingsManager,
-                chatModeManager = services.chatModeManager,
                 channelManager = services.channelManager,
             ),
             plugin,
         )
 
         // Register chat listener when channel chat is enabled OR velocity cross-server chat is enabled
-        // Channel-related services (chatModeManager, channelManager, channelMessageHandler) can be null
-        // when channel chat is disabled, but cross-server chat can still work
         val shouldRegisterChatListener =
             (
-                services.chatModeManager != null &&
-                    services.channelManager != null &&
+                services.channelManager != null &&
                     services.channelMessageHandler != null
             ) ||
                 (
@@ -60,7 +56,6 @@ object EventListenerRegistry {
         if (shouldRegisterChatListener) {
             pluginManager.registerEvents(
                 PlayerChatListener(
-                    chatModeManager = services.chatModeManager,
                     channelManager = services.channelManager,
                     channelMessageHandler = services.channelMessageHandler,
                     romajiConverter = services.romajiConverter,

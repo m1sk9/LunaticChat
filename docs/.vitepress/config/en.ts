@@ -65,10 +65,6 @@ export const en: DefaultTheme.Config = {
       {
         items: [
           {
-            link: '/en/player-guide/channel-chat/chatmode',
-            text: 'Chat Mode',
-          },
-          {
             link: '/en/player-guide/channel-chat/private-channel',
             text: 'Private Channel',
           },
@@ -119,10 +115,6 @@ export const en: DefaultTheme.Config = {
               {
                 link: '/en/player-guide/commands/lc/channel',
                 text: '/lc channel',
-              },
-              {
-                link: '/en/player-guide/commands/lc/chatmode',
-                text: '/lc chatmode',
               },
             ],
             text: '/lc',

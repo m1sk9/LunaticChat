@@ -195,16 +195,6 @@ channel:
     receivedOwnership: "チャンネル {channel} のオーナーになりました (前のオーナー: {previousOwner})"
     error: "オーナー権限の譲渡に失敗しました"
 
-chatmode:
-  current: "現在のチャットモード"
-  mode:
-    global: "グローバル"
-    channel: "チャンネル"
-  toggle:
-    success: "チャットモードを切り替えました"
-  notification:
-    login: "現在のチャットモード: {mode}"
-
 general:
   playerOnlyCommand: "このコマンドはプレイヤーのみが実行できます"
   newUpdateAvailable: "LunaticChat の新しいバージョンが利用可能です。GitHubまたはModrinthからダウンロードできます"

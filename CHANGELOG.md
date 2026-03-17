@@ -9,11 +9,22 @@
 - Paper 26.1 (Minecraft 26.1) is now supported.
   - Support for Paper 1.21.X, Folia 1.21.X (and later) has been dropped.
 
+## v0
+
+### v0.11.0
+
+#### Breaking Changes
+
+- We have removed the chat mode implementation.
+  - All chat messages sent after joining a channel will now appear in the channel chat.
+
+#### Features
+
+- We have added a notification that appears when you log in to the server while already in a channel.
+
 #### Feature Improvements
 
 - Optimization of internal logic.
-
-## v0
 
 ### v0.10.1
 
