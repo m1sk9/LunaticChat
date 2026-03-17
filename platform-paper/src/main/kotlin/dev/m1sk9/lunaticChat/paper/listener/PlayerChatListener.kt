@@ -1,7 +1,5 @@
 package dev.m1sk9.lunaticChat.paper.listener
 
-import dev.m1sk9.lunaticChat.engine.chat.ChatMode
-import dev.m1sk9.lunaticChat.paper.chat.ChatModeManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelMessageHandler
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
@@ -17,7 +15,6 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 
 class PlayerChatListener(
-    private val chatModeManager: ChatModeManager?,
     private val channelManager: ChannelManager?,
     private val channelMessageHandler: ChannelMessageHandler?,
     private val romajiConverter: RomanjiConverter?,
@@ -61,7 +58,7 @@ class PlayerChatListener(
 
         val originalMessage = plainTextSerializer.serialize(event.message())
 
-        // Handle chat mode switching with '!' prefix
+        // Handle '!' prefix for global chat override
         val hasPrefix = originalMessage.startsWith('!')
         val messageWithoutPrefix =
             if (hasPrefix) {
@@ -75,19 +72,6 @@ class PlayerChatListener(
             return
         }
 
-        val effectiveMode =
-            if (chatModeManager != null) {
-                if (hasPrefix) {
-                    val currentMode = chatModeManager.getChatMode(player.uniqueId)
-                    currentMode.toggle()
-                } else {
-                    chatModeManager.getChatMode(player.uniqueId)
-                }
-            } else {
-                // Default to GLOBAL when chatModeManager is not available
-                ChatMode.GLOBAL
-            }
-
         val displayMessage =
             if (settings.japaneseConversionEnabled && romajiConverter != null) {
                 convertWithRomaji(messageWithoutPrefix, romajiConverter)
@@ -95,33 +79,24 @@ class PlayerChatListener(
                 messageWithoutPrefix
             }
 
-        // Route message based on chat mode
-        when (effectiveMode) {
-            ChatMode.GLOBAL -> {
-                handleGlobalChat(event, displayMessage)
-            }
-            ChatMode.CHANNEL -> {
-                // Channel chat requires channelManager and channelMessageHandler
-                if (channelManager != null && channelMessageHandler != null) {
-                    val hasActiveChannel = channelManager.getPlayerChannel(player.uniqueId) != null
+        // Determine if the player has an active channel
+        val hasActiveChannel = channelManager?.getPlayerChannel(player.uniqueId) != null
 
-                    if (hasActiveChannel) {
-                        // Cancel event and clear all data to prevent other plugins from capturing it
-                        // Even MONITOR priority listeners with ignoreCancelled=false won't get useful data
-                        // Message will be delivered by ChannelMessageHandler instead
-                        // Logging is handled by our own ChannelMessageLogger
-                        event.isCancelled = true
-                        event.viewers().clear()
-                        event.message(Component.empty())
-                        channelMessageHandler.sendChannelMessage(player, displayMessage)
-                    } else {
-                        // Auto-fallback to global chat (with Velocity support if enabled)
-                        handleGlobalChat(event, displayMessage)
-                    }
+        when {
+            hasActiveChannel && !hasPrefix -> {
+                // Channel chat: player is in a channel and no '!' prefix
+                if (channelManager != null && channelMessageHandler != null) {
+                    event.isCancelled = true
+                    event.viewers().clear()
+                    event.message(Component.empty())
+                    channelMessageHandler.sendChannelMessage(player, displayMessage)
                 } else {
-                    // Channel chat not available, fallback to global chat (with Velocity support if enabled)
                     handleGlobalChat(event, displayMessage)
                 }
+            }
+            else -> {
+                // Global chat: player has no active channel, or used '!' prefix to override
+                handleGlobalChat(event, displayMessage)
             }
         }
     }

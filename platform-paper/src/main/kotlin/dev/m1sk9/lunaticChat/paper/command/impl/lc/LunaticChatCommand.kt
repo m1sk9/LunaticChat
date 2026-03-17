@@ -68,17 +68,6 @@ class LunaticChatCommand(
             }
         }
 
-        // Add chatmode command if chat mode manager is available
-        plugin.chatModeManager?.let { chatModeManager ->
-            command.then(
-                ChatModeCommand(
-                    plugin,
-                    chatModeManager,
-                    languageManager,
-                ).buildWithPermissionCheck(),
-            )
-        }
-
         return command
     }
 }

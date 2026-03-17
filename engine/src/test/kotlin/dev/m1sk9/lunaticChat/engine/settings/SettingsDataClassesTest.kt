@@ -1,7 +1,5 @@
 package dev.m1sk9.lunaticChat.engine.settings
 
-import dev.m1sk9.lunaticChat.engine.chat.ChatMode
-import dev.m1sk9.lunaticChat.engine.chat.ChatModeData
 import dev.m1sk9.lunaticChat.engine.converter.CacheData
 import kotlinx.serialization.json.Json
 import java.util.UUID
@@ -129,39 +127,5 @@ class SettingsDataClassesTest {
 
         assertEquals(original.version, deserialized.version)
         assertEquals(original.entries, deserialized.entries)
-    }
-
-    // --- ChatModeData ---
-
-    @Test
-    fun `ChatModeData default should have empty modes map`() {
-        val data = ChatModeData()
-        assertTrue(data.modes.isEmpty())
-    }
-
-    @Test
-    fun `ChatModeData serialization round-trip should preserve UUID-keyed map`() {
-        val original =
-            ChatModeData(
-                modes =
-                    mapOf(
-                        testUUID to ChatMode.CHANNEL,
-                        testUUID2 to ChatMode.GLOBAL,
-                    ),
-            )
-
-        val serialized = json.encodeToString(ChatModeData.serializer(), original)
-        val deserialized = json.decodeFromString(ChatModeData.serializer(), serialized)
-
-        assertEquals(original.modes.size, deserialized.modes.size)
-        assertEquals(ChatMode.CHANNEL, deserialized.modes[testUUID])
-        assertEquals(ChatMode.GLOBAL, deserialized.modes[testUUID2])
-    }
-
-    @Test
-    fun `ChatModeData serialized should contain UUID strings`() {
-        val data = ChatModeData(modes = mapOf(testUUID to ChatMode.GLOBAL))
-        val serialized = json.encodeToString(ChatModeData.serializer(), data)
-        assertTrue(serialized.contains(testUUID.toString()))
     }
 }

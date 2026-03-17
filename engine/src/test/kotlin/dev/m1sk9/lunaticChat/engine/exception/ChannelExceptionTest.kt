@@ -216,23 +216,6 @@ class ChannelExceptionTest {
         assertEquals(cause, ex.cause)
     }
 
-    // --- ChatModeStorageException ---
-
-    @Test
-    fun `ChatModeStorageException should preserve message`() {
-        val ex = ChatModeStorageException("chatmode error")
-        assertEquals("chatmode error", ex.message)
-        assertNull(ex.cause)
-    }
-
-    @Test
-    fun `ChatModeStorageException should preserve cause`() {
-        val cause = RuntimeException("io error")
-        val ex = ChatModeStorageException("chatmode error", cause)
-        assertEquals("chatmode error", ex.message)
-        assertEquals(cause, ex.cause)
-    }
-
     // --- RequirePermissionException ---
 
     @Test
@@ -273,7 +256,6 @@ class ChannelExceptionTest {
         assertIs<Exception>(ChannelRuntimeException("test"))
         assertIs<Exception>(ChannelStorageLoadException("test"))
         assertIs<Exception>(ChannelStorageSaveException("test"))
-        assertIs<Exception>(ChatModeStorageException("test"))
         assertIs<Exception>(RequirePermissionException(listOf(LunaticChatPermissionNode.Lc)))
     }
 }

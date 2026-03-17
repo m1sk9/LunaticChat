@@ -1,6 +1,5 @@
 package dev.m1sk9.lunaticChat.paper
 
-import dev.m1sk9.lunaticChat.paper.chat.ChatModeManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMembershipManager
 import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelMessageHandler
@@ -24,7 +23,6 @@ import dev.m1sk9.lunaticChat.paper.velocity.VelocityConnectionManager
  * @property romajiConverter Optional (only when Japanese conversion feature is enabled)
  * @property channelManager Optional (only when channel chat feature is enabled)
  * @property channelMembershipManager Optional (only when channel chat feature is enabled)
- * @property chatModeManager Optional (only when channel chat feature is enabled)
  * @property channelMessageHandler Optional (only when channel chat feature is enabled)
  * @property channelNotificationHandler Optional (only when channel chat feature is enabled)
  * @property velocityConnectionManager Optional (only when Velocity integration is enabled)
@@ -37,7 +35,6 @@ data class ServiceContainer(
     val romajiConverter: RomanjiConverter? = null,
     val channelManager: ChannelManager? = null,
     val channelMembershipManager: ChannelMembershipManager? = null,
-    val chatModeManager: ChatModeManager? = null,
     val channelMessageHandler: ChannelMessageHandler? = null,
     val channelNotificationHandler: ChannelNotificationHandler? = null,
     val velocityConnectionManager: VelocityConnectionManager? = null,

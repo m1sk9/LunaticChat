@@ -195,16 +195,6 @@ channel:
     receivedOwnership: "You are now the owner of {channel} (previously owned by {previousOwner})"
     error: "Failed to transfer ownership"
 
-chatmode:
-  current: "Current chat mode"
-  mode:
-    global: "GLOBAL"
-    channel: "CHANNEL"
-  toggle:
-    success: "Chat mode switched to"
-  notification:
-    login: "Current chat mode: {mode}"
-
 general:
   playerOnlyCommand: "This command can only be executed by players."
   newUpdateAvailable: "The new version of LunaticChat is now available! You can download it from GitHub or Modrinth."
