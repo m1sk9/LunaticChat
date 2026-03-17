@@ -12,6 +12,7 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
 class PlayerPresenceListener(
@@ -34,7 +35,7 @@ class PlayerPresenceListener(
             )
         }
 
-        // Send channel notification if in a channel
+        // Send channel notification if in a channel (delayed to avoid being buried by other plugins' join messages)
         channelManager?.let { manager ->
             val context = manager.getPlayerChannelContext(player.uniqueId)
             context?.let {
@@ -48,7 +49,11 @@ class PlayerPresenceListener(
                         ).clickEvent(
                             ClickEvent.runCommand("/lc channel status"),
                         )
-                player.sendMessage(notification)
+                lunaticChat.server.asyncScheduler.runDelayed(lunaticChat, { _ ->
+                    if (player.isOnline) {
+                        player.sendMessage(notification)
+                    }
+                }, 5, TimeUnit.SECONDS)
             }
         }
     }

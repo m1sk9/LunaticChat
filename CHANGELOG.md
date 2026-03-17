@@ -25,7 +25,8 @@
 #### Feature Improvements
 
 - Optimization of internal logic.
-- We have improved the notification message that appears when you login to the server while in a channel.
+- We have improved the notification message that appears when you log in to the server while in a channel.
+- Added a delay to prevent other plugins from interfering with login notifications.
 
 ### v0.10.1
 
