@@ -447,6 +447,37 @@ class ChannelManager(
     }
 
     /**
+     * Restores the active channel of a player based on their channel membership.
+     * If the player is a member of any channel, the first one found is set as active.
+     *
+     * @param playerId The UUID of the player.
+     * @return The restored ChannelContext, or null if the player is not a member of any channel.
+     */
+    fun restorePlayerChannel(playerId: UUID): ChannelContext? {
+        // Already has an active channel
+        getPlayerChannelContext(playerId)?.let { return it }
+
+        // Find a channel where this player is a member
+        val channelId =
+            membersCache.entries
+                .firstOrNull { (_, members) ->
+                    members.any { it.playerId == playerId }
+                }?.key ?: return null
+
+        val channel = channelsCache[channelId] ?: return null
+        val members = membersCache[channelId]?.toList() ?: return null
+
+        activeChannels[playerId] = channelId
+        saveToStorage()
+
+        return ChannelContext(
+            channelId = channelId,
+            channel = channel,
+            members = members,
+        )
+    }
+
+    /**
      * Sets the active channel of a player.
      *
      * @param playerId The UUID of the player.

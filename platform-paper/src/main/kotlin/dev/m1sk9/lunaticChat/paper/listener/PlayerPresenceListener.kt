@@ -28,16 +28,18 @@ class PlayerPresenceListener(
 
         // Send update notification if available
         if (updateCheckerFlag.get() && player.hasAnyPermission { +LunaticChatPermissionNode.NoticeUpdate }) {
-            player.sendMessage(
-                MessageFormatter
-                    .format(languageManager.getMessage("general.newUpdateAvailable"))
-                    .clickEvent(ClickEvent.openUrl("https://github.com/m1sk9/LunaticChat/releases/latest")),
-            )
+            lunaticChat.server.asyncScheduler.runDelayed(lunaticChat, { _ ->
+                player.sendMessage(
+                    MessageFormatter
+                        .format(languageManager.getMessage("general.newUpdateAvailable"))
+                        .clickEvent(ClickEvent.openUrl("https://github.com/m1sk9/LunaticChat/releases/latest")),
+                )
+            }, 3, TimeUnit.SECONDS)
         }
 
-        // Send channel notification if in a channel (delayed to avoid being buried by other plugins' join messages)
+        // Restore active channel from membership and notify (delayed to avoid being buried by other plugins' join messages)
         channelManager?.let { manager ->
-            val context = manager.getPlayerChannelContext(player.uniqueId)
+            val context = manager.restorePlayerChannel(player.uniqueId)
             context?.let {
                 val notification =
                     MessageFormatter
@@ -53,7 +55,7 @@ class PlayerPresenceListener(
                     if (player.isOnline) {
                         player.sendMessage(notification)
                     }
-                }, 5, TimeUnit.SECONDS)
+                }, 3, TimeUnit.SECONDS)
             }
         }
     }
