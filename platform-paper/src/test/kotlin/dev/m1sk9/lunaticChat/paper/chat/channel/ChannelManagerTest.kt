@@ -503,6 +503,44 @@ class ChannelManagerTest {
     }
 
     @Test
+    fun `getPlayerChannelContext should clear stale active channel when channel is deleted`() {
+        val (manager, storage, _) = createManager()
+        manager.initialize()
+
+        val ownerId = createTestUUID(1)
+        manager.createChannel(createTestChannel(id = "stale-ch", name = "Stale", ownerId = ownerId))
+        assertNotNull(manager.getPlayerChannelContext(ownerId))
+
+        // Delete the channel, which clears activeChannels for affected players
+        manager.deleteChannel("stale-ch", ownerId)
+
+        // Active channel should be cleared
+        assertNull(manager.getPlayerChannel(ownerId))
+        assertNull(manager.getPlayerChannelContext(ownerId))
+    }
+
+    @Test
+    fun `getPlayerChannelContext should clear stale active channel pointing to nonexistent channel`() {
+        // Simulate a stale activeChannels entry pointing to a channel that no longer exists
+        val playerId = createTestUUID(1)
+        val data =
+            ChannelData(
+                activeChannels = mapOf(playerId.toString() to "deleted-ch"),
+            )
+
+        val (manager, storage, _) = createManager(initialData = data)
+        manager.initialize()
+
+        // activeChannels has an entry but the channel doesn't exist
+        assertEquals("deleted-ch", manager.getPlayerChannel(playerId))
+
+        // getPlayerChannelContext should detect the stale entry and clean it up
+        assertNull(manager.getPlayerChannelContext(playerId))
+        assertNull(manager.getPlayerChannel(playerId))
+        verify { storage.queueAsyncSave(any()) }
+    }
+
+    @Test
     fun `restorePlayerChannel should restore from membership when no active channel`() {
         val (manager, _, _) = createManager()
         manager.initialize()

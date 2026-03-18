@@ -436,8 +436,14 @@ class ChannelManager(
      */
     fun getPlayerChannelContext(playerId: UUID): ChannelContext? {
         val channelId = activeChannels[playerId] ?: return null
-        val channel = channelsCache[channelId] ?: return null
-        val members = membersCache[channelId]?.toList() ?: return null
+        val channel = channelsCache[channelId]
+        val members = membersCache[channelId]?.toList()
+
+        if (channel == null || members == null) {
+            activeChannels.remove(playerId)
+            saveToStorage()
+            return null
+        }
 
         return ChannelContext(
             channelId = channelId,
