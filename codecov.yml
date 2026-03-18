@@ -13,4 +13,6 @@ comment:
   require_changes: false
 ignore:
   - "dokka/**"
+  # Listener classes are tightly coupled to the Paper/Minecraft runtime and exercised via
+  # end-to-end/server tests, so we exclude them from unit-test coverage metrics.
   - "platform-paper/src/main/kotlin/dev/m1sk9/lunaticChat/paper/listener/**"
