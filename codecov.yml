@@ -13,3 +13,4 @@ comment:
   require_changes: false
 ignore:
   - "dokka/**"
+  - "platform-paper/src/main/kotlin/dev/m1sk9/lunaticChat/paper/listener/**"

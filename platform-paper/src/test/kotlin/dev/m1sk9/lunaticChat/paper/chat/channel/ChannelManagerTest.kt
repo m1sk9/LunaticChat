@@ -547,6 +547,37 @@ class ChannelManagerTest {
     }
 
     @Test
+    fun `restorePlayerChannel should select most recently joined channel`() {
+        val memberId = createTestUUID(3)
+        val oldMember =
+            ChannelMember(channelId = "old-ch", playerId = memberId, role = ChannelRole.MEMBER, joinedAt = 1000L)
+        val newMember =
+            ChannelMember(channelId = "new-ch", playerId = memberId, role = ChannelRole.MEMBER, joinedAt = 2000L)
+        val owner1 = createTestUUID(1)
+        val owner2 = createTestUUID(2)
+        val oldChannel = createTestChannel(id = "old-ch", name = "Old Channel", ownerId = owner1)
+        val newChannel = createTestChannel(id = "new-ch", name = "New Channel", ownerId = owner2)
+
+        val data =
+            ChannelData(
+                channels = mapOf("old-ch" to oldChannel, "new-ch" to newChannel),
+                members =
+                    mapOf(
+                        "old-ch" to listOf(oldMember),
+                        "new-ch" to listOf(newMember),
+                    ),
+            )
+
+        val (manager, _, _) = createManager(initialData = data)
+        manager.initialize()
+
+        // Should restore to the most recently joined channel
+        val context = manager.restorePlayerChannel(memberId)
+        assertNotNull(context)
+        assertEquals("new-ch", context.channelId)
+    }
+
+    @Test
     fun `saveToDisk should call storage saveToDisk`() {
         val (manager, storage, _) = createManager()
         manager.initialize()

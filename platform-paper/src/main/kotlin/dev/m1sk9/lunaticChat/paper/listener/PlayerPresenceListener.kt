@@ -29,11 +29,13 @@ class PlayerPresenceListener(
         // Send update notification if available
         if (updateCheckerFlag.get() && player.hasAnyPermission { +LunaticChatPermissionNode.NoticeUpdate }) {
             lunaticChat.server.asyncScheduler.runDelayed(lunaticChat, { _ ->
-                player.sendMessage(
-                    MessageFormatter
-                        .format(languageManager.getMessage("general.newUpdateAvailable"))
-                        .clickEvent(ClickEvent.openUrl("https://github.com/m1sk9/LunaticChat/releases/latest")),
-                )
+                if (player.isOnline) {
+                    player.sendMessage(
+                        MessageFormatter
+                            .format(languageManager.getMessage("general.newUpdateAvailable"))
+                            .clickEvent(ClickEvent.openUrl("https://github.com/m1sk9/LunaticChat/releases/latest")),
+                    )
+                }
             }, 3, TimeUnit.SECONDS)
         }
 
