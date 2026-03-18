@@ -503,6 +503,50 @@ class ChannelManagerTest {
     }
 
     @Test
+    fun `restorePlayerChannel should restore from membership when no active channel`() {
+        val (manager, _, _) = createManager()
+        manager.initialize()
+
+        val ownerId = createTestUUID(1)
+        val memberId = createTestUUID(2)
+        manager.createChannel(createTestChannel(id = "restore-ch", name = "Restore Channel", ownerId = ownerId))
+        manager.addMember("restore-ch", memberId, ChannelRole.MEMBER)
+
+        // Clear active channel (simulates quit)
+        manager.setPlayerChannel(memberId, null)
+        assertNull(manager.getPlayerChannel(memberId))
+
+        // Restore should find membership and set active channel
+        val context = manager.restorePlayerChannel(memberId)
+        assertNotNull(context)
+        assertEquals("restore-ch", context.channelId)
+        assertEquals("Restore Channel", context.channel.name)
+        assertEquals("restore-ch", manager.getPlayerChannel(memberId))
+    }
+
+    @Test
+    fun `restorePlayerChannel should return existing context if already active`() {
+        val (manager, _, _) = createManager()
+        manager.initialize()
+
+        val ownerId = createTestUUID(1)
+        manager.createChannel(createTestChannel(id = "active-ch", name = "Active Channel", ownerId = ownerId))
+
+        // Owner already has active channel from createChannel
+        val context = manager.restorePlayerChannel(ownerId)
+        assertNotNull(context)
+        assertEquals("active-ch", context.channelId)
+    }
+
+    @Test
+    fun `restorePlayerChannel should return null for non-member`() {
+        val (manager, _, _) = createManager()
+        manager.initialize()
+
+        assertNull(manager.restorePlayerChannel(createTestUUID(99)))
+    }
+
+    @Test
     fun `saveToDisk should call storage saveToDisk`() {
         val (manager, storage, _) = createManager()
         manager.initialize()
