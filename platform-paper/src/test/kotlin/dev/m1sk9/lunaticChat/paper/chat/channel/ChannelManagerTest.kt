@@ -503,6 +503,119 @@ class ChannelManagerTest {
     }
 
     @Test
+    fun `getPlayerChannelContext should clear stale active channel when channel is deleted`() {
+        val (manager, storage, _) = createManager()
+        manager.initialize()
+
+        val ownerId = createTestUUID(1)
+        manager.createChannel(createTestChannel(id = "stale-ch", name = "Stale", ownerId = ownerId))
+        assertNotNull(manager.getPlayerChannelContext(ownerId))
+
+        // Delete the channel, which clears activeChannels for affected players
+        manager.deleteChannel("stale-ch", ownerId)
+
+        // Active channel should be cleared
+        assertNull(manager.getPlayerChannel(ownerId))
+        assertNull(manager.getPlayerChannelContext(ownerId))
+    }
+
+    @Test
+    fun `getPlayerChannelContext should clear stale active channel pointing to nonexistent channel`() {
+        // Simulate a stale activeChannels entry pointing to a channel that no longer exists
+        val playerId = createTestUUID(1)
+        val data =
+            ChannelData(
+                activeChannels = mapOf(playerId.toString() to "deleted-ch"),
+            )
+
+        val (manager, storage, _) = createManager(initialData = data)
+        manager.initialize()
+
+        // activeChannels has an entry but the channel doesn't exist
+        assertEquals("deleted-ch", manager.getPlayerChannel(playerId))
+
+        // getPlayerChannelContext should detect the stale entry and clean it up
+        assertNull(manager.getPlayerChannelContext(playerId))
+        assertNull(manager.getPlayerChannel(playerId))
+        verify { storage.queueAsyncSave(any()) }
+    }
+
+    @Test
+    fun `restorePlayerChannel should restore from membership when no active channel`() {
+        val (manager, _, _) = createManager()
+        manager.initialize()
+
+        val ownerId = createTestUUID(1)
+        val memberId = createTestUUID(2)
+        manager.createChannel(createTestChannel(id = "restore-ch", name = "Restore Channel", ownerId = ownerId))
+        manager.addMember("restore-ch", memberId, ChannelRole.MEMBER)
+
+        // Clear active channel (simulates quit)
+        manager.setPlayerChannel(memberId, null)
+        assertNull(manager.getPlayerChannel(memberId))
+
+        // Restore should find membership and set active channel
+        val context = manager.restorePlayerChannel(memberId)
+        assertNotNull(context)
+        assertEquals("restore-ch", context.channelId)
+        assertEquals("Restore Channel", context.channel.name)
+        assertEquals("restore-ch", manager.getPlayerChannel(memberId))
+    }
+
+    @Test
+    fun `restorePlayerChannel should return existing context if already active`() {
+        val (manager, _, _) = createManager()
+        manager.initialize()
+
+        val ownerId = createTestUUID(1)
+        manager.createChannel(createTestChannel(id = "active-ch", name = "Active Channel", ownerId = ownerId))
+
+        // Owner already has active channel from createChannel
+        val context = manager.restorePlayerChannel(ownerId)
+        assertNotNull(context)
+        assertEquals("active-ch", context.channelId)
+    }
+
+    @Test
+    fun `restorePlayerChannel should return null for non-member`() {
+        val (manager, _, _) = createManager()
+        manager.initialize()
+
+        assertNull(manager.restorePlayerChannel(createTestUUID(99)))
+    }
+
+    @Test
+    fun `restorePlayerChannel should select most recently joined channel`() {
+        val memberId = createTestUUID(3)
+        val oldMember =
+            ChannelMember(channelId = "old-ch", playerId = memberId, role = ChannelRole.MEMBER, joinedAt = 1000L)
+        val newMember =
+            ChannelMember(channelId = "new-ch", playerId = memberId, role = ChannelRole.MEMBER, joinedAt = 2000L)
+        val owner1 = createTestUUID(1)
+        val owner2 = createTestUUID(2)
+        val oldChannel = createTestChannel(id = "old-ch", name = "Old Channel", ownerId = owner1)
+        val newChannel = createTestChannel(id = "new-ch", name = "New Channel", ownerId = owner2)
+
+        val data =
+            ChannelData(
+                channels = mapOf("old-ch" to oldChannel, "new-ch" to newChannel),
+                members =
+                    mapOf(
+                        "old-ch" to listOf(oldMember),
+                        "new-ch" to listOf(newMember),
+                    ),
+            )
+
+        val (manager, _, _) = createManager(initialData = data)
+        manager.initialize()
+
+        // Should restore to the most recently joined channel
+        val context = manager.restorePlayerChannel(memberId)
+        assertNotNull(context)
+        assertEquals("new-ch", context.channelId)
+    }
+
+    @Test
     fun `saveToDisk should call storage saveToDisk`() {
         val (manager, storage, _) = createManager()
         manager.initialize()

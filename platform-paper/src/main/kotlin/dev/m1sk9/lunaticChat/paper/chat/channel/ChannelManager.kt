@@ -436,8 +436,48 @@ class ChannelManager(
      */
     fun getPlayerChannelContext(playerId: UUID): ChannelContext? {
         val channelId = activeChannels[playerId] ?: return null
+        val channel = channelsCache[channelId]
+        val members = membersCache[channelId]?.toList()
+
+        if (channel == null || members == null) {
+            activeChannels.remove(playerId)
+            saveToStorage()
+            return null
+        }
+
+        return ChannelContext(
+            channelId = channelId,
+            channel = channel,
+            members = members,
+        )
+    }
+
+    /**
+     * Restores the active channel of a player based on their channel membership.
+     * If the player is a member of multiple channels, the most recently joined one is selected.
+     *
+     * @param playerId The UUID of the player.
+     * @return The restored ChannelContext, or null if the player is not a member of any channel.
+     */
+    fun restorePlayerChannel(playerId: UUID): ChannelContext? {
+        // Already has an active channel
+        getPlayerChannelContext(playerId)?.let { return it }
+
+        // Find the most recently joined channel for this player
+        val channelId =
+            membersCache.entries
+                .mapNotNull { (channelId, members) ->
+                    members.find { it.playerId == playerId }?.let { member ->
+                        channelId to member.joinedAt
+                    }
+                }.maxByOrNull { it.second }
+                ?.first ?: return null
+
         val channel = channelsCache[channelId] ?: return null
         val members = membersCache[channelId]?.toList() ?: return null
+
+        activeChannels[playerId] = channelId
+        saveToStorage()
 
         return ChannelContext(
             channelId = channelId,

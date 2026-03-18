@@ -12,6 +12,7 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
 class PlayerPresenceListener(
@@ -27,25 +28,36 @@ class PlayerPresenceListener(
 
         // Send update notification if available
         if (updateCheckerFlag.get() && player.hasAnyPermission { +LunaticChatPermissionNode.NoticeUpdate }) {
-            player.sendMessage(
-                MessageFormatter
-                    .format(languageManager.getMessage("general.newUpdateAvailable"))
-                    .clickEvent(ClickEvent.openUrl("https://github.com/m1sk9/LunaticChat/releases/latest")),
-            )
+            lunaticChat.server.asyncScheduler.runDelayed(lunaticChat, { _ ->
+                if (player.isOnline) {
+                    player.sendMessage(
+                        MessageFormatter
+                            .format(languageManager.getMessage("general.newUpdateAvailable"))
+                            .clickEvent(ClickEvent.openUrl("https://github.com/m1sk9/LunaticChat/releases/latest")),
+                    )
+                }
+            }, 3, TimeUnit.SECONDS)
         }
 
-        // Send channel notification if in a channel
+        // Restore active channel from membership and notify (delayed to avoid being buried by other plugins' join messages)
         channelManager?.let { manager ->
-            val context = manager.getPlayerChannelContext(player.uniqueId)
+            val context = manager.restorePlayerChannel(player.uniqueId)
             context?.let {
                 val notification =
-                    MessageFormatter.format(
-                        languageManager.getMessage(
-                            "channel.notification.login",
-                            mapOf("channelName" to it.channel.name),
-                        ),
-                    )
-                player.sendMessage(notification)
+                    MessageFormatter
+                        .format(
+                            languageManager.getMessage(
+                                "channel.notification.login",
+                                mapOf("channelName" to it.channel.name),
+                            ),
+                        ).clickEvent(
+                            ClickEvent.runCommand("/lc channel status"),
+                        )
+                lunaticChat.server.asyncScheduler.runDelayed(lunaticChat, { _ ->
+                    if (player.isOnline) {
+                        player.sendMessage(notification)
+                    }
+                }, 3, TimeUnit.SECONDS)
             }
         }
     }
