@@ -56,9 +56,6 @@ status:
     ok: "OK"
     degraded: "Degraded"
     degradedHover: "Velocity integration is enabled but the connection failed. Use /lcv status for details."
-  nightlyWarning: "WARNING: This is a nightly build and may be unstable. Do not use in production."
-  nightlyHover: "Nightly builds are automatically generated from the latest code and have not been tested for stability."
-  nightlyReportIssue: "If you encounter any issues, please report them on GitHub Issues."
   releaseChannel: "Release Channel"
   channel:
     stable: "Stable"

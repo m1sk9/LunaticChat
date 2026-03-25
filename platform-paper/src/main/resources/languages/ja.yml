@@ -56,9 +56,6 @@ status:
     ok: "正常"
     degraded: "問題あり"
     degradedHover: "Velocity 連携が有効ですが接続に失敗しました。/lcv status を確認してください。"
-  nightlyWarning: "警告: これはナイトリービルドです。不安定な可能性があるため、本番環境では使用しないでください。"
-  nightlyHover: "ナイトリービルドは最新のコードから自動生成されており、安定性のテストは行われていません。"
-  nightlyReportIssue: "問題を発見した場合は、GitHub Issues で報告してください。"
   releaseChannel: "リリースチャンネル"
   channel:
     stable: "安定版"

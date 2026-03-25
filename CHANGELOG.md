@@ -6,8 +6,8 @@
 
 #### Announcement: Support for Nightly Releases
 
-- We have started distributing Nightly releases 
-  - Whenever updates are made to `main` (the default branch), we will distribute the current build via GitHub Releases 
+- We have started distributing Nightly releases
+  - Whenever updates are made to `main` (the default branch), we will distribute the current build via GitHub Releases
   - Since the Nightly version is a work-in-progress, it may be unstable or contain bugs. If you encounter any issues, please report them on GitHub Issues
 
 > [!WARNING]
@@ -17,7 +17,7 @@
 #### New Features
 
 - Paper 26.1 (Minecraft 26.1) is now supported.
-  - Support for Paper 1.21.X, Folia 1.21.X (and later) has been dropped. 
+  - Support for Paper 1.21.X, Folia 1.21.X (and later) has been dropped.
 - We have added warnings when running `/lc status` or `/lcv status`, or when logging in, if you are using the Nightly version.
 
 ### v0.11.0
