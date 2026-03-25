@@ -45,13 +45,25 @@ class StatusCommandTest {
         val mockPlayer: org.bukkit.entity.Player,
     )
 
+    private fun mockBuildInfoStable() {
+        every { BuildInfo.versionWithCommit() } returns "0.10.0-test"
+        every { BuildInfo.isNightly } returns false
+        every { BuildInfo.channel } returns "stable"
+    }
+
+    private fun mockBuildInfoNightly() {
+        every { BuildInfo.versionWithCommit() } returns "0.10.0-nightly.1-test"
+        every { BuildInfo.isNightly } returns true
+        every { BuildInfo.channel } returns "nightly"
+    }
+
     @Test
     fun `execute should return Success`() {
         val deps = createDependencies()
 
         mockkObject(BuildInfo)
         try {
-            every { BuildInfo.versionWithCommit() } returns "0.10.0-test"
+            mockBuildInfoStable()
 
             val result = deps.command.execute(deps.ctx)
 
@@ -67,7 +79,7 @@ class StatusCommandTest {
 
         mockkObject(BuildInfo)
         try {
-            every { BuildInfo.versionWithCommit() } returns "0.10.0-test"
+            mockBuildInfoStable()
 
             deps.command.execute(deps.ctx)
 
@@ -96,7 +108,7 @@ class StatusCommandTest {
 
         mockkObject(BuildInfo)
         try {
-            every { BuildInfo.versionWithCommit() } returns "0.10.0-test"
+            mockBuildInfoStable()
 
             val result = deps.command.execute(deps.ctx)
 
@@ -112,12 +124,31 @@ class StatusCommandTest {
 
         mockkObject(BuildInfo)
         try {
-            every { BuildInfo.versionWithCommit() } returns "0.10.0-test"
+            mockBuildInfoStable()
 
             deps.command.execute(deps.ctx)
 
             // Verify multiple sendMessage calls for version, health, features, config, and links
             verify(atLeast = 5) { deps.mockPlayer.sendMessage(any<Component>()) }
+        } finally {
+            unmockkObject(BuildInfo)
+        }
+    }
+
+    @Test
+    fun `execute with nightly build should display nightly warning and channel`() {
+        val deps = createDependencies()
+
+        mockkObject(BuildInfo)
+        try {
+            mockBuildInfoNightly()
+
+            val result = deps.command.execute(deps.ctx)
+
+            assertIs<CommandResult.Success>(result)
+            // Nightly warning + version + health + features header + 4 features + config header +
+            // debug + checkForUpdates + releaseChannel + language + 3 links = at least 15 messages
+            verify(atLeast = 15) { deps.mockPlayer.sendMessage(any<Component>()) }
         } finally {
             unmockkObject(BuildInfo)
         }

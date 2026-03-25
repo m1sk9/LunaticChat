@@ -1,4 +1,4 @@
-package dev.m1sk9.lunaticChat.paper
+package dev.m1sk9.lunaticChat.velocity
 
 import java.util.Properties
 

@@ -4,6 +4,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.engine.protocol.ProtocolVersion
+import dev.m1sk9.lunaticChat.paper.BuildInfo
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.command.annotation.Command
 import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
@@ -138,6 +139,16 @@ class VelocityStatusCommand(
                     languageManager.getMessage("velocity.status.header"),
                 ),
             )
+
+            // Nightly warning
+            if (BuildInfo.isNightly) {
+                sendMessage(
+                    MessageFormatter
+                        .format(languageManager.getMessage("general.nightlyWarning"))
+                        .color(NamedTextColor.YELLOW),
+                )
+            }
+
             // Connection status details
             connectionStatus.forEach { line ->
                 line?.let { sendMessage(it) }

@@ -101,6 +101,16 @@ class StatusCommand(
 
         sender.apply {
             sendMessage(versionLine)
+
+            // Nightly warning
+            if (BuildInfo.isNightly) {
+                sendMessage(
+                    MessageFormatter
+                        .format(languageManager.getMessage("general.nightlyWarning"))
+                        .color(NamedTextColor.YELLOW),
+                )
+            }
+
             sendMessage(healthLine)
 
             // --- Features ---
@@ -121,6 +131,14 @@ class StatusCommand(
             )
             sendMessage(getToggleLine(languageManager.getMessage("status.config.debug"), configuration.debug))
             sendMessage(getToggleLine(languageManager.getMessage("status.config.checkForUpdates"), configuration.checkForUpdates))
+            val channelLabel = languageManager.getMessage("status.channel.${BuildInfo.channel}")
+            val channelColor = if (BuildInfo.isNightly) NamedTextColor.YELLOW else NamedTextColor.GREEN
+            sendMessage(
+                Component
+                    .text("    • ", NamedTextColor.GRAY)
+                    .append(Component.text("${languageManager.getMessage("status.releaseChannel")}: ", NamedTextColor.GRAY))
+                    .append(Component.text(channelLabel, channelColor)),
+            )
             sendMessage(
                 Component
                     .text("    • ", NamedTextColor.GRAY)

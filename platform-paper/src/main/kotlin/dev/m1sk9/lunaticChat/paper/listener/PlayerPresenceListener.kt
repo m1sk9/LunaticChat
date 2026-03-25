@@ -1,6 +1,7 @@
 package dev.m1sk9.lunaticChat.paper.listener
 
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
+import dev.m1sk9.lunaticChat.paper.BuildInfo
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.common.hasAnyPermission
@@ -8,6 +9,7 @@ import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
 import net.kyori.adventure.text.event.ClickEvent
+import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
@@ -37,6 +39,25 @@ class PlayerPresenceListener(
                     )
                 }
             }, 3, TimeUnit.SECONDS)
+        }
+
+        // Nightly build warning
+        if (BuildInfo.isNightly) {
+            lunaticChat.server.asyncScheduler.runDelayed(lunaticChat, { _ ->
+                if (player.isOnline) {
+                    player.sendMessage(
+                        MessageFormatter
+                            .format(languageManager.getMessage("general.nightlyWarning"))
+                            .color(NamedTextColor.YELLOW),
+                    )
+                    player.sendMessage(
+                        MessageFormatter
+                            .format(languageManager.getMessage("general.nightlyReportIssue"))
+                            .clickEvent(ClickEvent.openUrl("https://github.com/m1sk9/LunaticChat/issues"))
+                            .color(NamedTextColor.YELLOW),
+                    )
+                }
+            }, 6, TimeUnit.SECONDS)
         }
 
         // Restore active channel from membership and notify (delayed to avoid being buried by other plugins' join messages)

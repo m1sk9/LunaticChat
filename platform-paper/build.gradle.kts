@@ -51,7 +51,13 @@ tasks {
                 .get()
                 .trim()
 
-        val props = mapOf("version" to project.version, "gitCommitHash" to gitCommitHash)
+        val isNightly = providers.gradleProperty("isNightly").orNull?.toBoolean() ?: false
+        val props =
+            mapOf(
+                "version" to project.version,
+                "gitCommitHash" to gitCommitHash,
+                "channel" to if (isNightly) "nightly" else "stable",
+            )
         inputs.properties(props)
         filteringCharset = "UTF-8"
         filesMatching("paper-plugin.yml") {
