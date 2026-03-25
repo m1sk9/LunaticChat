@@ -85,7 +85,7 @@ class PlayerChatListener(
         when {
             hasActiveChannel && !hasPrefix -> {
                 // Channel chat: player is in a channel and no '!' prefix
-                if (channelManager != null && channelMessageHandler != null) {
+                if (channelMessageHandler != null) {
                     event.isCancelled = true
                     event.viewers().clear()
                     event.message(Component.empty())

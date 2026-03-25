@@ -36,10 +36,28 @@ tasks {
     }
 
     processResources {
-        val props = mapOf("version" to project.version)
+        val gitCommitHash =
+            providers
+                .exec {
+                    commandLine("git", "rev-parse", "--short", "HEAD")
+                }.standardOutput
+                .asText
+                .get()
+                .trim()
+
+        val isNightly = providers.gradleProperty("isNightly").orNull?.toBoolean() ?: false
+        val props =
+            mapOf(
+                "version" to project.version,
+                "gitCommitHash" to gitCommitHash,
+                "channel" to if (isNightly) "nightly" else "stable",
+            )
         inputs.properties(props)
         filteringCharset = "UTF-8"
         filesMatching("velocity-plugin.json") {
+            expand(props)
+        }
+        filesMatching("build-info.properties") {
             expand(props)
         }
     }
