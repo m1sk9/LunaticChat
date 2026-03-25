@@ -148,7 +148,7 @@ class StatusCommandTest {
             assertIs<CommandResult.Success>(result)
             // Nightly warning + version + health + features header + 4 features + config header +
             // debug + checkForUpdates + releaseChannel + language + 3 links = at least 15 messages
-            verify(atLeast = 5) { deps.mockPlayer.sendMessage(any<Component>()) }
+            verify(atLeast = 15) { deps.mockPlayer.sendMessage(any<Component>()) }
         } finally {
             unmockkObject(BuildInfo)
         }
