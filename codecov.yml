@@ -16,3 +16,8 @@ ignore:
   # Listener classes are tightly coupled to the Paper/Minecraft runtime and exercised via
   # end-to-end/server tests, so we exclude them from unit-test coverage metrics.
   - "platform-paper/src/main/kotlin/dev/m1sk9/lunaticChat/paper/listener/**"
+  # BuildInfo loads build-time resources at class init and is verified via integration tests.
+  - "platform-paper/src/main/kotlin/dev/m1sk9/lunaticChat/paper/BuildInfo.kt"
+  # The Velocity platform has no unit-test infrastructure; it is exercised via end-to-end
+  # multi-server tests (docker compose).
+  - "platform-velocity/src/main/kotlin/**"

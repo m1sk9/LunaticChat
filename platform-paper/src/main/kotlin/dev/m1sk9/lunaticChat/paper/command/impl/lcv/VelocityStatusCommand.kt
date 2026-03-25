@@ -16,7 +16,6 @@ import dev.m1sk9.lunaticChat.paper.velocity.VelocityConnectionManager
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.event.HoverEvent
 import net.kyori.adventure.text.format.NamedTextColor
 
@@ -143,8 +142,11 @@ class VelocityStatusCommand(
 
             // Nightly warning
             if (BuildInfo.isNightly) {
-                sendMessage(MessageFormatter.format(languageManager.getMessage("general.nightlyWarning"))
-                    .color(NamedTextColor.YELLOW))
+                sendMessage(
+                    MessageFormatter
+                        .format(languageManager.getMessage("general.nightlyWarning"))
+                        .color(NamedTextColor.YELLOW),
+                )
             }
 
             // Connection status details

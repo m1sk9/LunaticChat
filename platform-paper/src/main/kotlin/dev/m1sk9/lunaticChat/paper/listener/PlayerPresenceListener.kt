@@ -8,7 +8,6 @@ import dev.m1sk9.lunaticChat.paper.common.hasAnyPermission
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
-import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.event.EventHandler
@@ -46,12 +45,16 @@ class PlayerPresenceListener(
         if (BuildInfo.isNightly) {
             lunaticChat.server.asyncScheduler.runDelayed(lunaticChat, { _ ->
                 if (player.isOnline) {
-                    player.sendMessage(MessageFormatter.format(languageManager.getMessage("general.nightlyWarning"))
-                        .color(NamedTextColor.YELLOW))
                     player.sendMessage(
-                        MessageFormatter.format(languageManager.getMessage("general.nightlyReportIssue"))
+                        MessageFormatter
+                            .format(languageManager.getMessage("general.nightlyWarning"))
+                            .color(NamedTextColor.YELLOW),
+                    )
+                    player.sendMessage(
+                        MessageFormatter
+                            .format(languageManager.getMessage("general.nightlyReportIssue"))
                             .clickEvent(ClickEvent.openUrl("https://github.com/m1sk9/LunaticChat/issues"))
-                            .color(NamedTextColor.YELLOW)
+                            .color(NamedTextColor.YELLOW),
                     )
                 }
             }, 6, TimeUnit.SECONDS)

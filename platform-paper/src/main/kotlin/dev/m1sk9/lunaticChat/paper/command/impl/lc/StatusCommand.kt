@@ -104,8 +104,11 @@ class StatusCommand(
 
             // Nightly warning
             if (BuildInfo.isNightly) {
-                sendMessage(MessageFormatter.format(languageManager.getMessage("general.nightlyWarning"))
-                    .color(NamedTextColor.YELLOW))
+                sendMessage(
+                    MessageFormatter
+                        .format(languageManager.getMessage("general.nightlyWarning"))
+                        .color(NamedTextColor.YELLOW),
+                )
             }
 
             sendMessage(healthLine)

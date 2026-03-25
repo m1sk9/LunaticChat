@@ -8,7 +8,7 @@ For questions, see the [discussion](https://github.com/m1sk9/LunaticChat/discuss
 
 ## Reporting Bugs / Requesting Features
 
-Before reporting a bug or requesting a feature, please search the [issues]().
+Before reporting a bug or requesting a feature, please search the [issues](https://github.com/m1sk9/LunaticChat/issues).
 
 If your issue is not already reported, please create a new issue using the provided template. Be sure to include as much detail as possible, including steps to reproduce the issue if applicable.
 
