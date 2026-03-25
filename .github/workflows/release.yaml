@@ -81,7 +81,7 @@ jobs:
     permissions:
       contents: write
     env:
-      MODRINTH_CHANNEL: beta
+      MODRINTH_CHANNEL: release
       MODRINTH_GAME_VERSIONS: "1.21.x"
       MODRINTH_MC_VERSION: "1.21.11"
     steps:
@@ -106,12 +106,36 @@ jobs:
           PAPER_JAR_NAME=${{ needs.validate.outputs.paper_jar_name }}
           VELOCITY_JAR_NAME=${{ needs.validate.outputs.velocity_jar_name }}
 
+          cat > /tmp/release-notes.md <<EOF
+          LunaticChat v${VERSION} has been released.
+
+          ## Download
+
+          - [GitHub](https://github.com/m1sk9/LunaticChat/releases/tag/v${VERSION})
+          - Modrinth: [Paper/Folia](https://modrinth.com/plugin/lunaticchat/version/${VERSION}), [Velocity](https://modrinth.com/plugin/lunaticchat/version/${VERSION}-velocity)
+
+          ## What's new
+
+          ### Highlights
+
+          ### New Features
+
+          ### Improvements
+
+          ### Changes
+
+          ### Bug Fixes
+
+          ### Notes
+
+          EOF
+
           gh release create "$TAG_NAME" \
             "platform-paper/build/libs/$PAPER_JAR_NAME" \
             "platform-velocity/build/libs/$VELOCITY_JAR_NAME" \
             --title "$TAG_NAME" \
             --draft \
-            --notes ""
+            --notes-file /tmp/release-notes.md
 
       - name: Publish to Modrinth (Paper/Folia)
         uses: cloudnode-pro/modrinth-publish@0be4916ad5f081d936eb5615aa35ce3f0949979c # v2
