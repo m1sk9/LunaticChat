@@ -204,7 +204,7 @@ general:
   newUpdateAvailable: "LunaticChat の新しいバージョンが利用可能です。GitHubまたはModrinthからダウンロードできます"
   noPermission: "このコマンドを実行する権限がありません"
   spyMessage: "あなたに権限が付与されているため、このメッセージはスパイ状態で表示されています"
-  nightlyWarning: "LunaticChat のナイトリービルドを使用しています。このビルドは不安定であったり、バグが含まれている可能性があります。"
+  nightlyWarning: "ナイトリービルドを使用しています。このビルドは不安定であったり、バグが含まれている可能性があります。"
   nightlyReportIssue: "問題を発見した場合は、GitHub Issues で報告してください。"
 
 toggle:

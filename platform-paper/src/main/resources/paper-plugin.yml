@@ -1,7 +1,7 @@
 name: LunaticChat
 version: ${version}
 main: dev.m1sk9.lunaticChat.paper.LunaticChat
-api-version: '1.21'
+api-version: '26.1'
 folia-supported: true
 prefix: LunaticChat
 load: STARTUP

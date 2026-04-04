@@ -17,12 +17,12 @@ dependencies {
     api(project(":engine"))
 
     // Paper-specific dependencies
-    compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:26.1.1.build.14-alpha")
     implementation("com.charleskorn.kaml:kaml:0.104.0") // YAML configuration
     implementation("org.jetbrains.kotlin:kotlin-reflect:2.3.20") // Annotation processing
 
     // Test dependencies
-    testImplementation("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
+    testImplementation("io.papermc.paper:paper-api:26.1.1.build.14-alpha")
     testImplementation("io.mockk:mockk:1.14.9")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
 }
@@ -38,7 +38,7 @@ tasks {
     }
 
     runServer {
-        minecraftVersion("1.21")
+        minecraftVersion("26.1.1")
     }
 
     processResources {

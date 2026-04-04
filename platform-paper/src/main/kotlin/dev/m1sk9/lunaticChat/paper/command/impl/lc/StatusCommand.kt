@@ -58,6 +58,8 @@ class StatusCommand(
                     ),
                 ).clickEvent(ClickEvent.copyToClipboard(versionText))
 
+
+
         // Health status
         val velocityManager = plugin.velocityConnectionManager
         val isDegraded =
@@ -105,9 +107,7 @@ class StatusCommand(
             // Nightly warning
             if (BuildInfo.isNightly) {
                 sendMessage(
-                    MessageFormatter
-                        .format(languageManager.getMessage("general.nightlyWarning"))
-                        .color(NamedTextColor.YELLOW),
+                    Component.text(languageManager.getMessage("general.nightlyWarning"), NamedTextColor.YELLOW),
                 )
             }
 
