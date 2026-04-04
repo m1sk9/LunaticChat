@@ -54,8 +54,7 @@ features:
     </ul>
   </div>
   <div class="feature-showcase-image">
-    <!-- TODO: チャンネルチャットのスクリーンショット -->
-    <div class="image-placeholder">Screenshot: Channel Chat</div>
+    <img src="./assets/features/channel-chat.png" alt="LunaticChat のチャンネルチャット機能" />
   </div>
 </div>
 
@@ -76,7 +75,7 @@ features:
     </ul>
   </div>
   <div class="feature-showcase-image">
-    <img src="./assets/feature.png" alt="LunaticChat のダイレクトメッセージ機能" />
+    <img src="./assets/features/dm.png" alt="LunaticChat のダイレクトメッセージ機能" />
   </div>
 </div>
 
@@ -97,8 +96,7 @@ features:
     </ul>
   </div>
   <div class="feature-showcase-image">
-    <!-- TODO: ローマ字変換のスクリーンショット -->
-    <div class="image-placeholder">Screenshot: Romaji Conversion</div>
+    <img src="./assets/features/romaji.png" alt="LunaticChat のローマ字変換機能" />
   </div>
 </div>
 
@@ -119,8 +117,7 @@ features:
     </ul>
   </div>
   <div class="feature-showcase-image">
-    <!-- TODO: Velocity 連携の構成図 -->
-    <div class="image-placeholder">Diagram: Velocity Architecture</div>
+    <img src="./assets/features/cross-chat.png" alt="LunaticChat のクロスチャット機能" />
   </div>
 </div>
 
@@ -133,21 +130,21 @@ features:
   <div class="platform-cards">
     <a class="platform-card" href="https://papermc.io/software/paper/" target="_blank" rel="noopener">
       <div class="platform-icon">
-        <img src="./assets/brand/paper.svg" alt="Paper" width="32" height="32" />
+        <img src="./assets/brand/paper.svg" alt="Paper" width="40" height="40" />
       </div>
       <p class="name">Paper</p>
       <p class="desc">最も広く利用されている Minecraft サーバー実装。DM、チャンネルチャット、ローマ字変換など全機能をフルサポート。Bukkit/Spigot プラグインとの互換性も維持</p>
     </a>
     <a class="platform-card" href="https://papermc.io/software/folia" target="_blank" rel="noopener">
       <div class="platform-icon">
-        <img src="./assets/brand/folia.svg" alt="Folia" width="32" height="32" />
+        <img src="./assets/brand/folia.svg" alt="Folia" width="40" height="40" />
       </div>
       <p class="name">Folia</p>
       <p class="desc">PaperMC が開発するマルチスレッド対応のサーバー実装。リージョン分割による並列処理で、大規模サーバーでも安定したチャット体験を提供</p>
     </a>
     <a class="platform-card" href="https://papermc.io/software/velocity" target="_blank" rel="noopener">
       <div class="platform-icon">
-        <img src="./assets/brand/velocity.svg" alt="Velocity" width="32" height="32" />
+        <img src="./assets/brand/velocity.svg" alt="Velocity" width="40" height="40" />
       </div>
       <p class="name">Velocity</p>
       <p class="desc">高性能なプロキシサーバー。LunaticChat の Velocity プラグインを導入することで、複数の Paper/Folia サーバー間でグローバルチャットのリレーを実現</p>

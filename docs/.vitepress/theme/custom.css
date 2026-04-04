@@ -8,7 +8,7 @@
 
 /* ── Feature showcase: alternating text + image ── */
 .feature-showcase {
-  max-width: 1024px;
+  max-width: 1152px;
   margin: 0 auto;
   padding: 64px 24px;
   display: flex;
@@ -21,7 +21,7 @@
 }
 
 .feature-showcase-text {
-  flex: 1;
+  flex: 3;
   min-width: 0;
 }
 
@@ -66,7 +66,7 @@
 }
 
 .feature-showcase-image {
-  flex: 1;
+  flex: 3;
   min-width: 0;
 }
 
@@ -149,9 +149,16 @@
 
 .platform-icon {
   margin-bottom: 12px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .platform-icon img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
   filter: brightness(0) saturate(100%);
 }
 
