@@ -27,9 +27,8 @@ jobs:
       - name: Compute nightly version
         id: version
         run: |
-          BASE_VERSION=$(grep '    version = ' build.gradle.kts | sed 's/.*version = "\(.*\)"/\1/' | sed "s/findProperty.*?: \"\(.*\)\"/\1/")
-          # Fallback: extract version from the default value
-          if [ -z "$BASE_VERSION" ] || echo "$BASE_VERSION" | grep -q 'findProperty'; then
+          BASE_VERSION=$(grep '?: "' build.gradle.kts | head -1 | sed 's/.*?: "\(.*\)"/\1/')
+          if [ -z "$BASE_VERSION" ]; then
             BASE_VERSION="1.0.0"
           fi
           SHORT_HASH=$(git rev-parse --short HEAD)
@@ -51,7 +50,7 @@ jobs:
       - name: Build with shadowJar
         run: |
           ./gradlew :platform-paper:shadowJar :platform-velocity:shadowJar \
-            -Pversion=${{ steps.version.outputs.version }} \
+            -Pversion="${{ steps.version.outputs.version }}" \
             -PisNightly=true \
             --parallel --no-daemon
 
