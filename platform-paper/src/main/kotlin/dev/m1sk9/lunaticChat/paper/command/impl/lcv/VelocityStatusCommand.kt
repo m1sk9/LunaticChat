@@ -140,15 +140,6 @@ class VelocityStatusCommand(
                 ),
             )
 
-            // Nightly warning
-            if (BuildInfo.isNightly) {
-                sendMessage(
-                    MessageFormatter
-                        .format(languageManager.getMessage("general.nightlyWarning"))
-                        .color(NamedTextColor.YELLOW),
-                )
-            }
-
             // Connection status details
             connectionStatus.forEach { line ->
                 line?.let { sendMessage(it) }

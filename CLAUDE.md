@@ -84,6 +84,43 @@ docs/               → VitePress documentation site
 | `listener` | Event listeners (chat, join/quit, plugin messages) |
 | `velocity` | Cross-server integration |
 
+## Versioning & Release
+
+### Version Management
+
+Paper and Velocity have independent versions, managed in `gradle.properties`:
+
+```properties
+paperVersion=1.0.0
+velocityVersion=1.0.0
+```
+
+### Release Tags
+
+| Tag Pattern | Workflow | Target |
+|-------------|----------|--------|
+| `paper/v1.1.0` | `release-paper.yaml` | Paper/Folia JAR only |
+| `velocity/v1.0.1` | `release-velocity.yaml` | Velocity JAR only |
+| `v1.2.0` | `release.yaml` | Both (e.g., engine changes) |
+
+### Protocol Version (`engine/protocol/ProtocolVersion.kt`)
+
+Paper-Velocity compatibility is gated by protocol version only. Plugin version is not used for compatibility checks.
+
+| Level | When to bump | Deployment order |
+|-------|-------------|-----------------|
+| **PATCH** | Add optional fields, new sub-channels | Any order |
+| **MINOR** | Add required fields | Velocity first, then Paper |
+| **MAJOR** | Wire format changes | Simultaneous |
+
+`MIN_SUPPORTED_MINOR` controls the acceptance window for older MINOR versions.
+
+### Backward Compatibility
+
+- `PluginMessageCodec` uses `ignoreUnknownKeys = true` to ignore unknown fields
+- `ProtocolBackwardCompatibilityTest` verifies backward compat via JSON snapshots
+- Protocol changes must include snapshot tests
+
 ## Code Conventions
 
 - Follows [Kotlin Coding Conventions](https://kotlinlang.org/docs/coding-conventions.html), enforced by Ktlint

@@ -9,32 +9,25 @@ jobs:
   validate:
     runs-on: ubuntu-24.04
     outputs:
-      version: ${{ steps.get_version.outputs.version }}
+      paper_version: ${{ steps.get_version.outputs.paper_version }}
+      velocity_version: ${{ steps.get_version.outputs.velocity_version }}
       paper_jar_name: ${{ steps.get_version.outputs.paper_jar_name }}
       velocity_jar_name: ${{ steps.get_version.outputs.velocity_jar_name }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Extract version from build.gradle.kts
+      - name: Extract versions from gradle.properties
         id: get_version
         run: |
-          VERSION=$(grep '    version = ' build.gradle.kts | sed 's/.*version = "\(.*\)"/\1/')
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "paper_jar_name=LunaticChat-$VERSION.jar" >> $GITHUB_OUTPUT
-          echo "velocity_jar_name=LunaticChat-$VERSION-velocity.jar" >> $GITHUB_OUTPUT
-          echo "Extracted version: $VERSION"
+          PAPER_VERSION=$(grep '^paperVersion=' gradle.properties | cut -d'=' -f2)
+          VELOCITY_VERSION=$(grep '^velocityVersion=' gradle.properties | cut -d'=' -f2)
 
-      - name: Validate tag matches version
-        run: |
-          TAG_VERSION=${GITHUB_REF#refs/tags/v}
-          GRADLE_VERSION="${{ steps.get_version.outputs.version }}"
-
-          if [ "$TAG_VERSION" != "$GRADLE_VERSION" ]; then
-            echo "Error: Tag version ($TAG_VERSION) does not match build.gradle.kts version ($GRADLE_VERSION)"
-            exit 1
-          fi
-          echo "Version validation passed: $TAG_VERSION"
+          echo "paper_version=$PAPER_VERSION" >> $GITHUB_OUTPUT
+          echo "velocity_version=$VELOCITY_VERSION" >> $GITHUB_OUTPUT
+          echo "paper_jar_name=LunaticChat-$PAPER_VERSION.jar" >> $GITHUB_OUTPUT
+          echo "velocity_jar_name=LunaticChat-$VELOCITY_VERSION-velocity.jar" >> $GITHUB_OUTPUT
+          echo "Paper version: $PAPER_VERSION, Velocity version: $VELOCITY_VERSION"
 
       - name: Check if release already exists
         env:
@@ -69,7 +62,7 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: LunaticChat-v${{ needs.validate.outputs.version }}
+          name: LunaticChat-${{ github.ref_name }}
           path: |
             platform-paper/build/libs/${{ needs.validate.outputs.paper_jar_name }}
             platform-velocity/build/libs/${{ needs.validate.outputs.velocity_jar_name }}
@@ -94,28 +87,30 @@ jobs:
       - name: Download build artifact
         uses: actions/download-artifact@v8
         with:
-          name: LunaticChat-v${{ needs.validate.outputs.version }}
-
-      - name: Get current date
-        id: get_date
-        run: echo "current_date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+          name: LunaticChat-${{ github.ref_name }}
 
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG_NAME=${GITHUB_REF#refs/tags/}
-          VERSION=${{ needs.validate.outputs.version }}
+          PAPER_VERSION=${{ needs.validate.outputs.paper_version }}
+          VELOCITY_VERSION=${{ needs.validate.outputs.velocity_version }}
           PAPER_JAR_NAME=${{ needs.validate.outputs.paper_jar_name }}
           VELOCITY_JAR_NAME=${{ needs.validate.outputs.velocity_jar_name }}
 
           cat > /tmp/release-notes.md <<EOF
-          LunaticChat v${VERSION} has been released.
+          LunaticChat ${TAG_NAME} has been released.
+
+          | Platform | Version |
+          |----------|---------|
+          | Paper/Folia | ${PAPER_VERSION} |
+          | Velocity | ${VELOCITY_VERSION} |
 
           ## Download
 
-          - [GitHub](https://github.com/m1sk9/LunaticChat/releases/tag/v${VERSION})
-          - Modrinth: [Paper/Folia](https://modrinth.com/plugin/lunaticchat/version/${VERSION}), [Velocity](https://modrinth.com/plugin/lunaticchat/version/${VERSION}-velocity)
+          - [GitHub](https://github.com/m1sk9/LunaticChat/releases/tag/${TAG_NAME})
+          - Modrinth: [Paper/Folia](https://modrinth.com/plugin/lunaticchat/version/${PAPER_VERSION}), [Velocity](https://modrinth.com/plugin/lunaticchat/version/${VELOCITY_VERSION}-velocity)
 
           ## What's new
 
@@ -144,12 +139,12 @@ jobs:
         uses: cloudnode-pro/modrinth-publish@0be4916ad5f081d936eb5615aa35ce3f0949979c # v2
         with:
           token: ${{ secrets.MODRINTH_TOKEN }}
-          name: v${{ needs.validate.outputs.version }} (Paper/Folia v${{ env.MODRINTH_MC_VERSION }})
+          name: v${{ needs.validate.outputs.paper_version }} (Paper/Folia v${{ env.MODRINTH_MC_VERSION }})
           project: ${{ secrets.MODRINTH_PROJECT_ID }}
-          version: ${{ needs.validate.outputs.version }}
+          version: ${{ needs.validate.outputs.paper_version }}
           channel: ${{ env.MODRINTH_CHANNEL }}
           changelog: |-
-            Please refer to the [GitHub release](https://github.com/m1sk9/LunaticChat/releases/tag/v${{ needs.validate.outputs.version }}) for update details.
+            Please refer to the [GitHub release](https://github.com/m1sk9/LunaticChat/releases/tag/${{ github.ref_name }}) for update details.
           loaders: |-
             paper
             folia
@@ -160,13 +155,12 @@ jobs:
         uses: cloudnode-pro/modrinth-publish@0be4916ad5f081d936eb5615aa35ce3f0949979c # v2
         with:
           token: ${{ secrets.MODRINTH_TOKEN }}
-          name: v${{ needs.validate.outputs.version }} (Velocity)
+          name: v${{ needs.validate.outputs.velocity_version }} (Velocity)
           project: ${{ secrets.MODRINTH_PROJECT_ID }}
-          version: ${{ needs.validate.outputs.version }}-velocity
+          version: ${{ needs.validate.outputs.velocity_version }}-velocity
           channel: ${{ env.MODRINTH_CHANNEL }}
           changelog: |-
-            Please refer to the [GitHub release](https://github.com/m1sk9/LunaticChat/releases/tag/v${{ needs.validate.outputs.version }}) for update details.
+            Please refer to the [GitHub release](https://github.com/m1sk9/LunaticChat/releases/tag/${{ github.ref_name }}) for update details.
           loaders: velocity
           game-versions: ${{ env.MODRINTH_VELOCITY_GAME_VERSIONS }}
           files: platform-velocity/build/libs/${{ needs.validate.outputs.velocity_jar_name }}
-

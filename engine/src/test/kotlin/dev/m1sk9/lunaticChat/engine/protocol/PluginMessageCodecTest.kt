@@ -45,6 +45,28 @@ class PluginMessageCodecTest {
     }
 
     @Test
+    fun `encode and decode HandshakeResponse with protocol version fields`() {
+        val original =
+            PluginMessage.HandshakeResponse(
+                compatible = true,
+                velocityVersion = "0.11.0",
+                protocolMajor = 1,
+                protocolMinor = 1,
+                protocolPatch = 0,
+            )
+
+        val encoded = PluginMessageCodec.encode(original)
+        val decoded = PluginMessageCodec.decode(encoded)
+
+        assertIs<PluginMessage.HandshakeResponse>(decoded)
+        assertEquals(original.compatible, decoded.compatible)
+        assertEquals(original.velocityVersion, decoded.velocityVersion)
+        assertEquals(1, decoded.protocolMajor)
+        assertEquals(1, decoded.protocolMinor)
+        assertEquals(0, decoded.protocolPatch)
+    }
+
+    @Test
     fun `encode and decode HandshakeResponse incompatible round-trip`() {
         val original =
             PluginMessage.HandshakeResponse(

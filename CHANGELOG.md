@@ -12,6 +12,7 @@
   - Whenever updates are made to `main` (the default branch), we will distribute the current build via GitHub Releases
   - Since the Nightly version is a work-in-progress, it may be unstable or contain bugs. If you encounter any issues, please report them on GitHub Issues
   - **The Nightly version is not available on Modrinth**.
+- Improving Velocity's Cycling Compatibility.
 
 ### v0.11.0
 

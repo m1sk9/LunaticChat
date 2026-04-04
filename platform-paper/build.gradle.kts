@@ -6,6 +6,8 @@ plugins {
     id("org.jetbrains.dokka")
 }
 
+version = findProperty("paperVersion")?.toString() ?: "0.0.0"
+
 repositories {
     maven("https://repo.papermc.io/repository/maven-public/") {
         name = "papermc-repo"

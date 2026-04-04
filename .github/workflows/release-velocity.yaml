@@ -1,0 +1,139 @@
+name: Release Velocity
+
+on:
+  push:
+    tags:
+      - 'velocity/v*'
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+      jar_name: ${{ steps.get_version.outputs.jar_name }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Extract version from tag and validate
+        id: get_version
+        run: |
+          TAG_VERSION=${GITHUB_REF#refs/tags/velocity/v}
+          GRADLE_VERSION=$(grep '^velocityVersion=' gradle.properties | cut -d'=' -f2)
+
+          if [ "$TAG_VERSION" != "$GRADLE_VERSION" ]; then
+            echo "Error: Tag version ($TAG_VERSION) does not match gradle.properties velocityVersion ($GRADLE_VERSION)"
+            exit 1
+          fi
+
+          echo "version=$TAG_VERSION" >> $GITHUB_OUTPUT
+          echo "jar_name=LunaticChat-$TAG_VERSION-velocity.jar" >> $GITHUB_OUTPUT
+          echo "Version validation passed: $TAG_VERSION"
+
+      - name: Check if release already exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          if gh release view "$TAG_NAME" &> /dev/null; then
+            echo "Error: Release $TAG_NAME already exists"
+            exit 1
+          fi
+          echo "Release validation passed: $TAG_NAME does not exist yet"
+
+  build:
+    runs-on: ubuntu-24.04
+    needs: validate
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Development Environment
+        uses: jdx/mise-action@v4
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build Velocity shadowJar
+        run: ./gradlew :platform-velocity:shadowJar --no-daemon
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: LunaticChat-velocity-v${{ needs.validate.outputs.version }}
+          path: platform-velocity/build/libs/${{ needs.validate.outputs.jar_name }}
+          retention-days: 90
+
+  release:
+    runs-on: ubuntu-24.04
+    needs: [validate, build]
+    permissions:
+      contents: write
+    env:
+      MODRINTH_CHANNEL: release
+      MODRINTH_VELOCITY_GAME_VERSIONS: |-
+        1.21.x
+        26.1.x
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: LunaticChat-velocity-v${{ needs.validate.outputs.version }}
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          VERSION=${{ needs.validate.outputs.version }}
+          JAR_NAME=${{ needs.validate.outputs.jar_name }}
+
+          cat > /tmp/release-notes.md <<EOF
+          LunaticChat Velocity v${VERSION} has been released.
+
+          ## Download
+
+          - [GitHub](https://github.com/m1sk9/LunaticChat/releases/tag/${TAG_NAME})
+          - [Modrinth (Velocity)](https://modrinth.com/plugin/lunaticchat/version/${VERSION}-velocity)
+
+          ## What's new
+
+          ### Highlights
+
+          ### New Features
+
+          ### Improvements
+
+          ### Changes
+
+          ### Bug Fixes
+
+          ### Notes
+
+          EOF
+
+          gh release create "$TAG_NAME" \
+            "platform-velocity/build/libs/$JAR_NAME" \
+            --title "$TAG_NAME" \
+            --draft \
+            --notes-file /tmp/release-notes.md
+
+      - name: Publish to Modrinth (Velocity)
+        uses: cloudnode-pro/modrinth-publish@0be4916ad5f081d936eb5615aa35ce3f0949979c # v2
+        with:
+          token: ${{ secrets.MODRINTH_TOKEN }}
+          name: v${{ needs.validate.outputs.version }} (Velocity)
+          project: ${{ secrets.MODRINTH_PROJECT_ID }}
+          version: ${{ needs.validate.outputs.version }}-velocity
+          channel: ${{ env.MODRINTH_CHANNEL }}
+          changelog: |-
+            Please refer to the [GitHub release](https://github.com/m1sk9/LunaticChat/releases/tag/velocity/v${{ needs.validate.outputs.version }}) for update details.
+          loaders: velocity
+          game-versions: ${{ env.MODRINTH_VELOCITY_GAME_VERSIONS }}
+          files: platform-velocity/build/libs/${{ needs.validate.outputs.jar_name }}

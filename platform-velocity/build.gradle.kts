@@ -4,6 +4,8 @@ plugins {
     id("com.gradleup.shadow")
 }
 
+version = findProperty("velocityVersion")?.toString() ?: "0.0.0"
+
 repositories {
     maven("https://repo.papermc.io/repository/maven-public/") {
         name = "papermc-repo"

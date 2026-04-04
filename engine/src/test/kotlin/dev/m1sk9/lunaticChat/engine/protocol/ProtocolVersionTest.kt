@@ -54,4 +54,24 @@ class ProtocolVersionTest {
     fun `isCompatible string with two parts should return false`() {
         assertFalse(ProtocolVersion.isCompatible("1.0"))
     }
+
+    @Test
+    fun `MIN_SUPPORTED_MINOR should be less than or equal to MINOR`() {
+        assertTrue(ProtocolVersion.MIN_SUPPORTED_MINOR <= ProtocolVersion.MINOR)
+    }
+
+    @Test
+    fun `isCompatible with minor equal to MINOR should return true`() {
+        assertTrue(ProtocolVersion.isCompatible(ProtocolVersion.MAJOR, ProtocolVersion.MINOR))
+    }
+
+    @Test
+    fun `isCompatible with minor equal to MIN_SUPPORTED_MINOR should return true`() {
+        assertTrue(ProtocolVersion.isCompatible(ProtocolVersion.MAJOR, ProtocolVersion.MIN_SUPPORTED_MINOR))
+    }
+
+    @Test
+    fun `isCompatible with minor above MINOR should return false`() {
+        assertFalse(ProtocolVersion.isCompatible(ProtocolVersion.MAJOR, ProtocolVersion.MINOR + 1))
+    }
 }

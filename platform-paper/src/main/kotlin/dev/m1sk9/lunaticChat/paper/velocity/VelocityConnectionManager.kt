@@ -197,7 +197,10 @@ class VelocityConnectionManager(
         if (response.compatible) {
             state = ConnectionState.CONNECTED
             velocityVersion = response.velocityVersion
-            logger.info("Successfully connected to Velocity (version: ${response.velocityVersion})")
+            logger.info(
+                "Successfully connected to Velocity (version: ${response.velocityVersion}, " +
+                    "protocol: ${response.protocolMajor}.${response.protocolMinor}.${response.protocolPatch})",
+            )
             future.complete(HandshakeResult.Success(response.velocityVersion))
         } else {
             state = ConnectionState.FAILED

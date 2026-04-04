@@ -47,16 +47,19 @@ jobs:
       - name: Compute nightly version
         id: version
         run: |
-          BASE_VERSION=$(grep '?: "' build.gradle.kts | head -1 | sed 's/.*?: "\(.*\)"/\1/')
-          if [ -z "$BASE_VERSION" ]; then
-            BASE_VERSION="1.0.0"
-          fi
+          PAPER_BASE=$(grep '^paperVersion=' gradle.properties | cut -d'=' -f2)
+          VELOCITY_BASE=$(grep '^velocityVersion=' gradle.properties | cut -d'=' -f2)
           SHORT_HASH=$(git rev-parse --short HEAD)
-          NIGHTLY_VERSION="${BASE_VERSION}-nightly.${SHORT_HASH}"
-          echo "version=$NIGHTLY_VERSION" >> $GITHUB_OUTPUT
-          echo "paper_jar_name=LunaticChat-${NIGHTLY_VERSION}.jar" >> $GITHUB_OUTPUT
-          echo "velocity_jar_name=LunaticChat-${NIGHTLY_VERSION}-velocity.jar" >> $GITHUB_OUTPUT
-          echo "Nightly version: $NIGHTLY_VERSION"
+
+          PAPER_NIGHTLY="${PAPER_BASE}-nightly.${SHORT_HASH}"
+          VELOCITY_NIGHTLY="${VELOCITY_BASE}-nightly.${SHORT_HASH}"
+
+          echo "version=${PAPER_NIGHTLY}" >> $GITHUB_OUTPUT
+          echo "paper_version=${PAPER_NIGHTLY}" >> $GITHUB_OUTPUT
+          echo "velocity_version=${VELOCITY_NIGHTLY}" >> $GITHUB_OUTPUT
+          echo "paper_jar_name=LunaticChat-${PAPER_NIGHTLY}.jar" >> $GITHUB_OUTPUT
+          echo "velocity_jar_name=LunaticChat-${VELOCITY_NIGHTLY}-velocity.jar" >> $GITHUB_OUTPUT
+          echo "Paper nightly: $PAPER_NIGHTLY, Velocity nightly: $VELOCITY_NIGHTLY"
 
       - name: Setup Development Environment
         uses: jdx/mise-action@v4
@@ -70,7 +73,8 @@ jobs:
       - name: Build with shadowJar
         run: |
           ./gradlew :platform-paper:shadowJar :platform-velocity:shadowJar \
-            -Pversion="${{ steps.version.outputs.version }}" \
+            -PpaperVersion="${{ steps.version.outputs.paper_version }}" \
+            -PvelocityVersion="${{ steps.version.outputs.velocity_version }}" \
             -PisNightly=true \
             --parallel --no-daemon
 

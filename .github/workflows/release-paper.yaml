@@ -1,0 +1,140 @@
+name: Release Paper
+
+on:
+  push:
+    tags:
+      - 'paper/v*'
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+      jar_name: ${{ steps.get_version.outputs.jar_name }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Extract version from tag and validate
+        id: get_version
+        run: |
+          TAG_VERSION=${GITHUB_REF#refs/tags/paper/v}
+          GRADLE_VERSION=$(grep '^paperVersion=' gradle.properties | cut -d'=' -f2)
+
+          if [ "$TAG_VERSION" != "$GRADLE_VERSION" ]; then
+            echo "Error: Tag version ($TAG_VERSION) does not match gradle.properties paperVersion ($GRADLE_VERSION)"
+            exit 1
+          fi
+
+          echo "version=$TAG_VERSION" >> $GITHUB_OUTPUT
+          echo "jar_name=LunaticChat-$TAG_VERSION.jar" >> $GITHUB_OUTPUT
+          echo "Version validation passed: $TAG_VERSION"
+
+      - name: Check if release already exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          if gh release view "$TAG_NAME" &> /dev/null; then
+            echo "Error: Release $TAG_NAME already exists"
+            exit 1
+          fi
+          echo "Release validation passed: $TAG_NAME does not exist yet"
+
+  build:
+    runs-on: ubuntu-24.04
+    needs: validate
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Development Environment
+        uses: jdx/mise-action@v4
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build Paper shadowJar
+        run: ./gradlew :platform-paper:shadowJar --no-daemon
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: LunaticChat-paper-v${{ needs.validate.outputs.version }}
+          path: platform-paper/build/libs/${{ needs.validate.outputs.jar_name }}
+          retention-days: 90
+
+  release:
+    runs-on: ubuntu-24.04
+    needs: [validate, build]
+    permissions:
+      contents: write
+    env:
+      MODRINTH_CHANNEL: release
+      MODRINTH_PAPER_GAME_VERSIONS: "26.1.x"
+      MODRINTH_MC_VERSION: "26.1"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: LunaticChat-paper-v${{ needs.validate.outputs.version }}
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          VERSION=${{ needs.validate.outputs.version }}
+          JAR_NAME=${{ needs.validate.outputs.jar_name }}
+
+          cat > /tmp/release-notes.md <<EOF
+          LunaticChat Paper/Folia v${VERSION} has been released.
+
+          ## Download
+
+          - [GitHub](https://github.com/m1sk9/LunaticChat/releases/tag/${TAG_NAME})
+          - [Modrinth (Paper/Folia)](https://modrinth.com/plugin/lunaticchat/version/${VERSION})
+
+          ## What's new
+
+          ### Highlights
+
+          ### New Features
+
+          ### Improvements
+
+          ### Changes
+
+          ### Bug Fixes
+
+          ### Notes
+
+          EOF
+
+          gh release create "$TAG_NAME" \
+            "platform-paper/build/libs/$JAR_NAME" \
+            --title "$TAG_NAME" \
+            --draft \
+            --notes-file /tmp/release-notes.md
+
+      - name: Publish to Modrinth (Paper/Folia)
+        uses: cloudnode-pro/modrinth-publish@0be4916ad5f081d936eb5615aa35ce3f0949979c # v2
+        with:
+          token: ${{ secrets.MODRINTH_TOKEN }}
+          name: v${{ needs.validate.outputs.version }} (Paper/Folia v${{ env.MODRINTH_MC_VERSION }})
+          project: ${{ secrets.MODRINTH_PROJECT_ID }}
+          version: ${{ needs.validate.outputs.version }}
+          channel: ${{ env.MODRINTH_CHANNEL }}
+          changelog: |-
+            Please refer to the [GitHub release](https://github.com/m1sk9/LunaticChat/releases/tag/paper/v${{ needs.validate.outputs.version }}) for update details.
+          loaders: |-
+            paper
+            folia
+          game-versions: ${{ env.MODRINTH_PAPER_GAME_VERSIONS }}
+          files: platform-paper/build/libs/${{ needs.validate.outputs.jar_name }}
