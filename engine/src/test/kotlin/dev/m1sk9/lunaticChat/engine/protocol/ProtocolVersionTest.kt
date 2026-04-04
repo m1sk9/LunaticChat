@@ -74,4 +74,18 @@ class ProtocolVersionTest {
     fun `isCompatible with minor above MINOR should return false`() {
         assertFalse(ProtocolVersion.isCompatible(ProtocolVersion.MAJOR, ProtocolVersion.MINOR + 1))
     }
+
+    @Test
+    fun `isCompatible with minor below MIN_SUPPORTED_MINOR should return false`() {
+        assertFalse(ProtocolVersion.isCompatible(ProtocolVersion.MAJOR, ProtocolVersion.MIN_SUPPORTED_MINOR - 1))
+    }
+
+    @Test
+    fun `isCompatible string with minor below MIN_SUPPORTED_MINOR should return false`() {
+        assertFalse(
+            ProtocolVersion.isCompatible(
+                "${ProtocolVersion.MAJOR}.${ProtocolVersion.MIN_SUPPORTED_MINOR - 1}.0",
+            ),
+        )
+    }
 }
