@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useData } from 'vitepress';
-import { data } from './download.data';
+import { useDownloadData } from './useDownloadData';
 
 const { lang } = useData();
 const isEn = computed(() => lang.value === 'en-US');
+const { data, loading, error } = useDownloadData();
 
 const t = computed(() =>
   isEn.value
@@ -93,7 +94,15 @@ function formatDate(dateStr: string | null): string {
       <p><a :href="isEn ? '/en/docs/features/velocity#protocol-version' : '/docs/features/velocity#プロトコルバージョン'">{{ t.compatLink }}</a></p>
     </div>
 
-    <div class="download-grid">
+    <div v-if="loading" class="download-loading">
+      <p>{{ isEn ? 'Loading releases...' : 'リリース情報を取得中...' }}</p>
+    </div>
+
+    <div v-else-if="error" class="download-error">
+      <p>{{ isEn ? 'Failed to load release information. Please check ' : 'リリース情報の取得に失敗しました．' }}<a href="https://github.com/m1sk9/LunaticChat/releases" target="_blank" rel="noopener">GitHub Releases</a>{{ isEn ? ' directly.' : ' を直接ご確認ください．' }}</p>
+    </div>
+
+    <div v-else class="download-grid">
       <!-- Paper / Folia -->
       <div class="download-card">
         <div class="download-card-header">
@@ -376,5 +385,24 @@ function formatDate(dateStr: string | null): string {
 
 .download-ci {
   margin: 16px 0;
+}
+
+.download-loading {
+  text-align: center;
+  padding: 48px 0;
+  color: var(--vp-c-text-2);
+}
+
+.download-error {
+  border: 1px solid var(--vp-c-danger-soft);
+  background: var(--vp-c-danger-soft);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin: 24px 0;
+}
+
+.download-error a {
+  color: var(--vp-c-brand-1);
+  text-decoration: underline;
 }
 </style>
