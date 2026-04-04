@@ -58,8 +58,6 @@ class StatusCommand(
                     ),
                 ).clickEvent(ClickEvent.copyToClipboard(versionText))
 
-
-
         // Health status
         val velocityManager = plugin.velocityConnectionManager
         val isDegraded =
