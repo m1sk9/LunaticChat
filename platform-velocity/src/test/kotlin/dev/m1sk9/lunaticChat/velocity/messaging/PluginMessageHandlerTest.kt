@@ -69,7 +69,7 @@ class PluginMessageHandlerTest {
     }
 
     @Test
-    fun `onPluginMessage should reject version mismatch handshake`() {
+    fun `onPluginMessage should accept different plugin version with matching protocol`() {
         val (handler, _, _) = createHandler(pluginVersion = "0.10.0")
         val connection = createServerConnection()
 
@@ -85,6 +85,7 @@ class PluginMessageHandlerTest {
 
         handler.onPluginMessage(event)
 
+        // Should still send a response (successful handshake)
         verify { connection.sendPluginMessage(any<ChannelIdentifier>(), any<ByteArray>()) }
     }
 

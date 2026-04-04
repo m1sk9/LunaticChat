@@ -8,10 +8,7 @@
   - Support for Paper 1.21.X, Folia 1.21.X (and later) has been dropped.
 - We have added warnings when running `/lc status` or `/lcv status`, or when logging in, if you are using the Nightly version.
 - Fixed an issue where, while Romaji conversion was enabled, chat events were not registered under certain conditions, making Romaji conversion unavailable.
-- We have started distributing Nightly releases
-  - Whenever updates are made to `main` (the default branch), we will distribute the current build via GitHub Releases
-  - Since the Nightly version is a work-in-progress, it may be unstable or contain bugs. If you encounter any issues, please report them on GitHub Issues
-  - **The Nightly version is not available on Modrinth**.
+- Improving Velocity's Cycling Compatibility.
 
 ### v0.11.0
 

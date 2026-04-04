@@ -84,16 +84,7 @@ class PluginMessageHandler(
                 "Plugin=${handshake.pluginVersion}, Protocol=${handshake.protocolMajor}.${handshake.protocolMinor}.${handshake.protocolPatch}",
         )
 
-        // Plugin version check (exact match required)
-        val versionMatch = handshake.pluginVersion == pluginVersion
-        if (!versionMatch) {
-            val error = "Plugin version mismatch: Paper=${handshake.pluginVersion}, Velocity=$pluginVersion"
-            logger.error(error)
-            sendHandshakeResponse(connection, false, error)
-            return
-        }
-
-        // Protocol version check (MAJOR.MINOR must match)
+        // Protocol version check (MAJOR must match, MINOR within supported range)
         val protocolCompatible =
             ProtocolVersion.isCompatible(
                 handshake.protocolMajor,
@@ -126,6 +117,9 @@ class PluginMessageHandler(
                 compatible = compatible,
                 velocityVersion = pluginVersion,
                 error = error,
+                protocolMajor = ProtocolVersion.MAJOR,
+                protocolMinor = ProtocolVersion.MINOR,
+                protocolPatch = ProtocolVersion.PATCH,
             )
 
         val data = PluginMessageCodec.encode(response)

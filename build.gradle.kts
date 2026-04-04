@@ -14,7 +14,6 @@ plugins {
 
 allprojects {
     group = "dev.m1sk9"
-    version = findProperty("version")?.toString()?.takeIf { it != "unspecified" } ?: "1.0.0"
 
     repositories {
         mavenCentral()

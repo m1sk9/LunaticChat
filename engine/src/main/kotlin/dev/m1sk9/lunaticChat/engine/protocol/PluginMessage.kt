@@ -34,6 +34,9 @@ sealed interface PluginMessage {
         val compatible: Boolean,
         val velocityVersion: String,
         val error: String? = null,
+        val protocolMajor: Int = ProtocolVersion.MAJOR,
+        val protocolMinor: Int = ProtocolVersion.MINOR,
+        val protocolPatch: Int = ProtocolVersion.PATCH,
     ) : PluginMessage
 
     /**

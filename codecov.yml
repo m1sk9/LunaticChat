@@ -21,6 +21,9 @@ ignore:
   # VelocityStatusCommand is tightly coupled to VelocityConnectionManager and has no unit-test
   # infrastructure; it is exercised via end-to-end multi-server tests.
   - "platform-paper/src/main/kotlin/dev/m1sk9/lunaticChat/paper/command/impl/lcv/VelocityStatusCommand.kt"
+  # VelocityConnectionManager is tightly coupled to the Paper/Bukkit runtime (Plugin, Player,
+  # PluginMessageListener) and is exercised via end-to-end multi-server tests.
+  - "platform-paper/src/main/kotlin/dev/m1sk9/lunaticChat/paper/velocity/VelocityConnectionManager.kt"
   # The Velocity platform has no unit-test infrastructure; it is exercised via end-to-end
   # multi-server tests (docker compose).
   - "platform-velocity/src/main/kotlin/**"
