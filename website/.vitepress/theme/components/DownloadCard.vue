@@ -26,6 +26,9 @@ const t = computed(() =>
         devBuildsDesc:
           'The latest build from the main branch is available from CI. Development builds are not guaranteed to be stable.',
         viewCiBuilds: 'View latest CI builds',
+        compatNotice:
+          'Paper and Velocity plugins are versioned with a protocol version. For MINOR version changes, update Velocity first. For MAJOR version changes, update all servers simultaneously.',
+        compatLink: 'See Velocity Integration - Protocol Version for details.',
       }
     : {
         title: 'ダウンロード',
@@ -45,6 +48,9 @@ const t = computed(() =>
         devBuildsDesc:
           '最新の main ブランチのビルドは CI から取得できます。開発ビルドは安定性が保証されていません。',
         viewCiBuilds: '最新の CI ビルドを確認',
+        compatNotice:
+          'Paper プラグインと Velocity プラグインはプロトコルバージョンで互換性が管理されています．MINOR バージョン変更時は Velocity を先にアップデートしてください．MAJOR バージョン変更時は全サーバーを同時にアップデートする必要があります．',
+        compatLink: '詳細は Velocity 連携 - プロトコルバージョン を参照してください．',
       },
 );
 
@@ -77,6 +83,12 @@ function formatDate(dateStr: string | null): string {
         <li><strong>Paper / Folia</strong>: {{ t.paperReq }}</li>
         <li><strong>Velocity</strong>: {{ t.velocityReq }}</li>
       </ul>
+    </div>
+
+    <div class="download-compat-notice">
+      <p class="download-compat-title">Paper / Velocity の互換性</p>
+      <p>{{ t.compatNotice }}</p>
+      <p><a :href="isEn ? '/en/docs/features/velocity#protocol-version' : '/docs/features/velocity#プロトコルバージョン'">{{ t.compatLink }}</a></p>
     </div>
 
     <div class="download-grid">
@@ -213,6 +225,34 @@ function formatDate(dateStr: string | null): string {
   line-height: 1.7;
 }
 
+.download-compat-notice {
+  border: 1px solid var(--vp-c-warning-soft);
+  background: var(--vp-c-warning-soft);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+.download-compat-notice p {
+  margin: 0;
+}
+
+.download-compat-notice p + p {
+  margin-top: 8px;
+}
+
+.download-compat-title {
+  font-weight: 600;
+  margin-bottom: 8px !important;
+}
+
+.download-compat-notice a {
+  color: var(--vp-c-brand-1);
+  text-decoration: underline;
+}
+
 .download-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -252,7 +292,7 @@ function formatDate(dateStr: string | null): string {
   filter: brightness(0) saturate(100%);
 }
 
-:global(.dark) .download-icon {
+:global(.dark .download-icon) {
   filter: brightness(0) saturate(100%) invert(1);
 }
 
@@ -317,14 +357,14 @@ function formatDate(dateStr: string | null): string {
 }
 
 .download-btn.primary {
-  background: var(--vp-c-brand-1);
-  color: var(--vp-c-white);
-  border-color: var(--vp-c-brand-1);
+  background: var(--vp-button-brand-bg);
+  color: var(--vp-button-brand-text);
+  border-color: var(--vp-button-brand-border);
 }
 
 .download-btn.primary:hover {
-  background: var(--vp-c-brand-2);
-  border-color: var(--vp-c-brand-2);
+  background: var(--vp-button-brand-hover-bg);
+  border-color: var(--vp-button-brand-hover-border);
 }
 
 .download-empty {
