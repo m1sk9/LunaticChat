@@ -45,6 +45,6 @@ export default defineConfig({
       { icon: 'github', link: 'https://github.com/m1sk9/LunaticChat' },
     ],
   },
-  title: 'LunaticChat Docs',
+  title: 'LunaticChat',
   titleTemplate: 'LunaticChat',
 });

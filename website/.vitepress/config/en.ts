@@ -8,6 +8,7 @@ export const en: DefaultTheme.Config = {
   nav: [
     { link: '/en/player-guide/getting-started', text: 'Player Guide' },
     { link: '/en/admin-guide/getting-started', text: 'Admin Guide' },
+    { link: '/download', text: 'Download' },
   ],
   sidebar: {
     '/en/admin-guide/': [

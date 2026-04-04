@@ -8,10 +8,10 @@ hero:
   actions:
     - theme: brand
       text: ダウンロード
-      link: /player-guide/channel-chat/about
+      link: /download
     - theme: brand
-      text: プレイヤーガイド
-      link: /player-guide/channel-chat/about
+      text: ドキュメント
+      link: /docs/getting-started
     - theme: alt
       text: GitHub
       link: https://github.com/m1sk9/LunaticChat

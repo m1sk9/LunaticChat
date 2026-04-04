@@ -6,8 +6,8 @@ export const ja: DefaultTheme.Config = {
     text: 'GitHub で編集',
   },
   nav: [
-    { link: '/player-guide/getting-started', text: 'プレイヤーガイド' },
-    { link: '/admin-guide/getting-started', text: '管理者ガイド' },
+    { link: '/download', text: 'ダウンロード' },
+    { link: '/docs', text: 'ドキュメント'　}
   ],
   sidebar: {
     '/admin-guide/': [
