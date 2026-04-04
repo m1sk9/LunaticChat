@@ -23,7 +23,7 @@ jobs:
         uses: jdx/mise-action@v4
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Check ktlint
         run: ./gradlew ktlintCheck --no-daemon
