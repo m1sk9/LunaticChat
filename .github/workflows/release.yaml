@@ -82,8 +82,11 @@ jobs:
       contents: write
     env:
       MODRINTH_CHANNEL: release
-      MODRINTH_GAME_VERSIONS: "1.21.x"
-      MODRINTH_MC_VERSION: "1.21.11"
+      MODRINTH_PAPER_GAME_VERSIONS: "26.1.x"
+      MODRINTH_VELOCITY_GAME_VERSIONS: |-
+        1.21.x
+        26.1.x
+      MODRINTH_MC_VERSION: "26.1"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -150,7 +153,7 @@ jobs:
           loaders: |-
             paper
             folia
-          game-versions: ${{ env.MODRINTH_GAME_VERSIONS }}
+          game-versions: ${{ env.MODRINTH_PAPER_GAME_VERSIONS }}
           files: platform-paper/build/libs/${{ needs.validate.outputs.paper_jar_name }}
 
       - name: Publish to Modrinth (Velocity)
@@ -164,6 +167,6 @@ jobs:
           changelog: |-
             Please refer to the [GitHub release](https://github.com/m1sk9/LunaticChat/releases/tag/v${{ needs.validate.outputs.version }}) for update details.
           loaders: velocity
-          game-versions: ${{ env.MODRINTH_GAME_VERSIONS }}
+          game-versions: ${{ env.MODRINTH_VELOCITY_GAME_VERSIONS }}
           files: platform-velocity/build/libs/${{ needs.validate.outputs.velocity_jar_name }}
 

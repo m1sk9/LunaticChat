@@ -105,9 +105,7 @@ class StatusCommand(
             // Nightly warning
             if (BuildInfo.isNightly) {
                 sendMessage(
-                    MessageFormatter
-                        .format(languageManager.getMessage("general.nightlyWarning"))
-                        .color(NamedTextColor.YELLOW),
+                    Component.text(languageManager.getMessage("general.nightlyWarning"), NamedTextColor.YELLOW),
                 )
             }
 

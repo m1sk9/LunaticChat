@@ -19,7 +19,7 @@ cd LunaticChat
 ./gradlew shadowJar
 ```
 
-_[Supports Minecraft 1.21.11](https://minecraft.wiki/w/Java_Edition_version_history#1.21) | [Requires Java 21+ and Gradle 9+](.github/CONTRIBUTING.md)_
+_[Supports Minecraft 26.1](https://minecraft.wiki/w/Java_Edition_26.1) | [Requires Java 25+ and Gradle 9+](.github/CONTRIBUTING.md)_
 
 ## Installation
 

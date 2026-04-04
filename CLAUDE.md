@@ -6,9 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 LunaticChat is a Minecraft chat plugin supporting Paper, Folia, and Velocity servers. It provides direct messaging, channel chat, romaji-to-Japanese conversion, and cross-server global chat via Velocity proxy.
 
-- **Language**: Kotlin (JVM 21)
+- **Language**: Kotlin (JVM 25)
 - **Build**: Gradle 9+ with Kotlin DSL
-- **Tooling**: mise (Java zulu-21, Bun 1.3.9)
+- **Tooling**: mise (Java zulu-25, Bun 1.3.11)
 
 ## Common Commands
 

@@ -1,6 +1,6 @@
 services:
   velocity:
-    image: itzg/mc-proxy:java21
+    image: itzg/mc-proxy:java25
     container_name: debug-velocity
     ports:
       - "25577:25577"
@@ -27,7 +27,7 @@ services:
       - minecraft-network
 
   s1:
-    image: itzg/minecraft-server:java21
+    image: itzg/minecraft-server:java25
     container_name: debug-server-s1
     expose:
       - "25565"
@@ -40,7 +40,7 @@ services:
     environment:
       EULA: "TRUE"
       TYPE: "PAPER"
-      VERSION: "1.21.11"
+      VERSION: "26.1.1"
       MEMORY: "1G"
 
       # デバッグ用高速化設定
@@ -74,7 +74,7 @@ services:
     stdin_open: true
 
   s2:
-    image: itzg/minecraft-server:java21
+    image: itzg/minecraft-server:java25
     container_name: debug-server-s2
     expose:
       - "25565"
@@ -87,7 +87,7 @@ services:
     environment:
       EULA: "TRUE"
       TYPE: "PAPER"
-      VERSION: "1.21.11"
+      VERSION: "26.1.1"
       MEMORY: "1G"
 
       # デバッグ用高速化設定
