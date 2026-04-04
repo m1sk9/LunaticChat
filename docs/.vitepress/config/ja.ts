@@ -5,13 +5,9 @@ export const ja: DefaultTheme.Config = {
     pattern: 'https://github.com/m1sk9/LunaticChat/edit/main/docs/src/:path',
     text: 'GitHub で編集',
   },
-  footer: {
-    copyright: 'Copyright © 2026 m1sk9',
-  },
   nav: [
     { link: '/player-guide/getting-started', text: 'プレイヤーガイド' },
     { link: '/admin-guide/getting-started', text: '管理者ガイド' },
-    { component: 'VersionSwitcher' },
   ],
   sidebar: {
     '/admin-guide/': [
