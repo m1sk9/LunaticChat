@@ -4,7 +4,7 @@ import { en } from './config/en';
 import { ja } from './config/ja';
 
 const gitRoot = execSync('git rev-parse --show-toplevel').toString().trim();
-const commitHash = execSync(`git log -1 --format=%H -- ${gitRoot}/docs/`)
+const commitHash = execSync(`git log -1 --format=%H -- ${gitRoot}/website/`)
   .toString()
   .trim()
   .slice(0, 7);
@@ -22,7 +22,7 @@ export default defineConfig({
         ...en,
         footer: {
           copyright: 'Copyright © 2026 m1sk9',
-          message: `<a href="https://github.com/m1sk9/LunaticChat/commit/${commitHash}">LunaticChat/docs@${commitHash}</a>`,
+          message: `<a href="https://github.com/m1sk9/LunaticChat/commit/${commitHash}">LunaticChat/website@${commitHash}</a>`,
         },
       },
     },
@@ -33,7 +33,7 @@ export default defineConfig({
         ...ja,
         footer: {
           copyright: 'Copyright © 2026 m1sk9',
-          message: `<a href="https://github.com/m1sk9/LunaticChat/commit/${commitHash}">LunaticChat/docs@${commitHash}</a>`,
+          message: `<a href="https://github.com/m1sk9/LunaticChat/commit/${commitHash}">LunaticChat/website@${commitHash}</a>`,
         },
       },
     },
