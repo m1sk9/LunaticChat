@@ -28,7 +28,7 @@ export default defineVersionedConfig({
   title: 'LunaticChat Docs',
   titleTemplate: 'LunaticChat',
   versionsConfig: {
-    current: 'v0 (1.21.x) - Latest',
+    current: 'v1 (1.21.x) - Latest',
     sources: 'src',
     archive: 'archive',
     versionSwitcher: false,

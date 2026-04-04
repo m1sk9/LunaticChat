@@ -16,7 +16,7 @@ hero:
       text: GitHub
       link: https://github.com/m1sk9/LunaticChat
   image:
-    src: /icon.png
+    src: /v0-icon.png
     alt: LunaticChat Logo
 
 features:
