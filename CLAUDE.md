@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-LunaticChat is a Minecraft chat plugin supporting Paper, Folia, and Velocity servers. It provides direct messaging, channel chat, romaji-to-Japanese conversion, and cross-server global chat via Velocity proxy.
+LunaticChat is a Minecraft chat plugin supporting Paper, Folia, and Velocity servers. It provides direct messaging, channel chat, and romaji-to-Japanese conversion. Velocity proxy support enables global chat relay across multiple servers.
 
 - **Language**: Kotlin (JVM 25)
 - **Build**: Gradle 9+ with Kotlin DSL
@@ -48,7 +48,7 @@ LunaticChat is a Minecraft chat plugin supporting Paper, Folia, and Velocity ser
 ```
 engine/             → Platform-agnostic core (models, converters, protocol, exceptions)
 platform-paper/     → Paper & Folia plugin (commands, listeners, config, services)
-platform-velocity/  → Velocity proxy plugin (message relay between servers)
+platform-velocity/  → Velocity proxy plugin (global chat relay between servers)
 dokka/              → API documentation aggregator (no Kotlin source)
 docs/               → VitePress documentation site
 ```
@@ -61,7 +61,7 @@ docs/               → VitePress documentation site
 
 **Feature Gating**: Features are toggled via `config.yml`. The `ServiceInitializer` conditionally creates services based on config, and the `ServiceContainer` holds them as nullable properties.
 
-**Plugin Messaging Protocol**: Cross-server communication uses a custom `PluginMessageCodec` in the engine module. Paper servers encode/decode messages via this codec, and Velocity relays them between servers.
+**Plugin Messaging Protocol**: Cross-server communication uses a custom `PluginMessageCodec` in the engine module. Paper servers encode/decode messages via this codec, and Velocity relays global chat between servers. DM and channel chat are local to each Paper server only.
 
 ### Key Packages (engine)
 

@@ -22,5 +22,5 @@ gradle-app.setting
 .classpath
 
 .idea/
-docs/.vitepress/cache/deps
+website/.vitepress/cache/deps
 /docker/paper/plugins
