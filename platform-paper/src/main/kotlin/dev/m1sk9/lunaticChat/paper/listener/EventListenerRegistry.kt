@@ -42,7 +42,7 @@ object EventListenerRegistry {
             plugin,
         )
 
-        // Register chat listener when channel chat is enabled OR velocity cross-server chat is enabled
+        // Register chat listener when channel chat, velocity cross-server chat, or Japanese conversion is enabled
         val shouldRegisterChatListener =
             (
                 services.channelManager != null &&
@@ -51,7 +51,8 @@ object EventListenerRegistry {
                 (
                     configuration.features.velocityIntegration.enabled &&
                         configuration.features.velocityIntegration.crossServerGlobalChat
-                )
+                ) ||
+                services.romajiConverter != null
 
         if (shouldRegisterChatListener) {
             pluginManager.registerEvents(

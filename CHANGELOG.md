@@ -4,35 +4,20 @@
 
 ### v1.0.0
 
-#### Announcement: Support for Nightly Releases
-
-- We have started distributing Nightly releases
-  - Whenever updates are made to `main` (the default branch), we will distribute the current build via GitHub Releases
-  - Since the Nightly version is a work-in-progress, it may be unstable or contain bugs. If you encounter any issues, please report them on GitHub Issues
-
-> [!WARNING]
->
-> The Nightly version is not available on Modrinth
-
-#### New Features
-
 - Paper 26.1 (Minecraft 26.1) is now supported.
   - Support for Paper 1.21.X, Folia 1.21.X (and later) has been dropped.
 - We have added warnings when running `/lc status` or `/lcv status`, or when logging in, if you are using the Nightly version.
+- Fixed an issue where, while Romaji conversion was enabled, chat events were not registered under certain conditions, making Romaji conversion unavailable.
+- We have started distributing Nightly releases
+  - Whenever updates are made to `main` (the default branch), we will distribute the current build via GitHub Releases
+  - Since the Nightly version is a work-in-progress, it may be unstable or contain bugs. If you encounter any issues, please report them on GitHub Issues
+  - **The Nightly version is not available on Modrinth**.
 
 ### v0.11.0
 
-#### Breaking Changes
-
 - We have removed the chat mode implementation.
   - All chat messages sent after joining a channel will now appear in the channel chat.
-
-#### Features
-
 - Clicking the notification message now displays the channel's status.
-
-#### Feature Improvements
-
 - Optimization of internal logic.
 - We have improved the notification message that appears when you log in to the server while in a channel.
 - Added a delay to prevent other plugins from interfering with login notifications.
