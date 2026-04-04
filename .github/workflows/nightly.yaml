@@ -1,21 +1,41 @@
 name: Nightly Release
 
 on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - 'docs/**'
-      - '*.md'
-      - 'LICENSE'
-
-concurrency:
-  group: nightly-release
-  cancel-in-progress: true
+  schedule:
+    - cron: '0 0 * * *' # Daily at UTC 00:00 (JST 09:00)
+  workflow_dispatch:
 
 jobs:
+  check:
+    runs-on: ubuntu-24.04
+    outputs:
+      has_changes: ${{ steps.check.outputs.has_changes }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check for new commits since last nightly
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          LAST_NIGHTLY_SHA=$(gh release view nightly --json targetCommitish --jq '.targetCommitish' 2>/dev/null || echo "")
+          HEAD_SHA=$(git rev-parse HEAD)
+
+          if [ "$LAST_NIGHTLY_SHA" = "$HEAD_SHA" ]; then
+            echo "No new commits since last nightly release"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "New commits found (last: ${LAST_NIGHTLY_SHA:-none}, current: $HEAD_SHA)"
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
   build:
     runs-on: ubuntu-24.04
+    needs: check
+    if: needs.check.outputs.has_changes == 'true'
     outputs:
       version: ${{ steps.version.outputs.version }}
       paper_jar_name: ${{ steps.version.outputs.paper_jar_name }}
@@ -95,15 +115,14 @@ jobs:
             "platform-paper/build/libs/$PAPER_JAR_NAME" \
             "platform-velocity/build/libs/$VELOCITY_JAR_NAME" \
             --title "Nightly Build ($VERSION)" \
+            --target ${{ github.sha }} \
             --prerelease \
-            --notes "$(cat <<'EOF'
-          ## ⚠️ Nightly Build
-
-          This is an automatically generated nightly build from the latest `main` branch.
+            --notes "$(cat <<EOF
+          This is an automatically generated nightly build from the latest \`main\` branch.
 
           **Warning:** This build may be unstable or contain bugs. Do not use in production environments.
 
-          - **Version:** `${{ needs.build.outputs.version }}`
+          - **Version:** \`$VERSION\`
           - **Commit:** ${{ github.sha }}
 
           If you encounter any issues, please report them on [GitHub Issues](https://github.com/m1sk9/LunaticChat/issues).
