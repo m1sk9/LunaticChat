@@ -6,7 +6,7 @@ export const en: DefaultTheme.Config = {
     text: 'Edit this page on GitHub',
   },
   nav: [
-    { link: '/download', text: 'Download' },
+    { link: '/en/download', text: 'Download' },
     { link: '/en/docs/getting-started', text: 'Documentation' },
   ],
   sidebar: {

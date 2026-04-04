@@ -34,7 +34,7 @@ Pre-built artifacts can be installed from the following locations. Place the dow
 - [GitHub](https://github.com/m1sk9/LunaticChat/releases)
 - [Modrinth](https://modrinth.com/project/lunaticchat)
 
-See the [Documentation](https://lc.m1sk9.dev/player-guide/getting-started).
+See the [Documentation](https://lc.m1sk9.dev/docs/getting-started).
 
 ## Features
 

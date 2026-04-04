@@ -11,6 +11,7 @@ const t = computed(() =>
     ? {
         title: 'Download',
         description: 'Download the latest releases of LunaticChat.',
+        compatible: 'Paper and Velocity Compatibility',
         requirements: 'Requirements',
         javaReq: '25 or later',
         paperReq: '26.1.x or later',
@@ -33,6 +34,7 @@ const t = computed(() =>
     : {
         title: 'ダウンロード',
         description: 'LunaticChat の最新リリースをダウンロードできます。',
+        compatible: 'Paper / Velocity の互換性',
         requirements: '動作要件',
         javaReq: '25 以降',
         paperReq: '26.1.x 以降',
@@ -86,7 +88,7 @@ function formatDate(dateStr: string | null): string {
     </div>
 
     <div class="download-compat-notice">
-      <p class="download-compat-title">Paper / Velocity の互換性</p>
+      <p class="download-compat-title">{{ t.compatible }}</p>
       <p>{{ t.compatNotice }}</p>
       <p><a :href="isEn ? '/en/docs/features/velocity#protocol-version' : '/docs/features/velocity#プロトコルバージョン'">{{ t.compatLink }}</a></p>
     </div>

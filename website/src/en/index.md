@@ -8,7 +8,7 @@ hero:
   actions:
     - theme: brand
       text: Download
-      link: /download
+      link: /en/download
     - theme: brand
       text: Documentation
       link: /en/docs/getting-started
