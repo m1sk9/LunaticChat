@@ -69,6 +69,6 @@ export const en: DefaultTheme.Config = {
           },
         ],
       },
-    ]
+    ],
   },
 };

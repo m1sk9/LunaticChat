@@ -7,7 +7,7 @@ export const ja: DefaultTheme.Config = {
   },
   nav: [
     { link: '/download', text: 'ダウンロード' },
-    { link: '/docs/getting-started', text: 'ドキュメント'　}
+    { link: '/docs/getting-started', text: 'ドキュメント' },
   ],
   sidebar: {
     '/docs/': [
@@ -69,6 +69,6 @@ export const ja: DefaultTheme.Config = {
           },
         ],
       },
-    ]
+    ],
   },
 };
