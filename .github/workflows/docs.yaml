@@ -16,7 +16,7 @@ jobs:
       contents: read
     defaults:
       run:
-        working-directory: "./docs"
+        working-directory: "./website"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -36,4 +36,4 @@ jobs:
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          workingDirectory: docs
+          workingDirectory: website
