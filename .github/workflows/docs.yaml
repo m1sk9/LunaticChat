@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "website/**"
+      - ".github/workflows/docs.yaml"
   workflow_dispatch:
 
 jobs:
@@ -11,7 +14,7 @@ jobs:
     runs-on: ubuntu-24.04
     concurrency:
       group: docs-${{ github.ref }}
-      cancel-in-progress: true
+      cancel-in-progress: false
     permissions:
       contents: read
     defaults:
