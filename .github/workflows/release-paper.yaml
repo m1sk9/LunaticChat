@@ -84,6 +84,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: LunaticChat-paper-v${{ needs.validate.outputs.version }}
+          path: platform-paper/build/libs
 
       - name: Create GitHub Release
         env:
