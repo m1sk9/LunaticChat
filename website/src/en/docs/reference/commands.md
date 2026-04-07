@@ -31,16 +31,20 @@ Replies to the last player who sent you a message.
 
 Displays the plugin version, health, enabled features, and configuration values.
 
+- **Aliases**: `st`
 - **Permission**: `lunaticchat.command.lc.status`
 
 ### `/lc settings [key] [on|off]`
 
 Views or changes your personal settings. Without arguments, displays the settings list.
 
+- **Aliases**: `set`
 - **Permission**: `lunaticchat.command.lc.settings`
 - **Setting keys**: `japanese`, `notice`, `chNotice` (see [Player Settings](/en/docs/reference/player-settings) for details)
 
 ## Channel Commands (`/lc channel`)
+
+**Aliases**: `ch`
 
 Only available when the channel chat feature is enabled.
 
@@ -50,6 +54,7 @@ Only available when the channel chat feature is enabled.
 
 Creates a new channel. The creator becomes the owner.
 
+- **Aliases**: `new`
 - **Permission**: `lunaticchat.command.lc.channel.create`
 - `channelId`: Only alphanumeric characters, underscores, and hyphens are allowed
 - `isPrivate`: `true` / `false` (default: `false`)
@@ -58,12 +63,14 @@ Creates a new channel. The creator becomes the owner.
 
 Displays a list of public channels (10 per page).
 
+- **Aliases**: `ls`
 - **Permission**: `lunaticchat.command.lc.channel.list`
 
 #### `/lc channel info [channelId]`
 
 Displays detailed information about a channel. Without arguments, shows information about the active channel.
 
+- **Aliases**: `i`
 - **Permission**: `lunaticchat.command.lc.channel.info`
 
 ### Join & Leave
@@ -72,24 +79,28 @@ Displays detailed information about a channel. Without arguments, shows informat
 
 Joins a channel. An invitation is required for private channels.
 
+- **Aliases**: `j`
 - **Permission**: `lunaticchat.command.lc.channel.join`
 
 #### `/lc channel leave`
 
 Leaves the active channel.
 
+- **Aliases**: `l`
 - **Permission**: `lunaticchat.command.lc.channel.leave`
 
 #### `/lc channel switch <channelId>`
 
 Switches the active channel to another channel you have already joined.
 
+- **Aliases**: `sw`
 - **Permission**: `lunaticchat.command.lc.channel.switch`
 
 #### `/lc channel status`
 
 Displays your channel membership status (active channel and list of joined channels).
 
+- **Aliases**: `st`
 - **Permission**: `lunaticchat.command.lc.channel.status`
 
 ### Moderation (Owner / Moderator)
@@ -98,6 +109,7 @@ Displays your channel membership status (active channel and list of joined chann
 
 Invites a player to the active channel. Bypasses private channel restrictions.
 
+- **Aliases**: `inv`
 - **Permission**: `lunaticchat.command.lc.channel.invite`
 - **Required role**: OWNER or MODERATOR
 
@@ -105,6 +117,7 @@ Invites a player to the active channel. Bypasses private channel restrictions.
 
 Kicks a player from the active channel.
 
+- **Aliases**: `k`
 - **Permission**: `lunaticchat.command.lc.channel.kick`
 - **Required role**: OWNER or MODERATOR
 
@@ -128,6 +141,7 @@ Unbans a player from the channel.
 
 Deletes a channel.
 
+- **Aliases**: `del`
 - **Permission**: `lunaticchat.command.lc.channel.delete`
 - **Required role**: OWNER (can be bypassed with `lunaticchat.channelbypass` permission)
 
@@ -142,6 +156,7 @@ Grants or revokes moderator privileges for a channel member.
 
 Transfers channel ownership to another member.
 
+- **Aliases**: `own`
 - **Permission**: `lunaticchat.command.lc.channel.ownership`
 - **Required role**: OWNER
 
@@ -153,5 +168,6 @@ Transfers channel ownership to another member.
 
 Displays the connection status with the Velocity proxy, protocol version, and online player count.
 
+- **Aliases**: `st`
 - **Permission**: `lunaticchat.command.lcv.status`
 - **Default**: op only

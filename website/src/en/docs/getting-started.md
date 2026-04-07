@@ -6,6 +6,10 @@ layout: doc
 
 This guide explains how to set up LunaticChat.
 
+::: warning Spigot / BungeeCord is not supported
+LunaticChat only supports Paper / Folia servers. It does not work on Spigot or BungeeCord, and there are no plans to support them in the future. For Spigot environments, we recommend using a [fork of LunaChat](https://github.com/f1w3/LunaChat).
+:::
+
 ## Requirements
 
 | Item | Requirement |
