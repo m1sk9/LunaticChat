@@ -85,6 +85,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: LunaticChat-velocity-v${{ needs.validate.outputs.version }}
+          path: platform-velocity/build/libs
 
       - name: Create GitHub Release
         env:
