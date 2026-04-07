@@ -31,6 +31,9 @@ class ChannelOwnershipCommand(
         return applyMethodPermission("build", builder)
     }
 
+    fun buildAllWithPermissionCheck(): List<LiteralArgumentBuilder<CommandSourceStack>> =
+        withAliases(buildWithPermissionCheck(), listOf("own"))
+
     @Permission(LunaticChatPermissionNode.ChannelOwnership::class)
     fun build(): LiteralArgumentBuilder<CommandSourceStack> =
         Commands

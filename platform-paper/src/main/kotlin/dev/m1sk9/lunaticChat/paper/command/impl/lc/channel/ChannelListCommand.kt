@@ -35,6 +35,9 @@ class ChannelListCommand(
         return applyMethodPermission("build", builder)
     }
 
+    fun buildAllWithPermissionCheck(): List<LiteralArgumentBuilder<CommandSourceStack>> =
+        withAliases(buildWithPermissionCheck(), listOf("ls"))
+
     @Permission(LunaticChatPermissionNode.ChannelList::class)
     fun build(): LiteralArgumentBuilder<CommandSourceStack> =
         Commands

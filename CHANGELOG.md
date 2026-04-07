@@ -2,6 +2,12 @@
 
 ## v1
 
+### v1.1.0
+
+- Add an alias for a subcommand.
+- Standardize CI/CD.
+- Fixed an issue on the documentation site (lc.m1sk9.dev) where the deployment process would get stuck on the “Deploying...” screen under certain conditions.
+
 ### v1.0.0
 
 - Paper 26.1 (Minecraft 26.1) is now supported.

@@ -134,6 +134,30 @@ abstract class LunaticCommand(
     }
 
     /**
+     * Creates alias nodes for a subcommand.
+     * Each alias gets the same children, executor, and permission requirement as the primary node.
+     * Brigadier automatically provides tab completion for all registered literal nodes.
+     *
+     * @param primary The primary subcommand builder
+     * @param aliases The alias names for the subcommand
+     * @return A list containing the primary builder followed by alias builders
+     */
+    protected fun withAliases(
+        primary: LiteralArgumentBuilder<CommandSourceStack>,
+        aliases: List<String>,
+    ): List<LiteralArgumentBuilder<CommandSourceStack>> {
+        if (aliases.isEmpty()) return listOf(primary)
+        return listOf(primary) +
+            aliases.map { alias ->
+                val aliasBuilder = Commands.literal(alias)
+                primary.arguments.forEach { aliasBuilder.then(it) }
+                primary.command?.let { aliasBuilder.executes(it) }
+                aliasBuilder.requires(primary.requirement)
+                aliasBuilder
+            }
+    }
+
+    /**
      * Applies permission checks to a subcommand builder based on method-level @Permission annotation.
      * Used for subcommands that use build() instead of buildCommand().
      *

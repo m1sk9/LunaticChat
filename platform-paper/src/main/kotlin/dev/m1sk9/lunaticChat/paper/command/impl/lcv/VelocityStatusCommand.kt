@@ -37,18 +37,19 @@ class VelocityStatusCommand(
     override val description: String
         get() = languageManager.getMessage("commandDescription.lcv")
 
-    override fun buildCommand(): LiteralArgumentBuilder<CommandSourceStack> =
-        Commands
+    override fun buildCommand(): LiteralArgumentBuilder<CommandSourceStack> {
+        val statusExecutor =
+            com.mojang.brigadier.Command<CommandSourceStack> { ctx ->
+                val context = wrapContext(ctx)
+                val result = execute(context)
+                handleResult(context, result)
+            }
+
+        return Commands
             .literal(name)
-            .then(
-                Commands
-                    .literal("status")
-                    .executes { ctx ->
-                        val context = wrapContext(ctx)
-                        val result = execute(context)
-                        handleResult(context, result)
-                    },
-            )
+            .then(Commands.literal("status").executes(statusExecutor))
+            .then(Commands.literal("st").executes(statusExecutor))
+    }
 
     private fun execute(ctx: CommandContext): CommandResult {
         val sender = ctx.sender

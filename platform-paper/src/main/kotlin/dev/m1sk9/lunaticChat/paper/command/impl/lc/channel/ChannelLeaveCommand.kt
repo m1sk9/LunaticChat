@@ -30,6 +30,9 @@ class ChannelLeaveCommand(
         return applyMethodPermission("build", builder)
     }
 
+    fun buildAllWithPermissionCheck(): List<LiteralArgumentBuilder<CommandSourceStack>> =
+        withAliases(buildWithPermissionCheck(), listOf("l"))
+
     @Permission(LunaticChatPermissionNode.ChannelLeave::class)
     fun build(): LiteralArgumentBuilder<CommandSourceStack> =
         Commands.literal("leave").executes { ctx ->
