@@ -36,6 +36,9 @@ Pre-built artifacts can be installed from the following locations. Place the dow
 
 See the [Documentation](https://lc.m1sk9.dev/docs/getting-started).
 
+> [!WARNING]
+> LunaticChat only supports Paper / Folia servers. Spigot and BungeeCord are not supported, and there are no plans to support them in the future. For Spigot environments, we recommend using a [fork of LunaChat](https://github.com/f1w3/LunaChat).
+
 ## Features
 
 - 1on1 Direct Messaging System (`/tell`, `/msg`)
