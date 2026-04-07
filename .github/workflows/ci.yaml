@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   build_plugin:
@@ -45,9 +46,6 @@ jobs:
       - name: Build with shadowJar
         run: ./gradlew :platform-paper:shadowJar :platform-velocity:shadowJar --parallel --no-daemon
 
-      - name: Generate Dokka
-        run: ./gradlew :dokka:dokkaGenerate --no-daemon
-
       - name: Upload build artifacts
         uses: actions/upload-artifact@v7
         if: success()
@@ -57,6 +55,45 @@ jobs:
             platform-paper/build/libs/LunaticChat-*.jar
             platform-velocity/build/libs/LunaticChat-*-velocity.jar
           retention-days: 7
+
+  build_dokka:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Development Environment
+        uses: jdx/mise-action@v4
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Generate Dokka
+        run: ./gradlew :dokka:dokkaGenerate --no-daemon
+
+      - name: Upload Pages artifact
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: dokka/build/dokka/html
+
+  deploy_dokka:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build_dokka
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: "pages"
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
 
   build_docs:
     runs-on: ubuntu-24.04
@@ -83,3 +120,10 @@ jobs:
 
       - name: Build documentation
         run: bun run build
+
+      - name: Deploy to Cloudflare Workers
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          workingDirectory: website
