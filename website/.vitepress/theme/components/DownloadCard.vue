@@ -31,6 +31,11 @@ const t = computed(() =>
         compatNotice:
           'Paper and Velocity plugins are versioned with a protocol version. For MINOR version changes, update Velocity first. For MAJOR version changes, update all servers simultaneously.',
         compatLink: 'See Velocity Integration - Protocol Version for details.',
+        spigotNotice:
+          'LunaticChat only supports Paper / Folia servers. It does not work on Spigot or BungeeCord, and there are no plans to support them in the future.',
+        spigotAlt:
+          'For Spigot environments, we recommend using a',
+        spigotLink: 'fork of LunaChat',
       }
     : {
         title: 'ダウンロード',
@@ -54,6 +59,11 @@ const t = computed(() =>
         compatNotice:
           'Paper プラグインと Velocity プラグインはプロトコルバージョンで互換性が管理されています．MINOR バージョン変更時は Velocity を先にアップデートしてください．MAJOR バージョン変更時は全サーバーを同時にアップデートする必要があります．',
         compatLink: '詳細は Velocity 連携 - プロトコルバージョン を参照してください．',
+        spigotNotice:
+          'LunaticChat は Paper / Folia サーバーのみをサポートしています．Spigot / BungeeCord では動作せず，今後も対応予定はありません．',
+        spigotAlt:
+          'Spigot 環境では',
+        spigotLink: 'LunaChat の Fork',
       },
 );
 
@@ -86,6 +96,12 @@ function formatDate(dateStr: string | null): string {
         <li><strong>Paper / Folia</strong>: {{ t.paperReq }}</li>
         <li><strong>Velocity</strong>: {{ t.velocityReq }}</li>
       </ul>
+    </div>
+
+    <div class="download-spigot-notice">
+      <p class="download-spigot-title">Spigot / BungeeCord {{ isEn ? 'is not supported' : 'は非対応です' }}</p>
+      <p>{{ t.spigotNotice }}</p>
+      <p>{{ t.spigotAlt }} <a href="https://github.com/f1w3/LunaChat" target="_blank" rel="noopener">{{ t.spigotLink }}</a> {{ isEn ? '.' : 'の使用を推奨します．' }}</p>
     </div>
 
     <div class="download-compat-notice">
@@ -211,6 +227,34 @@ function formatDate(dateStr: string | null): string {
   margin-bottom: 8px;
   border: none;
   padding: 0;
+}
+
+.download-spigot-notice {
+  border: 1px solid var(--vp-c-danger-soft);
+  background: var(--vp-c-danger-soft);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+.download-spigot-notice p {
+  margin: 0;
+}
+
+.download-spigot-notice p + p {
+  margin-top: 8px;
+}
+
+.download-spigot-title {
+  font-weight: 600;
+  margin-bottom: 8px !important;
+}
+
+.download-spigot-notice a {
+  color: var(--vp-c-brand-1);
+  text-decoration: underline;
 }
 
 .download-requirements {
