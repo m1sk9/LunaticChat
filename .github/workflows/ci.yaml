@@ -44,7 +44,7 @@ jobs:
           fail_ci_if_error: false
 
       - name: Build with shadowJar
-        run: ./gradlew :platform-paper:shadowJar :platform-velocity:shadowJar --parallel --no-daemon
+        run: ./gradlew :platform-paper:shadowJar :platform-velocity:shadowJar -PisNightly=true --parallel --no-daemon
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v7
