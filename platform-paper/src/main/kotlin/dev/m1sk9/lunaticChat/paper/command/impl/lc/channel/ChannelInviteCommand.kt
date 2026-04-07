@@ -33,6 +33,9 @@ class ChannelInviteCommand(
         return applyMethodPermission("build", builder)
     }
 
+    fun buildAllWithPermissionCheck(): List<LiteralArgumentBuilder<CommandSourceStack>> =
+        withAliases(buildWithPermissionCheck(), listOf("inv"))
+
     @Permission(LunaticChatPermissionNode.ChannelInvite::class)
     fun build(): LiteralArgumentBuilder<CommandSourceStack> =
         Commands

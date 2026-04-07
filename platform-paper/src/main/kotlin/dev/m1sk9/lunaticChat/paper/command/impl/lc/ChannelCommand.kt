@@ -44,111 +44,111 @@ class ChannelCommand(
         return applyMethodPermission("build", builder)
     }
 
+    fun buildAllWithPermissionCheck(): List<LiteralArgumentBuilder<CommandSourceStack>> =
+        withAliases(buildWithPermissionCheck(), listOf("ch"))
+
     @Permission(LunaticChatPermissionNode.Channel::class)
     fun build(): LiteralArgumentBuilder<CommandSourceStack> {
         val channelCommand = Commands.literal("channel")
 
-        // Add subcommands
-        channelCommand
-            .then(
-                ChannelCreateCommand(
-                    plugin,
-                    channelManager,
-                    languageManager,
-                ).buildWithPermissionCheck(),
-            ).then(
-                ChannelListCommand(
-                    plugin,
-                    channelManager,
-                    languageManager,
-                ).buildWithPermissionCheck(),
-            ).then(
-                ChannelJoinCommand(
-                    plugin,
-                    channelManager,
-                    membershipManager,
-                    notificationHandler,
-                    languageManager,
-                ).buildWithPermissionCheck(),
-            ).then(
-                ChannelLeaveCommand(
-                    plugin,
-                    channelManager,
-                    membershipManager,
-                    notificationHandler,
-                    languageManager,
-                ).buildWithPermissionCheck(),
-            ).then(
-                ChannelSwitchCommand(
-                    plugin,
-                    channelManager,
-                    membershipManager,
-                    languageManager,
-                ).buildWithPermissionCheck(),
-            ).then(
-                ChannelStatusCommand(
-                    plugin,
-                    channelManager,
-                    membershipManager,
-                    languageManager,
-                ).buildWithPermissionCheck(),
-            ).then(
-                ChannelInfoCommand(
-                    plugin,
-                    channelManager,
-                    languageManager,
-                ).buildWithPermissionCheck(),
-            ).then(
-                ChannelDeleteCommand(
-                    plugin,
-                    channelManager,
-                    languageManager,
-                ).buildWithPermissionCheck(),
-            ).then(
-                ChannelInviteCommand(
-                    plugin,
-                    channelManager,
-                    membershipManager,
-                    languageManager,
-                ).buildWithPermissionCheck(),
-            ).then(
-                ChannelKickCommand(
-                    plugin,
-                    channelManager,
-                    membershipManager,
-                    notificationHandler,
-                    languageManager,
-                ).buildWithPermissionCheck(),
-            ).then(
-                ChannelBanCommand(
-                    plugin,
-                    channelManager,
-                    membershipManager,
-                    notificationHandler,
-                    languageManager,
-                ).buildWithPermissionCheck(),
-            ).then(
-                ChannelUnbanCommand(
-                    plugin,
-                    channelManager,
-                    membershipManager,
-                    languageManager,
-                ).buildWithPermissionCheck(),
-            ).then(
-                ChannelModCommand(
-                    plugin,
-                    channelManager,
-                    membershipManager,
-                    languageManager,
-                ).buildWithPermissionCheck(),
-            ).then(
-                ChannelOwnershipCommand(
-                    plugin,
-                    channelManager,
-                    membershipManager,
-                    languageManager,
-                ).buildWithPermissionCheck(),
-            )
+        // Add subcommands (with aliases)
+        ChannelCreateCommand(
+            plugin,
+            channelManager,
+            languageManager,
+        ).buildAllWithPermissionCheck().forEach { channelCommand.then(it) }
+
+        ChannelListCommand(
+            plugin,
+            channelManager,
+            languageManager,
+        ).buildAllWithPermissionCheck().forEach { channelCommand.then(it) }
+
+        ChannelJoinCommand(
+            plugin,
+            channelManager,
+            membershipManager,
+            notificationHandler,
+            languageManager,
+        ).buildAllWithPermissionCheck().forEach { channelCommand.then(it) }
+
+        ChannelLeaveCommand(
+            plugin,
+            channelManager,
+            membershipManager,
+            notificationHandler,
+            languageManager,
+        ).buildAllWithPermissionCheck().forEach { channelCommand.then(it) }
+
+        ChannelSwitchCommand(
+            plugin,
+            channelManager,
+            membershipManager,
+            languageManager,
+        ).buildAllWithPermissionCheck().forEach { channelCommand.then(it) }
+
+        ChannelStatusCommand(
+            plugin,
+            channelManager,
+            membershipManager,
+            languageManager,
+        ).buildAllWithPermissionCheck().forEach { channelCommand.then(it) }
+
+        ChannelInfoCommand(
+            plugin,
+            channelManager,
+            languageManager,
+        ).buildAllWithPermissionCheck().forEach { channelCommand.then(it) }
+
+        ChannelDeleteCommand(
+            plugin,
+            channelManager,
+            languageManager,
+        ).buildAllWithPermissionCheck().forEach { channelCommand.then(it) }
+
+        ChannelInviteCommand(
+            plugin,
+            channelManager,
+            membershipManager,
+            languageManager,
+        ).buildAllWithPermissionCheck().forEach { channelCommand.then(it) }
+
+        ChannelKickCommand(
+            plugin,
+            channelManager,
+            membershipManager,
+            notificationHandler,
+            languageManager,
+        ).buildAllWithPermissionCheck().forEach { channelCommand.then(it) }
+
+        ChannelBanCommand(
+            plugin,
+            channelManager,
+            membershipManager,
+            notificationHandler,
+            languageManager,
+        ).buildAllWithPermissionCheck().forEach { channelCommand.then(it) }
+
+        ChannelUnbanCommand(
+            plugin,
+            channelManager,
+            membershipManager,
+            languageManager,
+        ).buildAllWithPermissionCheck().forEach { channelCommand.then(it) }
+
+        ChannelModCommand(
+            plugin,
+            channelManager,
+            membershipManager,
+            languageManager,
+        ).buildAllWithPermissionCheck().forEach { channelCommand.then(it) }
+
+        ChannelOwnershipCommand(
+            plugin,
+            channelManager,
+            membershipManager,
+            languageManager,
+        ).buildAllWithPermissionCheck().forEach { channelCommand.then(it) }
 
         // Default help message when no subcommand is provided
         channelCommand.executes { ctx ->

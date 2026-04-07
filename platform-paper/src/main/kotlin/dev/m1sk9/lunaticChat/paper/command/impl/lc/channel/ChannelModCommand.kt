@@ -31,6 +31,9 @@ class ChannelModCommand(
         return applyMethodPermission("build", builder)
     }
 
+    fun buildAllWithPermissionCheck(): List<LiteralArgumentBuilder<CommandSourceStack>> =
+        withAliases(buildWithPermissionCheck(), emptyList())
+
     @Permission(LunaticChatPermissionNode.ChannelMod::class)
     fun build(): LiteralArgumentBuilder<CommandSourceStack> =
         Commands

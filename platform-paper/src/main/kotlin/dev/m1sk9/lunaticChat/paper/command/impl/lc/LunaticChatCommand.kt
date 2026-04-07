@@ -34,36 +34,31 @@ class LunaticChatCommand(
         get() = languageManager.getMessage("commandDescription.lc")
 
     override fun buildCommand(): LiteralArgumentBuilder<CommandSourceStack> {
-        val command =
-            Commands
-                .literal(name)
-                .then(
-                    SettingsCommand(
-                        plugin,
-                        settingHandlerRegistry,
-                        languageManager,
-                    ).buildWithPermissionCheck(),
-                ).then(
-                    StatusCommand(
-                        plugin,
-                        languageManager,
-                        configuration,
-                    ).buildWithPermissionCheck(),
-                )
+        val command = Commands.literal(name)
+
+        SettingsCommand(
+            plugin,
+            settingHandlerRegistry,
+            languageManager,
+        ).buildAllWithPermissionCheck().forEach { command.then(it) }
+
+        StatusCommand(
+            plugin,
+            languageManager,
+            configuration,
+        ).buildAllWithPermissionCheck().forEach { command.then(it) }
 
         // Add channel command if channel manager is available
         plugin.channelManager?.let { manager ->
             plugin.channelMembershipManager?.let { membershipManager ->
                 plugin.channelNotificationHandler?.let { notificationHandler ->
-                    command.then(
-                        ChannelCommand(
-                            plugin,
-                            manager,
-                            membershipManager,
-                            notificationHandler,
-                            languageManager,
-                        ).buildWithPermissionCheck(),
-                    )
+                    ChannelCommand(
+                        plugin,
+                        manager,
+                        membershipManager,
+                        notificationHandler,
+                        languageManager,
+                    ).buildAllWithPermissionCheck().forEach { command.then(it) }
                 }
             }
         }

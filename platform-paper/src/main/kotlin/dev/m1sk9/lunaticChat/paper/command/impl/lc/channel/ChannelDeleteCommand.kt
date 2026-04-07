@@ -28,6 +28,9 @@ class ChannelDeleteCommand(
         return applyMethodPermission("build", builder)
     }
 
+    fun buildAllWithPermissionCheck(): List<LiteralArgumentBuilder<CommandSourceStack>> =
+        withAliases(buildWithPermissionCheck(), listOf("del"))
+
     @Permission(LunaticChatPermissionNode.ChannelDelete::class)
     fun build(): LiteralArgumentBuilder<CommandSourceStack> =
         Commands

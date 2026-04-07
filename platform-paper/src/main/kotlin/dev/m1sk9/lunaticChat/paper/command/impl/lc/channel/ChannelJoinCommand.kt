@@ -38,6 +38,9 @@ class ChannelJoinCommand(
         return applyMethodPermission("build", builder)
     }
 
+    fun buildAllWithPermissionCheck(): List<LiteralArgumentBuilder<CommandSourceStack>> =
+        withAliases(buildWithPermissionCheck(), listOf("j"))
+
     @Permission(LunaticChatPermissionNode.ChannelJoin::class)
     fun build(): LiteralArgumentBuilder<CommandSourceStack> =
         Commands

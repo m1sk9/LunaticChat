@@ -35,6 +35,9 @@ class ChannelBanCommand(
         return applyMethodPermission("build", builder)
     }
 
+    fun buildAllWithPermissionCheck(): List<LiteralArgumentBuilder<CommandSourceStack>> =
+        withAliases(buildWithPermissionCheck(), emptyList())
+
     @Permission(LunaticChatPermissionNode.ChannelBan::class)
     fun build(): LiteralArgumentBuilder<CommandSourceStack> =
         Commands

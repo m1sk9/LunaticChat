@@ -38,6 +38,9 @@ class ChannelStatusCommand(
         return applyMethodPermission("build", builder)
     }
 
+    fun buildAllWithPermissionCheck(): List<LiteralArgumentBuilder<CommandSourceStack>> =
+        withAliases(buildWithPermissionCheck(), listOf("st"))
+
     @Permission(LunaticChatPermissionNode.ChannelStatus::class)
     fun build(): LiteralArgumentBuilder<CommandSourceStack> =
         Commands.literal("status").executes { ctx ->

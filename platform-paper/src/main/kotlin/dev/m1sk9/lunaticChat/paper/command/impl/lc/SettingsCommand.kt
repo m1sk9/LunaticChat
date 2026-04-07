@@ -39,6 +39,9 @@ class SettingsCommand(
         return applyMethodPermission("build", builder)
     }
 
+    fun buildAllWithPermissionCheck(): List<LiteralArgumentBuilder<CommandSourceStack>> =
+        withAliases(buildWithPermissionCheck(), listOf("set"))
+
     /**
      * Builds the setting subcommand structure.
      * For each registered setting key, creates:
