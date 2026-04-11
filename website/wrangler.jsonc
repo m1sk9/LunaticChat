@@ -8,6 +8,9 @@
   "assets": {
     "directory": "dist"
   },
+  "routes": [
+    { "pattern": "lc.m1sk9.dev", "custom_domain": true }
+  ],
   "compatibility_flags": [
     "nodejs_compat"
   ]
