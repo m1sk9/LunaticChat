@@ -120,7 +120,7 @@ jobs:
 
           gh release create "$TAG_NAME" \
             "platform-paper/build/libs/$JAR_NAME" \
-            --title "$TAG_NAME" \
+            --title "LunaticChat v${VERSION} (Paper/Folia)" \
             --draft \
             --notes-file /tmp/release-notes.md
 

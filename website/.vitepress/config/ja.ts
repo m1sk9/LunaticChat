@@ -67,6 +67,10 @@ export const ja: DefaultTheme.Config = {
             link: '/docs/reference/player-settings',
             text: 'プレイヤー設定',
           },
+          {
+            link: '/docs/reference/compatibility',
+            text: 'Paper / Velocity 互換性',
+          },
         ],
       },
     ],

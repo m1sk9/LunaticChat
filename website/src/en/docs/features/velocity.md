@@ -6,6 +6,10 @@ layout: doc
 
 Relays global chat across multiple Paper / Folia servers via a Velocity proxy.
 
+::: tip About compatibility
+The Paper and Velocity plugins are versioned independently. **Using the latest of both always works.** If you need to mix older versions, see [Paper / Velocity Compatibility](/en/docs/reference/compatibility).
+:::
+
 ## Setup
 
 ### 1. Install the Velocity Plugin
@@ -47,44 +51,9 @@ When `crossServerGlobalChat` is set to `true`, player chat messages are relayed 
 
 Each message is assigned a unique ID, and a cache prevents the same message from being displayed more than once. The cache size can be configured with `messageDeduplicationCacheSize` (default: `100`).
 
-## Protocol Version
-
-Compatibility between Paper and Velocity is managed by protocol version. A handshake is performed upon connection, and incompatible versions are rejected.
-
-### Version Bump Rules
-
-| Level | Example Change | Compatibility | Deployment Order |
-|-------|---------------|---------------|-----------------|
-| PATCH (1.0.0 -> 1.0.1) | Adding optional fields, new sub-channels | Fully compatible (safe with `ignoreUnknownKeys=true`) | Any order, anytime |
-| MINOR (1.0.x -> 1.1.0) | Adding required fields, changing existing sub-channel semantics | Backward compatible within `MIN_SUPPORTED_MINOR` range | **Update Velocity first** -> then update each Paper server |
-| MAJOR (1.x.x -> 2.0.0) | Wire format changes, removing/renaming sub-channels | Incompatible | **Simultaneous deployment of all servers** |
-
-### Compatibility Check
-
-Compatibility is determined during the handshake using the following rules:
-
-- **MAJOR** versions must match
-- The remote **MINOR** must be at least `MIN_SUPPORTED_MINOR` and at most the local MINOR
-- **PATCH** does not affect the compatibility check
-
-#### Example: Velocity with protocol 1.2.0 and `MIN_SUPPORTED_MINOR=1`
-
-| Paper Protocol | Result |
-|---------------|--------|
-| 1.1.x | Connection OK |
-| 1.2.x | Connection OK |
-| 1.0.x | Rejected (older than `MIN_SUPPORTED_MINOR`) |
-| 1.3.x | Rejected (newer than Velocity) |
-| 2.0.x | Rejected (MAJOR mismatch) |
-
-### Operational Cycle
-
-1. **No protocol change** -> Paper / Velocity can be deployed independently
-2. **PATCH change** -> Deploy freely from either side
-3. **MINOR change** -> Update Velocity first and set `MIN_SUPPORTED_MINOR` to allow a grace period for older Paper servers. After all Paper servers are updated, raise `MIN_SUPPORTED_MINOR`
-4. **MAJOR change** -> Simultaneous update during a maintenance window
-
 ## Connection States
+
+The states reported by `/lcv status` and their meanings:
 
 | State | Description |
 |-------|-------------|
@@ -94,6 +63,12 @@ Compatibility is determined during the handshake using the following rules:
 | `FAILED` | Connection failed |
 
 The handshake timeout is 5 seconds. If the handshake times out, the state becomes `FAILED`.
+
+### Troubleshooting `FAILED`
+
+- Confirm the Velocity plugin is installed and the proxy is running
+- Confirm the Paper `serverName` matches the server name configured in Velocity
+- Confirm the **protocol versions** of the Paper and Velocity plugins are compatible — see the [compatibility matrix](/en/docs/reference/compatibility#compatibility-matrix)
 
 ## Configuration Reference
 
@@ -107,3 +82,7 @@ The handshake timeout is 5 seconds. If the handshake times out, the state become
 ## Message Format
 
 The display format for cross-server chat can be customized via `messageFormat.crossServerGlobalChatFormat` in `config.yml`. See [Message Format](/en/docs/reference/message-format) for details.
+
+## Related Documents
+
+- [Paper / Velocity Compatibility](/en/docs/reference/compatibility) — protocol version and rolling update details

@@ -29,8 +29,11 @@ const t = computed(() =>
           'The latest build from the main branch is available from CI. Development builds are not guaranteed to be stable.',
         viewCiBuilds: 'View latest CI builds',
         compatNotice:
-          'Paper and Velocity plugins are versioned with a protocol version. For MINOR version changes, update Velocity first. For MAJOR version changes, update all servers simultaneously.',
-        compatLink: 'See Velocity Integration - Protocol Version for details.',
+          'Using the latest Paper and the latest Velocity always works. If you need to mix older versions, check the compatibility matrix below.',
+        compatLink: 'See Paper / Velocity Compatibility for details.',
+        compatMatrixTitle: 'Compatibility Matrix',
+        compatMatrixDesc:
+          'Combinations marked ✓ can connect. Hover a cell for details.',
         spigotNotice:
           'LunaticChat only supports Paper / Folia servers. It does not work on Spigot or BungeeCord, and there are no plans to support them in the future.',
         spigotAlt:
@@ -57,8 +60,11 @@ const t = computed(() =>
           '最新の main ブランチのビルドは CI から取得できます。開発ビルドは安定性が保証されていません。',
         viewCiBuilds: '最新の CI ビルドを確認',
         compatNotice:
-          'Paper プラグインと Velocity プラグインはプロトコルバージョンで互換性が管理されています．MINOR バージョン変更時は Velocity を先にアップデートしてください．MAJOR バージョン変更時は全サーバーを同時にアップデートする必要があります．',
-        compatLink: '詳細は Velocity 連携 - プロトコルバージョン を参照してください．',
+          '両プラグインの最新版同士は常に互換性があります．古いバージョンを混ぜる場合のみ，下の互換性マトリクスを確認してください．',
+        compatLink: '詳細は Paper / Velocity 互換性 を参照してください．',
+        compatMatrixTitle: '互換性マトリクス',
+        compatMatrixDesc:
+          '✓ の組み合わせは接続可能です．セルにホバーすると詳細が表示されます．',
         spigotNotice:
           'LunaticChat は Paper / Folia サーバーのみをサポートしています．Spigot / BungeeCord では動作せず，今後も対応予定はありません．',
         spigotAlt:
@@ -107,7 +113,7 @@ function formatDate(dateStr: string | null): string {
     <div class="download-compat-notice">
       <p class="download-compat-title">{{ t.compatible }}</p>
       <p>{{ t.compatNotice }}</p>
-      <p><a :href="isEn ? '/en/docs/features/velocity#protocol-version' : '/docs/features/velocity#プロトコルバージョン'">{{ t.compatLink }}</a></p>
+      <p><a :href="isEn ? '/en/docs/reference/compatibility' : '/docs/reference/compatibility'">{{ t.compatLink }}</a></p>
     </div>
 
     <div v-if="loading" class="download-loading">
@@ -187,6 +193,10 @@ function formatDate(dateStr: string | null): string {
         </div>
       </div>
     </div>
+
+    <h2>{{ t.compatMatrixTitle }}</h2>
+    <p>{{ t.compatMatrixDesc }}</p>
+    <CompatibilityMatrix />
 
     <h2>Modrinth</h2>
     <p>{{ t.modrinthDesc }}</p>
