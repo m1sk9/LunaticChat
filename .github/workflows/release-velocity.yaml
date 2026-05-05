@@ -121,7 +121,7 @@ jobs:
 
           gh release create "$TAG_NAME" \
             "platform-velocity/build/libs/$JAR_NAME" \
-            --title "LunaticChat v${VERSION} (Velocity)" \
+            --title "v${VERSION} (Velocity)" \
             --draft \
             --notes-file /tmp/release-notes.md
 
