@@ -2,6 +2,11 @@
 
 ## v1
 
+### v1.2.0
+
+- Paper 26.1.2 (Minecraft 26.1.2) is now supported.
+  - We have also added code support for Paper 26.1.1 (Minecraft 26.1.1). However, since this is not the latest version, we cannot guarantee its functionality (LunaticChat only supports the latest version).
+
 ### v1.1.0
 
 - Add an alias for a subcommand.

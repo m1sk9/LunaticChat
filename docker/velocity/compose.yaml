@@ -40,7 +40,7 @@ services:
     environment:
       EULA: "TRUE"
       TYPE: "PAPER"
-      VERSION: "26.1.1"
+      VERSION: "26.1.2"
       MEMORY: "1G"
 
       # デバッグ用高速化設定
@@ -87,7 +87,7 @@ services:
     environment:
       EULA: "TRUE"
       TYPE: "PAPER"
-      VERSION: "26.1.1"
+      VERSION: "26.1.2"
       MEMORY: "1G"
 
       # デバッグ用高速化設定
