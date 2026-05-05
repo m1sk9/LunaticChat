@@ -123,7 +123,18 @@ features:
 
 <hr class="home-divider" />
 
-<!-- Section 5: プラットフォーム -->
+<!-- Section 5: 互換性マトリクス -->
+<div class="platform-section">
+  <h2>Paper / Velocity 互換性</h2>
+  <p class="section-desc">最新版同士は常に互換．古いバージョンを混在させる場合は下のマトリクスで確認できます</p>
+  <div style="text-align: left;">
+    <CompatibilityMatrix />
+  </div>
+</div>
+
+<hr class="home-divider" />
+
+<!-- Section 6: プラットフォーム -->
 <div class="platform-section">
   <h2>マルチプラットフォーム対応</h2>
   <p class="section-desc">サーバーの構成に合わせて柔軟に導入できます</p>

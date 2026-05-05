@@ -123,7 +123,18 @@ features:
 
 <hr class="home-divider" />
 
-<!-- Section 5: Platforms -->
+<!-- Section 5: Compatibility Matrix -->
+<div class="platform-section">
+  <h2>Paper / Velocity Compatibility</h2>
+  <p class="section-desc">Latest versions are always compatible. Mix older versions? Check the matrix below.</p>
+  <div style="text-align: left;">
+    <CompatibilityMatrix />
+  </div>
+</div>
+
+<hr class="home-divider" />
+
+<!-- Section 6: Platforms -->
 <div class="platform-section">
   <h2>Multi-Platform Support</h2>
   <p class="section-desc">Flexibly deploy to match your server setup</p>

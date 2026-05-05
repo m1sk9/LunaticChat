@@ -67,6 +67,10 @@ export const en: DefaultTheme.Config = {
             link: '/en/docs/reference/player-settings',
             text: 'Player Settings',
           },
+          {
+            link: '/en/docs/reference/compatibility',
+            text: 'Paper / Velocity Compatibility',
+          },
         ],
       },
     ],
