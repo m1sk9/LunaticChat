@@ -19,12 +19,12 @@ dependencies {
     api(project(":engine"))
 
     // Paper-specific dependencies
-    compileOnly("io.papermc.paper:paper-api:26.1.2.build.53-stable")
+    compileOnly("io.papermc.paper:paper-api:26.1.2.build.60-stable")
     implementation("com.charleskorn.kaml:kaml:0.104.0") // YAML configuration
     implementation("org.jetbrains.kotlin:kotlin-reflect:2.3.21") // Annotation processing
 
     // Test dependencies
-    testImplementation("io.papermc.paper:paper-api:26.1.2.build.53-stable")
+    testImplementation("io.papermc.paper:paper-api:26.1.2.build.60-stable")
     testImplementation("io.mockk:mockk:1.14.9")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
 }
