@@ -126,7 +126,7 @@ jobs:
             --notes-file /tmp/release-notes.md
 
       - name: Publish to Modrinth (Velocity)
-        uses: cloudnode-pro/modrinth-publish@a913fbd3649342d446fe40559133ab03623d18aa # v2
+        uses: cloudnode-pro/modrinth-publish@8dc596b20b94959bf244180235d90729d05a674f # v2
         with:
           token: ${{ secrets.MODRINTH_TOKEN }}
           name: v${{ needs.validate.outputs.version }} (Velocity)
