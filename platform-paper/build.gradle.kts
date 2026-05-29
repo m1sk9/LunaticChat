@@ -25,7 +25,7 @@ dependencies {
 
     // Test dependencies
     testImplementation("io.papermc.paper:paper-api:26.1.2.build.66-stable")
-    testImplementation("io.mockk:mockk:1.14.9")
+    testImplementation("io.mockk:mockk:1.14.11")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
 }
 
