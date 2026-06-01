@@ -6,6 +6,10 @@ layout: doc
 
 The Paper and Velocity plugins of LunaticChat are versioned independently. Whether a given combination works is determined by the **protocol version** embedded in each plugin.
 
+::: warning Plugin version ≠ protocol version
+The **plugin version** (e.g., Paper v1.2.0) and the **protocol version** (e.g., 1.0.0) are different things. New plugin releases do not necessarily change the protocol — and only the protocol version determines compatibility.
+:::
+
 ## TL;DR
 
 - **The latest Paper and the latest Velocity are always compatible.** When in doubt, use the latest of both.
@@ -20,15 +24,19 @@ Each cell indicates whether the corresponding Paper × Velocity combination can 
 
 ## What Is a Protocol Version?
 
-Paper and Velocity communicate via a LunaticChat-specific plugin messaging protocol. The protocol carries a semantic version (`MAJOR.MINOR.PATCH`), and a handshake at connection time validates both sides.
+Paper and Velocity communicate via a LunaticChat-specific plugin messaging protocol. The protocol carries a semantic version (`MAJOR.MINOR.PATCH`), and at connection time Velocity validates the protocol version sent by Paper.
 
-The rules are:
+::: tip Velocity is the only side that checks
+Only Velocity performs the compatibility check. Paper just sends a handshake — it does not validate Velocity's version. So the question reduces to: "Does Velocity accept Paper's protocol version?"
+:::
+
+The rules (from Velocity's perspective) are:
 
 - **MAJOR** must match exactly
-- The remote **MINOR** must be at least `MIN_SUPPORTED_MINOR` and at most the local `MINOR`
+- Paper's **MINOR** must be at least Velocity's `MIN_SUPPORTED_MINOR` and at most Velocity's `MINOR`
 - **PATCH** does not affect compatibility
 
-`MIN_SUPPORTED_MINOR` controls how far back the local plugin accepts older peers, providing a grace window during rolling updates.
+`MIN_SUPPORTED_MINOR` controls how far back Velocity accepts older Paper peers, providing a grace window during rolling updates.
 
 ### Version Bump Rules
 
@@ -50,8 +58,8 @@ The rules are:
 Compatibility is checked at connection time:
 
 1. The Paper server sends a handshake to Velocity at startup
-2. Velocity validates the protocol version against its own
-3. On mismatch, the connection is rejected and the state becomes `FAILED`
+2. Velocity validates Paper's protocol version against its own
+3. On mismatch, Velocity rejects the connection and Paper's state becomes `FAILED`
 4. The handshake timeout is 5 seconds
 
 Live connection state is available via `/lcv status`. See [Velocity Integration](/en/docs/features/velocity#connection-states) for details.

@@ -134,25 +134,18 @@ export function useCompatibilityData() {
   return { data, loading, error };
 }
 
-export type CompatibilityResult = 'compatible' | 'major-mismatch' | 'paper-too-new' | 'velocity-too-new' | 'paper-too-old' | 'velocity-too-old';
+export type CompatibilityResult = 'compatible' | 'major-mismatch' | 'paper-too-new' | 'paper-too-old';
 
+// Mirrors the gatekeeping done by Velocity in
+// platform-velocity/.../PluginMessageHandler.kt — Paper does not validate.
 export function checkCompatibility(
   paper: ProtocolVersion,
   velocity: ProtocolVersion,
 ): CompatibilityResult {
   if (paper.major !== velocity.major) return 'major-mismatch';
-
-  const paperAcceptsVelocity =
-    velocity.minor >= paper.minSupportedMinor && velocity.minor <= paper.minor;
-  const velocityAcceptsPaper =
-    paper.minor >= velocity.minSupportedMinor && paper.minor <= velocity.minor;
-
-  if (paperAcceptsVelocity && velocityAcceptsPaper) return 'compatible';
-  if (!velocityAcceptsPaper && paper.minor > velocity.minor) return 'paper-too-new';
-  if (!paperAcceptsVelocity && velocity.minor > paper.minor) return 'velocity-too-new';
-  if (!velocityAcceptsPaper && paper.minor < velocity.minSupportedMinor) return 'paper-too-old';
-  if (!paperAcceptsVelocity && velocity.minor < paper.minSupportedMinor) return 'velocity-too-old';
-  return 'major-mismatch';
+  if (paper.minor > velocity.minor) return 'paper-too-new';
+  if (paper.minor < velocity.minSupportedMinor) return 'paper-too-old';
+  return 'compatible';
 }
 
 export function isCompatible(
