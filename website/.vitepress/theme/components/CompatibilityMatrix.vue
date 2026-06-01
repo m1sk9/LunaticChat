@@ -31,10 +31,8 @@ const t = computed(() =>
         compatibleShort: 'OK',
         compatibilityHeader: 'Compatibility',
         reasonMajorMismatch: 'Major version mismatch',
-        reasonPaperTooNew: 'Paper newer — update Velocity first',
-        reasonVelocityTooNew: 'Velocity newer — update Paper',
-        reasonPaperTooOld: 'Paper too old',
-        reasonVelocityTooOld: 'Velocity too old',
+        reasonPaperTooNew: 'Paper protocol newer than Velocity — update Velocity first',
+        reasonPaperTooOld: 'Paper protocol older than Velocity accepts',
         legend: 'Legend',
         legendCompatible: 'Compatible — both can connect.',
         legendIncompatible: 'Incompatible — handshake will be rejected.',
@@ -55,10 +53,8 @@ const t = computed(() =>
         compatibleShort: 'OK',
         compatibilityHeader: '互換性',
         reasonMajorMismatch: 'MAJOR バージョン不一致',
-        reasonPaperTooNew: 'Paper が新しすぎる — Velocity を先に更新',
-        reasonVelocityTooNew: 'Velocity が新しすぎる — Paper を更新',
-        reasonPaperTooOld: 'Paper が古すぎる',
-        reasonVelocityTooOld: 'Velocity が古すぎる',
+        reasonPaperTooNew: 'Paper のプロトコルが Velocity より新しい — Velocity を先に更新',
+        reasonPaperTooOld: 'Paper のプロトコルが Velocity の許容範囲より古い',
         legend: '凡例',
         legendCompatible: '互換 — 接続可能．',
         legendIncompatible: '非互換 — ハンドシェイクで拒否されます．',
@@ -89,12 +85,8 @@ function reasonLabel(result: CompatibilityResult): string {
       return t.value.reasonMajorMismatch;
     case 'paper-too-new':
       return t.value.reasonPaperTooNew;
-    case 'velocity-too-new':
-      return t.value.reasonVelocityTooNew;
     case 'paper-too-old':
       return t.value.reasonPaperTooOld;
-    case 'velocity-too-old':
-      return t.value.reasonVelocityTooOld;
     default:
       return '';
   }
