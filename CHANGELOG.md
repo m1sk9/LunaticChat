@@ -2,6 +2,14 @@
 
 ## v1
 
+### v1.2.1
+
+- Dependency updates only. There are no functional changes to the plugin.
+  - Updated Paper API to 26.1.2 (build.67).
+  - Updated libraries: kotlinx-coroutines 1.11.0, Ktor 3.5.0, JUnit 6.1.0, and MockK 1.14.11.
+  - Updated Gradle to 9.5.1.
+  - Updated the Shadow plugin to 9.4.2.
+
 ### v1.2.0
 
 - Paper 26.1.2 (Minecraft 26.1.2) is now supported.
