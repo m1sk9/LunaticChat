@@ -21,7 +21,7 @@ dependencies {
     // Paper-specific dependencies
     compileOnly("io.papermc.paper:paper-api:26.1.2.build.68-stable")
     implementation("com.charleskorn.kaml:kaml:0.104.0") // YAML configuration
-    implementation("org.jetbrains.kotlin:kotlin-reflect:2.3.21") // Annotation processing
+    implementation("org.jetbrains.kotlin:kotlin-reflect:2.4.0") // Annotation processing
 
     // Test dependencies
     testImplementation("io.papermc.paper:paper-api:26.1.2.build.68-stable")
