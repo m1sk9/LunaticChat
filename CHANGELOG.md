@@ -4,9 +4,16 @@
 
 ### v1.2.2
 
+This release includes updates to the Velocity version.
+
 - Dependency updates only. There are no functional changes to the plugin.
   - Updated Paper API to 26.1.2 (build.69).
-  - Updated libraries: kotlin-reflect, serialization, jvm to 2.4.0
+  - Updated libraries: kotlin-reflect, serialization, jvm to 2.4.0.
+
+#### Velocity: v1.1.0
+
+- Velocity 3.5.0 is now supported.
+  - Support for Velocity 3.4.0 has been dropped.
 
 ### v1.2.1
 
