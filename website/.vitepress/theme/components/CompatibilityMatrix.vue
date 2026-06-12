@@ -208,7 +208,7 @@ function cellResult(
 
 .compat-table {
   border-collapse: collapse;
-  width: 100%;
+  width: auto;
   margin: 0;
   font-size: 0.875rem;
 }
@@ -246,6 +246,10 @@ function cellResult(
   white-space: nowrap;
 }
 
+.compat-col-header {
+  min-width: 110px;
+}
+
 .compat-version {
   font-size: 0.95rem;
 }
@@ -258,6 +262,7 @@ function cellResult(
 }
 
 .compat-cell {
+  min-width: 110px;
   font-size: 1.1rem;
   font-weight: 700;
 }
