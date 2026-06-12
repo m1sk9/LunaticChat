@@ -1,8 +1,10 @@
 # LunaticChat
 
+[日本語](./README.ja.md)
+
 [![CI](https://github.com/m1sk9/LunaticChat/actions/workflows/ci.yaml/badge.svg)](https://github.com/m1sk9/LunaticChat/actions/workflows/ci.yaml)
 [![Release](https://github.com/m1sk9/LunaticChat/actions/workflows/release.yaml/badge.svg)](https://github.com/m1sk9/LunaticChat/actions/workflows/release.yaml)
-[![GNU General Public License v3.0](https://img.shields.io/github/license/m1sk9/LunaticChat?color=%239944ee)](https://github.com/m1sk9/LunaticChat/blob/main/LICENSE)
+[![GNU General Public License v3.0](https://img.shields.io/badge/license-GPL--3.0-9944ee)](https://github.com/m1sk9/LunaticChat/blob/main/LICENSE)
 ![Modrinth Downloads](https://img.shields.io/modrinth/dt/MBeAdO4L)
 [![codecov](https://codecov.io/github/m1sk9/LunaticChat/graph/badge.svg?token=M3CJYTADYD)](https://codecov.io/github/m1sk9/LunaticChat)
 
@@ -18,7 +20,7 @@ cd LunaticChat
 ./gradlew shadowJar
 ```
 
-_[Supports Minecraft 26.1](https://minecraft.wiki/w/Java_Edition_26.1) | [Requires Java 25+ and Gradle 9+](.github/CONTRIBUTING.md)_
+_[Supports Minecraft 26.1.2](https://minecraft.wiki/w/Java_Edition_26.1.2) | [Requires Java 25+ and Gradle 9+](.github/CONTRIBUTING.md)_
 
 ## Installation
 
@@ -28,10 +30,7 @@ LunaticChat is compatible with the following platforms:
 - Velocity
 - Folia
 
-Pre-built artifacts can be installed from the following locations. Place the downloaded plugin file in your server's `plugins` folder and restart the server.
-
-- [GitHub](https://github.com/m1sk9/LunaticChat/releases)
-- [Modrinth](https://modrinth.com/project/lunaticchat)
+Download the pre-built plugin from the [Download page](https://lc.m1sk9.dev/download), place the file in your server's `plugins` folder, and restart the server.
 
 See the [Documentation](https://lc.m1sk9.dev/docs/getting-started).
 
@@ -45,6 +44,14 @@ See the [Documentation](https://lc.m1sk9.dev/docs/getting-started).
 - Romaji to Japanese Conversion
 - Channel Chat System
 - Multi-platform support (Paper, Folia, Velocity)
+
+## Velocity Integration
+
+LunaticChat can relay global chat across multiple Paper / Folia servers behind a Velocity proxy. Installing the plugin on both the Velocity proxy and each backend server lets players chat across servers.
+
+Paper–Velocity compatibility is determined solely by an internal **protocol version**, not by the plugin version. Paper and Velocity builds with incompatible protocol versions will refuse to relay chat, so keep both sides updated together.
+
+For supported combinations and setup details, see the [Documentation](https://lc.m1sk9.dev).
 
 ## License
 
