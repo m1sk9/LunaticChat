@@ -1,8 +1,11 @@
 ---
 description: リリースの準備とタグ作成を行う。引数に paper, velocity, both のいずれかを指定。
+disable-model-invocation: true
+argument-hint: [paper|velocity|both]
+allowed-tools: Bash(./gradlew *), Bash(git *), Read, Grep
 ---
 
-# Release Command
+# Release
 
 引数: `$ARGUMENTS`
 
