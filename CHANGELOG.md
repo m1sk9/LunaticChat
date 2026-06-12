@@ -2,6 +2,12 @@
 
 ## v1
 
+### v1.2.2
+
+- Dependency updates only. There are no functional changes to the plugin.
+  - Updated Paper API to 26.1.2 (build.69).
+  - Updated libraries: kotlin-reflect, serialization, jvm to 2.4.0
+
 ### v1.2.1
 
 - Dependency updates only. There are no functional changes to the plugin.
