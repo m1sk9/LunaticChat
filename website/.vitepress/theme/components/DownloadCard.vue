@@ -12,7 +12,6 @@ const t = computed(() =>
     ? {
         title: 'Download',
         description: 'Download the latest releases of LunaticChat.',
-        compatible: 'Paper and Velocity Compatibility',
         requirements: 'Requirements',
         javaReq: '25 or later',
         paperReq: '26.1.x or later',
@@ -43,7 +42,6 @@ const t = computed(() =>
     : {
         title: 'ダウンロード',
         description: 'LunaticChat の最新リリースをダウンロードできます。',
-        compatible: 'Paper / Velocity の互換性',
         requirements: '動作要件',
         javaReq: '25 以降',
         paperReq: '26.1.x 以降',
@@ -108,12 +106,6 @@ function formatDate(dateStr: string | null): string {
       <p class="download-spigot-title">Spigot / BungeeCord {{ isEn ? 'is not supported' : 'は非対応です' }}</p>
       <p>{{ t.spigotNotice }}</p>
       <p>{{ t.spigotAlt }} <a href="https://github.com/f1w3/LunaChat" target="_blank" rel="noopener">{{ t.spigotLink }}</a> {{ isEn ? '.' : 'の使用を推奨します．' }}</p>
-    </div>
-
-    <div class="download-compat-notice">
-      <p class="download-compat-title">{{ t.compatible }}</p>
-      <p>{{ t.compatNotice }}</p>
-      <p><a :href="isEn ? '/en/docs/reference/compatibility' : '/docs/reference/compatibility'">{{ t.compatLink }}</a></p>
     </div>
 
     <div v-if="loading" class="download-loading">
@@ -196,6 +188,7 @@ function formatDate(dateStr: string | null): string {
 
     <h2>{{ t.compatMatrixTitle }}</h2>
     <p>{{ t.compatMatrixDesc }}</p>
+    <p>{{ t.compatNotice }}</p>
     <CompatibilityMatrix />
 
     <h2>Modrinth</h2>
