@@ -2,72 +2,72 @@
 layout: doc
 ---
 
-# 設定
+# Configuration
 
-LunaticChat の設定は `plugins/LunaticChat/config.yml` で管理されます．サーバーの初回起動時にデフォルトの設定ファイルが生成されます．
+LunaticChat's configuration is managed in `plugins/LunaticChat/config.yml`. A default configuration file is generated on the server's first startup.
 
-## グローバル設定
+## Global Settings
 
-| キー | 型 | デフォルト | 説明 |
-|------|------|------------|------|
-| `debug` | Boolean | `false` | デバッグログを有効にする |
-| `userSettingsFilePath` | String | `"player-settings.yaml"` | プレイヤー設定ファイルのパス |
-| `checkForUpdates` | Boolean | `true` | 起動時にアップデートを確認する |
-| `language` | String | `"en"` | プラグインの言語 (`en` / `ja`) |
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `debug` | Boolean | `false` | Enable debug logging |
+| `userSettingsFilePath` | String | `"player-settings.yaml"` | Path to the player settings file |
+| `checkForUpdates` | Boolean | `true` | Check for updates on startup |
+| `language` | String | `"en"` | Plugin language (`en` / `ja`) |
 
-## 機能設定 (`features`)
+## Feature Settings (`features`)
 
-### クイックリプライ (`features.quickReplies`)
+### Quick Replies (`features.quickReplies`)
 
-| キー | 型 | デフォルト | 説明 |
-|------|------|------------|------|
-| `enabled` | Boolean | `true` | `/reply` コマンドを有効にする |
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `enabled` | Boolean | `true` | Enable the `/reply` command |
 
-### ローマ字変換 (`features.japaneseConversion`)
+### Japanese Conversion (`features.japaneseConversion`)
 
-| キー | 型 | デフォルト | 説明 |
-|------|------|------------|------|
-| `enabled` | Boolean | `false` | ローマ字→ひらがな変換を有効にする |
-| `cache.maxEntries` | Int | `500` | 変換キャッシュの最大エントリ数 |
-| `cache.saveIntervalSeconds` | Int | `300` | キャッシュのディスク保存間隔(秒) |
-| `cache.filePath` | String | `"conversion_cache.json"` | キャッシュファイルのパス |
-| `api.timeout` | Long | `3000` | API リクエストのタイムアウト(ミリ秒) |
-| `api.retryAttempts` | Int | `2` | API リクエスト失敗時のリトライ回数 |
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `enabled` | Boolean | `false` | Enable romaji-to-hiragana conversion |
+| `cache.maxEntries` | Int | `500` | Maximum number of conversion cache entries |
+| `cache.saveIntervalSeconds` | Int | `300` | Interval (in seconds) for saving cache to disk |
+| `cache.filePath` | String | `"conversion_cache.json"` | Path to the cache file |
+| `api.timeout` | Long | `3000` | API request timeout (in milliseconds) |
+| `api.retryAttempts` | Int | `2` | Number of retries on API request failure |
 
-### チャンネルチャット (`features.channelChat`)
+### Channel Chat (`features.channelChat`)
 
-| キー | 型 | デフォルト | 説明 |
-|------|------|------------|------|
-| `enabled` | Boolean | `false` | チャンネルチャット機能を有効にする |
-| `maxChannelsPerServer` | Int | `0` | サーバーあたりの最大チャンネル数(`0` = 無制限) |
-| `maxMembersPerChannel` | Int | `0` | チャンネルあたりの最大メンバー数(`0` = 無制限) |
-| `maxMembershipPerPlayer` | Int | `0` | プレイヤーあたりの最大参加チャンネル数(`0` = 無制限) |
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `enabled` | Boolean | `false` | Enable the channel chat feature |
+| `maxChannelsPerServer` | Int | `0` | Maximum channels per server (`0` = unlimited) |
+| `maxMembersPerChannel` | Int | `0` | Maximum members per channel (`0` = unlimited) |
+| `maxMembershipPerPlayer` | Int | `0` | Maximum channel memberships per player (`0` = unlimited) |
 
-#### メッセージログ (`features.channelChat.messageLogging`)
+#### Message Logging (`features.channelChat.messageLogging`)
 
-| キー | 型 | デフォルト | 説明 |
-|------|------|------------|------|
-| `enabled` | Boolean | `true` | チャンネルメッセージを NDJSON ファイルに記録する |
-| `retentionDays` | Int | `30` | ログファイルの保持日数(`0` = 無期限) |
-| `maxFileSizeMB` | Int | `100` | 単一ログファイルの最大サイズ(MB) |
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `enabled` | Boolean | `true` | Log channel messages to an NDJSON file |
+| `retentionDays` | Int | `30` | Log file retention period in days (`0` = indefinite) |
+| `maxFileSizeMB` | Int | `100` | Maximum size of a single log file (MB) |
 
-### Velocity 連携 (`features.velocityIntegration`)
+### Velocity Integration (`features.velocityIntegration`)
 
-| キー | 型 | デフォルト | 説明 |
-|------|------|------------|------|
-| `enabled` | Boolean | `false` | Velocity プロキシとの連携を有効にする |
-| `crossServerGlobalChat` | Boolean | `false` | サーバー間グローバルチャットを有効にする |
-| `serverName` | String | `"Unknown"` | クロスサーバーチャットで表示されるサーバー名 |
-| `messageDeduplicationCacheSize` | Int | `100` | メッセージ重複排除キャッシュのサイズ |
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `enabled` | Boolean | `false` | Enable integration with the Velocity proxy |
+| `crossServerGlobalChat` | Boolean | `false` | Enable cross-server global chat |
+| `serverName` | String | `"Unknown"` | Server name displayed in cross-server chat |
+| `messageDeduplicationCacheSize` | Int | `100` | Size of the message deduplication cache |
 
-## メッセージフォーマット (`messageFormat`)
+## Message Format (`messageFormat`)
 
-| キー | デフォルト | 利用可能なプレースホルダー |
-|------|------------|--------------------------|
+| Key | Default | Available Placeholders |
+|-----|---------|----------------------|
 | `directMessageFormat` | `§7[§e{sender} §7>> §e{recipient}§7] §f{message}` | `{sender}`, `{recipient}`, `{message}` |
 | `channelMessageFormat` | `§7[§b#{channel}§7] §e{sender}: §f{message}` | `{sender}`, `{message}`, `{channel}` |
 | `crossServerGlobalChatFormat` | `§7[§6{server}§7] §e{sender}: §f{message}` | `{sender}`, `{message}`, `{server}` |
 
-## デフォルト設定ファイル
+## Default Configuration File
 
-[GitHub で確認する](https://github.com/m1sk9/LunaticChat/blob/main/platform-paper/src/main/resources/config.yml)
+[View on GitHub](https://github.com/m1sk9/LunaticChat/blob/main/platform-paper/src/main/resources/config.yml)

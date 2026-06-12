@@ -2,50 +2,50 @@
 layout: doc
 ---
 
-# はじめる
+# Getting Started
 
-LunaticChat を導入するための手順を説明します．
+This guide explains how to set up LunaticChat.
 
-::: warning Spigot / BungeeCord は非対応です
-LunaticChat は Paper / Folia サーバーのみをサポートしています．Spigot / BungeeCord では動作せず，今後も対応予定はありません．Spigot 環境では [LunaChat の Fork](https://github.com/f1w3/LunaChat) の使用を推奨します．
+::: warning Spigot / BungeeCord is not supported
+LunaticChat only supports Paper / Folia servers. It does not work on Spigot or BungeeCord, and there are no plans to support them in the future. For Spigot environments, we recommend using a [fork of LunaChat](https://github.com/f1w3/LunaChat).
 :::
 
-## 動作要件
+## Requirements
 
-| 項目 | 要件 |
-|------|------|
-| Minecraft | 26.1 以降 |
-| Java | 25 以降 |
-| サーバー | Paper, Folia, または Velocity |
+| Item | Requirement |
+|------|-------------|
+| Minecraft | 26.1 or later |
+| Java | 25 or later |
+| Server | Paper, Folia, or Velocity |
 
-## ダウンロード
+## Download
 
-以下のいずれかからプラグイン JAR をダウンロードできます．
+You can download the plugin JAR from either of the following:
 
 - [GitHub Releases](https://github.com/m1sk9/LunaticChat/releases)
 - [Modrinth](https://modrinth.com/project/lunaticchat)
 
-Paper / Folia サーバーには `LunaticChat-<version>.jar` を，Velocity プロキシには `LunaticChat-<version>-velocity.jar` を使用してください．
+Use `LunaticChat-<version>.jar` for Paper / Folia servers and `LunaticChat-<version>-velocity.jar` for Velocity proxies.
 
-## インストール
+## Installation
 
 ### Paper / Folia
 
-1. ダウンロードした `LunaticChat-<version>.jar` をサーバーの `plugins/` ディレクトリに配置します
-2. サーバーを起動 (または再起動) します
-3. `plugins/LunaticChat/config.yml` が自動生成されます
-4. 必要に応じて[設定](/docs/configuration)を変更し，サーバーを再起動します
+1. Place the downloaded `LunaticChat-<version>.jar` into the server's `plugins/` directory
+2. Start (or restart) the server
+3. `plugins/LunaticChat/config.yml` will be generated automatically
+4. Modify the [configuration](/docs/configuration) as needed and restart the server
 
 ### Velocity
 
-1. ダウンロードした `LunaticChat-<version>-velocity.jar` を Velocity の `plugins/` ディレクトリに配置します
-2. Velocity プロキシを起動 (または再起動) します
-3. Paper 側の `config.yml` で `features.velocityIntegration.enabled` を `true` に設定します
-4. 詳細は [Velocity 連携](/docs/features/velocity)を参照してください
+1. Place the downloaded `LunaticChat-<version>-velocity.jar` into the Velocity `plugins/` directory
+2. Start (or restart) the Velocity proxy
+3. Set `features.velocityIntegration.enabled` to `true` in the Paper-side `config.yml`
+4. See [Velocity Integration](/docs/features/velocity) for details
 
-## 次のステップ
+## Next Steps
 
-- [設定](/docs/configuration) - `config.yml` の全設定項目を確認する
-- [ダイレクトメッセージ](/docs/features/direct-message) - DM 機能の使い方
-- [チャンネルチャット](/docs/features/channel-chat) - チャンネル機能の使い方
-- [コマンド一覧](/docs/reference/commands) - 全コマンドのリファレンス
+- [Configuration](/docs/configuration) - Review all settings in `config.yml`
+- [Direct Message](/docs/features/direct-message) - How to use the DM feature
+- [Channel Chat](/docs/features/channel-chat) - How to use the channel feature
+- [Command Reference](/docs/reference/commands) - Reference for all commands

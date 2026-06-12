@@ -2,85 +2,85 @@
 layout: doc
 ---
 
-# メッセージフォーマット
+# Message Format
 
-`config.yml` の `messageFormat` セクションで，チャットメッセージの表示形式をカスタマイズできます．
+You can customize the display format of chat messages in the `messageFormat` section of `config.yml`.
 
-## プレースホルダー
+## Placeholders
 
-| プレースホルダー | 説明 | 使用可能なフォーマット |
-|----------------|------|----------------------|
-| `{sender}` | メッセージの送信者名 | すべて |
-| `{recipient}` | メッセージの受信者名 | `directMessageFormat` |
-| `{message}` | メッセージの内容 | すべて |
-| `{channel}` | チャンネル名 | `channelMessageFormat` |
-| `{server}` | サーバー名 | `crossServerGlobalChatFormat` |
+| Placeholder | Description | Available formats |
+|-------------|-------------|-------------------|
+| `{sender}` | Name of the message sender | All |
+| `{recipient}` | Name of the message recipient | `directMessageFormat` |
+| `{message}` | Message content | All |
+| `{channel}` | Channel name | `channelMessageFormat` |
+| `{server}` | Server name | `crossServerGlobalChatFormat` |
 
-## フォーマット一覧
+## Format List
 
 ### `directMessageFormat`
 
-`/tell` や `/reply` で送信されるダイレクトメッセージの表示形式です．
+The display format for direct messages sent via `/tell` or `/reply`.
 
-**デフォルト:**
+**Default:**
 ```
 §7[§e{sender} §7>> §e{recipient}§7] §f{message}
 ```
 
-**表示例:** <span style="color: gray">[</span><span style="color: gold">Steve</span> <span style="color: gray">>></span> <span style="color: gold">Alex</span><span style="color: gray">]</span> <span style="color: white">こんにちは！</span>
+**Example:** <span style="color: gray">[</span><span style="color: gold">Steve</span> <span style="color: gray">>></span> <span style="color: gold">Alex</span><span style="color: gray">]</span> <span style="color: white">Hello!</span>
 
 ### `channelMessageFormat`
 
-チャンネルチャットで送信されるメッセージの表示形式です．
+The display format for messages sent in channel chat.
 
-**デフォルト:**
+**Default:**
 ```
 §7[§b#{channel}§7] §e{sender}: §f{message}
 ```
 
-**表示例:** <span style="color: gray">[</span><span style="color: aqua">#general</span><span style="color: gray">]</span> <span style="color: gold">Steve:</span> <span style="color: white">こんにちは！</span>
+**Example:** <span style="color: gray">[</span><span style="color: aqua">#general</span><span style="color: gray">]</span> <span style="color: gold">Steve:</span> <span style="color: white">Hello!</span>
 
 ### `crossServerGlobalChatFormat`
 
-Velocity 連携時のクロスサーバーグローバルチャットの表示形式です．
+The display format for cross-server global chat when using Velocity integration.
 
-**デフォルト:**
+**Default:**
 ```
 §7[§6{server}§7] §e{sender}: §f{message}
 ```
 
-**表示例:** <span style="color: gray">[</span><span style="color: gold">survival</span><span style="color: gray">]</span> <span style="color: gold">Steve:</span> <span style="color: white">こんにちは！</span>
+**Example:** <span style="color: gray">[</span><span style="color: gold">survival</span><span style="color: gray">]</span> <span style="color: gold">Steve:</span> <span style="color: white">Hello!</span>
 
-## カラーコード
+## Color Codes
 
-Minecraft のセクション記号(`§`)を使ったカラーコードが使用できます．
+You can use color codes with the Minecraft section sign (`§`).
 
-| コード | 色 |
-|--------|------|
-| `§0` | 黒 |
-| `§1` | 濃い青 |
-| `§2` | 濃い緑 |
-| `§3` | 濃い水色 |
-| `§4` | 濃い赤 |
-| `§5` | 濃い紫 |
-| `§6` | 金色 |
-| `§7` | 灰色 |
-| `§8` | 濃い灰色 |
-| `§9` | 青 |
-| `§a` | 緑 |
-| `§b` | 水色 |
-| `§c` | 赤 |
-| `§d` | ピンク |
-| `§e` | 黄色 |
-| `§f` | 白 |
+| Code | Color |
+|------|-------|
+| `§0` | Black |
+| `§1` | Dark blue |
+| `§2` | Dark green |
+| `§3` | Dark aqua |
+| `§4` | Dark red |
+| `§5` | Dark purple |
+| `§6` | Gold |
+| `§7` | Gray |
+| `§8` | Dark gray |
+| `§9` | Blue |
+| `§a` | Green |
+| `§b` | Aqua |
+| `§c` | Red |
+| `§d` | Pink |
+| `§e` | Yellow |
+| `§f` | White |
 
-### 装飾コード
+### Formatting Codes
 
-| コード | 効果 |
-|--------|------|
-| `§l` | **太字** |
-| `§o` | *斜体* |
-| `§n` | <u>下線</u> |
-| `§m` | ~~取り消し線~~ |
-| `§k` | 難読化(文字がランダムに変化) |
-| `§r` | リセット |
+| Code | Effect |
+|------|--------|
+| `§l` | **Bold** |
+| `§o` | *Italic* |
+| `§n` | <u>Underline</u> |
+| `§m` | ~~Strikethrough~~ |
+| `§k` | Obfuscated (characters change randomly) |
+| `§r` | Reset |

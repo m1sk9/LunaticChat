@@ -7,126 +7,126 @@ hero:
   tagline: A next-generation chat plugin for Paper, Folia and Velocity.
   actions:
     - theme: brand
-      text: ダウンロード
+      text: Download
       link: /download
     - theme: brand
-      text: ドキュメント
+      text: Documentation
       link: /docs/getting-started
     - theme: alt
       text: GitHub
       link: https://github.com/m1sk9/LunaticChat
 
 features:
-  - title: チャンネルチャット
-    details: チャンネルを作成・管理し，特定のプレイヤー間でグループチャットが可能．プライベートチャンネルやモデレーション機能も搭載
+  - title: Channel Chat
+    details: Create and manage channels for group conversations between specific players. Includes private channels and moderation features.
     icon: ☎️
-  - title: ダイレクトメッセージ
-    details: /tell や /msg コマンドで 1対1 のチャットが可能．/reply で直前の相手に素早く返信
+  - title: Direct Messages
+    details: Send 1-on-1 chats with /tell or /msg commands. Quickly reply to the last sender with /reply.
     icon: ✉️
-  - title: ローマ字変換
-    details: ローマ字で入力したメッセージを自動的に日本語に変換．キャッシュにより高速に動作
+  - title: Romaji Conversion
+    details: Automatically convert romaji input into Japanese. Fast performance powered by caching.
     icon: 🌍
-  - title: Velocity サーバー間連携
-    details: Velocity プロキシを経由して複数サーバー間でグローバルチャットをリレー．どのサーバーにいても会話に参加可能
+  - title: Velocity Cross-Server Chat
+    details: Relay global chat across multiple servers via a Velocity proxy. Join conversations from any server.
     icon: 🔗
-  - title: 柔軟な設定
-    details: YAML ベースの設定ファイルで機能の有効/無効を切り替え．サーバーの用途に合わせてカスタマイズ可能
+  - title: Flexible Configuration
+    details: Toggle features on/off with a YAML-based config file. Customize to fit your server's needs.
     icon: ⚙️
-  - title: 最新バージョン対応
-    details: 外部プラグインへの依存を最小限に抑え，常に最新の Minecraft バージョンに対応
+  - title: Latest Version Support
+    details: Minimal external plugin dependencies, always supporting the latest Minecraft versions.
     icon: ⛏️
 ---
 
 <hr class="home-divider" />
 
-<!-- Section 1: チャンネルチャット (text left, image right) -->
+<!-- Section 1: Channel Chat (text left, image right) -->
 <div class="feature-showcase">
   <div class="feature-showcase-text">
-    <h2>チャンネルチャットで会話を整理</h2>
+    <h2>Organize Conversations with Channel Chat</h2>
     <p>
-      サーバー内にチャンネルを作成して，トピックやグループごとに会話を分離できます．
-      全体チャットに流れることなく，必要なメンバーだけでコミュニケーションが可能です．
+      Create channels within your server to separate conversations by topic or group.
+      Communicate with only the members you need, without flooding the global chat.
     </p>
     <ul>
-      <li>パスワード付きのプライベートチャンネルを作成</li>
-      <li>チャンネルごとのモデレーション機能（キック・ミュート・BAN）</li>
-      <li>チャンネル参加・退出の通知をカスタマイズ</li>
+      <li>Create password-protected private channels</li>
+      <li>Per-channel moderation (kick, mute, ban)</li>
+      <li>Customizable join/leave notifications</li>
     </ul>
   </div>
   <div class="feature-showcase-image">
-    <img src="./assets/features/channel-chat.png" alt="LunaticChat のチャンネルチャット機能" />
+    <img src="./assets/features/channel-chat.png" alt="LunaticChat Channel Chat feature" />
   </div>
 </div>
 
 <hr class="home-divider" />
 
-<!-- Section 2: ダイレクトメッセージ (image left, text right) -->
+<!-- Section 2: Direct Messages (image left, text right) -->
 <div class="feature-showcase reverse">
   <div class="feature-showcase-text">
-    <h2>ダイレクトメッセージ & クイック返信</h2>
+    <h2>Direct Messages & Quick Reply</h2>
     <p>
-      プレイヤー間で手軽に 1対1 のプライベートチャットができます．
-      <code>/reply</code> コマンドで直前の相手にすぐ返信でき，テンポの良いやり取りを実現します．
+      Easily send private 1-on-1 chats between players.
+      Use the <code>/reply</code> command to instantly respond to the last sender.
     </p>
     <ul>
-      <li><code>/tell</code> / <code>/msg</code> でダイレクトメッセージを送信</li>
-      <li><code>/reply</code> で直前の送信者に即座に返信</li>
-      <li>メッセージは送信者と受信者だけに表示</li>
+      <li>Send direct messages with <code>/tell</code> / <code>/msg</code></li>
+      <li>Instantly reply to the last sender with <code>/reply</code></li>
+      <li>Messages are visible only to the sender and recipient</li>
     </ul>
   </div>
   <div class="feature-showcase-image">
-    <img src="./assets/features/dm.png" alt="LunaticChat のダイレクトメッセージ機能" />
+    <img src="./assets/features/dm.png" alt="LunaticChat Direct Message feature" />
   </div>
 </div>
 
 <hr class="home-divider" />
 
-<!-- Section 3: ローマ字変換 (text left, image right) -->
+<!-- Section 3: Romaji Conversion (text left, image right) -->
 <div class="feature-showcase">
   <div class="feature-showcase-text">
-    <h2>ローマ字入力を自動で日本語に</h2>
+    <h2>Automatic Romaji to Japanese Conversion</h2>
     <p>
-      日本語入力に対応していない環境でも，ローマ字で入力するだけで自動的に日本語に変換されます．
-      Google IME API を活用し，自然な変換結果を提供します．
+      Even in environments without Japanese input support, simply type in romaji and it will be automatically converted to Japanese.
+      Powered by the Google IME API for natural conversion results.
     </p>
     <ul>
-      <li>チャット入力時にリアルタイムでローマ字→日本語変換</li>
-      <li>変換結果のキャッシュで高速動作を実現</li>
-      <li>プレイヤーごとに変換機能のオン/オフを切り替え可能</li>
+      <li>Real-time romaji-to-Japanese conversion while chatting</li>
+      <li>Fast performance with conversion result caching</li>
+      <li>Per-player toggle to enable/disable conversion</li>
     </ul>
   </div>
   <div class="feature-showcase-image">
-    <img src="./assets/features/romaji.png" alt="LunaticChat のローマ字変換機能" />
+    <img src="./assets/features/romaji.png" alt="LunaticChat Romaji Conversion feature" />
   </div>
 </div>
 
 <hr class="home-divider" />
 
-<!-- Section 4: Velocity 連携 (image left, text right) -->
+<!-- Section 4: Velocity Integration (image left, text right) -->
 <div class="feature-showcase reverse">
   <div class="feature-showcase-text">
-    <h2>Velocity でサーバー間連携</h2>
+    <h2>Cross-Server Chat with Velocity</h2>
     <p>
-      Velocity プロキシと連携して，複数の Paper/Folia サーバー間でグローバルチャットをリレーします．
-      プレイヤーはどのサーバーにいても，同じチャット空間で会話に参加できます．
+      Integrate with a Velocity proxy to relay global chat across multiple Paper/Folia servers.
+      Players can join the same chat space regardless of which server they're on.
     </p>
     <ul>
-      <li>通常チャットを全サーバーにリアルタイムでリレー</li>
-      <li>独自のプラグインメッセージングプロトコルで高速な通信</li>
-      <li>プロトコルバージョニングによる後方互換性の保証</li>
+      <li>Relay regular chat to all servers in real time</li>
+      <li>Fast communication via a custom plugin messaging protocol</li>
+      <li>Backward compatibility guaranteed through protocol versioning</li>
     </ul>
   </div>
   <div class="feature-showcase-image">
-    <img src="./assets/features/cross-chat.png" alt="LunaticChat のクロスチャット機能" />
+    <img src="./assets/features/cross-chat.png" alt="LunaticChat Cross-Server Chat feature" />
   </div>
 </div>
 
 <hr class="home-divider" />
 
-<!-- Section 5: 互換性マトリクス -->
+<!-- Section 5: Compatibility Matrix -->
 <div class="platform-section">
-  <h2>Paper / Velocity 互換性</h2>
-  <p class="section-desc">最新版同士は常に互換．古いバージョンを混在させる場合は下のマトリクスで確認できます</p>
+  <h2>Paper / Velocity Compatibility</h2>
+  <p class="section-desc">Latest versions are always compatible. Mix older versions? Check the matrix below.</p>
   <div style="text-align: left;">
     <CompatibilityMatrix />
   </div>
@@ -134,31 +134,31 @@ features:
 
 <hr class="home-divider" />
 
-<!-- Section 6: プラットフォーム -->
+<!-- Section 6: Platforms -->
 <div class="platform-section">
-  <h2>マルチプラットフォーム対応</h2>
-  <p class="section-desc">サーバーの構成に合わせて柔軟に導入できます</p>
+  <h2>Multi-Platform Support</h2>
+  <p class="section-desc">Flexibly deploy to match your server setup</p>
   <div class="platform-cards">
     <a class="platform-card" href="https://papermc.io/software/paper/" target="_blank" rel="noopener">
       <div class="platform-icon">
         <img src="./assets/brand/paper.svg" alt="Paper" width="40" height="40" />
       </div>
       <p class="name">Paper</p>
-      <p class="desc">最も広く利用されている Minecraft サーバー実装．DM，チャンネルチャット，ローマ字変換など全機能をフルサポート．Bukkit/Spigot プラグインとの互換性も維持</p>
+      <p class="desc">The most widely used Minecraft server implementation. Full support for DM, channel chat, romaji conversion, and all features. Maintains compatibility with Bukkit/Spigot plugins.</p>
     </a>
     <a class="platform-card" href="https://papermc.io/software/folia" target="_blank" rel="noopener">
       <div class="platform-icon">
         <img src="./assets/brand/folia.svg" alt="Folia" width="40" height="40" />
       </div>
       <p class="name">Folia</p>
-      <p class="desc">PaperMC が開発するマルチスレッド対応のサーバー実装．リージョン分割による並列処理で，大規模サーバーでも安定したチャット体験を提供</p>
+      <p class="desc">A multithreaded server implementation by PaperMC. Provides a stable chat experience even on large-scale servers through region-based parallel processing.</p>
     </a>
     <a class="platform-card" href="https://papermc.io/software/velocity" target="_blank" rel="noopener">
       <div class="platform-icon">
         <img src="./assets/brand/velocity.svg" alt="Velocity" width="40" height="40" />
       </div>
       <p class="name">Velocity</p>
-      <p class="desc">高性能なプロキシサーバー．LunaticChat の Velocity プラグインを導入することで，複数の Paper/Folia サーバー間でグローバルチャットのリレーを実現</p>
+      <p class="desc">A high-performance proxy server. Install the LunaticChat Velocity plugin to enable global chat relay across multiple Paper/Folia servers.</p>
     </a>
   </div>
 </div>

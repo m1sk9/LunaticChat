@@ -6,48 +6,48 @@ export const ja: DefaultTheme.Config = {
     text: 'GitHub で編集',
   },
   nav: [
-    { link: '/download', text: 'ダウンロード' },
-    { link: '/docs/getting-started', text: 'ドキュメント' },
+    { link: '/ja/download', text: 'ダウンロード' },
+    { link: '/ja/docs/getting-started', text: 'ドキュメント' },
   ],
   sidebar: {
-    '/docs/': [
+    '/ja/docs/': [
       {
-        link: '/docs/getting-started',
+        link: '/ja/docs/getting-started',
         text: 'はじめる',
       },
       {
-        link: '/docs/configuration',
+        link: '/ja/docs/configuration',
         text: '設定',
       },
       {
-        link: '/docs/permissions',
+        link: '/ja/docs/permissions',
         text: 'パーミッション',
       },
       {
         text: '機能ガイド',
         items: [
           {
-            link: '/docs/features/direct-message',
+            link: '/ja/docs/features/direct-message',
             text: 'ダイレクトメッセージ',
           },
           {
-            link: '/docs/features/channel-chat',
+            link: '/ja/docs/features/channel-chat',
             text: 'チャンネルチャット',
           },
           {
-            link: '/docs/features/japanese-conversion',
+            link: '/ja/docs/features/japanese-conversion',
             text: 'ローマ字変換',
           },
           {
-            link: '/docs/features/velocity',
+            link: '/ja/docs/features/velocity',
             text: 'Velocity 連携',
           },
           {
-            link: '/docs/features/message-logging',
+            link: '/ja/docs/features/message-logging',
             text: 'メッセージログ',
           },
           {
-            link: '/docs/features/admin',
+            link: '/ja/docs/features/admin',
             text: '管理者向け機能',
           },
         ],
@@ -56,19 +56,19 @@ export const ja: DefaultTheme.Config = {
         text: 'リファレンス',
         items: [
           {
-            link: '/docs/reference/commands',
+            link: '/ja/docs/reference/commands',
             text: 'コマンド一覧',
           },
           {
-            link: '/docs/reference/message-format',
+            link: '/ja/docs/reference/message-format',
             text: 'メッセージフォーマット',
           },
           {
-            link: '/docs/reference/player-settings',
+            link: '/ja/docs/reference/player-settings',
             text: 'プレイヤー設定',
           },
           {
-            link: '/docs/reference/compatibility',
+            link: '/ja/docs/reference/compatibility',
             text: 'Paper / Velocity 互換性',
           },
         ],

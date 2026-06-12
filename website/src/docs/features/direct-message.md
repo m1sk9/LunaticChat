@@ -2,51 +2,51 @@
 layout: doc
 ---
 
-# ダイレクトメッセージ
+# Direct Message
 
-プレイヤー間で 1対1 のプライベートメッセージを送受信できます．
+Send and receive private 1-on-1 messages between players.
 
-## 基本的な使い方
+## Basic Usage
 
-### メッセージの送信
+### Sending a Message
 
 ```
 /tell <player> <message>
 ```
 
-エイリアス: `/t`, `/msg`, `/m`, `/w`, `/whisper`
+Aliases: `/t`, `/msg`, `/m`, `/w`, `/whisper`
 
-指定したプレイヤーにダイレクトメッセージを送信します．受信したメッセージをクリックすると，送信者への返信コマンドが自動入力されます．
+Sends a direct message to the specified player. Clicking on a received message will auto-fill the reply command to the sender.
 
-### クイック返信
+### Quick Reply
 
 ```
 /reply <message>
 ```
 
-エイリアス: `/r`
+Alias: `/r`
 
-最後にメッセージを送ってきたプレイヤーに返信します．該当するプレイヤーがいない場合は，最後にメッセージを送った相手に送信されます．
+Replies to the last player who sent you a message. If there is no such player, the message is sent to the last player you messaged.
 
-クイック返信を利用するには `config.yml` で `features.quickReplies.enabled` が `true` (デフォルト) である必要があります．
+To use quick reply, `features.quickReplies.enabled` must be `true` (default) in `config.yml`.
 
-## 通知設定
+## Notification Settings
 
-プレイヤーはダイレクトメッセージ受信時のサウンド通知を個別に制御できます．
+Players can individually control the sound notification when receiving direct messages.
 
 ```
-/lc settings notice on     # 通知を有効化
-/lc settings notice off    # 通知を無効化
+/lc settings notice on     # Enable notifications
+/lc settings notice off    # Disable notifications
 ```
 
-## ローマ字変換との連携
+## Integration with Japanese Conversion
 
-[ローマ字変換](/docs/features/japanese-conversion)が有効な場合，ダイレクトメッセージの内容も自動的に日本語に変換されます．変換はプレイヤーの `japanese` 設定に従います．
+When [Japanese Conversion](/docs/features/japanese-conversion) is enabled, direct message content is also automatically converted to Japanese. Conversion follows each player's `japanese` setting.
 
-## スパイ機能
+## Spy Feature
 
-`lunaticchat.spy` パーミッション (デフォルト: op) を持つプレイヤーは，サーバー上のすべてのダイレクトメッセージを閲覧できます．スパイプレイヤーには変換前のメッセージが表示されます．
+Players with the `lunaticchat.spy` permission (default: op) can view all direct messages on the server. Spy players see the original message before conversion.
 
-## メッセージフォーマット
+## Message Format
 
-ダイレクトメッセージの表示形式は `config.yml` の `messageFormat.directMessageFormat` でカスタマイズできます．詳細は[メッセージフォーマット](/docs/reference/message-format)を参照してください．
+The display format for direct messages can be customized via `messageFormat.directMessageFormat` in `config.yml`. See [Message Format](/docs/reference/message-format) for details.

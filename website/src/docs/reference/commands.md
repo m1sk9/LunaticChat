@@ -2,172 +2,172 @@
 layout: doc
 ---
 
-# コマンド一覧
+# Command Reference
 
-LunaticChat で使用できるすべてのコマンドのリファレンスです．
+A reference for all commands available in LunaticChat.
 
-## ダイレクトメッセージ
+## Direct Messages
 
 ### `/tell <player> <message>`
 
-プレイヤーにダイレクトメッセージを送信します．
+Sends a direct message to a player.
 
-- **エイリアス**: `t`, `msg`, `m`, `w`, `whisper`
-- **パーミッション**: `lunaticchat.command.tell`
+- **Aliases**: `t`, `msg`, `m`, `w`, `whisper`
+- **Permission**: `lunaticchat.command.tell`
 
 ### `/reply <message>`
 
-最後にメッセージを送ってきたプレイヤーに返信します．
+Replies to the last player who sent you a message.
 
-- **エイリアス**: `r`
-- **パーミッション**: `lunaticchat.command.reply`
-- **前提条件**: クイックリプライ機能が有効であること
+- **Aliases**: `r`
+- **Permission**: `lunaticchat.command.reply`
+- **Prerequisite**: Quick reply feature must be enabled
 
-## メインコマンド (`/lc`)
+## Main Command (`/lc`)
 
-**エイリアス**: `lunaticchat`
+**Aliases**: `lunaticchat`
 
 ### `/lc status`
 
-プラグインのバージョン，ヘルス，有効な機能，設定値を表示します．
+Displays the plugin version, health, enabled features, and configuration values.
 
-- **エイリアス**: `st`
-- **パーミッション**: `lunaticchat.command.lc.status`
+- **Aliases**: `st`
+- **Permission**: `lunaticchat.command.lc.status`
 
 ### `/lc settings [key] [on|off]`
 
-プレイヤー個人の設定を確認・変更します．引数なしで設定一覧を表示します．
+Views or changes your personal settings. Without arguments, displays the settings list.
 
-- **エイリアス**: `set`
-- **パーミッション**: `lunaticchat.command.lc.settings`
-- **設定キー**: `japanese`, `notice`, `chNotice`(詳細は[プレイヤー設定](/docs/reference/player-settings)を参照)
+- **Aliases**: `set`
+- **Permission**: `lunaticchat.command.lc.settings`
+- **Setting keys**: `japanese`, `notice`, `chNotice` (see [Player Settings](/docs/reference/player-settings) for details)
 
-## チャンネルコマンド (`/lc channel`)
+## Channel Commands (`/lc channel`)
 
-**エイリアス**: `ch`
+**Aliases**: `ch`
 
-チャンネルチャット機能が有効な場合にのみ使用できます．
+Only available when the channel chat feature is enabled.
 
-### 作成・探索
+### Create & Browse
 
 #### `/lc channel create <channelId> <name> [description] [isPrivate]`
 
-新しいチャンネルを作成します．作成者がオーナーになります．
+Creates a new channel. The creator becomes the owner.
 
-- **エイリアス**: `new`
-- **パーミッション**: `lunaticchat.command.lc.channel.create`
-- `channelId`: 英数字，アンダースコア，ハイフンのみ使用可能
-- `isPrivate`: `true` / `false`(デフォルト: `false`)
+- **Aliases**: `new`
+- **Permission**: `lunaticchat.command.lc.channel.create`
+- `channelId`: Only alphanumeric characters, underscores, and hyphens are allowed
+- `isPrivate`: `true` / `false` (default: `false`)
 
 #### `/lc channel list [page]`
 
-公開チャンネルの一覧を表示します(1ページ10件)．
+Displays a list of public channels (10 per page).
 
-- **エイリアス**: `ls`
-- **パーミッション**: `lunaticchat.command.lc.channel.list`
+- **Aliases**: `ls`
+- **Permission**: `lunaticchat.command.lc.channel.list`
 
 #### `/lc channel info [channelId]`
 
-チャンネルの詳細情報を表示します．引数なしでアクティブチャンネルの情報を表示します．
+Displays detailed information about a channel. Without arguments, shows information about the active channel.
 
-- **エイリアス**: `i`
-- **パーミッション**: `lunaticchat.command.lc.channel.info`
+- **Aliases**: `i`
+- **Permission**: `lunaticchat.command.lc.channel.info`
 
-### 参加・退出
+### Join & Leave
 
 #### `/lc channel join <channelId>`
 
-チャンネルに参加します．プライベートチャンネルには招待が必要です．
+Joins a channel. An invitation is required for private channels.
 
-- **エイリアス**: `j`
-- **パーミッション**: `lunaticchat.command.lc.channel.join`
+- **Aliases**: `j`
+- **Permission**: `lunaticchat.command.lc.channel.join`
 
 #### `/lc channel leave`
 
-アクティブチャンネルから退出します．
+Leaves the active channel.
 
-- **エイリアス**: `l`
-- **パーミッション**: `lunaticchat.command.lc.channel.leave`
+- **Aliases**: `l`
+- **Permission**: `lunaticchat.command.lc.channel.leave`
 
 #### `/lc channel switch <channelId>`
 
-参加済みの別チャンネルをアクティブに切り替えます．
+Switches the active channel to another channel you have already joined.
 
-- **エイリアス**: `sw`
-- **パーミッション**: `lunaticchat.command.lc.channel.switch`
+- **Aliases**: `sw`
+- **Permission**: `lunaticchat.command.lc.channel.switch`
 
 #### `/lc channel status`
 
-自分のチャンネル参加状況(アクティブチャンネルと参加チャンネル一覧)を表示します．
+Displays your channel membership status (active channel and list of joined channels).
 
-- **エイリアス**: `st`
-- **パーミッション**: `lunaticchat.command.lc.channel.status`
+- **Aliases**: `st`
+- **Permission**: `lunaticchat.command.lc.channel.status`
 
-### モデレーション(オーナー / モデレーター)
+### Moderation (Owner / Moderator)
 
 #### `/lc channel invite <playerName>`
 
-プレイヤーをアクティブチャンネルに招待します．プライベートチャンネルの制限をバイパスします．
+Invites a player to the active channel. Bypasses private channel restrictions.
 
-- **エイリアス**: `inv`
-- **パーミッション**: `lunaticchat.command.lc.channel.invite`
-- **必要ロール**: OWNER または MODERATOR
+- **Aliases**: `inv`
+- **Permission**: `lunaticchat.command.lc.channel.invite`
+- **Required role**: OWNER or MODERATOR
 
 #### `/lc channel kick <playerName>`
 
-プレイヤーをアクティブチャンネルからキックします．
+Kicks a player from the active channel.
 
-- **エイリアス**: `k`
-- **パーミッション**: `lunaticchat.command.lc.channel.kick`
-- **必要ロール**: OWNER または MODERATOR
+- **Aliases**: `k`
+- **Permission**: `lunaticchat.command.lc.channel.kick`
+- **Required role**: OWNER or MODERATOR
 
 #### `/lc channel ban <playerName>`
 
-プレイヤーをアクティブチャンネルから BAN します．BAN されたプレイヤーは再参加できません．
+Bans a player from the active channel. Banned players cannot rejoin.
 
-- **パーミッション**: `lunaticchat.command.lc.channel.ban`
-- **必要ロール**: OWNER または MODERATOR
+- **Permission**: `lunaticchat.command.lc.channel.ban`
+- **Required role**: OWNER or MODERATOR
 
 #### `/lc channel unban <playerName>`
 
-プレイヤーのチャンネル BAN を解除します．
+Unbans a player from the channel.
 
-- **パーミッション**: `lunaticchat.command.lc.channel.unban`
-- **必要ロール**: OWNER または MODERATOR
+- **Permission**: `lunaticchat.command.lc.channel.unban`
+- **Required role**: OWNER or MODERATOR
 
-### 管理(オーナーのみ)
+### Administration (Owner Only)
 
 #### `/lc channel delete <channelId>`
 
-チャンネルを削除します．
+Deletes a channel.
 
-- **エイリアス**: `del`
-- **パーミッション**: `lunaticchat.command.lc.channel.delete`
-- **必要ロール**: OWNER(`lunaticchat.channelbypass` 権限で制限をバイパス可能)
+- **Aliases**: `del`
+- **Permission**: `lunaticchat.command.lc.channel.delete`
+- **Required role**: OWNER (can be bypassed with `lunaticchat.channelbypass` permission)
 
 #### `/lc channel mod <playerName>`
 
-チャンネルメンバーのモデレーター権限を付与・剥奪します．
+Grants or revokes moderator privileges for a channel member.
 
-- **パーミッション**: `lunaticchat.command.lc.channel.mod`
-- **必要ロール**: OWNER
+- **Permission**: `lunaticchat.command.lc.channel.mod`
+- **Required role**: OWNER
 
 #### `/lc channel ownership <playerName>`
 
-チャンネルのオーナー権限を別のメンバーに譲渡します．
+Transfers channel ownership to another member.
 
-- **エイリアス**: `own`
-- **パーミッション**: `lunaticchat.command.lc.channel.ownership`
-- **必要ロール**: OWNER
+- **Aliases**: `own`
+- **Permission**: `lunaticchat.command.lc.channel.ownership`
+- **Required role**: OWNER
 
-## Velocity コマンド (`/lcv`)
+## Velocity Commands (`/lcv`)
 
-**エイリアス**: `lunaticvelocity`
+**Aliases**: `lunaticvelocity`
 
 ### `/lcv status`
 
-Velocity プロキシとの接続状態，プロトコルバージョン，オンラインプレイヤー数を表示します．
+Displays the connection status with the Velocity proxy, protocol version, and online player count.
 
-- **エイリアス**: `st`
-- **パーミッション**: `lunaticchat.command.lcv.status`
-- **デフォルト**: op のみ
+- **Aliases**: `st`
+- **Permission**: `lunaticchat.command.lcv.status`
+- **Default**: op only
