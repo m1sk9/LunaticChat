@@ -2,91 +2,91 @@
 layout: doc
 ---
 
-# チャンネルチャット
+# Channel Chat
 
-チャンネルを作成してグループごとに会話を分離できます．この機能を利用するには `config.yml` で `features.channelChat.enabled` を `true` に設定してください．
+Create channels to separate conversations by group. To use this feature, set `features.channelChat.enabled` to `true` in `config.yml`.
 
-## チャンネルの作成
+## Creating a Channel
 
 ```
 /lc channel create <channelId> <name> [description] [isPrivate]
 ```
 
-- `channelId`: チャンネルの一意な識別子 (英数字, `_`, `-` のみ, 3〜30文字)
-- `name`: チャンネルの表示名
-- `description`: チャンネルの説明 (省略可)
-- `isPrivate`: プライベートチャンネルにする場合は `true` (デフォルト: `false`)
+- `channelId`: A unique identifier for the channel (alphanumeric, `_`, `-` only, 3-30 characters)
+- `name`: The display name of the channel
+- `description`: A description of the channel (optional)
+- `isPrivate`: Set to `true` to make the channel private (default: `false`)
 
-作成者は自動的にオーナーになります．
+The creator automatically becomes the owner.
 
-## チャンネルへの参加・退出
-
-```
-/lc channel join <channelId>    # チャンネルに参加
-/lc channel leave               # アクティブチャンネルから退出
-/lc channel switch <channelId>  # アクティブチャンネルを切り替え
-```
-
-プライベートチャンネルに参加するには，オーナーまたはモデレーターからの招待が必要です．
-
-## アクティブチャンネル
-
-プレイヤーは複数のチャンネルに参加できますが，一度にアクティブにできるチャンネルは1つです．チャットメッセージはアクティブチャンネルに送信されます．`/lc channel switch` でアクティブチャンネルを切り替えられます．
+## Joining and Leaving Channels
 
 ```
-/lc channel status    # 現在のアクティブチャンネルと参加チャンネル一覧を表示
+/lc channel join <channelId>    # Join a channel
+/lc channel leave               # Leave the active channel
+/lc channel switch <channelId>  # Switch the active channel
 ```
 
-## ロールと権限
+Joining a private channel requires an invitation from the owner or a moderator.
 
-チャンネルには3つのロールがあります．
+## Active Channel
 
-| ロール | 権限 |
-|--------|------|
-| **OWNER** | チャンネルの削除，モデレーター管理，オーナー譲渡，メンバー管理 |
-| **MODERATOR** | メンバーの招待，キック，BAN/BAN解除 |
-| **MEMBER** | チャットへの参加，チャンネル情報の閲覧 |
-
-### モデレーター管理 (オーナーのみ)
+Players can join multiple channels, but only one channel can be active at a time. Chat messages are sent to the active channel. Use `/lc channel switch` to change the active channel.
 
 ```
-/lc channel mod <playerName>         # モデレーター権限の付与/剥奪
-/lc channel ownership <playerName>   # オーナー権限の譲渡
+/lc channel status    # Display the current active channel and list of joined channels
 ```
 
-### メンバー管理 (オーナー / モデレーター)
+## Roles and Permissions
+
+Channels have three roles.
+
+| Role | Permissions |
+|------|-------------|
+| **OWNER** | Delete the channel, manage moderators, transfer ownership, manage members |
+| **MODERATOR** | Invite, kick, ban/unban members |
+| **MEMBER** | Participate in chat, view channel information |
+
+### Moderator Management (Owner Only)
 
 ```
-/lc channel invite <playerName>   # プレイヤーを招待
-/lc channel kick <playerName>     # プレイヤーをキック
-/lc channel ban <playerName>      # プレイヤーを BAN
-/lc channel unban <playerName>    # BAN を解除
+/lc channel mod <playerName>         # Grant/revoke moderator permissions
+/lc channel ownership <playerName>   # Transfer ownership
 ```
 
-## 制限設定
+### Member Management (Owner / Moderator)
 
-`config.yml` でチャンネルの上限を設定できます (すべて `0` で無制限) ．
+```
+/lc channel invite <playerName>   # Invite a player
+/lc channel kick <playerName>     # Kick a player
+/lc channel ban <playerName>      # Ban a player
+/lc channel unban <playerName>    # Unban a player
+```
 
-| 設定キー | 説明 |
-|----------|------|
-| `maxChannelsPerServer` | サーバーあたりの最大チャンネル数 |
-| `maxMembersPerChannel` | チャンネルあたりの最大メンバー数 |
-| `maxMembershipPerPlayer` | プレイヤーあたりの最大参加チャンネル数 |
+## Limit Settings
 
-## メッセージログ
+You can set channel limits in `config.yml` (set to `0` for unlimited).
 
-チャンネルメッセージは NDJSON 形式でログファイルに記録できます．ファイルは日次でローテーションされ，`maxFileSizeMB` を超えるとサフィックス付きの新しいファイルが作成されます．
+| Setting Key | Description |
+|-------------|-------------|
+| `maxChannelsPerServer` | Maximum number of channels per server |
+| `maxMembersPerChannel` | Maximum number of members per channel |
+| `maxMembershipPerPlayer` | Maximum number of channels a player can join |
+
+## Message Logging
+
+Channel messages can be logged in NDJSON format. Files are rotated daily, and a new file with a suffix is created when `maxFileSizeMB` is exceeded.
 
 ```json
 {"timestamp":"2026-04-05T14:23:45.123Z","playerId":"550e8400-...","playerName":"Steve","channelId":"general","message":"Hello!"}
 ```
 
-ログ設定の詳細は[設定ページ](/docs/configuration)の `features.channelChat.messageLogging` を参照してください．
+See the `features.channelChat.messageLogging` section on the [Configuration page](/docs/configuration) for logging settings.
 
-## バイパス権限
+## Bypass Permission
 
-`lunaticchat.channelbypass` パーミッション (デフォルト: op) を持つプレイヤーは，キック・BAN の保護やチャンネルの強制削除が可能です．
+Players with the `lunaticchat.channelbypass` permission (default: op) are protected from kicks and bans, and can force-delete channels.
 
-## メッセージフォーマット
+## Message Format
 
-チャンネルメッセージの表示形式は `config.yml` の `messageFormat.channelMessageFormat` でカスタマイズできます．詳細は[メッセージフォーマット](/docs/reference/message-format)を参照してください．
+The display format for channel messages can be customized via `messageFormat.channelMessageFormat` in `config.yml`. See [Message Format](/docs/reference/message-format) for details.

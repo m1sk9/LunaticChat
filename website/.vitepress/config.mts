@@ -14,10 +14,9 @@ export default defineConfig({
   description: 'Next-generation channel chat plugin for Paper/Velocity',
   head: [['link', { href: '/favicon.ico', rel: 'icon' }]],
   locales: {
-    en: {
+    root: {
       label: 'English',
       lang: 'en-US',
-      link: '/en/',
       themeConfig: {
         ...en,
         footer: {
@@ -26,9 +25,10 @@ export default defineConfig({
         },
       },
     },
-    root: {
+    ja: {
       label: '日本語',
       lang: 'ja-JP',
+      link: '/ja/',
       themeConfig: {
         ...ja,
         footer: {

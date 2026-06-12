@@ -2,87 +2,87 @@
 layout: doc
 ---
 
-# Velocity 連携
+# Velocity Integration
 
-Velocity プロキシを経由して複数の Paper / Folia サーバー間でグローバルチャットをリレーします．
+Relays global chat across multiple Paper / Folia servers via a Velocity proxy.
 
-::: tip 互換性について
-Paper プラグインと Velocity プラグインは独立にバージョン管理されています．**両方の最新版を使えば常に動作します．** 古いバージョンを混在させたい場合は，[Paper / Velocity 互換性](/docs/reference/compatibility) を参照してください．
+::: tip About compatibility
+The Paper and Velocity plugins are versioned independently. **Using the latest of both always works.** If you need to mix older versions, see [Paper / Velocity Compatibility](/docs/reference/compatibility).
 :::
 
-## セットアップ
+## Setup
 
-### 1. Velocity プラグインの導入
+### 1. Install the Velocity Plugin
 
-`LunaticChat-<version>-velocity.jar` を Velocity の `plugins/` ディレクトリに配置し，プロキシを再起動します．
+Place `LunaticChat-<version>-velocity.jar` in the Velocity `plugins/` directory and restart the proxy.
 
-### 2. Paper 側の設定
+### 2. Paper-Side Configuration
 
-各 Paper サーバーの `config.yml` で以下を設定します．
+Set the following in each Paper server's `config.yml`.
 
 ```yaml
 features:
   velocityIntegration:
     enabled: true
     crossServerGlobalChat: true
-    serverName: "survival"    # Velocity 設定のサーバー名に合わせる
+    serverName: "survival"    # Must match the server name in the Velocity configuration
 ```
 
-### 3. 接続の確認
+### 3. Verify the Connection
 
 ```
 /lcv status
 ```
 
-接続状態，プロトコルバージョン，Velocity プラグインのバージョンなどを確認できます (パーミッション: `lunaticchat.command.lcv.status`, デフォルト: op) ．
+You can check the connection status, protocol version, Velocity plugin version, and more (permission: `lunaticchat.command.lcv.status`, default: op).
 
-## クロスサーバーグローバルチャット
+## Cross-Server Global Chat
 
-`crossServerGlobalChat` を `true` にすると，プレイヤーのチャットメッセージが Velocity を経由して他のすべての Paper サーバーに中継されます．
+When `crossServerGlobalChat` is set to `true`, player chat messages are relayed via Velocity to all other Paper servers.
 
-### メッセージの流れ
+### Message Flow
 
-1. プレイヤーがチャットメッセージを送信
-2. Paper サーバーがメッセージを Velocity に送信
-3. Velocity が送信元以外の全サーバーにメッセージを中継
-4. 各サーバーのプレイヤーにメッセージが表示される
+1. A player sends a chat message
+2. The Paper server sends the message to Velocity
+3. Velocity relays the message to all servers except the sender's
+4. The message is displayed to players on each server
 
-### メッセージ重複排除
+### Message Deduplication
 
-各メッセージに一意な ID が付与され，キャッシュにより同じメッセージが重複して表示されることを防ぎます．キャッシュサイズは `messageDeduplicationCacheSize` (デフォルト: `100`) で設定できます．
+Each message is assigned a unique ID, and a cache prevents the same message from being displayed more than once. The cache size can be configured with `messageDeduplicationCacheSize` (default: `100`).
 
-## 接続状態
+## Connection States
 
-`/lcv status` で確認できる状態と，それぞれの意味は以下の通りです．
+The states reported by `/lcv status` and their meanings:
 
-| 状態 | 説明 |
-|------|------|
-| `DISCONNECTED` | 未接続 |
-| `HANDSHAKING` | ハンドシェイク中 |
-| `CONNECTED` | 接続済み |
-| `FAILED` | 接続失敗 |
+| State | Description |
+|-------|-------------|
+| `DISCONNECTED` | Not connected |
+| `HANDSHAKING` | Handshake in progress |
+| `CONNECTED` | Connected |
+| `FAILED` | Connection failed |
 
-ハンドシェイクのタイムアウトは 5 秒です．タイムアウトした場合，状態は `FAILED` になります．
+The handshake timeout is 5 seconds. If the handshake times out, the state becomes `FAILED`.
 
-### `FAILED` になったときの確認ポイント
+### Troubleshooting `FAILED`
 
-- Velocity プラグインが正しく導入され，プロキシが起動しているか
-- Paper の `serverName` が Velocity 設定のサーバー名と一致しているか
-- Paper / Velocity プラグインの**プロトコルバージョン**が互換であるか — [互換性マトリクス](/docs/reference/compatibility#互換性マトリクス) で確認できます
+- Confirm the Velocity plugin is installed and the proxy is running
+- Confirm the Paper `serverName` matches the server name configured in Velocity
+- Confirm the **protocol versions** of the Paper and Velocity plugins are compatible — see the [compatibility matrix](/docs/reference/compatibility#compatibility-matrix)
 
-## 設定一覧
+## Configuration Reference
 
-| 設定キー | デフォルト | 説明 |
-|----------|-----------|------|
-| `enabled` | `false` | Velocity 連携を有効にする |
-| `crossServerGlobalChat` | `false` | クロスサーバーグローバルチャットを有効にする |
-| `serverName` | `"Unknown"` | クロスサーバーチャットで表示されるサーバー名 |
-| `messageDeduplicationCacheSize` | `100` | メッセージ重複排除キャッシュのサイズ |
+| Setting Key | Default | Description |
+|-------------|---------|-------------|
+| `enabled` | `false` | Enable Velocity integration |
+| `crossServerGlobalChat` | `false` | Enable cross-server global chat |
+| `serverName` | `"Unknown"` | Server name displayed in cross-server chat |
+| `messageDeduplicationCacheSize` | `100` | Size of the message deduplication cache |
 
-## メッセージフォーマット
+## Message Format
 
-クロスサーバーチャットの表示形式は `config.yml` の `messageFormat.crossServerGlobalChatFormat` でカスタマイズできます．詳細は[メッセージフォーマット](/docs/reference/message-format)を参照してください．
+The display format for cross-server chat can be customized via `messageFormat.crossServerGlobalChatFormat` in `config.yml`. See [Message Format](/docs/reference/message-format) for details.
 
-## 関連ドキュメント
+## Related Documents
 
-- [Paper / Velocity 互換性](/docs/reference/compatibility) — プロトコルバージョンとローリングアップデートの詳細
+- [Paper / Velocity Compatibility](/docs/reference/compatibility) — protocol version and rolling update details

@@ -2,11 +2,11 @@
 layout: doc
 ---
 
-# メッセージログ
+# Message Logging
 
-チャンネルチャットのメッセージを NDJSON (Newline Delimited JSON) 形式でファイルに記録します．この機能はチャンネルチャットが有効な場合に利用でき，デフォルトで有効です．
+Records channel chat messages in NDJSON (Newline Delimited JSON) format to files. This feature is available when channel chat is enabled and is turned on by default.
 
-## 設定
+## Configuration
 
 ```yaml
 # config.yml
@@ -19,33 +19,33 @@ features:
       maxFileSizeMB: 100
 ```
 
-| 設定キー | デフォルト | 説明 |
-|----------|-----------|------|
-| `enabled` | `true` | メッセージログを有効にする |
-| `retentionDays` | `30` | ログファイルの保持日数 (`0` で無期限保持) |
-| `maxFileSizeMB` | `100` | 単一ログファイルの最大サイズ (MB) |
+| Setting Key | Default | Description |
+|-------------|---------|-------------|
+| `enabled` | `true` | Enable message logging |
+| `retentionDays` | `30` | Number of days to retain log files (`0` for unlimited retention) |
+| `maxFileSizeMB` | `100` | Maximum size of a single log file (MB) |
 
-## ログファイルの形式
+## Log File Format
 
-ログファイルは `plugins/LunaticChat/logs/` ディレクトリに保存されます．各行が1つの JSON オブジェクトです．
+Log files are saved in the `plugins/LunaticChat/logs/` directory. Each line is a single JSON object.
 
-### ファイル名
+### File Naming
 
 ```
 channel-messages-YYYY-MM-dd.json
 ```
 
-ファイルサイズが `maxFileSizeMB` を超えた場合，サフィックス付きの新しいファイルが作成されます．
+When the file size exceeds `maxFileSizeMB`, a new file with a suffix is created.
 
 ```
-channel-messages-2026-04-05.json       # 基本ファイル
-channel-messages-2026-04-05-1.json     # サイズ超過時
-channel-messages-2026-04-05-2.json     # さらに超過時
+channel-messages-2026-04-05.json       # Base file
+channel-messages-2026-04-05-1.json     # On size overflow
+channel-messages-2026-04-05-2.json     # On further overflow
 ```
 
-### エントリ形式
+### Entry Format
 
-各行は以下の JSON 構造を持ちます．
+Each line has the following JSON structure.
 
 ```json
 {
@@ -57,37 +57,37 @@ channel-messages-2026-04-05-2.json     # さらに超過時
 }
 ```
 
-| フィールド | 型 | 説明 |
-|-----------|------|------|
-| `timestamp` | String | ISO 8601 形式のタイムスタンプ (UTC) |
-| `playerId` | String | プレイヤーの UUID |
-| `playerName` | String | プレイヤーの表示名 |
-| `channelId` | String | メッセージが送信されたチャンネルの ID |
-| `message` | String | メッセージの内容 |
+| Field | Type | Description |
+|-------|------|-------------|
+| `timestamp` | String | ISO 8601 timestamp (UTC) |
+| `playerId` | String | Player UUID |
+| `playerName` | String | Player display name |
+| `channelId` | String | ID of the channel the message was sent to |
+| `message` | String | Message content |
 
-## ファイルローテーション
+## File Rotation
 
-- **日次ローテーション**: 日付が変わると新しいファイルが作成されます
-- **サイズローテーション**: `maxFileSizeMB` を超えるとサフィックス付きファイルに切り替わります
-- **自動クリーンアップ**: `retentionDays` で指定した日数を超えたログファイルは自動的に削除されます (`0` の場合は削除されません)
+- **Daily rotation**: A new file is created when the date changes
+- **Size rotation**: Switches to a suffixed file when `maxFileSizeMB` is exceeded
+- **Automatic cleanup**: Log files older than the number of days specified by `retentionDays` are automatically deleted (no deletion when set to `0`)
 
-## ログの活用例
+## Usage Examples
 
-NDJSON 形式のため，`jq` などのツールで簡単にフィルタリング・集計が可能です．
+Since the format is NDJSON, you can easily filter and aggregate logs using tools like `jq`.
 
-### 特定チャンネルのメッセージを抽出
+### Extract Messages from a Specific Channel
 
 ```bash
 jq 'select(.channelId == "general")' channel-messages-2026-04-05.json
 ```
 
-### 特定プレイヤーのメッセージを抽出
+### Extract Messages from a Specific Player
 
 ```bash
 jq 'select(.playerName == "Steve")' channel-messages-2026-04-05.json
 ```
 
-### メッセージ数をチャンネルごとに集計
+### Count Messages by Channel
 
 ```bash
 jq -s 'group_by(.channelId) | map({channel: .[0].channelId, count: length})' channel-messages-2026-04-05.json

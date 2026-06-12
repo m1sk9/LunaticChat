@@ -1,8 +1,8 @@
 ---
 layout: page
-title: ダウンロード
+title: Download
 ---
 
-<!-- ダウンロードページのコンテンツは DownloadCard.vue コンポーネントで管理しています．直書きはしないこと -->
+<!-- Download page content is managed by the DownloadCard.vue component. Do not write content directly here -->
 
 <DownloadCard />

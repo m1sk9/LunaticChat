@@ -2,49 +2,49 @@
 layout: doc
 ---
 
-# プレイヤー設定
+# Player Settings
 
-プレイヤーは `/lc settings` コマンドで個人設定を変更できます．設定はサーバーの `player-settings.yaml`(設定ファイルの `userSettingsFilePath` で変更可能)に UUID ごとに保存されます．
+Players can change their personal settings using the `/lc settings` command. Settings are saved per UUID in the server's `player-settings.yaml` (the file path can be changed via `userSettingsFilePath` in the configuration file).
 
-## コマンド
+## Command
 
 ```
-/lc settings                  # 設定一覧を表示
-/lc settings <key>            # 現在の値を確認
-/lc settings <key> on|off     # 値を変更
+/lc settings                  # Display settings list
+/lc settings <key>            # Check current value
+/lc settings <key> on|off     # Change value
 ```
 
-## 設定キー
+## Setting Keys
 
-| キー | 説明 | デフォルト |
-|------|------|-----------|
-| `japanese` | ローマ字→日本語変換を有効にする | `true` |
-| `notice` | ダイレクトメッセージの通知を有効にする | `true` |
-| `chNotice` | チャンネルメッセージの通知を有効にする | `true` |
+| Key | Description | Default |
+|-----|-------------|---------|
+| `japanese` | Enable romaji-to-Japanese conversion | `true` |
+| `notice` | Enable direct message notifications | `true` |
+| `chNotice` | Enable channel message notifications | `true` |
 
 ### `japanese`
 
-ローマ字で入力したチャットメッセージを自動的に日本語(ひらがな)に変換します．この設定はサーバー側で `features.japaneseConversion.enabled` が `true` の場合にのみ機能します．
+Automatically converts chat messages typed in romaji to Japanese (hiragana). This setting only works when `features.japaneseConversion.enabled` is set to `true` on the server side.
 
 ```
-/lc settings japanese on      # 変換を有効化
-/lc settings japanese off     # 変換を無効化
+/lc settings japanese on      # Enable conversion
+/lc settings japanese off     # Disable conversion
 ```
 
 ### `notice`
 
-ダイレクトメッセージ(`/tell` / `/reply`)を受信した際の通知を制御します．
+Controls notifications when receiving direct messages (`/tell` / `/reply`).
 
 ```
-/lc settings notice on        # 通知を有効化
-/lc settings notice off       # 通知を無効化
+/lc settings notice on        # Enable notifications
+/lc settings notice off       # Disable notifications
 ```
 
 ### `chNotice`
 
-チャンネルチャットのメッセージを受信した際の通知を制御します．この設定はサーバー側で `features.channelChat.enabled` が `true` の場合にのみ機能します．
+Controls notifications when receiving channel chat messages. This setting only works when `features.channelChat.enabled` is set to `true` on the server side.
 
 ```
-/lc settings chNotice on      # 通知を有効化
-/lc settings chNotice off     # 通知を無効化
+/lc settings chNotice on      # Enable notifications
+/lc settings chNotice off     # Disable notifications
 ```

@@ -2,64 +2,64 @@
 layout: doc
 ---
 
-# Paper / Velocity 互換性
+# Paper / Velocity Compatibility
 
-LunaticChat の Paper プラグインと Velocity プラグインは独立にバージョン管理されています．それぞれの組み合わせが動作するかどうかは，両プラグインに埋め込まれた**プロトコルバージョン**で判定されます．
+The Paper and Velocity plugins of LunaticChat are versioned independently. Whether a given combination works is determined by the **protocol version** embedded in each plugin.
 
-::: warning プラグインバージョン ≠ プロトコルバージョン
-**プラグインバージョン** (例: Paper v1.2.0) と **プロトコルバージョン** (例: 1.0.0) は別物です．プラグイン側のリリースを重ねてもプロトコルが変わらなければ互換性は維持されます．互換性を決めるのはプロトコルバージョンのみです．
+::: warning Plugin version ≠ protocol version
+The **plugin version** (e.g., Paper v1.2.0) and the **protocol version** (e.g., 1.0.0) are different things. New plugin releases do not necessarily change the protocol — and only the protocol version determines compatibility.
 :::
 
-## 結論から
+## TL;DR
 
-- **両プラグインの最新版同士は常に互換性があります．** 迷ったら両方を最新にしてください．
-- 古いバージョンを混在させたい場合は，下のマトリクスで組み合わせを確認してください．
-- 接続状態は Minecraft サーバーで `/lcv status` を実行すると確認できます．
+- **The latest Paper and the latest Velocity are always compatible.** When in doubt, use the latest of both.
+- If you need to mix older versions, check the matrix below.
+- You can verify the live connection state by running `/lcv status` on the Minecraft server.
 
-## 互換性マトリクス
+## Compatibility Matrix
 
-各セルは「その Paper × Velocity の組み合わせが接続できるか」を示します．データは GitHub Releases から自動取得されます．
+Each cell indicates whether the corresponding Paper × Velocity combination can connect. Data is fetched from GitHub Releases automatically.
 
 <CompatibilityMatrix />
 
-## プロトコルバージョンとは
+## What Is a Protocol Version?
 
-Paper / Velocity 間の通信は LunaticChat 独自のプラグインメッセージプロトコルで行われています．プロトコルにはセマンティックバージョニング (`MAJOR.MINOR.PATCH`) が振られており，接続時のハンドシェイクで Velocity 側がバージョンを照合します．
+Paper and Velocity communicate via a LunaticChat-specific plugin messaging protocol. The protocol carries a semantic version (`MAJOR.MINOR.PATCH`), and at connection time Velocity validates the protocol version sent by Paper.
 
-::: tip 互換性チェックは Velocity 側のみ
-互換性判定をしているのは Velocity 側のみです．Paper 側はハンドシェイクを送るだけで，バージョンチェックはしません．つまり「Velocity が Paper のプロトコルを受け入れられるか」がそのまま接続可否になります．
+::: tip Velocity is the only side that checks
+Only Velocity performs the compatibility check. Paper just sends a handshake — it does not validate Velocity's version. So the question reduces to: "Does Velocity accept Paper's protocol version?"
 :::
 
-判定ルールは以下です（Velocity 視点）：
+The rules (from Velocity's perspective) are:
 
-- **MAJOR** が一致すること
-- Paper の **MINOR** が，Velocity の `MIN_SUPPORTED_MINOR` 以上かつ Velocity の `MINOR` 以下であること
-- **PATCH** は判定に影響しない
+- **MAJOR** must match exactly
+- Paper's **MINOR** must be at least Velocity's `MIN_SUPPORTED_MINOR` and at most Velocity's `MINOR`
+- **PATCH** does not affect compatibility
 
-`MIN_SUPPORTED_MINOR` は「Velocity がどこまで古い Paper の MINOR を受け入れるか」を示す値で，ローリングアップデート中の猶予期間を作るために使われます．
+`MIN_SUPPORTED_MINOR` controls how far back Velocity accepts older Paper peers, providing a grace window during rolling updates.
 
-### バージョンバンプの基準
+### Version Bump Rules
 
-| レベル | 変更例 | 互換性 | デプロイ順序 |
-|--------|--------|--------|-------------|
-| **PATCH** (1.0.0 → 1.0.1) | optional フィールド追加，新 sub-channel 追加 | 完全互換 (`ignoreUnknownKeys=true` で安全) | 順不同，いつでも |
-| **MINOR** (1.0.x → 1.1.0) | required フィールド追加，既存 sub-channel のセマンティクス変更 | `MIN_SUPPORTED_MINOR` の範囲内で後方互換 | **Velocity を先に更新** → 各 Paper を順次更新 |
-| **MAJOR** (1.x.x → 2.0.0) | ワイヤフォーマット変更，sub-channel 削除/リネーム | 非互換 | **全サーバー同時デプロイ** |
+| Level | Example Change | Compatibility | Deployment Order |
+|-------|---------------|---------------|------------------|
+| **PATCH** (1.0.0 → 1.0.1) | Adding optional fields, new sub-channels | Fully compatible (safe with `ignoreUnknownKeys=true`) | Any order, anytime |
+| **MINOR** (1.0.x → 1.1.0) | Adding required fields, changing existing sub-channel semantics | Backward compatible within `MIN_SUPPORTED_MINOR` range | **Update Velocity first** → then update each Paper server |
+| **MAJOR** (1.x.x → 2.0.0) | Wire format changes, removing/renaming sub-channels | Incompatible | **Simultaneous deployment of all servers** |
 
-### ローリングアップデートの考え方
+### Rolling Update Strategy
 
-1. **プロトコル変更なし**：Paper / Velocity を独立にデプロイ可能．プラグインのバグ修正やリファクタはここに入ります．
-2. **PATCH 変更**：どちら側からでも自由にデプロイ可能．
-3. **MINOR 変更**：Velocity を先行更新し，`MIN_SUPPORTED_MINOR` で旧 Paper を許容．全 Paper 更新後に `MIN_SUPPORTED_MINOR` を引き上げ．
-4. **MAJOR 変更**：メンテナンスウィンドウで一括更新．
+1. **No protocol change**: Paper and Velocity can be deployed independently. Plugin bug fixes and refactors fall here.
+2. **PATCH change**: Deploy from either side freely.
+3. **MINOR change**: Update Velocity first and use `MIN_SUPPORTED_MINOR` as a grace window for older Paper servers. After all Paper servers are updated, bump `MIN_SUPPORTED_MINOR`.
+4. **MAJOR change**: Update all servers simultaneously during a maintenance window.
 
-## ハンドシェイクの挙動
+## Handshake Behavior
 
-接続時は以下の流れで互換性が確認されます：
+Compatibility is checked at connection time:
 
-1. Paper サーバー起動時に Velocity に対してハンドシェイクを送信
-2. Velocity が Paper のプロトコルバージョンを自身のものと照合
-3. 不一致の場合は Velocity が接続を拒否し，Paper 側の状態が `FAILED` になる
-4. ハンドシェイクのタイムアウトは 5 秒
+1. The Paper server sends a handshake to Velocity at startup
+2. Velocity validates Paper's protocol version against its own
+3. On mismatch, Velocity rejects the connection and Paper's state becomes `FAILED`
+4. The handshake timeout is 5 seconds
 
-接続状態は `/lcv status` で確認できます．詳細は [Velocity 連携](/docs/features/velocity#接続状態) を参照してください．
+Live connection state is available via `/lcv status`. See [Velocity Integration](/docs/features/velocity#connection-states) for details.

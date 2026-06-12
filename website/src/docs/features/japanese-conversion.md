@@ -2,61 +2,61 @@
 layout: doc
 ---
 
-# ローマ字変換
+# Japanese Conversion
 
-ローマ字で入力したチャットメッセージを自動的に日本語に変換します．この機能を利用するには `config.yml` で `features.japaneseConversion.enabled` を `true` に設定してください．
+Automatically converts chat messages typed in romaji into Japanese. To use this feature, set `features.japaneseConversion.enabled` to `true` in `config.yml`.
 
-## 変換の仕組み
+## How Conversion Works
 
-変換は2段階で行われます．
+Conversion is performed in two stages.
 
-1. **ローマ字 → ひらがな**: プラグイン内蔵の Trie ベースの変換エンジンでローマ字をひらがなに変換します
-2. **ひらがな → 漢字/カナ**: Google IME API を使用してひらがなを自然な日本語に変換します
+1. **Romaji to Hiragana**: The plugin's built-in Trie-based conversion engine converts romaji to hiragana
+2. **Hiragana to Kanji/Katakana**: The Google IME API converts hiragana into natural Japanese
 
-### 変換例
-
-```
-入力:  konnichiha sekai
-変換1: こんにちは せかい
-変換2: こんにちは 世界
-```
-
-## 変換対象
-
-- 通常チャット
-- ダイレクトメッセージ (`/tell`, `/reply`)
-- チャンネルチャット
-
-入力が有効なローマ字でない場合 (英単語などが含まれる場合)，変換は行われずそのまま送信されます．
-
-## プレイヤー設定
-
-プレイヤーは個別に変換のオン/オフを切り替えられます．
+### Conversion Example
 
 ```
-/lc settings japanese on     # 変換を有効化
-/lc settings japanese off    # 変換を無効化
+Input:       konnichiha sekai
+Stage 1:     こんにちは せかい
+Stage 2:     こんにちは 世界
 ```
 
-## キャッシュ
+## Conversion Targets
 
-変換結果は単語単位でキャッシュされ，同じ単語の再変換時には API を呼び出さずにキャッシュから取得します．キャッシュは JSON ファイルとしてディスクに定期保存されます．
+- Normal chat
+- Direct messages (`/tell`, `/reply`)
+- Channel chat
 
-| 設定キー | デフォルト | 説明 |
-|----------|-----------|------|
-| `cache.maxEntries` | `500` | キャッシュの最大エントリ数 |
-| `cache.saveIntervalSeconds` | `300` | ディスク保存の間隔 (秒) |
-| `cache.filePath` | `"conversion_cache.json"` | キャッシュファイルのパス |
+If the input is not valid romaji (e.g., contains English words), no conversion is performed and the message is sent as-is.
 
-キャッシュが上限に達すると，古いエントリの10%が自動的に削除されます．
+## Player Settings
 
-## API 設定
+Players can individually toggle conversion on or off.
 
-Google IME API への接続に関する設定です．
+```
+/lc settings japanese on     # Enable conversion
+/lc settings japanese off    # Disable conversion
+```
 
-| 設定キー | デフォルト | 説明 |
-|----------|-----------|------|
-| `api.timeout` | `3000` | リクエストタイムアウト (ミリ秒) |
-| `api.retryAttempts` | `2` | 失敗時のリトライ回数 |
+## Cache
 
-API がタイムアウトまたは失敗した場合，ひらがなのまま送信されます．
+Conversion results are cached per word. When the same word is converted again, the result is retrieved from cache instead of calling the API. The cache is periodically saved to disk as a JSON file.
+
+| Setting Key | Default | Description |
+|-------------|---------|-------------|
+| `cache.maxEntries` | `500` | Maximum number of cache entries |
+| `cache.saveIntervalSeconds` | `300` | Interval for saving to disk (seconds) |
+| `cache.filePath` | `"conversion_cache.json"` | Path to the cache file |
+
+When the cache reaches its limit, the oldest 10% of entries are automatically removed.
+
+## API Settings
+
+Settings related to the connection to the Google IME API.
+
+| Setting Key | Default | Description |
+|-------------|---------|-------------|
+| `api.timeout` | `3000` | Request timeout (milliseconds) |
+| `api.retryAttempts` | `2` | Number of retry attempts on failure |
+
+If the API times out or fails, the message is sent in hiragana as-is.

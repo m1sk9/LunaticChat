@@ -2,73 +2,73 @@
 layout: doc
 ---
 
-# 管理者向け機能
+# Admin Features
 
-サーバー管理者向けの機能をまとめて解説します．これらの機能は主に OP 権限を持つプレイヤーが利用できます．
+This page covers features intended for server administrators. These features are primarily available to players with OP permissions.
 
-## プラグインステータス (`/lc status`)
+## Plugin Status (`/lc status`)
 
-プラグインの動作状況を一覧で確認できます．
+View an overview of the plugin's operational status.
 
 ```
 /lc status
 ```
 
-表示される情報:
+Displayed information:
 
-- プラグインバージョン (Git コミットハッシュ付き)
-- ヘルスステータス (OK / Degraded)
-- 各機能の有効/無効状態
-- 設定値 (デバッグモード，アップデート確認，言語)
-- GitHub，Modrinth，ドキュメントへのリンク
+- Plugin version (with Git commit hash)
+- Health status (OK / Degraded)
+- Enabled/disabled state of each feature
+- Configuration values (debug mode, update checking, language)
+- Links to GitHub, Modrinth, and documentation
 
-## スパイモード
+## Spy Mode
 
-`lunaticchat.spy` パーミッション (デフォルト: op) を持つプレイヤーは，サーバー上で送受信されるすべてのダイレクトメッセージを閲覧できます．
+Players with the `lunaticchat.spy` permission (default: op) can view all direct messages sent and received on the server.
 
-- スパイプレイヤーにはローマ字変換前の元のメッセージが表示されます
-- ホバーテキストでスパイメッセージであることが示されます
-- スパイプレイヤー自身は通常の送受信者リストには含まれません
+- Spy players see the original message before romaji conversion
+- Hover text indicates the message is a spy message
+- Spy players themselves are not included in the normal sender/recipient list
 
-## チャンネルバイパス
+## Channel Bypass
 
-`lunaticchat.channelbypass` パーミッション (デフォルト: op) を持つプレイヤーは，チャンネルに関する以下の制限を無視できます．
+Players with the `lunaticchat.channelbypass` permission (default: op) can bypass the following channel restrictions.
 
-- キック・BAN の対象にならない
-- オーナーでなくてもチャンネルを削除できる
+- Cannot be kicked or banned
+- Can delete channels even without being the owner
 
-## アップデート通知
+## Update Notifications
 
-`checkForUpdates` が `true` (デフォルト) の場合，プラグインは起動時に新しいバージョンが利用可能か確認します．`lunaticchat.noticeupdate` パーミッション (デフォルト: op) を持つプレイヤーがサーバーに参加した際にアップデート通知が表示されます．
+When `checkForUpdates` is `true` (default), the plugin checks for new versions at startup. Players with the `lunaticchat.noticeupdate` permission (default: op) receive an update notification when they join the server.
 
 ```yaml
 # config.yml
 checkForUpdates: true
 ```
 
-## デバッグモード
+## Debug Mode
 
-`debug` を `true` にすると，プラグインの詳細なログが出力されます．問題の調査やバグ報告時に有用です．
+Setting `debug` to `true` enables verbose plugin logging. This is useful for troubleshooting issues or submitting bug reports.
 
 ```yaml
 # config.yml
 debug: true
 ```
 
-## 言語設定
+## Language Setting
 
-プレイヤーに表示されるメッセージの言語を切り替えられます．プラグインログやコンソール出力には影響せず，英語のみ出力となります．
+You can change the language of messages displayed to players. Plugin logs and console output are not affected and remain in English only.
 
 ```yaml
 # config.yml
-language: "ja"   # "en" または "ja"
+language: "ja"   # "en" or "ja"
 ```
 
-## 管理者パーミッション一覧
+## Admin Permissions Reference
 
-| パーミッション | デフォルト | 説明 |
-|---------------|-----------|------|
-| `lunaticchat.spy` | op | 全ダイレクトメッセージの閲覧 |
-| `lunaticchat.channelbypass` | op | チャンネル制限のバイパス |
-| `lunaticchat.noticeupdate` | op | アップデート通知の受信 |
-| `lunaticchat.command.lcv.status` | op | `/lcv status` コマンドの使用 |
+| Permission | Default | Description |
+|-----------|---------|-------------|
+| `lunaticchat.spy` | op | View all direct messages |
+| `lunaticchat.channelbypass` | op | Bypass channel restrictions |
+| `lunaticchat.noticeupdate` | op | Receive update notifications |
+| `lunaticchat.command.lcv.status` | op | Use the `/lcv status` command |
