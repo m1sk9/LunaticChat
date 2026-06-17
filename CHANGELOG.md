@@ -2,6 +2,12 @@
 
 ## v1
 
+### v1.3.0 (UNRELEASED)
+
+- Paper 26.2 (Minecraft 26.2) is now supported.
+- Added cross-server direct messaging functionality
+- Fixed a bug where the player argument for `/tell` used partial matching (we switched from the old Bukkit API to the new API)
+
 ### v1.2.2
 
 This release includes updates to the Velocity version.
