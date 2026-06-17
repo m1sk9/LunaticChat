@@ -9,6 +9,8 @@ import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
 import dev.m1sk9.lunaticChat.paper.velocity.CrossServerChatManager
+import dev.m1sk9.lunaticChat.paper.velocity.CrossServerDirectMessageManager
+import dev.m1sk9.lunaticChat.paper.velocity.RemotePlayerRegistry
 import dev.m1sk9.lunaticChat.paper.velocity.VelocityConnectionManager
 
 /**
@@ -27,6 +29,8 @@ import dev.m1sk9.lunaticChat.paper.velocity.VelocityConnectionManager
  * @property channelNotificationHandler Optional (only when channel chat feature is enabled)
  * @property velocityConnectionManager Optional (only when Velocity integration is enabled)
  * @property crossServerChatManager Optional (only when Velocity integration and cross-server chat are enabled)
+ * @property crossServerDirectMessageManager Optional (only when Velocity integration and cross-server DM are enabled)
+ * @property remotePlayerRegistry Optional (only when Velocity integration and cross-server DM are enabled)
  */
 data class ServiceContainer(
     val languageManager: LanguageManager,
@@ -39,4 +43,6 @@ data class ServiceContainer(
     val channelNotificationHandler: ChannelNotificationHandler? = null,
     val velocityConnectionManager: VelocityConnectionManager? = null,
     val crossServerChatManager: CrossServerChatManager? = null,
+    val crossServerDirectMessageManager: CrossServerDirectMessageManager? = null,
+    val remotePlayerRegistry: RemotePlayerRegistry? = null,
 )

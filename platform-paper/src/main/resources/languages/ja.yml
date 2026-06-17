@@ -26,6 +26,10 @@ directMessage:
   targetOffline: "プレイヤー '{target}' は現在オフラインです"
   yourself: "自分自身にメッセージを送信することはできません"
   replyTargetNotFound: "返信対象のプレイヤーが見つかりません"
+  crossServerDisabled: "このサーバーではクロスサーバーダイレクトメッセージが無効です"
+  remoteServerNotFound: "サーバー '{server}' はプロキシ内に見つかりませんでした"
+  remoteTargetOffline: "プレイヤー '{target}' はサーバー '{server}' にオンラインではありません"
+  usage: "使い方: /tell <プレイヤー[@サーバー]> <メッセージ>"
 
 romajiConversion:
   toggle: "かな・ローマ字変換機能を{toggle}にしました"
