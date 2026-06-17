@@ -139,14 +139,26 @@ class LunaticChat :
 
         // Register core commands
         commandRegistry.registerAll(
-            TellCommand(this, services.directMessageHandler, services.languageManager),
+            TellCommand(
+                this,
+                services.directMessageHandler,
+                services.languageManager,
+                services.crossServerDirectMessageManager,
+                services.remotePlayerRegistry,
+                configuration.features.velocityIntegration.serverName,
+            ),
             LunaticChatCommand(this, settingHandlerRegistry, services.languageManager, configuration),
         )
 
         // Conditionally register /reply command if quick replies are enabled
         if (configuration.features.quickReplies.enabled) {
             commandRegistry.registerAll(
-                ReplyCommand(this, services.directMessageHandler, services.languageManager),
+                ReplyCommand(
+                    this,
+                    services.directMessageHandler,
+                    services.languageManager,
+                    services.crossServerDirectMessageManager,
+                ),
             )
         }
 

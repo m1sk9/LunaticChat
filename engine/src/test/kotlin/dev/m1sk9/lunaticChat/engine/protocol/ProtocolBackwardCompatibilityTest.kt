@@ -32,6 +32,16 @@ class ProtocolBackwardCompatibilityTest {
 
         const val GLOBAL_CHAT_V1_0_0 =
             """{"messageId":"abc-123","serverName":"lobby","playerId":"00000001-0000-0000-0000-000000000000","playerName":"TestPlayer","message":"Hello, world!","timestamp":1000}"""
+
+        // Protocol 1.0.1 snapshots — NEVER MODIFY after commit
+        const val DIRECT_MESSAGE_V1_0_1 =
+            """{"messageId":"dm-123","sourceServerName":"survival","senderId":"00000004-0000-0000-0000-000000000000","senderName":"Sender","targetServerName":"lobby","targetName":"Recipient","message":"Hello!","timestamp":4000}"""
+
+        const val DIRECT_MESSAGE_ERROR_V1_0_1 =
+            """{"messageId":"dm-456","senderId":"00000005-0000-0000-0000-000000000000","targetName":"Ghost","targetServerName":"lobby","reason":"TARGET_OFFLINE"}"""
+
+        const val PRESENCE_SNAPSHOT_V1_0_1 =
+            """{"players":[{"playerName":"Alice","serverName":"lobby"},{"playerName":"Bob","serverName":"survival"}],"timestamp":5000}"""
     }
 
     private fun buildRawMessage(
@@ -136,5 +146,54 @@ class ProtocolBackwardCompatibilityTest {
         val decoded = PluginMessageCodec.decode(data)
 
         assertIs<PluginMessage.StatusRequest>(decoded)
+    }
+
+    @Test
+    fun `current codec can decode protocol 1_0_1 DirectMessageRelay`() {
+        val data = buildRawMessage("direct_message", DIRECT_MESSAGE_V1_0_1)
+        val decoded = PluginMessageCodec.decode(data)
+
+        assertIs<PluginMessage.DirectMessageRelay>(decoded)
+        assertEquals("dm-123", decoded.messageId)
+        assertEquals("survival", decoded.sourceServerName)
+        assertEquals("00000004-0000-0000-0000-000000000000", decoded.senderId)
+        assertEquals("Sender", decoded.senderName)
+        assertEquals("lobby", decoded.targetServerName)
+        assertEquals("Recipient", decoded.targetName)
+        assertEquals("Hello!", decoded.message)
+        assertEquals(4000L, decoded.timestamp)
+    }
+
+    @Test
+    fun `current codec can decode protocol 1_0_1 DirectMessageError`() {
+        val data = buildRawMessage("direct_message_error", DIRECT_MESSAGE_ERROR_V1_0_1)
+        val decoded = PluginMessageCodec.decode(data)
+
+        assertIs<PluginMessage.DirectMessageError>(decoded)
+        assertEquals("dm-456", decoded.messageId)
+        assertEquals("00000005-0000-0000-0000-000000000000", decoded.senderId)
+        assertEquals("Ghost", decoded.targetName)
+        assertEquals("lobby", decoded.targetServerName)
+        assertEquals("TARGET_OFFLINE", decoded.reason)
+    }
+
+    @Test
+    fun `current codec can decode protocol 1_0_1 PresenceSnapshot`() {
+        val data = buildRawMessage("presence_snapshot", PRESENCE_SNAPSHOT_V1_0_1)
+        val decoded = PluginMessageCodec.decode(data)
+
+        assertIs<PluginMessage.PresenceSnapshot>(decoded)
+        assertEquals(2, decoded.players.size)
+        assertEquals("Alice", decoded.players[0].playerName)
+        assertEquals("lobby", decoded.players[0].serverName)
+        assertEquals(5000L, decoded.timestamp)
+    }
+
+    @Test
+    fun `current codec can decode protocol 1_0_1 PresenceRequest with empty JSON`() {
+        val data = buildRawMessage("presence_request", "{}")
+        val decoded = PluginMessageCodec.decode(data)
+
+        assertIs<PluginMessage.PresenceRequest>(decoded)
     }
 }

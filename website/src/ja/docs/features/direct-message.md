@@ -30,6 +30,18 @@ layout: doc
 
 クイック返信を利用するには `config.yml` で `features.quickReplies.enabled` が `true` (デフォルト) である必要があります．
 
+## クロスサーバーダイレクトメッセージ <Badge type="tip" text="v1.3.0~" />
+
+> [!NOTE]
+> 
+> この機能を利用するには `config.yml` で `features.velocityIntegration.crossServerDirectMessage` を `true` に設定してください．
+
+ほかのサーバーにいるプレイヤーに対してメッセージを送信するにはプレイヤー引数を `プレイヤーID@サーバー名` で指定します．
+
+```
+/tell <player>@<server> <message>
+```
+
 ## 通知設定
 
 プレイヤーはダイレクトメッセージ受信時のサウンド通知を個別に制御できます．

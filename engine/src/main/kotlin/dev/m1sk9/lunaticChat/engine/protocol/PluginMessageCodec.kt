@@ -24,6 +24,10 @@ object PluginMessageCodec {
         const val STATUS_REQUEST = "status_request"
         const val STATUS_RESPONSE = "status_response"
         const val GLOBAL_CHAT = "global_chat"
+        const val DIRECT_MESSAGE = "direct_message"
+        const val DIRECT_MESSAGE_ERROR = "direct_message_error"
+        const val PRESENCE_SNAPSHOT = "presence_snapshot"
+        const val PRESENCE_REQUEST = "presence_request"
     }
 
     /**
@@ -52,6 +56,18 @@ object PluginMessageCodec {
                 }
                 is PluginMessage.GlobalChatMessage -> {
                     SubChannel.GLOBAL_CHAT to json.encodeToString(message)
+                }
+                is PluginMessage.DirectMessageRelay -> {
+                    SubChannel.DIRECT_MESSAGE to json.encodeToString(message)
+                }
+                is PluginMessage.DirectMessageError -> {
+                    SubChannel.DIRECT_MESSAGE_ERROR to json.encodeToString(message)
+                }
+                is PluginMessage.PresenceSnapshot -> {
+                    SubChannel.PRESENCE_SNAPSHOT to json.encodeToString(message)
+                }
+                is PluginMessage.PresenceRequest -> {
+                    SubChannel.PRESENCE_REQUEST to "{}"
                 }
             }
 
@@ -90,6 +106,18 @@ object PluginMessageCodec {
             }
             SubChannel.GLOBAL_CHAT -> {
                 json.decodeFromString<PluginMessage.GlobalChatMessage>(messageJson)
+            }
+            SubChannel.DIRECT_MESSAGE -> {
+                json.decodeFromString<PluginMessage.DirectMessageRelay>(messageJson)
+            }
+            SubChannel.DIRECT_MESSAGE_ERROR -> {
+                json.decodeFromString<PluginMessage.DirectMessageError>(messageJson)
+            }
+            SubChannel.PRESENCE_SNAPSHOT -> {
+                json.decodeFromString<PluginMessage.PresenceSnapshot>(messageJson)
+            }
+            SubChannel.PRESENCE_REQUEST -> {
+                PluginMessage.PresenceRequest
             }
             else -> throw IllegalArgumentException("Unknown sub-channel: $subChannel")
         }

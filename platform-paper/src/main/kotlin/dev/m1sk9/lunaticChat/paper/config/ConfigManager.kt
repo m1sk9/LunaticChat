@@ -60,6 +60,11 @@ class ConfigManager {
                                         "features.velocityIntegration.crossServerGlobalChat",
                                         false,
                                     ),
+                                crossServerDirectMessage =
+                                    configFile.getBoolean(
+                                        "features.velocityIntegration.crossServerDirectMessage",
+                                        false,
+                                    ),
                                 serverName =
                                     configFile.getString(
                                         "features.velocityIntegration.serverName",

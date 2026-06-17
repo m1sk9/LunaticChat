@@ -8,7 +8,9 @@ import com.velocitypowered.api.plugin.Plugin
 import com.velocitypowered.api.plugin.PluginContainer
 import com.velocitypowered.api.proxy.ProxyServer
 import dev.m1sk9.lunaticChat.velocity.messaging.CrossServerChatRelay
+import dev.m1sk9.lunaticChat.velocity.messaging.CrossServerDirectMessageRelay
 import dev.m1sk9.lunaticChat.velocity.messaging.PluginMessageHandler
+import dev.m1sk9.lunaticChat.velocity.presence.PresenceTracker
 import org.slf4j.Logger
 
 /**
@@ -36,6 +38,8 @@ class LunaticChat
     ) {
         private var messageHandler: PluginMessageHandler? = null
         private var crossServerChatRelay: CrossServerChatRelay? = null
+        private var crossServerDirectMessageRelay: CrossServerDirectMessageRelay? = null
+        private var presenceTracker: PresenceTracker? = null
 
         @Subscribe
         fun onProxyInitialization(event: ProxyInitializeEvent) {
@@ -54,6 +58,22 @@ class LunaticChat
                     logger = logger,
                 )
 
+            // Initialize cross-server direct message relay
+            crossServerDirectMessageRelay =
+                CrossServerDirectMessageRelay(
+                    server = server,
+                    logger = logger,
+                )
+
+            // Initialize presence tracker
+            presenceTracker =
+                PresenceTracker(
+                    plugin = this@LunaticChat,
+                    server = server,
+                    logger = logger,
+                )
+            presenceTracker?.initialize()
+
             // Initialize plugin message handler
             messageHandler =
                 PluginMessageHandler(
@@ -62,6 +82,8 @@ class LunaticChat
                     logger = logger,
                     pluginVersion = pluginVersion,
                     crossServerChatRelay = crossServerChatRelay!!,
+                    crossServerDirectMessageRelay = crossServerDirectMessageRelay!!,
+                    presenceTracker = presenceTracker!!,
                 )
             messageHandler?.initialize()
 
@@ -72,5 +94,6 @@ class LunaticChat
         fun onProxyShutdown(event: ProxyShutdownEvent) {
             logger.info("Shutting down LunaticChat Velocity plugin")
             messageHandler?.shutdown()
+            presenceTracker?.shutdown()
         }
     }

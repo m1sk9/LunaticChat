@@ -17,6 +17,8 @@ class VelocityConnectionManager(
     private val pluginVersion: String,
     private val logger: Logger,
     private var crossServerChatManager: CrossServerChatManager? = null,
+    private var crossServerDirectMessageManager: CrossServerDirectMessageManager? = null,
+    private var remotePlayerRegistry: RemotePlayerRegistry? = null,
 ) : PluginMessageListener {
     companion object {
         private const val CHANNEL = "lunaticchat:main"
@@ -51,6 +53,7 @@ class VelocityConnectionManager(
     private var statusFuture: CompletableFuture<PluginMessage.StatusResponse>? = null
     private var velocityVersion: String? = null
     private var lastError: String? = null
+    private var handshakePlayer: Player? = null
 
     /**
      * Initialize
@@ -72,6 +75,18 @@ class VelocityConnectionManager(
     }
 
     /**
+     * Sets the cross-server direct message manager and remote player registry.
+     * Called after initialization to avoid circular dependency.
+     */
+    fun setCrossServerDirectMessageManager(
+        manager: CrossServerDirectMessageManager,
+        registry: RemotePlayerRegistry,
+    ) {
+        this.crossServerDirectMessageManager = manager
+        this.remotePlayerRegistry = registry
+    }
+
+    /**
      * Performs handshake
      *
      * @param player Player to use for sending messages
@@ -86,6 +101,7 @@ class VelocityConnectionManager(
 
         state = ConnectionState.HANDSHAKING
         lastError = null
+        handshakePlayer = player
 
         val future = CompletableFuture<HandshakeResult>()
         handshakeFuture = future
@@ -178,6 +194,9 @@ class VelocityConnectionManager(
                 is PluginMessage.HandshakeResponse -> handleHandshakeResponse(pluginMessage)
                 is PluginMessage.StatusResponse -> handleStatusResponse(pluginMessage)
                 is PluginMessage.GlobalChatMessage -> handleGlobalChatMessage(pluginMessage)
+                is PluginMessage.DirectMessageRelay -> handleDirectMessageRelay(pluginMessage)
+                is PluginMessage.DirectMessageError -> handleDirectMessageError(pluginMessage)
+                is PluginMessage.PresenceSnapshot -> handlePresenceSnapshot(pluginMessage)
                 else -> logger.warning("Unexpected message type: ${pluginMessage::class.simpleName}")
             }
         } catch (e: Exception) {
@@ -201,6 +220,7 @@ class VelocityConnectionManager(
                 "Successfully connected to Velocity (version: ${response.velocityVersion}, " +
                     "protocol: ${response.protocolMajor}.${response.protocolMinor}.${response.protocolPatch})",
             )
+            requestInitialPresence()
             future.complete(HandshakeResult.Success(response.velocityVersion))
         } else {
             state = ConnectionState.FAILED
@@ -243,6 +263,43 @@ class VelocityConnectionManager(
         } else {
             logger.warning("Received global chat message but CrossServerChatManager is not initialized")
         }
+    }
+
+    /**
+     * Handles a relayed direct message from Velocity
+     */
+    private fun handleDirectMessageRelay(message: PluginMessage.DirectMessageRelay) {
+        val manager = crossServerDirectMessageManager
+        if (manager != null) {
+            manager.handleIncomingMessage(message)
+        } else {
+            logger.warning("Received direct message but CrossServerDirectMessageManager is not initialized")
+        }
+    }
+
+    /**
+     * Handles a direct message delivery error from Velocity
+     */
+    private fun handleDirectMessageError(message: PluginMessage.DirectMessageError) {
+        crossServerDirectMessageManager?.handleError(message)
+    }
+
+    /**
+     * Handles a proxy-wide presence snapshot from Velocity
+     */
+    private fun handlePresenceSnapshot(message: PluginMessage.PresenceSnapshot) {
+        remotePlayerRegistry?.replaceAll(message.players)
+    }
+
+    /**
+     * Requests the initial presence snapshot after a successful handshake.
+     */
+    private fun requestInitialPresence() {
+        if (remotePlayerRegistry == null) return
+        val player = handshakePlayer?.takeIf { it.isOnline } ?: return
+        val data = PluginMessageCodec.encode(PluginMessage.PresenceRequest)
+        player.sendPluginMessage(plugin, CHANNEL, data)
+        logger.info("Requested initial presence snapshot from Velocity")
     }
 
     /**

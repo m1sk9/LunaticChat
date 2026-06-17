@@ -12,6 +12,7 @@ import com.velocitypowered.api.proxy.server.ServerInfo
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessage
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageCodec
 import dev.m1sk9.lunaticChat.engine.protocol.ProtocolVersion
+import dev.m1sk9.lunaticChat.velocity.presence.PresenceTracker
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -21,14 +22,24 @@ import kotlin.test.Test
 class PluginMessageHandlerTest {
     private val channel = MinecraftChannelIdentifier.create("lunaticchat", "main")
 
-    private fun createHandler(pluginVersion: String = "0.10.0"): Triple<PluginMessageHandler, ProxyServer, CrossServerChatRelay> {
+    private data class Handlers(
+        val handler: PluginMessageHandler,
+        val server: ProxyServer,
+        val relay: CrossServerChatRelay,
+        val dmRelay: CrossServerDirectMessageRelay,
+        val presenceTracker: PresenceTracker,
+    )
+
+    private fun createHandler(pluginVersion: String = "0.10.0"): Handlers {
         val plugin = Any()
         val server = mockk<ProxyServer>(relaxed = true)
         val logger = mockk<Logger>(relaxed = true)
         val relay = mockk<CrossServerChatRelay>(relaxed = true)
+        val dmRelay = mockk<CrossServerDirectMessageRelay>(relaxed = true)
+        val presenceTracker = mockk<PresenceTracker>(relaxed = true)
 
-        val handler = PluginMessageHandler(plugin, server, logger, pluginVersion, relay)
-        return Triple(handler, server, relay)
+        val handler = PluginMessageHandler(plugin, server, logger, pluginVersion, relay, dmRelay, presenceTracker)
+        return Handlers(handler, server, relay, dmRelay, presenceTracker)
     }
 
     private fun createServerConnection(serverName: String = "lobby"): ServerConnection {
@@ -142,6 +153,43 @@ class PluginMessageHandlerTest {
         handler.onPluginMessage(event)
 
         verify { relay.relayGlobalMessage(any<PluginMessage.GlobalChatMessage>(), any<RegisteredServer>()) }
+    }
+
+    @Test
+    fun `onPluginMessage should relay direct message`() {
+        val handlers = createHandler()
+        val connection = createServerConnection()
+
+        val dm =
+            PluginMessage.DirectMessageRelay(
+                messageId = "dm-1",
+                sourceServerName = "lobby",
+                senderId = "00000001-0000-0000-0000-000000000000",
+                senderName = "Sender",
+                targetServerName = "survival",
+                targetName = "Recipient",
+                message = "Hi!",
+                timestamp = 1000L,
+            )
+        val data = PluginMessageCodec.encode(dm)
+        val event = createPluginMessageEvent(connection, mockk(relaxed = true), channel, data)
+
+        handlers.handler.onPluginMessage(event)
+
+        verify { handlers.dmRelay.relay(any<PluginMessage.DirectMessageRelay>(), any<RegisteredServer>()) }
+    }
+
+    @Test
+    fun `onPluginMessage should send presence snapshot on request`() {
+        val handlers = createHandler()
+        val connection = createServerConnection()
+
+        val data = PluginMessageCodec.encode(PluginMessage.PresenceRequest)
+        val event = createPluginMessageEvent(connection, mockk(relaxed = true), channel, data)
+
+        handlers.handler.onPluginMessage(event)
+
+        verify { handlers.presenceTracker.sendSnapshotTo(any<RegisteredServer>()) }
     }
 
     @Test

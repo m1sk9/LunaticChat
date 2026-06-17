@@ -8,6 +8,7 @@ import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessage
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageCodec
 import dev.m1sk9.lunaticChat.engine.protocol.ProtocolVersion
+import dev.m1sk9.lunaticChat.velocity.presence.PresenceTracker
 import org.slf4j.Logger
 
 /**
@@ -25,6 +26,8 @@ class PluginMessageHandler(
     private val logger: Logger,
     private val pluginVersion: String,
     private val crossServerChatRelay: CrossServerChatRelay,
+    private val crossServerDirectMessageRelay: CrossServerDirectMessageRelay,
+    private val presenceTracker: PresenceTracker,
 ) {
     companion object {
         private val CHANNEL = MinecraftChannelIdentifier.create("lunaticchat", "main")
@@ -62,6 +65,12 @@ class PluginMessageHandler(
                 }
                 is PluginMessage.GlobalChatMessage -> {
                     handleGlobalChatMessage(source, message)
+                }
+                is PluginMessage.DirectMessageRelay -> {
+                    crossServerDirectMessageRelay.relay(message, source.server)
+                }
+                is PluginMessage.PresenceRequest -> {
+                    presenceTracker.sendSnapshotTo(source.server)
                 }
                 else -> {
                     logger.warn("Unexpected message type from Paper: ${message::class.simpleName}")

@@ -72,6 +72,10 @@ features:
     # If enabled, global chat messages will be shared across all Paper servers connected to the Velocity proxy.
     # Players on different servers can communicate through the GLOBAL chat mode.
     crossServerGlobalChat: false
+    # If enabled, direct messages (/tell, /msg) can be sent to players on other Paper servers
+    # by specifying "<playerName>@<serverName>" as the target. The server name must match the
+    # serverName configured on the destination Paper server.
+    crossServerDirectMessage: false
     # Server name to display in cross-server chat (e.g., "survival", "creative", "lobby").
     # This should match the server name defined in your Velocity configuration.
     serverName: "Unknown"

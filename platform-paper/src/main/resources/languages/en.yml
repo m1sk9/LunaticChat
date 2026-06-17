@@ -26,6 +26,10 @@ directMessage:
   targetOffline: "Player '{target}' is currently offline."
   yourself: "You cannot send a message to yourself."
   replyTargetNotFound: "Reply target player not found."
+  crossServerDisabled: "Cross-server direct messages are disabled on this server."
+  remoteServerNotFound: "Server '{server}' was not found on the proxy."
+  remoteTargetOffline: "Player '{target}' is not online on server '{server}'."
+  usage: "Usage: /tell <player[@server]> <message>"
 
 romajiConversion:
   toggle: "Romaji-to-kana conversion has been set to {toggle}"

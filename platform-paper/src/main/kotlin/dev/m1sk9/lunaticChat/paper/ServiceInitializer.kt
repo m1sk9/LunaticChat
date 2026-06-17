@@ -15,6 +15,8 @@ import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
 import dev.m1sk9.lunaticChat.paper.settings.YamlPlayerSettingsStorage
 import dev.m1sk9.lunaticChat.paper.velocity.CrossServerChatManager
+import dev.m1sk9.lunaticChat.paper.velocity.CrossServerDirectMessageManager
+import dev.m1sk9.lunaticChat.paper.velocity.RemotePlayerRegistry
 import dev.m1sk9.lunaticChat.paper.velocity.VelocityConnectionManager
 import io.ktor.client.HttpClient
 import org.bukkit.event.EventHandler
@@ -56,6 +58,8 @@ class ServiceInitializer(
     private var channelMessageLogger: ChannelMessageLogger? = null
     private var velocityConnectionManager: VelocityConnectionManager? = null
     private var crossServerChatManager: CrossServerChatManager? = null
+    private var crossServerDirectMessageManager: CrossServerDirectMessageManager? = null
+    private var remotePlayerRegistry: RemotePlayerRegistry? = null
     private val handshakeCompleted = AtomicBoolean(false)
 
     /**
@@ -132,6 +136,14 @@ class ServiceInitializer(
                 null
             }
 
+        // 8. Initialize cross-server direct message manager and presence registry (optional)
+        if (configuration.features.velocityIntegration.enabled &&
+            configuration.features.velocityIntegration.crossServerDirectMessage &&
+            velocityManager != null
+        ) {
+            initializeCrossServerDirectMessage(velocityManager, directMessageHandler, languageManager)
+        }
+
         return ServiceContainer(
             languageManager = languageManager,
             playerSettingsManager = playerSettingsManager,
@@ -143,6 +155,8 @@ class ServiceInitializer(
             channelNotificationHandler = channelNotificationHandler,
             velocityConnectionManager = velocityManager,
             crossServerChatManager = crossServerManager,
+            crossServerDirectMessageManager = crossServerDirectMessageManager,
+            remotePlayerRegistry = remotePlayerRegistry,
         )
     }
 
@@ -355,6 +369,36 @@ class ServiceInitializer(
             "Cross-server global chat initialized (cache size: ${configuration.features.velocityIntegration.messageDeduplicationCacheSize})",
         )
         return manager
+    }
+
+    /**
+     * Initializes cross-server direct messaging: the presence registry and the
+     * direct message manager, wiring them into the Velocity connection manager
+     * and the direct message handler.
+     */
+    private fun initializeCrossServerDirectMessage(
+        velocityManager: VelocityConnectionManager,
+        directMessageHandler: DirectMessageHandler,
+        languageManager: LanguageManager,
+    ) {
+        val registry = RemotePlayerRegistry(configuration.features.velocityIntegration.serverName)
+        remotePlayerRegistry = registry
+        directMessageHandler.remotePlayerRegistry = registry
+
+        val manager =
+            CrossServerDirectMessageManager(
+                plugin = plugin,
+                logger = logger,
+                configuration = configuration,
+                directMessageHandler = directMessageHandler,
+                languageManager = languageManager,
+                cacheSize = configuration.features.velocityIntegration.messageDeduplicationCacheSize,
+            )
+        crossServerDirectMessageManager = manager
+
+        velocityManager.setCrossServerDirectMessageManager(manager, registry)
+
+        logger.info("Cross-server direct messages initialized")
     }
 
     /**

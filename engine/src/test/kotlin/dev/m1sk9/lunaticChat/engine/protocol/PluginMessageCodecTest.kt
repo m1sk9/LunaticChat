@@ -136,6 +136,101 @@ class PluginMessageCodecTest {
     }
 
     @Test
+    fun `encode and decode DirectMessageRelay round-trip`() {
+        val original =
+            PluginMessage.DirectMessageRelay(
+                messageId = "dm-id-123",
+                sourceServerName = "survival",
+                senderId = "00000004-0000-0000-0000-000000000000",
+                senderName = "Sender",
+                targetServerName = "lobby",
+                targetName = "Recipient",
+                message = "Hello across servers!",
+                timestamp = 4000L,
+            )
+
+        val encoded = PluginMessageCodec.encode(original)
+        val decoded = PluginMessageCodec.decode(encoded)
+
+        assertIs<PluginMessage.DirectMessageRelay>(decoded)
+        assertEquals(original.messageId, decoded.messageId)
+        assertEquals(original.sourceServerName, decoded.sourceServerName)
+        assertEquals(original.senderId, decoded.senderId)
+        assertEquals(original.senderName, decoded.senderName)
+        assertEquals(original.targetServerName, decoded.targetServerName)
+        assertEquals(original.targetName, decoded.targetName)
+        assertEquals(original.message, decoded.message)
+        assertEquals(original.timestamp, decoded.timestamp)
+    }
+
+    @Test
+    fun `encode and decode DirectMessageError round-trip`() {
+        val original =
+            PluginMessage.DirectMessageError(
+                messageId = "dm-id-456",
+                senderId = "00000005-0000-0000-0000-000000000000",
+                targetName = "Ghost",
+                targetServerName = "lobby",
+                reason = PluginMessage.DirectMessageError.Reason.TARGET_OFFLINE,
+            )
+
+        val encoded = PluginMessageCodec.encode(original)
+        val decoded = PluginMessageCodec.decode(encoded)
+
+        assertIs<PluginMessage.DirectMessageError>(decoded)
+        assertEquals(original.messageId, decoded.messageId)
+        assertEquals(original.senderId, decoded.senderId)
+        assertEquals(original.targetName, decoded.targetName)
+        assertEquals(original.targetServerName, decoded.targetServerName)
+        assertEquals(PluginMessage.DirectMessageError.Reason.TARGET_OFFLINE, decoded.reason)
+    }
+
+    @Test
+    fun `encode and decode PresenceSnapshot round-trip`() {
+        val original =
+            PluginMessage.PresenceSnapshot(
+                players =
+                    listOf(
+                        PresenceEntry("Alice", "lobby"),
+                        PresenceEntry("Bob", "survival"),
+                    ),
+                timestamp = 5000L,
+            )
+
+        val encoded = PluginMessageCodec.encode(original)
+        val decoded = PluginMessageCodec.decode(encoded)
+
+        assertIs<PluginMessage.PresenceSnapshot>(decoded)
+        assertEquals(2, decoded.players.size)
+        assertEquals("Alice", decoded.players[0].playerName)
+        assertEquals("lobby", decoded.players[0].serverName)
+        assertEquals("Bob", decoded.players[1].playerName)
+        assertEquals("survival", decoded.players[1].serverName)
+        assertEquals(original.timestamp, decoded.timestamp)
+    }
+
+    @Test
+    fun `encode and decode PresenceSnapshot with empty list round-trip`() {
+        val original = PluginMessage.PresenceSnapshot(players = emptyList(), timestamp = 6000L)
+
+        val encoded = PluginMessageCodec.encode(original)
+        val decoded = PluginMessageCodec.decode(encoded)
+
+        assertIs<PluginMessage.PresenceSnapshot>(decoded)
+        assertEquals(0, decoded.players.size)
+    }
+
+    @Test
+    fun `encode and decode PresenceRequest round-trip`() {
+        val original = PluginMessage.PresenceRequest
+
+        val encoded = PluginMessageCodec.encode(original)
+        val decoded = PluginMessageCodec.decode(encoded)
+
+        assertIs<PluginMessage.PresenceRequest>(decoded)
+    }
+
+    @Test
     fun `decode should throw on unknown sub-channel`() {
         val out = java.io.ByteArrayOutputStream()
         val dataOut = java.io.DataOutputStream(out)
@@ -180,6 +275,10 @@ class PluginMessageCodecTest {
         assertEquals("status_request", PluginMessageCodec.SubChannel.STATUS_REQUEST)
         assertEquals("status_response", PluginMessageCodec.SubChannel.STATUS_RESPONSE)
         assertEquals("global_chat", PluginMessageCodec.SubChannel.GLOBAL_CHAT)
+        assertEquals("direct_message", PluginMessageCodec.SubChannel.DIRECT_MESSAGE)
+        assertEquals("direct_message_error", PluginMessageCodec.SubChannel.DIRECT_MESSAGE_ERROR)
+        assertEquals("presence_snapshot", PluginMessageCodec.SubChannel.PRESENCE_SNAPSHOT)
+        assertEquals("presence_request", PluginMessageCodec.SubChannel.PRESENCE_REQUEST)
     }
 
     @Test
@@ -191,6 +290,10 @@ class PluginMessageCodecTest {
                 PluginMessage.StatusRequest,
                 PluginMessage.StatusResponse("1.0.0", "1.0.0", true),
                 PluginMessage.GlobalChatMessage("id", "srv", "pid", "name", "msg", 0L),
+                PluginMessage.DirectMessageRelay("id", "src", "sid", "sname", "tsrv", "tname", "msg", 0L),
+                PluginMessage.DirectMessageError("id", "sid", "tname", "tsrv", "TARGET_OFFLINE"),
+                PluginMessage.PresenceSnapshot(listOf(PresenceEntry("p", "s")), 0L),
+                PluginMessage.PresenceRequest,
             )
 
         messages.forEach { message ->
