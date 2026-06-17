@@ -24,6 +24,11 @@ ignore:
   # VelocityConnectionManager is tightly coupled to the Paper/Bukkit runtime (Plugin, Player,
   # PluginMessageListener) and is exercised via end-to-end multi-server tests.
   - "platform-paper/src/main/kotlin/dev/m1sk9/lunaticChat/paper/velocity/VelocityConnectionManager.kt"
+  # Plugin bootstrap/DI wiring: the main plugin class and service initializer drive the Paper
+  # lifecycle (onEnable, dataFolder, schedulers, command registration) and are exercised via
+  # end-to-end server tests rather than unit tests.
+  - "platform-paper/src/main/kotlin/dev/m1sk9/lunaticChat/paper/LunaticChat.kt"
+  - "platform-paper/src/main/kotlin/dev/m1sk9/lunaticChat/paper/ServiceInitializer.kt"
   # The Velocity platform has no unit-test infrastructure; it is exercised via end-to-end
   # multi-server tests (docker compose).
   - "platform-velocity/src/main/kotlin/**"
