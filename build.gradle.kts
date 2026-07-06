@@ -6,7 +6,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm") version "2.4.0" apply false
     kotlin("plugin.serialization") version "2.4.0" apply false
-    id("com.gradleup.shadow") version "9.4.3" apply false
+    id("com.gradleup.shadow") version "9.5.0" apply false
     id("xyz.jpenilla.run-paper") version "3.0.2" apply false
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0" apply false
     id("org.jetbrains.dokka") version "2.2.0" apply false
