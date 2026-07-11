@@ -17,12 +17,12 @@ dependencies {
     api(project(":engine"))
 
     // Velocity-specific dependencies
-    compileOnly("com.velocitypowered:velocity-api:3.5.0-SNAPSHOT")
-    annotationProcessor("com.velocitypowered:velocity-api:3.5.0-SNAPSHOT")
+    compileOnly("com.velocitypowered:velocity-api:3.5.1")
+    annotationProcessor("com.velocitypowered:velocity-api:3.5.1")
     implementation("com.charleskorn.kaml:kaml:0.104.0") // YAML configuration
 
     // Test dependencies
-    testImplementation("com.velocitypowered:velocity-api:3.5.0-SNAPSHOT")
+    testImplementation("com.velocitypowered:velocity-api:3.5.1")
     testImplementation("io.mockk:mockk:1.14.11")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
 }
