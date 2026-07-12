@@ -63,8 +63,8 @@ subprojects {
         dependencies {
             // Common test dependencies (applied to all subprojects)
             add("testImplementation", "org.jetbrains.kotlin:kotlin-test-junit5")
-            add("testImplementation", "org.junit.jupiter:junit-jupiter-api:6.1.1")
-            add("testRuntimeOnly", "org.junit.jupiter:junit-jupiter-engine:6.1.1")
+            add("testImplementation", "org.junit.jupiter:junit-jupiter-api:6.1.2")
+            add("testRuntimeOnly", "org.junit.jupiter:junit-jupiter-engine:6.1.2")
         }
     }
 }
