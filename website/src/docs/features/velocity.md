@@ -51,6 +51,10 @@ When `crossServerGlobalChat` is set to `true`, player chat messages are relayed 
 
 Each message is assigned a unique ID, and a cache prevents the same message from being displayed more than once. The cache size can be configured with `messageDeduplicationCacheSize` (default: `100`).
 
+## Cross-Server Direct Messages <Badge type="tip" text="v1.3.0~" />
+
+Setting `crossServerDirectMessage` to `true` lets players exchange direct messages with players on other servers connected to the same proxy.
+
 ## Connection States
 
 The states reported by `/lcv status` and their meanings:
