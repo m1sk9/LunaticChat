@@ -8,9 +8,11 @@ A reference for all commands available in LunaticChat.
 
 ## Direct Messages
 
-### `/tell <player> <message>`
+### `/tell <player> <message>` / `/tell <player>@<server> <message>`
 
 Sends a direct message to a player.
+
+When a server name is specified, the message is sent to the player on that server.
 
 - **Aliases**: `t`, `msg`, `m`, `w`, `whisper`
 - **Permission**: `lunaticchat.command.tell`

@@ -30,6 +30,18 @@ Replies to the last player who sent you a message. If there is no such player, t
 
 To use quick reply, `features.quickReplies.enabled` must be `true` (default) in `config.yml`.
 
+## Cross-Server Direct Messages <Badge type="tip" text="v1.3.0~" />
+
+> [!NOTE]
+>
+> To use this feature, set `features.velocityIntegration.crossServerDirectMessage` to `true` in `config.yml`.
+
+To message a player on another server, specify the player argument as `playerName@serverName`.
+
+```
+/tell <player>@<server> <message>
+```
+
 ## Notification Settings
 
 Players can individually control the sound notification when receiving direct messages.

@@ -57,6 +57,7 @@ LunaticChat's configuration is managed in `plugins/LunaticChat/config.yml`. A de
 |-----|------|---------|-------------|
 | `enabled` | Boolean | `false` | Enable integration with the Velocity proxy |
 | `crossServerGlobalChat` | Boolean | `false` | Enable cross-server global chat |
+| `crossServerDirectMessage` | Boolean | `false` | Enable cross-server direct messaging |
 | `serverName` | String | `"Unknown"` | Server name displayed in cross-server chat |
 | `messageDeduplicationCacheSize` | Int | `100` | Size of the message deduplication cache |
 
