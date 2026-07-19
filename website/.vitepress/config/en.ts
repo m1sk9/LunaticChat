@@ -73,6 +73,37 @@ export const en: DefaultTheme.Config = {
           },
         ],
       },
+      {
+        text: 'Developer Guide',
+        items: [
+          {
+            link: '/docs/developers/introduction',
+            text: 'Introduction',
+          },
+          {
+            text: 'Design / Architecture',
+            link: '/docs/developers/architecture',
+            items: [
+              {
+                link: '/docs/developers/engine',
+                text: 'engine - Shared Kernel',
+              },
+              {
+                link: '/docs/developers/platform-paper',
+                text: 'platform-paper - Paper / Folia Plugin',
+              },
+              {
+                link: '/docs/developers/platform-velocity',
+                text: 'platform-velocity - Velocity Plugin (Proxy Relay)',
+              },
+            ],
+          },
+          {
+            link: '/docs/developers/resource',
+            text: 'Build, Release & Versioning',
+          },
+        ],
+      },
     ],
   },
 };
