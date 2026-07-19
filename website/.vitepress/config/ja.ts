@@ -78,7 +78,7 @@ export const ja: DefaultTheme.Config = {
         items: [
           {
             link: '/ja/docs/developers/introduction',
-            text: 'はじめに'
+            text: 'はじめに',
           },
           {
             text: '設計/アーキテクチャ',
@@ -86,24 +86,24 @@ export const ja: DefaultTheme.Config = {
             items: [
               {
                 link: '/ja/docs/developers/engine',
-                text: 'engine - 共通カーネル'
+                text: 'engine - 共通カーネル',
               },
               {
                 link: '/ja/docs/developers/platform-paper',
-                text: 'platform-paper - Paper / Folia プラグイン本体'
+                text: 'platform-paper - Paper / Folia プラグイン本体',
               },
               {
                 link: '/ja/docs/developers/platform-velocity',
-                text: 'platform-velocity - Velocity プラグイン本体 (プロキシ中継)'
+                text: 'platform-velocity - Velocity プラグイン本体 (プロキシ中継)',
               },
-            ]
+            ],
           },
           {
             link: '/ja/docs/developers/resource',
             text: 'ビルド・リリース・バージョニング',
-          }
-        ]
-      }
+          },
+        ],
+      },
     ],
   },
 };
