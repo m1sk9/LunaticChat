@@ -125,7 +125,7 @@ jobs:
             --notes-file /tmp/release-notes.md
 
       - name: Publish to Modrinth (Paper/Folia)
-        uses: cloudnode-pro/modrinth-publish@8dc596b20b94959bf244180235d90729d05a674f # v2
+        uses: cloudnode-pro/modrinth-publish@150bec632db186f87c686435b29c55e7543107ea # v2
         with:
           token: ${{ secrets.MODRINTH_TOKEN }}
           name: v${{ needs.validate.outputs.version }} (Paper/Folia v${{ env.MODRINTH_MC_VERSION }})
