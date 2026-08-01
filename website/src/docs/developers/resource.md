@@ -38,7 +38,7 @@ The release target switches based on the tag pattern.
 
 - Common flow: `validate` (check for a duplicate existing release) → `build` (mise + Gradle setup, `shadowJar`) → `release` (`gh release create --draft` + publish to Modrinth)
 - The per-platform workflows (paper / velocity) differ from `release.yaml` in requiring a strict match between the tag and `gradle.properties`
-- Modrinth game-versions are Paper=`26.1.x` (loaders: paper, folia) and Velocity=`1.21.x` + `26.1.x` (loader: velocity)
+- Modrinth game-versions are Paper=`26.2.x` (loaders: paper, folia) and Velocity=`1.21.x` + `26.1.x` + `26.2.x` (loader: velocity)
 
 ## CI
 

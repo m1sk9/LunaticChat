@@ -14,7 +14,7 @@ LunaticChat は Paper / Folia サーバーのみをサポートしています�
 
 | 項目 | 要件 |
 |------|------|
-| Minecraft | 26.1 以降 |
+| Minecraft | 26.2 以降 |
 | Java | 25 以降 |
 | サーバー | Paper, Folia, または Velocity |
 

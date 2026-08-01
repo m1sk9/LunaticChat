@@ -38,7 +38,7 @@ Paper と Velocity は別々のバージョン番号を持ち，独立にリリ�
 
 - 共通フロー: `validate` (既存リリースの重複チェック) → `build` (mise + Gradle setup, `shadowJar`) → `release` (`gh release create --draft` + Modrinth 公開)
 - 個別ワークフロー (paper / velocity) はタグと `gradle.properties` の厳密一致を要求する点が `release.yaml` と異なる
-- Modrinth の game-versions は Paper=`26.1.x` (loader: paper, folia)，Velocity=`1.21.x` + `26.1.x` (loader: velocity)
+- Modrinth の game-versions は Paper=`26.2.x` (loader: paper, folia)，Velocity=`1.21.x` + `26.1.x` + `26.2.x` (loader: velocity)
 
 ## CI
 

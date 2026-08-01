@@ -50,7 +50,7 @@ class CommandContext(
      */
     fun replyWithEvent(
         message: Component,
-        event: ClickEvent,
+        event: ClickEvent<*>,
     ) {
         message
             .clickEvent(event)
