@@ -10,6 +10,9 @@ services:
       - ./velocity.toml:/server/velocity.toml
     environment:
       TYPE: "VELOCITY"
+      # 未指定だと latest (現時点では 4.x 系) が落ちてくるため、
+      # platform-velocity/build.gradle.kts の velocity-api と同じ系列に固定する
+      VELOCITY_VERSION: "3.5.1"
       MEMORY: "512M"
       ONLINE_MODE: "false"
     depends_on:
@@ -18,7 +21,8 @@ services:
       s2:
         condition: service_healthy
     healthcheck:
-      test: mc-health
+      # mc-proxy イメージに mc-health は無い (minecraft-server イメージ側のコマンド)
+      test: health.sh
       start_period: 60s
       interval: 10s
       timeout: 5s
@@ -40,7 +44,9 @@ services:
     environment:
       EULA: "TRUE"
       TYPE: "PAPER"
-      VERSION: "26.1.2"
+      VERSION: "26.2"
+      # platform-paper/build.gradle.kts の paper-api と同じビルドに固定する
+      PAPER_BUILD: "87"
       MEMORY: "1G"
 
       # デバッグ用高速化設定
@@ -87,7 +93,9 @@ services:
     environment:
       EULA: "TRUE"
       TYPE: "PAPER"
-      VERSION: "26.1.2"
+      VERSION: "26.2"
+      # platform-paper/build.gradle.kts の paper-api と同じビルドに固定する
+      PAPER_BUILD: "87"
       MEMORY: "1G"
 
       # デバッグ用高速化設定

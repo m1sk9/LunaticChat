@@ -12,7 +12,9 @@ services:
     environment:
       EULA: "TRUE"
       TYPE: "FOLIA"
-      VERSION: "26.1.2"
+      VERSION: "26.2"
+      # 未指定だと同一 VERSION の最新ビルドに勝手に追従するため固定する
+      FOLIABUILD: "1"
       MEMORY: "2G"
 
       # デバッグ用高速化設定

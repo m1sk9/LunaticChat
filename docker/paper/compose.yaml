@@ -12,7 +12,9 @@ services:
     environment:
       EULA: "TRUE"
       TYPE: "PAPER"
-      VERSION: "26.1.2"
+      VERSION: "26.2"
+      # platform-paper/build.gradle.kts の paper-api と同じビルドに固定する
+      PAPER_BUILD: "87"
       MEMORY: "1G"
 
       # デバッグ用高速化設定
