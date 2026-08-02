@@ -186,7 +186,6 @@ class ServiceInitializer(
             ConversionCache(
                 cacheFile = plugin.dataFolder.resolve(configuration.features.japaneseConversion.cacheFilePath).toPath(),
                 maxEntries = configuration.features.japaneseConversion.cacheMaxEntries,
-                saver = DebouncedSaver(plugin),
                 logger = logger,
             )
         cache.loadFromDisk()

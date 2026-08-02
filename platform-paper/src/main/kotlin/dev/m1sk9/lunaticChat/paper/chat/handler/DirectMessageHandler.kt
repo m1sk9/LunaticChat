@@ -12,7 +12,6 @@ import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
 import dev.m1sk9.lunaticChat.paper.velocity.RemotePlayerRegistry
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.ClickEvent
-import net.kyori.adventure.text.event.HoverEvent
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import java.util.UUID
@@ -213,20 +212,12 @@ class DirectMessageHandler(
         recipientName: String,
         rawMessage: String,
     ) {
-        val spyMessage = formatMessage(format, senderName, recipientName, rawMessage, replyTo = senderName)
-        SpyPermissionManager
-            .getDirectMessageSpyPlayers()
-            .values
-            .filter { it.isOnline && it.name !in setOf(senderName, recipientName) }
-            .forEach {
-                it.sendMessage(
-                    spyMessage.hoverEvent(
-                        HoverEvent.showText(
-                            Component.text(languageManager.getMessage("general.spyMessage")),
-                        ),
-                    ),
-                )
-            }
+        SpyPermissionManager.notifySpies(
+            noticeText = languageManager.getMessage("general.spyMessage"),
+            exclude = { it.name == senderName || it.name == recipientName },
+        ) {
+            formatMessage(format, senderName, recipientName, rawMessage, replyTo = senderName)
+        }
     }
 
     private fun formatMessage(

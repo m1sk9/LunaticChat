@@ -12,7 +12,6 @@ import dev.m1sk9.lunaticChat.paper.i18n.withChatPlaceholders
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
 import io.ktor.util.logging.Logger
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.event.HoverEvent
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 
@@ -44,19 +43,10 @@ class ChannelMessageHandler(
 
         // Send to spy players (exclude sender and channel members)
         val memberIds = context.members.map { it.playerId }.toSet()
-        SpyPermissionManager
-            .getDirectMessageSpyPlayers()
-            .values
-            .filter { it.isOnline && it.uniqueId != playerId && it.uniqueId !in memberIds }
-            .forEach {
-                it.sendMessage(
-                    formattedMessage.hoverEvent(
-                        HoverEvent.showText(
-                            Component.text(languageManager.getMessage("general.spyMessage")),
-                        ),
-                    ),
-                )
-            }
+        SpyPermissionManager.notifySpies(
+            noticeText = languageManager.getMessage("general.spyMessage"),
+            exclude = { it.uniqueId == playerId || it.uniqueId in memberIds },
+        ) { formattedMessage }
         context.members.forEach { member ->
             Bukkit.getPlayer(member.playerId)?.let { memberPlayer ->
                 if (memberPlayer.isOnline) {
