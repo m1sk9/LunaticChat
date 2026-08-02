@@ -14,9 +14,6 @@
 commandDescription:
   tell: "他のプレイヤーにダイレクトメッセージを送信します"
   reply: "最後にダイレクトメッセージを送信/受信したプレイヤーに返信します"
-  jp: "かな・ローマ字変換機能のオン/オフを切り替えます"
-  notice: "ダイレクトメッセージ通知のオン/オフを切り替えます"
-  chNotice: "チャンネルメッセージ通知のオン/オフを切り替えます"
   lc: "LunaticChat のメインコマンド"
   lcv: "LunaticChat Velocity 連携コマンド"
 
@@ -206,7 +203,6 @@ channel:
 general:
   playerOnlyCommand: "このコマンドはプレイヤーのみが実行できます"
   newUpdateAvailable: "LunaticChat の新しいバージョンが利用可能です。GitHubまたはModrinthからダウンロードできます"
-  noPermission: "このコマンドを実行する権限がありません"
   spyMessage: "あなたに権限が付与されているため、このメッセージはスパイ状態で表示されています"
   nightlyWarning: "ナイトリービルドを使用しています。このビルドは不安定であったり、バグが含まれている可能性があります。"
   nightlyReportIssue: "問題を発見した場合は、GitHub Issues で報告してください。"

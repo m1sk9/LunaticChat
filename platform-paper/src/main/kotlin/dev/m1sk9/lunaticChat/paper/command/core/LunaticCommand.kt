@@ -32,10 +32,6 @@ abstract class LunaticCommand(
         this::class.annotations.filterIsInstance<Permission>().firstOrNull()
     }
 
-    private val deprecatedAnnotation: Deprecated? by lazy {
-        this::class.annotations.filterIsInstance<Deprecated>().firstOrNull()
-    }
-
     private val isPlayerOnly: Boolean by lazy {
         this::class.annotations.any { it is PlayerOnly }
     }
@@ -65,20 +61,6 @@ abstract class LunaticCommand(
      * Called by CommandRegistry during registration.
      */
     fun buildWithChecks(): LiteralArgumentBuilder<CommandSourceStack> {
-        // If command is deprecated, replace with error message handler
-        deprecatedAnnotation?.let { deprecated ->
-            return Commands
-                .literal(name)
-                .executes { ctx ->
-                    val context = wrapContext(ctx)
-                    val result =
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(deprecated.message),
-                        )
-                    handleResult(context, result)
-                }
-        }
-
         var builder = buildCommand()
         permission?.let { perm ->
             builder =

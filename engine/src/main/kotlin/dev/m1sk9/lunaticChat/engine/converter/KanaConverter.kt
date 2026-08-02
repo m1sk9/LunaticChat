@@ -4,16 +4,10 @@ package dev.m1sk9.lunaticChat.engine.converter
  * Converts romanji text to hiragana using Trie data structure.
  */
 object KanaConverter {
-    sealed class TrieNode {
-        data class Leaf(
-            val value: String,
-        ) : TrieNode()
-
-        data class Branch(
-            val children: Map<Char, TrieNode>,
-            val value: String? = null,
-        ) : TrieNode()
-    }
+    private class TrieNode(
+        val children: Map<Char, TrieNode>,
+        val value: String? = null,
+    )
 
     private val romanjiTrie: TrieNode = buildTrie()
 
@@ -216,7 +210,7 @@ object KanaConverter {
                 "n" to "ん",
             )
 
-        return insertAll(TrieNode.Branch(emptyMap()), mappings)
+        return insertAll(TrieNode(emptyMap()), mappings)
     }
 
     private fun insertAll(
@@ -235,22 +229,33 @@ object KanaConverter {
         key: String,
         value: String,
     ): TrieNode {
-        if (key.isEmpty()) {
-            return when (node) {
-                is TrieNode.Branch -> TrieNode.Branch(node.children, value)
-                is TrieNode.Leaf -> TrieNode.Leaf(value)
-            }
+        if (key.isEmpty()) return TrieNode(node.children, value)
+
+        val char = key[0]
+        val child = node.children[char] ?: TrieNode(emptyMap())
+        return TrieNode(node.children + (char to insert(child, key.substring(1), value)), node.value)
+    }
+
+    /**
+     * Walks the trie from [start] and returns the longest mapping that matches, paired with the
+     * number of characters it consumed, or null when no prefix of the input maps to kana.
+     */
+    private fun longestMatch(
+        input: String,
+        start: Int,
+    ): Pair<String, Int>? {
+        var node = romanjiTrie
+        var match: Pair<String, Int>? = null
+        var i = start
+
+        while (true) {
+            node.value?.let { match = it to (i - start) }
+            if (i >= input.length) break
+            node = node.children[input[i]] ?: break
+            i++
         }
 
-        return when (node) {
-            is TrieNode.Branch -> {
-                val char = key[0]
-                val child = node.children[char] ?: TrieNode.Branch(emptyMap())
-                val newChild = insert(child, key.substring(1), value)
-                TrieNode.Branch(node.children + (char to newChild), node.value)
-            }
-            is TrieNode.Leaf -> node
-        }
+        return match
     }
 
     /**
@@ -282,39 +287,8 @@ object KanaConverter {
                 }
             }
 
-            // Try to find the longest match in the trie
-            var node: TrieNode = romanjiTrie
-            var matchLength = 0
-            var j = i
-
-            while (j < lowerInput.length && lowerInput[j] in 'a'..'z') {
-                node =
-                    when (node) {
-                        is TrieNode.Branch -> {
-                            if (node.value != null) {
-                                matchLength = j - i
-                            }
-                            node.children[lowerInput[j]] ?: break
-                        }
-                        is TrieNode.Leaf -> {
-                            matchLength = j - i
-                            break
-                        }
-                    }
-                j++
-            }
-
-            // Check for terminal match
-            if (node is TrieNode.Leaf) {
-                matchLength = j - i
-            } else if (node is TrieNode.Branch && node.value != null) {
-                matchLength = j - i
-            }
-
             // If no match found, this character cannot be converted - not valid romaji
-            if (matchLength == 0) {
-                return false
-            }
+            val (_, matchLength) = longestMatch(lowerInput, i) ?: return false
 
             i += matchLength
         }
@@ -344,37 +318,10 @@ object KanaConverter {
                 }
             }
 
-            var node: TrieNode = romanjiTrie
-            var lastMatch: Pair<String, Int>? = null
-            var j = i
-
-            while (j < lowerInput.length) {
-                node =
-                    when (node) {
-                        is TrieNode.Branch -> {
-                            if (node.value != null) {
-                                lastMatch = node.value to (j - i)
-                            }
-
-                            node.children[lowerInput[j]] ?: break
-                        }
-                        is TrieNode.Leaf -> {
-                            lastMatch = node.value to (j - i)
-                            break
-                        }
-                    }
-                j++
-            }
-
-            if (node is TrieNode.Leaf) {
-                lastMatch = node.value to (j - i)
-            } else if (node is TrieNode.Branch && node.value != null) {
-                lastMatch = node.value to (j - i)
-            }
-
-            if (lastMatch != null) {
-                result.append(lastMatch.first)
-                i += lastMatch.second
+            val match = longestMatch(lowerInput, i)
+            if (match != null) {
+                result.append(match.first)
+                i += match.second
             } else {
                 result.append(lowerInput[i])
                 i++

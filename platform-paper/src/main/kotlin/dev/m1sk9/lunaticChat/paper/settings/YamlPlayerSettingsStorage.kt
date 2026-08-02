@@ -9,12 +9,11 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.logging.Logger
 import kotlin.io.path.bufferedReader
 import kotlin.io.path.exists
-import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.writeText
 
 /**
  * Handles YAML file I/O operations for player settings.
- * Provides backup functionality and async save with debouncing.
+ * Provides async save with debouncing.
  *
  * @property settingsFile The path to the YAML settings file
  * @property plugin The plugin instance for scheduling async tasks
@@ -30,8 +29,7 @@ class YamlPlayerSettingsStorage(
 
     /**
      * Loads player settings from the YAML file.
-     * If the file doesn't exist, returns empty settings.
-     * If loading fails, attempts to restore from backup.
+     * If the file doesn't exist or cannot be parsed, returns empty settings.
      *
      * @return The loaded settings or empty settings if file doesn't exist
      */
@@ -46,18 +44,6 @@ class YamlPlayerSettingsStorage(
             yaml.decodeFromString(PlayerSettingsData.serializer(), yamlContent)
         } catch (e: Exception) {
             logger.severe("Failed to load settings file: ${e.message}")
-
-            val backup = findLatestBackup()
-            if (backup != null) {
-                logger.warning("Attempting to restore from backup: $backup")
-                try {
-                    val content = backup.bufferedReader().use { it.readText() }
-                    return yaml.decodeFromString(PlayerSettingsData.serializer(), content)
-                } catch (backupError: Exception) {
-                    logger.severe("Backup restoration failed: ${backupError.message}")
-                }
-            }
-
             logger.warning("Using empty settings as fallback")
             PlayerSettingsData()
         }
@@ -98,19 +84,4 @@ class YamlPlayerSettingsStorage(
             )
         }
     }
-
-    /**
-     * Finds the most recent backup file.
-     *
-     * @return The path to the latest backup, or null if no backups exist
-     */
-    private fun findLatestBackup(): Path? =
-        try {
-            settingsFile.parent
-                .listDirectoryEntries("player-settings.yaml.backup.*")
-                .maxByOrNull { it.fileName.toString() }
-        } catch (e: Exception) {
-            logger.warning("Failed to find backup: ${e.message}")
-            null
-        }
 }

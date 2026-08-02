@@ -60,7 +60,7 @@ class LunaticChat :
         val httpClient = HttpClient(CIO)
 
         // Initialize plugin coroutine scope
-        pluginScope = PluginCoroutineScope(this, logger)
+        pluginScope = PluginCoroutineScope(logger)
 
         // Initialize all services
         serviceInitializer =

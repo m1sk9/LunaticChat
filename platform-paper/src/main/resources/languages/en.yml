@@ -12,9 +12,6 @@
 # ----------------------------------------------
 
 commandDescription:
-  jp: "Toggle romaji-to-kana conversion on/off"
-  notice: "Toggle direct message notifications on/off"
-  chNotice: "Toggle channel message notifications on/off"
   reply: "Reply to the player who last sent/received a direct message"
   tell: "Send a direct message to another player"
   lc: "LunaticChat Main Command"
@@ -206,7 +203,6 @@ channel:
 general:
   playerOnlyCommand: "This command can only be executed by players."
   newUpdateAvailable: "The new version of LunaticChat is now available! You can download it from GitHub or Modrinth."
-  noPermission: "You do not have permission to execute this command."
   spyMessage: "You have been granted permission, so this message is displayed in spy mode."
   nightlyWarning: "You are running a nightly build. This build may be unstable or contain bugs."
   nightlyReportIssue: "If you encounter any issues, please report them on GitHub Issues."
