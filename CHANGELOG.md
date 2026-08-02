@@ -11,8 +11,8 @@
 
 #### Velocity: v1.2.0
 
-- Now built against Velocity API 4.0.0.
-  - Velocity 3.5.x remains supported. The 4.x API is identical to 3.5.x for everything this plugin uses, so the same JAR runs on both.
+- Velocity 4.0.0 is now supported.
+  - Support for Velocity 3.5.x has been dropped.
 - Removed an unused YAML dependency, shrinking the Velocity JAR by roughly 1 MB.
 
 ### v1.2.2

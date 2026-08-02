@@ -17,7 +17,6 @@ dependencies {
     api(project(":engine"))
 
     // Velocity-specific dependencies
-    // 4.x is API-identical to 3.5.x, so the plugin still runs on 3.5.x proxies
     compileOnly("com.velocitypowered:velocity-api:4.0.0")
 
     // Test dependencies
