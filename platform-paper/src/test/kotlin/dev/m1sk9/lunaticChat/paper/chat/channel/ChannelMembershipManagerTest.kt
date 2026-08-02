@@ -472,4 +472,29 @@ class ChannelMembershipManagerTest {
 
         assertIs<ChannelPlayerBannedException>(result.exceptionOrNull())
     }
+
+    @Test
+    fun `isMember should fail for a channel that does not exist`() {
+        val (membership, _, _) = createManagers()
+
+        val result = membership.isMember(createTestUUID(1), "no-such-ch")
+
+        assertIs<ChannelNotFoundException>(result.exceptionOrNull())
+    }
+
+    @Test
+    fun `getPlayerChannels should not report a deleted channel`() {
+        val ownerId = createTestUUID(1)
+        val playerId = createTestUUID(2)
+        val (membership, channelManager, _) = createManagers()
+        channelManager.createChannel(createTestChannel(id = "keep-ch", name = "Keep", ownerId = ownerId))
+        channelManager.createChannel(createTestChannel(id = "drop-ch", name = "Drop", ownerId = ownerId))
+        membership.joinChannel(playerId, "keep-ch")
+        channelManager.setPlayerChannel(playerId, null)
+        membership.joinChannel(playerId, "drop-ch")
+
+        channelManager.deleteChannel("drop-ch", ownerId)
+
+        assertEquals(listOf("keep-ch"), membership.getPlayerChannels(playerId).getOrThrow())
+    }
 }

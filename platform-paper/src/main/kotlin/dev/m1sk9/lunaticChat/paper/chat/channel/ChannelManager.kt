@@ -168,6 +168,44 @@ class ChannelManager(
     }
 
     /**
+     * Answers whether a player belongs to a channel without handing out the member list.
+     *
+     * [getChannelMembers] copies the list defensively, which is the wrong price to pay for a
+     * question that only needs to scan it.
+     *
+     * @param channelId The ID of the channel.
+     * @param playerId The UUID of the player.
+     * @return Result containing true if the player is a member.
+     * @throws ChannelNotFoundException if the channel does not exist.
+     */
+    fun isMember(
+        channelId: String,
+        playerId: UUID,
+    ): Result<Boolean> {
+        channelsCache[channelId]
+            ?: return Result.failure(ChannelNotFoundException(channelId))
+
+        val members = membersCache[channelId] ?: return Result.success(false)
+        return Result.success(members.any { it.playerId == playerId })
+    }
+
+    /**
+     * Returns the ids of every existing channel the player belongs to.
+     *
+     * Walks the membership lists once in place; asking per channel meant copying every channel's
+     * member list to answer a question about one player.
+     *
+     * @param playerId The UUID of the player.
+     */
+    fun channelIdsOf(playerId: UUID): List<String> =
+        membersCache
+            .asSequence()
+            .filter { (channelId, members) ->
+                channelsCache.containsKey(channelId) && members.any { it.playerId == playerId }
+            }.map { it.key }
+            .toList()
+
+    /**
      * Adds a member to a channel.
      *
      * @param channelId The ID of the channel.
