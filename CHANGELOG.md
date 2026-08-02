@@ -9,6 +9,12 @@
 - Added cross-server direct messaging functionality
 - Fixed a bug where the player argument for `/tell` used partial matching (we switched from the old Bukkit API to the new API)
 
+#### Velocity: v1.2.0
+
+- Velocity 4.0.0 is now supported.
+  - Support for Velocity 3.5.x has been dropped.
+- Removed an unused YAML dependency, shrinking the Velocity JAR by roughly 1 MB.
+
 ### v1.2.2
 
 This release includes updates to the Velocity version.

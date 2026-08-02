@@ -11,7 +11,7 @@ A Gradle multi-module setup shares `engine` while building and releasing Paper /
 - Root `build.gradle.kts` — manages Kotlin 2.4.0 + serialization / Shadow / ktlint / dokka. The JVM target is **JVM_25**. Tests use JUnit Platform + jacoco, with common test dependencies injected into all modules
 - `engine` — exposes core libraries (serialization / coroutines / ktor) via `api()` to propagate them to the platforms. Adventure is `compileOnly`. A pure library with no Shadow
 - `platform-paper` — `version = paperVersion`. `api(project(":engine"))`. paper-api as `compileOnly`, KAML + kotlin-reflect as `implementation`. Output is **`LunaticChat-<ver>.jar`** (no classifier; `jar` disabled)
-- `platform-velocity` — `version = velocityVersion`. `api(project(":engine"))`. velocity-api as `compileOnly` + `annotationProcessor` (for `@Plugin` processing). Output is **`LunaticChat-<ver>-velocity.jar`** (distinguished by classifier)
+- `platform-velocity` — `version = velocityVersion`. `api(project(":engine"))`. velocity-api as `compileOnly`. Output is **`LunaticChat-<ver>-velocity.jar`** (distinguished by classifier)
 - `dokka` — aggregates engine/paper/velocity and includes the README in the HTML
 
 Both platforms' `processResources` compute `version` / `gitCommitHash` / `channel` from the git short hash and `isNightly`, and token-expand them into `paper-plugin.yml` / `velocity-plugin.json` and `build-info.properties`.
