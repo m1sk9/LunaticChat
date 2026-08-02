@@ -6,10 +6,46 @@ import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMembershipManager
 import dev.m1sk9.lunaticChat.paper.command.core.LunaticSubCommand
+import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Bukkit
 import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
 import java.util.UUID
+
+private const val MAX_MEMBERS_DISPLAY = 10
+
+/**
+ * Renders a channel's member list on one line, truncated to [MAX_MEMBERS_DISPLAY] names with a
+ * count of what was left out.
+ *
+ * @param indent Leading whitespace, which differs by how deeply the caller nests the line
+ */
+internal fun memberListLine(
+    memberNames: List<String>,
+    indent: String,
+    languageManager: LanguageManager,
+): Component {
+    val shown = memberNames.take(MAX_MEMBERS_DISPLAY)
+    val line =
+        Component
+            .text(indent)
+            .append(Component.text(languageManager.getMessage("channel.info.members"), NamedTextColor.GRAY))
+            .append(Component.text(": ", NamedTextColor.GRAY))
+            .append(Component.text(shown.joinToString(", "), NamedTextColor.WHITE))
+
+    if (memberNames.size <= MAX_MEMBERS_DISPLAY) return line
+
+    val omitted =
+        languageManager.getMessage(
+            "channel.info.membersOmitted",
+            mapOf("count" to memberNames.size.toString()),
+        )
+    return line
+        .append(Component.text(" ... ", NamedTextColor.GRAY))
+        .append(Component.text("($omitted)", NamedTextColor.YELLOW))
+}
 
 /**
  * A subcommand of `/lc channel`.

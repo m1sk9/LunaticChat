@@ -23,10 +23,6 @@ class ChannelInfoCommand(
     private val channelManager: ChannelManager,
     override val languageManager: LanguageManager,
 ) : LunaticSubCommand(plugin) {
-    companion object {
-        private const val MAX_MEMBERS_DISPLAY = 10
-    }
-
     override val literal = "info"
     override val permissionNode = LunaticChatPermissionNode.ChannelInfo
     override val aliases = listOf("i")
@@ -129,28 +125,7 @@ class ChannelInfoCommand(
                 Bukkit.getOfflinePlayer(member.playerId).name
             }
 
-        val membersText =
-            if (memberNames.size > MAX_MEMBERS_DISPLAY) {
-                val displayNames = memberNames.take(MAX_MEMBERS_DISPLAY)
-                val message =
-                    languageManager.getMessage(
-                        "channel.info.membersOmitted",
-                        mapOf("count" to memberNames.size.toString()),
-                    )
-                Component
-                    .text("  ")
-                    .append(Component.text(languageManager.getMessage("channel.info.members"), NamedTextColor.GRAY))
-                    .append(Component.text(": ", NamedTextColor.GRAY))
-                    .append(Component.text(displayNames.joinToString(", "), NamedTextColor.WHITE))
-                    .append(Component.text(" ... ", NamedTextColor.GRAY))
-                    .append(Component.text("($message)", NamedTextColor.YELLOW))
-            } else {
-                Component
-                    .text("  ")
-                    .append(Component.text(languageManager.getMessage("channel.info.members"), NamedTextColor.GRAY))
-                    .append(Component.text(": ", NamedTextColor.GRAY))
-                    .append(Component.text(memberNames.joinToString(", "), NamedTextColor.WHITE))
-            }
+        val membersText = memberListLine(memberNames, indent = "  ", languageManager = languageManager)
 
         sender.sendMessage(membersText)
 

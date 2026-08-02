@@ -30,21 +30,14 @@ object MessageFormatter {
     fun format(
         message: String,
         highlightPlaceholders: Boolean = true,
-    ): Component {
-        val prefix =
-            Component
-                .text("[LC] ")
-                .color(PREFIX_COLOR)
-
-        val messageComponent =
+    ): Component =
+        prefixed(
             if (highlightPlaceholders) {
                 formatWithPlaceholders(message, MESSAGE_COLOR)
             } else {
                 Component.text(message).color(MESSAGE_COLOR)
-            }
-
-        return prefix.append(messageComponent)
-    }
+            },
+        )
 
     /**
      * Formats an error message with the prefix and red text.
@@ -52,16 +45,7 @@ object MessageFormatter {
      * @param message The error message text
      * @return A formatted Component with red text
      */
-    fun formatError(message: String): Component {
-        val prefix =
-            Component
-                .text("[LC] ")
-                .color(PREFIX_COLOR)
-
-        val messageComponent = formatWithPlaceholders(message, ERROR_COLOR)
-
-        return prefix.append(messageComponent)
-    }
+    fun formatError(message: String): Component = prefixed(formatWithPlaceholders(message, ERROR_COLOR))
 
     /**
      * Formats a success message with the prefix and green text.
@@ -69,16 +53,9 @@ object MessageFormatter {
      * @param message The success message text
      * @return A formatted Component with green text
      */
-    fun formatSuccess(message: String): Component {
-        val prefix =
-            Component
-                .text("[LC] ")
-                .color(PREFIX_COLOR)
+    fun formatSuccess(message: String): Component = prefixed(formatWithPlaceholders(message, SUCCESS_COLOR))
 
-        val messageComponent = formatWithPlaceholders(message, SUCCESS_COLOR)
-
-        return prefix.append(messageComponent)
-    }
+    private fun prefixed(message: Component): Component = Component.text("[LC] ").color(PREFIX_COLOR).append(message)
 
     /**
      * Parses a message and highlights placeholders in {braces} with yellow color.

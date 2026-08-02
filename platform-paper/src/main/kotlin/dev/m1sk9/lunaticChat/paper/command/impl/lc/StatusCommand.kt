@@ -164,7 +164,7 @@ class StatusCommand(
         label: String,
         enabled: Boolean,
     ): Component {
-        val toggleText = languageManager.getMessage(if (enabled) "toggle.on" else "toggle.off")
+        val toggleText = languageManager.getToggleText(enabled)
         val color = if (enabled) NamedTextColor.GREEN else NamedTextColor.GRAY
         return Component
             .text("    • ", NamedTextColor.GRAY)
