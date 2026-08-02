@@ -170,9 +170,11 @@ class PluginMessageHandler(
         connection: ServerConnection,
         message: PluginMessage.GlobalChatMessage,
     ) {
-        logger.info(
-            "Received global chat message from ${connection.serverInfo.name}: " +
-                "messageId=${message.messageId}, player=${message.playerName}",
+        logger.debug(
+            "Received global chat message from {}: messageId={}, player={}",
+            connection.serverInfo.name,
+            message.messageId,
+            message.playerName,
         )
 
         crossServerChatRelay.relayGlobalMessage(message, connection.server)

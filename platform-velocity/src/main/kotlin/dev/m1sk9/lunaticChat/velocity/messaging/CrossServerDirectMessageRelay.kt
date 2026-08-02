@@ -62,9 +62,13 @@ class CrossServerDirectMessageRelay(
             }
 
             targetServer.sendPluginMessage(CHANNEL, PluginMessageCodec.encode(message))
-            logger.info(
-                "Relayed direct message from ${message.senderName}@${message.sourceServerName} " +
-                    "to ${message.targetName}@${message.targetServerName} (messageId=${message.messageId})",
+            logger.debug(
+                "Relayed direct message from {}@{} to {}@{} (messageId={})",
+                message.senderName,
+                message.sourceServerName,
+                message.targetName,
+                message.targetServerName,
+                message.messageId,
             )
         } catch (e: Exception) {
             logger.error("Failed to relay direct message: ${e.message}", e)

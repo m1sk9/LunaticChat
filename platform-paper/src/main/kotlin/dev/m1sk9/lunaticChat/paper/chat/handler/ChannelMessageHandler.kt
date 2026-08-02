@@ -75,7 +75,7 @@ class ChannelMessageHandler(
             }
         }
 
-        logger.info("Channel Message from ${player.name} in ${context.channel.name}: $message")
+        logger.debug("Channel Message from {} in {}: {}", player.name, context.channel.name, message)
 
         // Log message to file if logging is enabled
         messageLogger?.let {

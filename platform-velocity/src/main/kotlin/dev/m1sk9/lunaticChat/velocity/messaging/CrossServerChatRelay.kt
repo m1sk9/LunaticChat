@@ -43,9 +43,12 @@ class CrossServerChatRelay(
                     relayCount++
                 }
 
-            logger.info(
-                "Relayed global chat message from ${message.serverName} to $relayCount servers " +
-                    "(messageId=${message.messageId}, player=${message.playerName})",
+            logger.debug(
+                "Relayed global chat message from {} to {} servers (messageId={}, player={})",
+                message.serverName,
+                relayCount,
+                message.messageId,
+                message.playerName,
             )
         } catch (e: Exception) {
             logger.error("Failed to relay global chat message: ${e.message}", e)

@@ -69,10 +69,10 @@ class CrossServerDirectMessageManager(
                 )
 
             sender.sendPluginMessage(plugin, PluginMessageChannel.ID, PluginMessageCodec.encode(relay))
-            logger.info(
+            logger.fine {
                 "Sent direct message to Velocity: messageId=$messageId, " +
-                    "target=$targetName@$targetServerName",
-            )
+                    "target=$targetName@$targetServerName"
+            }
         } catch (e: Exception) {
             logger.log(Level.SEVERE, "Failed to send cross-server direct message", e)
         }

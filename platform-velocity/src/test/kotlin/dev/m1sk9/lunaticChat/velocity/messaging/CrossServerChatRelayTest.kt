@@ -4,11 +4,14 @@ import com.velocitypowered.api.proxy.ProxyServer
 import com.velocitypowered.api.proxy.messages.ChannelIdentifier
 import com.velocitypowered.api.proxy.server.RegisteredServer
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessage
+import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageCodec
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.verify
 import org.slf4j.Logger
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class CrossServerChatRelayTest {
     private fun createRelay(): Triple<CrossServerChatRelay, ProxyServer, Logger> {
@@ -70,7 +73,7 @@ class CrossServerChatRelayTest {
 
     @Test
     fun `relayGlobalMessage with only source server should relay to zero`() {
-        val (relay, proxyServer, logger) = createRelay()
+        val (relay, proxyServer, _) = createRelay()
         val sourceServer = createRegisteredServer("lobby")
 
         every { proxyServer.allServers } returns listOf(sourceServer)
@@ -78,27 +81,22 @@ class CrossServerChatRelayTest {
         relay.relayGlobalMessage(createTestMessage(), sourceServer)
 
         verify(exactly = 0) { sourceServer.sendPluginMessage(any<ChannelIdentifier>(), any<ByteArray>()) }
-        verify { logger.info(match { it.contains("0 servers") }) }
     }
 
     @Test
-    fun `relayGlobalMessage should log with messageId and playerName`() {
-        val (relay, proxyServer, logger) = createRelay()
+    fun `relayGlobalMessage should forward the message unchanged`() {
+        val (relay, proxyServer, _) = createRelay()
         val sourceServer = createRegisteredServer("lobby")
         val targetServer = createRegisteredServer("survival")
+        val relayed = slot<ByteArray>()
 
         every { proxyServer.allServers } returns listOf(sourceServer, targetServer)
+        every { targetServer.sendPluginMessage(any<ChannelIdentifier>(), capture(relayed)) } returns true
 
         val message = createTestMessage(messageId = "test-msg-123")
         relay.relayGlobalMessage(message, sourceServer)
 
-        verify {
-            logger.info(
-                match { msg ->
-                    msg.contains("test-msg-123") && msg.contains("TestPlayer")
-                },
-            )
-        }
+        assertEquals(message, PluginMessageCodec.decode(relayed.captured))
     }
 
     @Test
