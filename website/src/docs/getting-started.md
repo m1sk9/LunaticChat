@@ -14,7 +14,7 @@ LunaticChat only supports Paper / Folia servers. It does not work on Spigot or B
 
 | Item | Requirement |
 |------|-------------|
-| Minecraft | 26.1 or later |
+| Minecraft | 26.2 or later |
 | Java | 25 or later |
 | Server | Paper, Folia, or Velocity |
 

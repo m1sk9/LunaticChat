@@ -5,6 +5,7 @@
 ### v1.3.0 (UNRELEASED)
 
 - Paper 26.2 (Minecraft 26.2) is now supported.
+  - Support for Paper 26.1 has been dropped. Paper 26.2 bundles Adventure 5.2.0, which is not binary compatible with the Adventure 4.x shipped by 26.1, so `api-version` has been raised to `26.2` and the plugin will no longer load on 26.1 servers.
 - Added cross-server direct messaging functionality
 - Fixed a bug where the player argument for `/tell` used partial matching (we switched from the old Bukkit API to the new API)
 

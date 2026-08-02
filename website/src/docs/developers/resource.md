@@ -38,7 +38,7 @@ The release target switches based on the tag pattern.
 
 - Common flow: `validate` (check for a duplicate existing release) → `build` (mise + Gradle setup, `shadowJar`) → `release` (`gh release create --draft` + publish to Modrinth)
 - The per-platform workflows (paper / velocity) differ from `release.yaml` in requiring a strict match between the tag and `gradle.properties`
-- Modrinth game-versions are Paper=`26.1.x` (loaders: paper, folia) and Velocity=`1.21.x` + `26.1.x` (loader: velocity)
+- Modrinth game-versions are Paper=`26.2.x` (loaders: paper, folia) and Velocity=`1.21.x` + `26.1.x` + `26.2.x` (loader: velocity)
 
 ## CI
 
@@ -53,6 +53,7 @@ The release target switches based on the tag pattern.
 - `mise.toml` — bun / java zulu-25 (consistent with `JVM_25`)
 - `x` — a bash debug-server script. `./x <action> <platform> [--stable]` for start/stop/log/clean/rcon/help. Without `--stable` it builds nightly. With `velocity` it brings up **1 Velocity + 2 Paper** so you can test cross-server chat relay for real
 - `docker/` — `compose.yaml` for three environments: paper / velocity / folia (`itzg/minecraft-server:java25`, etc.). velocity.toml enables plugin messaging with `bungee-plugin-message-channel=true`
+- Server versions are derived by `x` from the `paper-api` / `velocity-api` coordinates in `build.gradle.kts` and passed to Compose as `PAPER_MC_VERSION` / `PAPER_BUILD` / `VELOCITY_VERSION`, so the debug environments always run the build the plugin is compiled against. Invoking `docker compose` directly fails with a message telling you to go through `./x`. Only Folia's build number is pinned by hand, since it is numbered separately from Paper
 
 ## Related
 

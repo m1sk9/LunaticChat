@@ -12,7 +12,9 @@ services:
     environment:
       EULA: "TRUE"
       TYPE: "PAPER"
-      VERSION: "26.1.2"
+      # platform-paper/build.gradle.kts の paper-api から ./x が導出する
+      VERSION: "${PAPER_MC_VERSION:?run via ./x}"
+      PAPER_BUILD: "${PAPER_BUILD:?run via ./x}"
       MEMORY: "1G"
 
       # デバッグ用高速化設定

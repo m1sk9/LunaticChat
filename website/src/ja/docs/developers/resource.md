@@ -38,7 +38,7 @@ Paper と Velocity は別々のバージョン番号を持ち，独立にリリ�
 
 - 共通フロー: `validate` (既存リリースの重複チェック) → `build` (mise + Gradle setup, `shadowJar`) → `release` (`gh release create --draft` + Modrinth 公開)
 - 個別ワークフロー (paper / velocity) はタグと `gradle.properties` の厳密一致を要求する点が `release.yaml` と異なる
-- Modrinth の game-versions は Paper=`26.1.x` (loader: paper, folia)，Velocity=`1.21.x` + `26.1.x` (loader: velocity)
+- Modrinth の game-versions は Paper=`26.2.x` (loader: paper, folia)，Velocity=`1.21.x` + `26.1.x` + `26.2.x` (loader: velocity)
 
 ## CI
 
@@ -53,6 +53,7 @@ Paper と Velocity は別々のバージョン番号を持ち，独立にリリ�
 - `mise.toml` — bun / java zulu-25 (`JVM_25` と整合)
 - `x` — bash 製のデバッグサーバースクリプト．`./x <action> <platform> [--stable]` で start/stop/log/clean/rcon/help．`--stable` 省略時は nightly ビルド．`velocity` 指定時は **1 Velocity + 2 Paper** を立ち上げ，サーバー間チャット中継を実地検証できる
 - `docker/` — paper / velocity / folia の 3 環境に `compose.yaml` (`itzg/minecraft-server:java25` 等)．velocity.toml は `bungee-plugin-message-channel=true` でプラグインメッセージを有効化
+- サーバーのバージョンは `x` が `build.gradle.kts` の `paper-api` / `velocity-api` から導出し，`PAPER_MC_VERSION` / `PAPER_BUILD` / `VELOCITY_VERSION` として Compose に渡す．そのためデバッグ環境は常にプラグインのコンパイル対象と同じビルドで動く．`docker compose` を直接叩くと `./x` を経由するよう促すメッセージで失敗する．Folia のビルド番号だけは Paper と別系列のため手動固定
 
 ## 関連
 

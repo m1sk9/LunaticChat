@@ -12,7 +12,10 @@ services:
     environment:
       EULA: "TRUE"
       TYPE: "FOLIA"
-      VERSION: "26.1.2"
+      # platform-paper/build.gradle.kts の paper-api から ./x が導出する
+      VERSION: "${PAPER_MC_VERSION:?run via ./x}"
+      # Folia のビルド番号は Paper とは別系列で paper-api から導出できないため手動で固定する
+      FOLIABUILD: "1"
       MEMORY: "2G"
 
       # デバッグ用高速化設定

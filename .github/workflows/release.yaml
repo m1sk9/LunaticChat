@@ -75,11 +75,12 @@ jobs:
       contents: write
     env:
       MODRINTH_CHANNEL: release
-      MODRINTH_PAPER_GAME_VERSIONS: "26.1.x"
+      MODRINTH_PAPER_GAME_VERSIONS: "26.2.x"
       MODRINTH_VELOCITY_GAME_VERSIONS: |-
         1.21.x
         26.1.x
-      MODRINTH_MC_VERSION: "26.1"
+        26.2.x
+      MODRINTH_MC_VERSION: "26.2"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
