@@ -45,6 +45,10 @@ class LunaticChat :
 
     private val updateAvailable = AtomicBoolean(false)
 
+    // Only the Japanese conversion and update-check features make HTTP calls, and both default
+    // to off, so a stock install should not pay for a CIO engine and its thread pool.
+    private val httpClient = lazy { HttpClient(CIO) }
+
     override fun onEnable() {
         saveDefaultConfig()
         val configManager = ConfigManager()
@@ -54,8 +58,6 @@ class LunaticChat :
             logger.warning("LunaticChat is running in debug mode.")
             logger.info("Debug: $configuration")
         }
-
-        val httpClient = HttpClient(CIO)
 
         // Initialize plugin coroutine scope
         pluginScope = PluginCoroutineScope(logger)
@@ -79,7 +81,7 @@ class LunaticChat :
 
         // Check for updates
         if (configuration.checkForUpdates) {
-            initializeUpdateChecker(httpClient)
+            initializeUpdateChecker(httpClient.value)
         }
 
         logger.info("LunaticChat enabled.")
@@ -88,6 +90,7 @@ class LunaticChat :
     override fun onDisable() {
         pluginScope.cancel()
         serviceInitializer.shutdown(services)
+        if (httpClient.isInitialized()) httpClient.value.close()
         logger.info("LunaticChat disabled.")
     }
 

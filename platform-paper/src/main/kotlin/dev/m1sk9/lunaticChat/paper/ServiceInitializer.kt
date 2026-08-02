@@ -48,7 +48,7 @@ private data class ChannelComponents(
 class ServiceInitializer(
     private val plugin: JavaPlugin,
     private val configuration: LunaticChatConfiguration,
-    private val httpClient: HttpClient,
+    private val httpClient: Lazy<HttpClient>,
     private val logger: Logger,
 ) {
     private val handshakeCompleted = AtomicBoolean(false)
@@ -195,7 +195,7 @@ class ServiceInitializer(
         val apiClient =
             GoogleIMEClient(
                 timeout = configuration.features.japaneseConversion.apiTimeout.milliseconds,
-                httpClient = httpClient,
+                httpClient = httpClient.value,
             )
 
         // Initialize Romanji converter

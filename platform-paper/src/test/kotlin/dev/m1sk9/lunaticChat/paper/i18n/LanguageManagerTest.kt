@@ -63,13 +63,21 @@ class LanguageManagerTest {
     }
 
     @Test
-    fun `initialize should load both language files`() {
+    fun `initialize should load the selected language alongside the English fallback`() {
+        val (manager, logger) = createLanguageManager(Language.JA)
+        manager.initialize()
+
+        assertTrue(logger.infoMessages.any { it.contains("ja.yml") })
+        assertTrue(logger.infoMessages.any { it.contains("en.yml") })
+    }
+
+    @Test
+    fun `initialize should not load languages that cannot be read`() {
         val (manager, logger) = createLanguageManager(Language.EN)
         manager.initialize()
 
-        // Both en.yml and ja.yml should be loaded
-        assertTrue(logger.infoMessages.any { it.contains("en.yml") })
-        assertTrue(logger.infoMessages.any { it.contains("ja.yml") })
+        // English is both the selection and the fallback, so nothing else is worth parsing.
+        assertTrue(logger.infoMessages.none { it.contains("ja.yml") })
     }
 
     @Test
