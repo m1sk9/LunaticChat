@@ -1,6 +1,7 @@
 package dev.m1sk9.lunaticChat.paper.velocity
 
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessage
+import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageChannel
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageCodec
 import dev.m1sk9.lunaticChat.paper.chat.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
@@ -9,7 +10,6 @@ import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
 import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -30,12 +30,7 @@ class CrossServerDirectMessageManager(
     private val languageManager: LanguageManager,
     private val cacheSize: Int = 100,
 ) {
-    companion object {
-        private const val CHANNEL = "lunaticchat:main"
-        private const val CLEANUP_THRESHOLD_MILLIS = 60_000L
-    }
-
-    private val processedMessages = ConcurrentHashMap<String, Long>()
+    private val processedMessages = MessageDeduplicationCache(cacheSize, logger, "direct message")
 
     /**
      * Sends a direct message to a player on another server through Velocity.
@@ -52,7 +47,7 @@ class CrossServerDirectMessageManager(
     ) {
         try {
             val messageId = UUID.randomUUID().toString()
-            processedMessages[messageId] = System.currentTimeMillis()
+            processedMessages.markProcessed(messageId)
 
             val relayedMessage =
                 directMessageHandler.handleOutgoingCrossServerMessage(
@@ -73,15 +68,11 @@ class CrossServerDirectMessageManager(
                     message = relayedMessage,
                 )
 
-            sender.sendPluginMessage(plugin, CHANNEL, PluginMessageCodec.encode(relay))
+            sender.sendPluginMessage(plugin, PluginMessageChannel.ID, PluginMessageCodec.encode(relay))
             logger.info(
                 "Sent direct message to Velocity: messageId=$messageId, " +
                     "target=$targetName@$targetServerName",
             )
-
-            if (processedMessages.size > cacheSize) {
-                cleanupOldMessages()
-            }
         } catch (e: Exception) {
             logger.log(Level.SEVERE, "Failed to send cross-server direct message", e)
         }
@@ -92,11 +83,11 @@ class CrossServerDirectMessageManager(
      */
     fun handleIncomingMessage(message: PluginMessage.DirectMessageRelay) {
         try {
-            if (!shouldProcessMessage(message.messageId)) {
+            if (!processedMessages.isNew(message.messageId)) {
                 logger.fine("Ignoring duplicate direct message: messageId=${message.messageId}")
                 return
             }
-            processedMessages[message.messageId] = System.currentTimeMillis()
+            processedMessages.markProcessed(message.messageId)
 
             plugin.server.scheduler.runTask(
                 plugin,
@@ -117,10 +108,6 @@ class CrossServerDirectMessageManager(
                     )
                 },
             )
-
-            if (processedMessages.size > cacheSize) {
-                cleanupOldMessages()
-            }
         } catch (e: Exception) {
             logger.log(Level.SEVERE, "Failed to handle incoming direct message", e)
         }
@@ -151,35 +138,6 @@ class CrossServerDirectMessageManager(
             )
         } catch (e: Exception) {
             logger.log(Level.SEVERE, "Failed to handle direct message error", e)
-        }
-    }
-
-    private fun shouldProcessMessage(messageId: String): Boolean = !processedMessages.containsKey(messageId)
-
-    private fun cleanupOldMessages() {
-        try {
-            val cutoffTime = System.currentTimeMillis() - CLEANUP_THRESHOLD_MILLIS
-
-            val keysToRemove = processedMessages.entries.filter { it.value < cutoffTime }.map { it.key }
-            keysToRemove.forEach { processedMessages.remove(it) }
-            var removedCount = keysToRemove.size
-
-            if (processedMessages.size > cacheSize) {
-                val toRemove = processedMessages.size - cacheSize
-                processedMessages.entries
-                    .sortedBy { it.value }
-                    .take(toRemove)
-                    .forEach {
-                        processedMessages.remove(it.key)
-                        removedCount++
-                    }
-            }
-
-            if (removedCount > 0) {
-                logger.fine("Cleaned up $removedCount old messages from direct message dedup cache")
-            }
-        } catch (e: Exception) {
-            logger.log(Level.WARNING, "Failed to cleanup old direct messages", e)
         }
     }
 }
