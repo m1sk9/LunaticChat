@@ -6,6 +6,7 @@ import dev.m1sk9.lunaticChat.paper.TestUtils
 import dev.m1sk9.lunaticChat.paper.TestUtils.createTestUUID
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.verify
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -79,6 +80,28 @@ class PlayerSettingsManagerTest {
         assertTrue(retrieved.channelMessageNotificationEnabled)
 
         verify(exactly = 1) { storage.queueAsyncSave(any()) }
+    }
+
+    @Test
+    fun `a queued save writes changes made after it was queued`() {
+        val (manager, storage, _) = createManager()
+        manager.initialize()
+
+        // Only the first request of a debounced burst survives; the write it schedules must still
+        // see every later change, or those changes exist only in memory until the next write.
+        val scheduled = slot<() -> PlayerSettingsData>()
+        every { storage.queueAsyncSave(capture(scheduled)) } returns Unit
+
+        val first = createTestUUID(1)
+        val second = createTestUUID(2)
+        manager.updateSettings(PlayerChatSettings(uuid = first, japaneseConversionEnabled = false))
+        val pendingWrite = scheduled.captured
+        manager.updateSettings(PlayerChatSettings(uuid = second, japaneseConversionEnabled = false))
+
+        val written = pendingWrite()
+
+        assertEquals(false, written.japaneseConversion[first])
+        assertEquals(false, written.japaneseConversion[second])
     }
 
     @Test

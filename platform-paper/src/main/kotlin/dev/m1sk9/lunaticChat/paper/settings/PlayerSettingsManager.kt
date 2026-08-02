@@ -61,7 +61,7 @@ class PlayerSettingsManager(
      */
     fun updateSettings(settings: PlayerChatSettings) {
         this.settings[settings.uuid] = settings
-        storage.queueAsyncSave(snapshot())
+        storage.queueAsyncSave(::snapshot)
         logger.fine("Updated settings for player ${settings.uuid}")
     }
 

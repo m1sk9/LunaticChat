@@ -66,9 +66,11 @@ class YamlPlayerSettingsStorage(
      * Queues an async save operation with 5-second debouncing.
      * Multiple save requests within 5 seconds are batched into a single save.
      *
-     * @param data The settings data to save
+     * @param data Supplies the settings to write. It is called when the write runs rather than
+     *   when it is queued, so the batched write persists every change made during the delay - not
+     *   just the one that started it.
      */
-    fun queueAsyncSave(data: PlayerSettingsData) {
-        saver.request { saveToDisk(data) }
+    fun queueAsyncSave(data: () -> PlayerSettingsData) {
+        saver.request { saveToDisk(data()) }
     }
 }
