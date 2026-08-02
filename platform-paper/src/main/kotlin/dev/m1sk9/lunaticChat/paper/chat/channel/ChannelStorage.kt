@@ -3,8 +3,8 @@ package dev.m1sk9.lunaticChat.paper.chat.channel
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelData
 import dev.m1sk9.lunaticChat.engine.exception.ChannelStorageLoadException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelStorageSaveException
+import dev.m1sk9.lunaticChat.paper.DebouncedSaver
 import kotlinx.serialization.json.Json
-import org.bukkit.plugin.java.JavaPlugin
 import java.nio.file.Path
 import java.util.logging.Logger
 import kotlin.io.path.bufferedReader
@@ -15,12 +15,12 @@ import kotlin.io.path.writeText
  * Manages the storage of channel data on disk.
  *
  * @property channelsFile The path to the file where channel data is stored.
- * @property plugin The JavaPlugin instance for accessing plugin resources.
+ * @property saver Coalesces bursts of save requests into one asynchronous write.
  * @property logger The logger for logging messages.
  */
 class ChannelStorage(
     private val channelsFile: Path,
-    private val plugin: JavaPlugin,
+    private val saver: DebouncedSaver,
     private val logger: Logger,
 ) {
     private val json =
@@ -78,18 +78,18 @@ class ChannelStorage(
     }
 
     /**
-     * Queues an asynchronous save of channel data to disk.
+     * Queues a debounced asynchronous save of channel data to disk.
      *
-     * @param data The ChannelData to save.
-     * @throws ChannelStorageSaveException if there is an error saving the data.
+     * @param data Supplies the channel data to write. It is called when the write runs rather
+     *   than when it is queued, so a burst of channel changes costs one snapshot and one file
+     *   write instead of one of each per change.
      */
-    fun queueAsyncSave(data: ChannelData) {
-        plugin.server.asyncScheduler.runNow(plugin) {
+    fun queueAsyncSave(data: () -> ChannelData) {
+        saver.request {
             try {
-                saveToDisk(data)
+                saveToDisk(data())
             } catch (e: ChannelStorageSaveException) {
                 logger.severe("Error saving channel data asynchronously: ${e.message}")
-                e.printStackTrace()
             }
         }
     }

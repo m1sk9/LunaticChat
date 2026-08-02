@@ -434,28 +434,27 @@ class ChannelManager(
      * Saves the current state of channels and members to storage asynchronously.
      */
     private fun saveToStorage() {
-        val data =
-            ChannelData(
-                channels = channelsCache.toMap(),
-                members = membersCache.mapValues { it.value.toList() },
-                activeChannels = activeChannels.mapKeys { it.key.toString() },
-            )
-        storage.queueAsyncSave(data)
+        storage.queueAsyncSave(::snapshot)
         logger.fine("${channelsCache.size} channels queued for saving to storage.")
     }
+
+    /**
+     * A point-in-time copy of everything persisted. Built inside the write rather than at each
+     * call site, so a burst of changes copies the caches once.
+     */
+    private fun snapshot(): ChannelData =
+        ChannelData(
+            channels = channelsCache.toMap(),
+            members = membersCache.mapValues { it.value.toList() },
+            activeChannels = activeChannels.mapKeys { it.key.toString() },
+        )
 
     /**
      * Saves the current state of channels and members to storage synchronously.
      * Should only br called during server shutdown.
      */
     fun saveToDisk() {
-        val data =
-            ChannelData(
-                channels = channelsCache.toMap(),
-                members = membersCache.mapValues { it.value.toList() },
-                activeChannels = activeChannels.mapKeys { it.key.toString() },
-            )
-        storage.saveToDisk(data)
+        storage.saveToDisk(snapshot())
     }
 
     /**

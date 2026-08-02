@@ -221,7 +221,7 @@ class ServiceInitializer(
         val storage =
             ChannelStorage(
                 channelsFile = channelsFile,
-                plugin = plugin,
+                saver = DebouncedSaver(plugin),
                 logger = logger,
             )
 
