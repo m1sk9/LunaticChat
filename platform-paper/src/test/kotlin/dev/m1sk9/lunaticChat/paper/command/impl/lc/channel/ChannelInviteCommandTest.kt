@@ -55,7 +55,6 @@ class ChannelInviteCommandTest {
 
         every { deps.channelManager.getPlayerChannel(testUUID) } returns channelId
         every { deps.membershipManager.hasRole(testUUID, channelId, any()) } returns Result.success(true)
-        every { deps.channelManager.isPlayerBanned(channelId, targetUUID) } returns Result.success(false)
         every { deps.membershipManager.inviteToChannel(testUUID, targetUUID, channelId) } returns Result.success(Unit)
         every { deps.channelManager.getChannel(channelId) } returns Result.success(channel)
 
