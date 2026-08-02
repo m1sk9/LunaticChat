@@ -21,7 +21,7 @@ import org.bukkit.Bukkit
 class ChannelInfoCommand(
     plugin: LunaticChat,
     private val channelManager: ChannelManager,
-    private val languageManager: LanguageManager,
+    override val languageManager: LanguageManager,
 ) : LunaticSubCommand(plugin) {
     companion object {
         private const val MAX_MEMBERS_DISPLAY = 10
@@ -69,33 +69,21 @@ class ChannelInfoCommand(
         // Determine which channel to show info for
         val channelId =
             channelIdArg ?: channelManager.getPlayerChannel(sender.uniqueId)
-                ?: return CommandResult.Failure(
-                    MessageFormatter.formatError(
-                        languageManager.getMessage("channel.info.noActiveChannel"),
-                    ),
-                )
+                ?: return fail("channel.info.noActiveChannel")
 
         // Get channel
         val channel =
             channelManager.getChannel(channelId).getOrElse {
-                return CommandResult.Failure(
-                    MessageFormatter.formatError(
-                        languageManager.getMessage(
-                            "channel.info.notFound",
-                            mapOf("channelId" to channelId),
-                        ),
-                    ),
+                return fail(
+                    "channel.info.notFound",
+                    mapOf("channelId" to channelId),
                 )
             }
 
         // Get members
         val members =
             channelManager.getChannelMembers(channelId).getOrElse {
-                return CommandResult.Failure(
-                    MessageFormatter.formatError(
-                        languageManager.getMessage("channel.info.error"),
-                    ),
-                )
+                return fail("channel.info.error")
             }
 
         // Get owner name

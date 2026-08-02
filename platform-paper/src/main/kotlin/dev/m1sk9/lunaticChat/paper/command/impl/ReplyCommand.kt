@@ -13,7 +13,6 @@ import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
 import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
-import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import dev.m1sk9.lunaticChat.paper.velocity.CrossServerDirectMessageManager
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
@@ -29,7 +28,7 @@ import org.bukkit.Bukkit
 class ReplyCommand(
     plugin: LunaticChat,
     private val dmHandler: DirectMessageHandler,
-    private val languageManager: LanguageManager,
+    override val languageManager: LanguageManager,
     private val crossServerDirectMessageManager: CrossServerDirectMessageManager? = null,
 ) : LunaticCommand(plugin) {
     override val description: String
@@ -59,32 +58,20 @@ class ReplyCommand(
         val sender = ctx.requirePlayer()
         val target =
             dmHandler.getReplyTarget(sender)
-                ?: return CommandResult.Failure(
-                    MessageFormatter.formatError(
-                        languageManager.getMessage("directMessage.replyTargetNotFound"),
-                    ),
-                )
+                ?: return fail("directMessage.replyTargetNotFound")
 
         return when (target) {
             is ReplyTarget.Local -> {
                 val recipient =
                     Bukkit.getPlayer(target.uuid)
-                        ?: return CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage("directMessage.replyTargetNotFound"),
-                            ),
-                        )
+                        ?: return fail("directMessage.replyTargetNotFound")
                 dmHandler.sendDirectMessage(sender, recipient, message)
                 CommandResult.Success
             }
             is ReplyTarget.Remote -> {
                 val manager =
                     crossServerDirectMessageManager
-                        ?: return CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage("directMessage.replyTargetNotFound"),
-                            ),
-                        )
+                        ?: return fail("directMessage.replyTargetNotFound")
                 manager.sendCrossServerMessage(sender, target.playerName, target.serverName, message)
                 CommandResult.Success
             }

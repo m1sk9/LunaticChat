@@ -14,7 +14,6 @@ import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
 import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
-import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import dev.m1sk9.lunaticChat.paper.velocity.CrossServerDirectMessageManager
 import dev.m1sk9.lunaticChat.paper.velocity.RemotePlayerRegistry
 import io.papermc.paper.command.brigadier.CommandSourceStack
@@ -34,7 +33,7 @@ import com.mojang.brigadier.context.CommandContext as BrigadierCommandContext
 class TellCommand(
     plugin: LunaticChat,
     private val directMessageHandler: DirectMessageHandler,
-    private val languageManager: LanguageManager,
+    override val languageManager: LanguageManager,
     private val crossServerDirectMessageManager: CrossServerDirectMessageManager? = null,
     private val remotePlayerRegistry: RemotePlayerRegistry? = null,
     private val localServerName: String = "",
@@ -73,11 +72,7 @@ class TellCommand(
         val targetName = parts[0]
         val message = parts.getOrNull(1)
         if (targetName.isEmpty() || message.isNullOrBlank()) {
-            return CommandResult.Failure(
-                MessageFormatter.formatError(
-                    languageManager.getMessage("directMessage.usage"),
-                ),
-            )
+            return fail("directMessage.usage")
         }
         return execute(ctx, targetName, message)
     }
@@ -93,28 +88,16 @@ class TellCommand(
         if (targetName.contains('@')) {
             val manager =
                 crossServerDirectMessageManager
-                    ?: return CommandResult.Failure(
-                        MessageFormatter.formatError(
-                            languageManager.getMessage("directMessage.crossServerDisabled"),
-                        ),
-                    )
+                    ?: return fail("directMessage.crossServerDisabled")
             val name = targetName.substringBefore('@')
             val server = targetName.substringAfter('@')
             if (name.isEmpty() || server.isEmpty()) {
-                return CommandResult.Failure(
-                    MessageFormatter.formatError(
-                        languageManager.getMessage("directMessage.targetOffline", mapOf("target" to targetName)),
-                    ),
-                )
+                return fail("directMessage.targetOffline", mapOf("target" to targetName))
             }
             if (name.equals(sender.name, ignoreCase = true) &&
                 server.equals(localServerName, ignoreCase = true)
             ) {
-                return CommandResult.Failure(
-                    MessageFormatter.formatError(
-                        languageManager.getMessage("directMessage.yourself"),
-                    ),
-                )
+                return fail("directMessage.yourself")
             }
             manager.sendCrossServerMessage(sender, name, server, message)
             return CommandResult.Success
@@ -122,18 +105,10 @@ class TellCommand(
 
         val recipient =
             Bukkit.getPlayerExact(targetName)
-                ?: return CommandResult.Failure(
-                    MessageFormatter.formatError(
-                        languageManager.getMessage("directMessage.targetOffline", mapOf("target" to targetName)),
-                    ),
-                )
+                ?: return fail("directMessage.targetOffline", mapOf("target" to targetName))
 
         if (recipient.uniqueId == sender.uniqueId) {
-            return CommandResult.Failure(
-                MessageFormatter.formatError(
-                    languageManager.getMessage("directMessage.yourself"),
-                ),
-            )
+            return fail("directMessage.yourself")
         }
 
         directMessageHandler.sendDirectMessage(sender, recipient, message)

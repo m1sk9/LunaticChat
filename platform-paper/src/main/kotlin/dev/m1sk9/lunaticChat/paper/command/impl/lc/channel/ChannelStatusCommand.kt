@@ -26,7 +26,7 @@ class ChannelStatusCommand(
     plugin: LunaticChat,
     private val channelManager: ChannelManager,
     private val membershipManager: ChannelMembershipManager,
-    private val languageManager: LanguageManager,
+    override val languageManager: LanguageManager,
 ) : LunaticSubCommand(plugin) {
     companion object {
         private const val MAX_MEMBERS_DISPLAY = 10
@@ -55,11 +55,7 @@ class ChannelStatusCommand(
         // Get all player's channels
         val playerChannelIds =
             membershipManager.getPlayerChannels(sender.uniqueId).getOrElse {
-                return CommandResult.Failure(
-                    MessageFormatter.formatError(
-                        languageManager.getMessage("channel.status.error"),
-                    ),
-                )
+                return fail("channel.status.error")
             }
 
         // Display header

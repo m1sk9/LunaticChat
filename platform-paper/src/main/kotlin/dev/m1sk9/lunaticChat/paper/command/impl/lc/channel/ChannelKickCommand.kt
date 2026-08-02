@@ -4,7 +4,6 @@ import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelRole
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
-import dev.m1sk9.lunaticChat.engine.exception.ChannelNotFoundException
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
@@ -25,7 +24,7 @@ class ChannelKickCommand(
     private val channelManager: ChannelManager,
     private val membershipManager: ChannelMembershipManager,
     private val notificationHandler: ChannelNotificationHandler,
-    private val languageManager: LanguageManager,
+    override val languageManager: LanguageManager,
 ) : LunaticSubCommand(plugin) {
     override val literal = "kick"
     override val permissionNode = LunaticChatPermissionNode.ChannelKick
@@ -72,20 +71,12 @@ class ChannelKickCommand(
         // Get sender's active channel
         val channelId =
             channelManager.getPlayerChannel(sender.uniqueId)
-                ?: return CommandResult.Failure(
-                    MessageFormatter.formatError(
-                        languageManager.getMessage("channel.kick.noActiveChannel"),
-                    ),
-                )
+                ?: return fail("channel.kick.noActiveChannel")
 
         // Check if sender has permission (OWNER or MODERATOR)
         val senderRole = membershipManager.getMemberRoleOrNull(sender.uniqueId, channelId)
         if (senderRole == null || senderRole == ChannelRole.MEMBER) {
-            return CommandResult.Failure(
-                MessageFormatter.formatError(
-                    languageManager.getMessage("channel.kick.noPermission"),
-                ),
-            )
+            return fail("channel.kick.noPermission")
         }
 
         // Find target player
@@ -93,13 +84,9 @@ class ChannelKickCommand(
 
         // Check if player exists (has played before or is online)
         if (!targetPlayer.hasPlayedBefore() && !targetPlayer.isOnline) {
-            return CommandResult.Failure(
-                MessageFormatter.formatError(
-                    languageManager.getMessage(
-                        "channel.kick.playerNotFound",
-                        mapOf("player" to playerName),
-                    ),
-                ),
+            return fail(
+                "channel.kick.playerNotFound",
+                mapOf("player" to playerName),
             )
         }
 
@@ -107,36 +94,24 @@ class ChannelKickCommand(
 
         // Check if kicking self
         if (targetPlayerId == sender.uniqueId) {
-            return CommandResult.Failure(
-                MessageFormatter.formatError(
-                    languageManager.getMessage("channel.kick.cannotKickSelf"),
-                ),
-            )
+            return fail("channel.kick.cannotKickSelf")
         }
 
         // Check if target has bypass permission
         val onlineTargetPlayer = Bukkit.getPlayer(playerName)
         if (onlineTargetPlayer != null && onlineTargetPlayer.hasPermission(LunaticChatPermissionNode.ChannelBypass.permissionNode)) {
-            return CommandResult.Failure(
-                MessageFormatter.formatError(
-                    languageManager.getMessage(
-                        "channel.kick.cannotKickBypass",
-                        mapOf("player" to onlineTargetPlayer.name),
-                    ),
-                ),
+            return fail(
+                "channel.kick.cannotKickBypass",
+                mapOf("player" to onlineTargetPlayer.name),
             )
         }
 
         // Check if target is a member
         val isMember = membershipManager.isMember(targetPlayerId, channelId).getOrElse { false }
         if (!isMember) {
-            return CommandResult.Failure(
-                MessageFormatter.formatError(
-                    languageManager.getMessage(
-                        "channel.kick.notMember",
-                        mapOf("player" to playerName),
-                    ),
-                ),
+            return fail(
+                "channel.kick.notMember",
+                mapOf("player" to playerName),
             )
         }
 
@@ -167,32 +142,13 @@ class ChannelKickCommand(
                 // Broadcast kick notification to remaining members
                 notificationHandler.broadcastKick(channelId, playerName, sender.name)
 
-                CommandResult.SuccessWithMessage(
-                    MessageFormatter.format(
-                        languageManager.getMessage(
-                            "channel.kick.success",
-                            mapOf("player" to playerName, "channel" to channelName),
-                        ),
-                    ),
+                ok(
+                    "channel.kick.success",
+                    mapOf("player" to playerName, "channel" to channelName),
                 )
             },
             onFailure = { error ->
-                when (error) {
-                    is ChannelNotFoundException -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage("channel.kick.error"),
-                            ),
-                        )
-                    }
-                    else -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage("channel.kick.error"),
-                            ),
-                        )
-                    }
-                }
+                fail("channel.kick.error")
             },
         )
     }

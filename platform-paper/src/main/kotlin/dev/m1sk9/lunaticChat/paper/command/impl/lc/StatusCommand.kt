@@ -20,7 +20,7 @@ import net.kyori.adventure.text.format.NamedTextColor
 
 class StatusCommand(
     plugin: LunaticChat,
-    private val languageManager: LanguageManager,
+    override val languageManager: LanguageManager,
     private val configuration: LunaticChatConfiguration,
 ) : LunaticSubCommand(plugin) {
     override val literal = "status"

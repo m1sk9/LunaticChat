@@ -14,7 +14,6 @@ import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
 import dev.m1sk9.lunaticChat.paper.command.core.LunaticSubCommand
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
-import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
 import org.bukkit.Bukkit
@@ -24,7 +23,7 @@ class ChannelUnbanCommand(
     plugin: LunaticChat,
     private val channelManager: ChannelManager,
     private val membershipManager: ChannelMembershipManager,
-    private val languageManager: LanguageManager,
+    override val languageManager: LanguageManager,
 ) : LunaticSubCommand(plugin) {
     override val literal = "unban"
     override val permissionNode = LunaticChatPermissionNode.ChannelUnban
@@ -68,20 +67,12 @@ class ChannelUnbanCommand(
         // Get sender's active channel
         val channelId =
             channelManager.getPlayerChannel(sender.uniqueId)
-                ?: return CommandResult.Failure(
-                    MessageFormatter.formatError(
-                        languageManager.getMessage("channel.unban.noActiveChannel"),
-                    ),
-                )
+                ?: return fail("channel.unban.noActiveChannel")
 
         // Check if sender has permission (OWNER or MODERATOR)
         val senderRole = membershipManager.getMemberRoleOrNull(sender.uniqueId, channelId)
         if (senderRole == null || senderRole == ChannelRole.MEMBER) {
-            return CommandResult.Failure(
-                MessageFormatter.formatError(
-                    languageManager.getMessage("channel.unban.noPermission"),
-                ),
-            )
+            return fail("channel.unban.noPermission")
         }
 
         // Find target player
@@ -89,13 +80,9 @@ class ChannelUnbanCommand(
 
         // Check if player exists (has played before or is online)
         if (!targetPlayer.hasPlayedBefore() && !targetPlayer.isOnline) {
-            return CommandResult.Failure(
-                MessageFormatter.formatError(
-                    languageManager.getMessage(
-                        "channel.unban.playerNotFound",
-                        mapOf("player" to playerName),
-                    ),
-                ),
+            return fail(
+                "channel.unban.playerNotFound",
+                mapOf("player" to playerName),
             )
         }
 
@@ -108,40 +95,24 @@ class ChannelUnbanCommand(
                 val channel = channelManager.getChannel(channelId).getOrNull()
                 val channelName = channel?.name ?: channelId
 
-                CommandResult.SuccessWithMessage(
-                    MessageFormatter.format(
-                        languageManager.getMessage(
-                            "channel.unban.success",
-                            mapOf("player" to playerName, "channel" to channelName),
-                        ),
-                    ),
+                ok(
+                    "channel.unban.success",
+                    mapOf("player" to playerName, "channel" to channelName),
                 )
             },
             onFailure = { error ->
                 when (error) {
                     is ChannelNotFoundException -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage("channel.unban.error"),
-                            ),
-                        )
+                        fail("channel.unban.error")
                     }
                     is ChannelPlayerNotBannedException -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage(
-                                    "channel.unban.playerNotBanned",
-                                    mapOf("player" to playerName),
-                                ),
-                            ),
+                        fail(
+                            "channel.unban.playerNotBanned",
+                            mapOf("player" to playerName),
                         )
                     }
                     else -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage("channel.unban.error"),
-                            ),
-                        )
+                        fail("channel.unban.error")
                     }
                 }
             },

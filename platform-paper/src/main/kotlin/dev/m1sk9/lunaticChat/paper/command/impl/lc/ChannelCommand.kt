@@ -36,7 +36,7 @@ class ChannelCommand(
     private val channelManager: ChannelManager,
     private val membershipManager: ChannelMembershipManager,
     private val notificationHandler: ChannelNotificationHandler,
-    private val languageManager: LanguageManager,
+    override val languageManager: LanguageManager,
 ) : LunaticSubCommand(plugin) {
     override val literal = "channel"
     override val permissionNode = LunaticChatPermissionNode.Channel

@@ -25,7 +25,7 @@ class ChannelInviteCommand(
     plugin: LunaticChat,
     private val channelManager: ChannelManager,
     private val membershipManager: ChannelMembershipManager,
-    private val languageManager: LanguageManager,
+    override val languageManager: LanguageManager,
 ) : LunaticSubCommand(plugin) {
     override val literal = "invite"
     override val permissionNode = LunaticChatPermissionNode.ChannelInvite
@@ -64,53 +64,33 @@ class ChannelInviteCommand(
         // Get sender's active channel
         val channelId =
             channelManager.getPlayerChannel(sender.uniqueId)
-                ?: return CommandResult.Failure(
-                    MessageFormatter.formatError(
-                        languageManager.getMessage("channel.invite.noActiveChannel"),
-                    ),
-                )
+                ?: return fail("channel.invite.noActiveChannel")
 
         // Check if sender has permission (OWNER or MODERATOR)
         val senderRole = membershipManager.getMemberRoleOrNull(sender.uniqueId, channelId)
         if (senderRole == null || senderRole == ChannelRole.MEMBER) {
-            return CommandResult.Failure(
-                MessageFormatter.formatError(
-                    languageManager.getMessage("channel.invite.noPermission"),
-                ),
-            )
+            return fail("channel.invite.noPermission")
         }
 
         // Find target player
         val targetPlayer =
             Bukkit.getPlayer(playerName)
-                ?: return CommandResult.Failure(
-                    MessageFormatter.formatError(
-                        languageManager.getMessage(
-                            "channel.invite.playerNotFound",
-                            mapOf("player" to playerName),
-                        ),
-                    ),
+                ?: return fail(
+                    "channel.invite.playerNotFound",
+                    mapOf("player" to playerName),
                 )
 
         // Check if inviting self
         if (targetPlayer.uniqueId == sender.uniqueId) {
-            return CommandResult.Failure(
-                MessageFormatter.formatError(
-                    languageManager.getMessage("channel.invite.cannotInviteSelf"),
-                ),
-            )
+            return fail("channel.invite.cannotInviteSelf")
         }
 
         // Check if player is banned
         val isBanned = channelManager.isPlayerBanned(channelId, targetPlayer.uniqueId).getOrElse { false }
         if (isBanned) {
-            return CommandResult.Failure(
-                MessageFormatter.formatError(
-                    languageManager.getMessage(
-                        "channel.invite.playerBanned",
-                        mapOf("player" to targetPlayer.name),
-                    ),
-                ),
+            return fail(
+                "channel.invite.playerBanned",
+                mapOf("player" to targetPlayer.name),
             )
         }
 
@@ -132,50 +112,30 @@ class ChannelInviteCommand(
                     ),
                 )
 
-                CommandResult.SuccessWithMessage(
-                    MessageFormatter.format(
-                        languageManager.getMessage(
-                            "channel.invite.success",
-                            mapOf("player" to targetPlayer.name, "channel" to channelName),
-                        ),
-                    ),
+                ok(
+                    "channel.invite.success",
+                    mapOf("player" to targetPlayer.name, "channel" to channelName),
                 )
             },
             onFailure = { error ->
                 when (error) {
                     is ChannelNotFoundException -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage("channel.invite.error"),
-                            ),
-                        )
+                        fail("channel.invite.error")
                     }
                     is ChannelMemberLimitExceededException -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage(
-                                    "channel.invite.channelFull",
-                                    mapOf("limit" to error.limit.toString()),
-                                ),
-                            ),
+                        fail(
+                            "channel.invite.channelFull",
+                            mapOf("limit" to error.limit.toString()),
                         )
                     }
                     is ChannelPlayerBannedException -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage(
-                                    "channel.invite.playerBanned",
-                                    mapOf("player" to targetPlayer.name),
-                                ),
-                            ),
+                        fail(
+                            "channel.invite.playerBanned",
+                            mapOf("player" to targetPlayer.name),
                         )
                     }
                     else -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage("channel.invite.error"),
-                            ),
-                        )
+                        fail("channel.invite.error")
                     }
                 }
             },

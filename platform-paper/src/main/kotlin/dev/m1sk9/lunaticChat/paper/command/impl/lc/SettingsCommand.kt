@@ -27,7 +27,7 @@ import io.papermc.paper.command.brigadier.Commands
 class SettingsCommand(
     plugin: LunaticChat,
     private val settingHandlerRegistry: SettingHandlerRegistry,
-    private val languageManager: LanguageManager,
+    override val languageManager: LanguageManager,
 ) : LunaticSubCommand(plugin) {
     override val literal = "settings"
     override val permissionNode = LunaticChatPermissionNode.Settings

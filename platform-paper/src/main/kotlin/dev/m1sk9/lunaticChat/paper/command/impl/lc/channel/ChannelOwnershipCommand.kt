@@ -4,7 +4,6 @@ import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelRole
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
-import dev.m1sk9.lunaticChat.engine.exception.ChannelNotFoundException
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
@@ -23,7 +22,7 @@ class ChannelOwnershipCommand(
     plugin: LunaticChat,
     private val channelManager: ChannelManager,
     private val membershipManager: ChannelMembershipManager,
-    private val languageManager: LanguageManager,
+    override val languageManager: LanguageManager,
 ) : LunaticSubCommand(plugin) {
     override val literal = "ownership"
     override val permissionNode = LunaticChatPermissionNode.ChannelOwnership
@@ -70,20 +69,12 @@ class ChannelOwnershipCommand(
         // Get sender's active channel
         val channelId =
             channelManager.getPlayerChannel(sender.uniqueId)
-                ?: return CommandResult.Failure(
-                    MessageFormatter.formatError(
-                        languageManager.getMessage("channel.ownership.noActiveChannel"),
-                    ),
-                )
+                ?: return fail("channel.ownership.noActiveChannel")
 
         // Check if sender is OWNER
         val senderRole = membershipManager.getMemberRoleOrNull(sender.uniqueId, channelId)
         if (senderRole != ChannelRole.OWNER) {
-            return CommandResult.Failure(
-                MessageFormatter.formatError(
-                    languageManager.getMessage("channel.ownership.noPermission"),
-                ),
-            )
+            return fail("channel.ownership.noPermission")
         }
 
         // Find target player
@@ -91,13 +82,9 @@ class ChannelOwnershipCommand(
 
         // Check if player exists (has played before or is online)
         if (!targetPlayer.hasPlayedBefore() && !targetPlayer.isOnline) {
-            return CommandResult.Failure(
-                MessageFormatter.formatError(
-                    languageManager.getMessage(
-                        "channel.ownership.playerNotFound",
-                        mapOf("player" to playerName),
-                    ),
-                ),
+            return fail(
+                "channel.ownership.playerNotFound",
+                mapOf("player" to playerName),
             )
         }
 
@@ -105,23 +92,15 @@ class ChannelOwnershipCommand(
 
         // Check if transferring to self
         if (targetPlayerId == sender.uniqueId) {
-            return CommandResult.Failure(
-                MessageFormatter.formatError(
-                    languageManager.getMessage("channel.ownership.cannotTransferToSelf"),
-                ),
-            )
+            return fail("channel.ownership.cannotTransferToSelf")
         }
 
         // Check if target is a member
         val targetRole = membershipManager.getMemberRoleOrNull(targetPlayerId, channelId)
         if (targetRole == null) {
-            return CommandResult.Failure(
-                MessageFormatter.formatError(
-                    languageManager.getMessage(
-                        "channel.ownership.notMember",
-                        mapOf("player" to playerName),
-                    ),
-                ),
+            return fail(
+                "channel.ownership.notMember",
+                mapOf("player" to playerName),
             )
         }
 
@@ -144,32 +123,13 @@ class ChannelOwnershipCommand(
                     )
                 }
 
-                CommandResult.SuccessWithMessage(
-                    MessageFormatter.format(
-                        languageManager.getMessage(
-                            "channel.ownership.success",
-                            mapOf("player" to playerName, "channel" to channelName),
-                        ),
-                    ),
+                ok(
+                    "channel.ownership.success",
+                    mapOf("player" to playerName, "channel" to channelName),
                 )
             },
             onFailure = { error ->
-                when (error) {
-                    is ChannelNotFoundException -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage("channel.ownership.error"),
-                            ),
-                        )
-                    }
-                    else -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage("channel.ownership.error"),
-                            ),
-                        )
-                    }
-                }
+                fail("channel.ownership.error")
             },
         )
     }

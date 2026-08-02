@@ -23,7 +23,7 @@ import kotlin.math.ceil
 class ChannelListCommand(
     plugin: LunaticChat,
     private val channelManager: ChannelManager,
-    private val languageManager: LanguageManager,
+    override val languageManager: LanguageManager,
 ) : LunaticSubCommand(plugin) {
     companion object {
         private const val CHANNELS_PER_PAGE = 10
@@ -183,11 +183,7 @@ class ChannelListCommand(
                 CommandResult.Success
             },
             onFailure = { error ->
-                CommandResult.Failure(
-                    MessageFormatter.formatError(
-                        languageManager.getMessage("channel.list.error"),
-                    ),
-                )
+                fail("channel.list.error")
             },
         )
     }

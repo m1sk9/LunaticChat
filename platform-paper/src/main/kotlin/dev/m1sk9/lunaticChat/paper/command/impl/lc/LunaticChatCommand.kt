@@ -27,7 +27,7 @@ import io.papermc.paper.command.brigadier.Commands
 class LunaticChatCommand(
     plugin: LunaticChat,
     private val settingHandlerRegistry: SettingHandlerRegistry,
-    private val languageManager: LanguageManager,
+    override val languageManager: LanguageManager,
     private val configuration: LunaticChatConfiguration,
 ) : LunaticCommand(plugin) {
     override val description: String

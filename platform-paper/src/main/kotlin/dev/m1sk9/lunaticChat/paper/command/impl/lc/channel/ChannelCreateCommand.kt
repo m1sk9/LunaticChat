@@ -21,7 +21,7 @@ import io.papermc.paper.command.brigadier.Commands
 class ChannelCreateCommand(
     plugin: LunaticChat,
     private val channelManager: ChannelManager,
-    private val languageManager: LanguageManager,
+    override val languageManager: LanguageManager,
 ) : LunaticSubCommand(plugin) {
     override val literal = "create"
     override val permissionNode = LunaticChatPermissionNode.ChannelCreate
@@ -89,13 +89,9 @@ class ChannelCreateCommand(
 
         // Validate channel ID pattern
         if (!channelId.matches(Channel.CHANNEL_ID_PATTERN)) {
-            return CommandResult.Failure(
-                MessageFormatter.formatError(
-                    languageManager.getMessage(
-                        "channel.create.invalidId",
-                        mapOf("id" to channelId),
-                    ),
-                ),
+            return fail(
+                "channel.create.invalidId",
+                mapOf("id" to channelId),
             )
         }
 
@@ -130,25 +126,12 @@ class ChannelCreateCommand(
                 )
             },
             onFailure = { error ->
-                val messageKey =
-                    when (error) {
-                        is ChannelLimitExceededException ->
-                            "channel.create.limitExceeded"
-                        else ->
-                            "channel.create.alreadyExists"
-                    }
-                val params =
-                    when (error) {
-                        is ChannelLimitExceededException ->
-                            mapOf("limit" to error.limit.toString())
-                        else ->
-                            mapOf("id" to channelId)
-                    }
-                CommandResult.Failure(
-                    MessageFormatter.formatError(
-                        languageManager.getMessage(messageKey, params),
-                    ),
-                )
+                when (error) {
+                    is ChannelLimitExceededException ->
+                        fail("channel.create.limitExceeded", mapOf("limit" to error.limit.toString()))
+                    else ->
+                        fail("channel.create.alreadyExists", mapOf("id" to channelId))
+                }
             },
         )
     }

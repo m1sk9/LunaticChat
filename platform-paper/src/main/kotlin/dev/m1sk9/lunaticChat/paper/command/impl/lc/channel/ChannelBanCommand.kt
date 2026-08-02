@@ -27,7 +27,7 @@ class ChannelBanCommand(
     private val channelManager: ChannelManager,
     private val membershipManager: ChannelMembershipManager,
     private val notificationHandler: ChannelNotificationHandler,
-    private val languageManager: LanguageManager,
+    override val languageManager: LanguageManager,
 ) : LunaticSubCommand(plugin) {
     override val literal = "ban"
     override val permissionNode = LunaticChatPermissionNode.ChannelBan
@@ -72,20 +72,12 @@ class ChannelBanCommand(
 
         val channelId =
             channelManager.getPlayerChannel(sender.uniqueId)
-                ?: return CommandResult.Failure(
-                    MessageFormatter.formatError(
-                        languageManager.getMessage("channel.ban.noActiveChannel"),
-                    ),
-                )
+                ?: return fail("channel.ban.noActiveChannel")
 
         // Check if sender has permission (OWNER or MODERATOR)
         val senderRole = membershipManager.getMemberRoleOrNull(sender.uniqueId, channelId)
         if (senderRole == null || senderRole == ChannelRole.MEMBER) {
-            return CommandResult.Failure(
-                MessageFormatter.formatError(
-                    languageManager.getMessage("channel.ban.noPermission"),
-                ),
-            )
+            return fail("channel.ban.noPermission")
         }
 
         // Find target player
@@ -93,13 +85,9 @@ class ChannelBanCommand(
 
         // Check if player exists (has played before or is online)
         if (!targetPlayer.hasPlayedBefore() && !targetPlayer.isOnline) {
-            return CommandResult.Failure(
-                MessageFormatter.formatError(
-                    languageManager.getMessage(
-                        "channel.ban.playerNotFound",
-                        mapOf("player" to playerName),
-                    ),
-                ),
+            return fail(
+                "channel.ban.playerNotFound",
+                mapOf("player" to playerName),
             )
         }
 
@@ -107,23 +95,15 @@ class ChannelBanCommand(
 
         // Check if banning self
         if (targetPlayerId == sender.uniqueId) {
-            return CommandResult.Failure(
-                MessageFormatter.formatError(
-                    languageManager.getMessage("channel.ban.cannotBanSelf"),
-                ),
-            )
+            return fail("channel.ban.cannotBanSelf")
         }
 
         // Check if target has bypass permission
         val onlineTargetPlayer = Bukkit.getPlayer(playerName)
         if (onlineTargetPlayer != null && onlineTargetPlayer.hasPermission(LunaticChatPermissionNode.ChannelBypass.permissionNode)) {
-            return CommandResult.Failure(
-                MessageFormatter.formatError(
-                    languageManager.getMessage(
-                        "channel.ban.cannotBanBypass",
-                        mapOf("player" to onlineTargetPlayer.name),
-                    ),
-                ),
+            return fail(
+                "channel.ban.cannotBanBypass",
+                mapOf("player" to onlineTargetPlayer.name),
             )
         }
 
@@ -149,50 +129,30 @@ class ChannelBanCommand(
                 // Broadcast ban notification to remaining members
                 notificationHandler.broadcastBan(channelId, playerName, sender.name)
 
-                CommandResult.SuccessWithMessage(
-                    MessageFormatter.format(
-                        languageManager.getMessage(
-                            "channel.ban.success",
-                            mapOf("player" to playerName, "channel" to channelName),
-                        ),
-                    ),
+                ok(
+                    "channel.ban.success",
+                    mapOf("player" to playerName, "channel" to channelName),
                 )
             },
             onFailure = { error ->
                 when (error) {
                     is ChannelNotFoundException -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage("channel.ban.error"),
-                            ),
-                        )
+                        fail("channel.ban.error")
                     }
                     is ChannelPlayerBypassBanException -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage(
-                                    "channel.ban.cannotBanBypass",
-                                    mapOf("player" to playerName),
-                                ),
-                            ),
+                        fail(
+                            "channel.ban.cannotBanBypass",
+                            mapOf("player" to playerName),
                         )
                     }
                     is ChannelPlayerAlreadyBannedException -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage(
-                                    "channel.ban.alreadyBanned",
-                                    mapOf("player" to playerName),
-                                ),
-                            ),
+                        fail(
+                            "channel.ban.alreadyBanned",
+                            mapOf("player" to playerName),
                         )
                     }
                     else -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage("channel.ban.error"),
-                            ),
-                        )
+                        fail("channel.ban.error")
                     }
                 }
             },

@@ -4,7 +4,6 @@ import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelRole
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
-import dev.m1sk9.lunaticChat.engine.exception.ChannelNotFoundException
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
@@ -23,7 +22,7 @@ class ChannelModCommand(
     plugin: LunaticChat,
     private val channelManager: ChannelManager,
     private val membershipManager: ChannelMembershipManager,
-    private val languageManager: LanguageManager,
+    override val languageManager: LanguageManager,
 ) : LunaticSubCommand(plugin) {
     override val literal = "mod"
     override val permissionNode = LunaticChatPermissionNode.ChannelMod
@@ -69,20 +68,12 @@ class ChannelModCommand(
         // Get sender's active channel
         val channelId =
             channelManager.getPlayerChannel(sender.uniqueId)
-                ?: return CommandResult.Failure(
-                    MessageFormatter.formatError(
-                        languageManager.getMessage("channel.mod.noActiveChannel"),
-                    ),
-                )
+                ?: return fail("channel.mod.noActiveChannel")
 
         // Check if sender is OWNER
         val senderRole = membershipManager.getMemberRoleOrNull(sender.uniqueId, channelId)
         if (senderRole != ChannelRole.OWNER) {
-            return CommandResult.Failure(
-                MessageFormatter.formatError(
-                    languageManager.getMessage("channel.mod.noPermission"),
-                ),
-            )
+            return fail("channel.mod.noPermission")
         }
 
         // Find target player
@@ -90,13 +81,9 @@ class ChannelModCommand(
 
         // Check if player exists (has played before or is online)
         if (!targetPlayer.hasPlayedBefore() && !targetPlayer.isOnline) {
-            return CommandResult.Failure(
-                MessageFormatter.formatError(
-                    languageManager.getMessage(
-                        "channel.mod.playerNotFound",
-                        mapOf("player" to playerName),
-                    ),
-                ),
+            return fail(
+                "channel.mod.playerNotFound",
+                mapOf("player" to playerName),
             )
         }
 
@@ -104,23 +91,15 @@ class ChannelModCommand(
 
         // Check if modding self
         if (targetPlayerId == sender.uniqueId) {
-            return CommandResult.Failure(
-                MessageFormatter.formatError(
-                    languageManager.getMessage("channel.mod.cannotModSelf"),
-                ),
-            )
+            return fail("channel.mod.cannotModSelf")
         }
 
         // Check if target is a member
         val targetRole = membershipManager.getMemberRoleOrNull(targetPlayerId, channelId)
         if (targetRole == null) {
-            return CommandResult.Failure(
-                MessageFormatter.formatError(
-                    languageManager.getMessage(
-                        "channel.mod.notMember",
-                        mapOf("player" to playerName),
-                    ),
-                ),
+            return fail(
+                "channel.mod.notMember",
+                mapOf("player" to playerName),
             )
         }
 
@@ -157,32 +136,13 @@ class ChannelModCommand(
                     )
                 }
 
-                CommandResult.SuccessWithMessage(
-                    MessageFormatter.format(
-                        languageManager.getMessage(
-                            "channel.mod.success",
-                            mapOf("player" to playerName, "action" to action, "channel" to channelName),
-                        ),
-                    ),
+                ok(
+                    "channel.mod.success",
+                    mapOf("player" to playerName, "action" to action, "channel" to channelName),
                 )
             },
             onFailure = { error ->
-                when (error) {
-                    is ChannelNotFoundException -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage("channel.mod.error"),
-                            ),
-                        )
-                    }
-                    else -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage("channel.mod.error"),
-                            ),
-                        )
-                    }
-                }
+                fail("channel.mod.error")
             },
         )
     }

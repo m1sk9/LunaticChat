@@ -14,7 +14,6 @@ import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
 import dev.m1sk9.lunaticChat.paper.command.core.LunaticSubCommand
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
-import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
 
@@ -23,7 +22,7 @@ class ChannelSwitchCommand(
     plugin: LunaticChat,
     private val channelManager: ChannelManager,
     private val membershipManager: ChannelMembershipManager,
-    private val languageManager: LanguageManager,
+    override val languageManager: LanguageManager,
 ) : LunaticSubCommand(plugin) {
     override val literal = "switch"
     override val permissionNode = LunaticChatPermissionNode.ChannelSwitch
@@ -66,54 +65,34 @@ class ChannelSwitchCommand(
             onSuccess = {
                 val channel = channelManager.getChannel(channelId).getOrNull()
 
-                CommandResult.SuccessWithMessage(
-                    MessageFormatter.format(
-                        languageManager.getMessage(
-                            "channel.switch.success",
-                            mapOf("channelName" to (channel?.name ?: channelId), "channelId" to channelId),
-                        ),
-                    ),
+                ok(
+                    "channel.switch.success",
+                    mapOf("channelName" to (channel?.name ?: channelId), "channelId" to channelId),
                 )
             },
             onFailure = { error ->
                 when (error) {
                     is ChannelNotFoundException -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage(
-                                    "channel.switch.notFound",
-                                    mapOf("channelId" to channelId),
-                                ),
-                            ),
+                        fail(
+                            "channel.switch.notFound",
+                            mapOf("channelId" to channelId),
                         )
                     }
                     is ChannelAlreadyActiveException -> {
                         val channel = channelManager.getChannel(channelId).getOrNull()
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage(
-                                    "channel.switch.alreadyActive",
-                                    mapOf("channelName" to (channel?.name ?: channelId)),
-                                ),
-                            ),
+                        fail(
+                            "channel.switch.alreadyActive",
+                            mapOf("channelName" to (channel?.name ?: channelId)),
                         )
                     }
                     is ChannelNotMemberException -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage(
-                                    "channel.switch.notMember",
-                                    mapOf("channelId" to channelId),
-                                ),
-                            ),
+                        fail(
+                            "channel.switch.notMember",
+                            mapOf("channelId" to channelId),
                         )
                     }
                     else -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage("channel.switch.error"),
-                            ),
-                        )
+                        fail("channel.switch.error")
                     }
                 }
             },
