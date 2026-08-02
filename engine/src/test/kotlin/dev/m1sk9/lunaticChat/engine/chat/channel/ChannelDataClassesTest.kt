@@ -114,7 +114,7 @@ class ChannelDataClassesTest {
     fun `ChannelContext should store all fields`() {
         val channel = Channel(id = "ch-1", name = "Test", ownerId = testOwnerId)
         val member = ChannelMember(channelId = "ch-1", playerId = testPlayerId, role = ChannelRole.MEMBER)
-        val context = ChannelContext(channelId = "ch-1", channel = channel, members = listOf(member))
+        val context = ChannelContext(channel = channel, members = listOf(member))
 
         assertEquals("ch-1", context.channelId)
         assertEquals(channel, context.channel)
@@ -125,8 +125,8 @@ class ChannelDataClassesTest {
     @Test
     fun `ChannelContext copy should create independent instance`() {
         val channel = Channel(id = "ch-1", name = "Test", ownerId = testOwnerId)
-        val original = ChannelContext(channelId = "ch-1", channel = channel, members = emptyList())
-        val copied = original.copy(channelId = "ch-2")
+        val original = ChannelContext(channel = channel, members = emptyList())
+        val copied = original.copy(channel = channel.copy(id = "ch-2"))
 
         assertEquals("ch-2", copied.channelId)
         assertNotEquals(original.channelId, copied.channelId)

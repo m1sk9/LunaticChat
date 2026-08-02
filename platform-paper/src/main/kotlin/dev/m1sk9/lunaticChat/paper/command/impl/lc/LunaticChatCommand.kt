@@ -27,7 +27,7 @@ import io.papermc.paper.command.brigadier.Commands
 class LunaticChatCommand(
     plugin: LunaticChat,
     private val settingHandlerRegistry: SettingHandlerRegistry,
-    private val languageManager: LanguageManager,
+    override val languageManager: LanguageManager,
     private val configuration: LunaticChatConfiguration,
 ) : LunaticCommand(plugin) {
     override val description: String
@@ -40,13 +40,13 @@ class LunaticChatCommand(
             plugin,
             settingHandlerRegistry,
             languageManager,
-        ).buildAllWithPermissionCheck().forEach { command.then(it) }
+        ).buildAll().forEach { command.then(it) }
 
         StatusCommand(
             plugin,
             languageManager,
             configuration,
-        ).buildAllWithPermissionCheck().forEach { command.then(it) }
+        ).buildAll().forEach { command.then(it) }
 
         // Add channel command if channel manager is available
         plugin.channelManager?.let { manager ->
@@ -58,7 +58,7 @@ class LunaticChatCommand(
                         membershipManager,
                         notificationHandler,
                         languageManager,
-                    ).buildAllWithPermissionCheck().forEach { command.then(it) }
+                    ).buildAll().forEach { command.then(it) }
                 }
             }
         }

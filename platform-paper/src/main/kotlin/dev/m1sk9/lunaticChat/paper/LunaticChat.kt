@@ -2,7 +2,6 @@ package dev.m1sk9.lunaticChat.paper
 
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMembershipManager
-import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelMessageHandler
 import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelNotificationHandler
 import dev.m1sk9.lunaticChat.paper.chat.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.command.core.CommandRegistry
@@ -10,10 +9,9 @@ import dev.m1sk9.lunaticChat.paper.command.impl.ReplyCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.TellCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.lc.LunaticChatCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.lcv.VelocityStatusCommand
+import dev.m1sk9.lunaticChat.paper.command.setting.SettingHandler
 import dev.m1sk9.lunaticChat.paper.command.setting.SettingHandlerRegistry
-import dev.m1sk9.lunaticChat.paper.command.setting.handler.ChannelMessageNoticeSettingHandler
-import dev.m1sk9.lunaticChat.paper.command.setting.handler.DirectMessageNoticeSettingHandler
-import dev.m1sk9.lunaticChat.paper.command.setting.handler.JapaneseConversionSettingHandler
+import dev.m1sk9.lunaticChat.paper.command.setting.SettingKey
 import dev.m1sk9.lunaticChat.paper.common.UpdateCheckResult
 import dev.m1sk9.lunaticChat.paper.common.UpdateChecker
 import dev.m1sk9.lunaticChat.paper.config.ConfigManager
@@ -31,13 +29,13 @@ import java.util.concurrent.atomic.AtomicBoolean
 class LunaticChat :
     JavaPlugin(),
     Listener {
-    lateinit var directMessageHandler: DirectMessageHandler
-    lateinit var languageManager: LanguageManager
-    var channelManager: ChannelManager? = null
-    var channelMembershipManager: ChannelMembershipManager? = null
-    var channelMessageHandler: ChannelMessageHandler? = null
-    var channelNotificationHandler: ChannelNotificationHandler? = null
-    var velocityConnectionManager: VelocityConnectionManager? = null
+    // Read by commands, which reach the plugin instance but not the container.
+    val directMessageHandler: DirectMessageHandler get() = services.directMessageHandler
+    val languageManager: LanguageManager get() = services.languageManager
+    val channelManager: ChannelManager? get() = services.channelManager
+    val channelMembershipManager: ChannelMembershipManager? get() = services.channelMembershipManager
+    val channelNotificationHandler: ChannelNotificationHandler? get() = services.channelNotificationHandler
+    val velocityConnectionManager: VelocityConnectionManager? get() = services.velocityConnectionManager
 
     private lateinit var services: ServiceContainer
     private lateinit var configuration: LunaticChatConfiguration
@@ -60,7 +58,7 @@ class LunaticChat :
         val httpClient = HttpClient(CIO)
 
         // Initialize plugin coroutine scope
-        pluginScope = PluginCoroutineScope(this, logger)
+        pluginScope = PluginCoroutineScope(logger)
 
         // Initialize all services
         serviceInitializer =
@@ -72,17 +70,8 @@ class LunaticChat :
             )
         services = serviceInitializer.initialize()
 
-        // Set public API properties (for command access)
-        directMessageHandler = services.directMessageHandler
-        languageManager = services.languageManager
-        channelManager = services.channelManager
-        channelMembershipManager = services.channelMembershipManager
-        channelMessageHandler = services.channelMessageHandler
-        channelNotificationHandler = services.channelNotificationHandler
-        velocityConnectionManager = services.velocityConnectionManager
-
         // Schedule periodic tasks
-        serviceInitializer.schedulePeriodicTasks()
+        serviceInitializer.schedulePeriodicTasks(services)
 
         // Register commands and listeners
         registerCommands()
@@ -109,31 +98,16 @@ class LunaticChat :
         val commandRegistry = CommandRegistry(this)
         val settingHandlerRegistry = SettingHandlerRegistry()
 
-        // Always register DM notification setting
-        settingHandlerRegistry.register(
-            DirectMessageNoticeSettingHandler(
-                services.playerSettingsManager,
-                services.languageManager,
-            ),
-        )
-
-        // Always register channel message notification setting if channel is enabled
-        if (services.channelManager != null) {
+        // DM notification is always available; the other two follow their feature
+        val enabledSettings =
+            buildList {
+                add(SettingKey.Notice)
+                if (services.channelManager != null) add(SettingKey.ChNotice)
+                if (services.romajiConverter != null) add(SettingKey.Japanese)
+            }
+        enabledSettings.forEach { key ->
             settingHandlerRegistry.register(
-                ChannelMessageNoticeSettingHandler(
-                    services.playerSettingsManager,
-                    services.languageManager,
-                ),
-            )
-        }
-
-        // Conditionally register Japanese conversion setting
-        if (services.romajiConverter != null) {
-            settingHandlerRegistry.register(
-                JapaneseConversionSettingHandler(
-                    services.playerSettingsManager,
-                    services.languageManager,
-                ),
+                SettingHandler(key, services.playerSettingsManager, services.languageManager),
             )
         }
 

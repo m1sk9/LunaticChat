@@ -4,6 +4,7 @@ import com.velocitypowered.api.proxy.ProxyServer
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier
 import com.velocitypowered.api.proxy.server.RegisteredServer
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessage
+import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageChannel
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageCodec
 import org.slf4j.Logger
 
@@ -19,7 +20,7 @@ class CrossServerDirectMessageRelay(
     private val logger: Logger,
 ) {
     companion object {
-        private val CHANNEL = MinecraftChannelIdentifier.create("lunaticchat", "main")
+        private val CHANNEL = MinecraftChannelIdentifier.create(PluginMessageChannel.NAMESPACE, PluginMessageChannel.NAME)
     }
 
     /**

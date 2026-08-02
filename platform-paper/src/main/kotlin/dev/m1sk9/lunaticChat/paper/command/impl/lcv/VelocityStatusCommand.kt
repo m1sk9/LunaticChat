@@ -32,7 +32,7 @@ import net.kyori.adventure.text.format.NamedTextColor
 class VelocityStatusCommand(
     plugin: LunaticChat,
     private val velocityConnectionManager: VelocityConnectionManager,
-    private val languageManager: LanguageManager,
+    override val languageManager: LanguageManager,
 ) : LunaticCommand(plugin) {
     override val description: String
         get() = languageManager.getMessage("commandDescription.lcv")

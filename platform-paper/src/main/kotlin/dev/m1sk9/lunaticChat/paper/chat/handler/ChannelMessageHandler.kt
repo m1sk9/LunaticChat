@@ -8,6 +8,7 @@ import dev.m1sk9.lunaticChat.paper.common.playChannelReceiveNotification
 import dev.m1sk9.lunaticChat.paper.common.playMessageSendNotification
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
+import dev.m1sk9.lunaticChat.paper.i18n.withChatPlaceholders
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
 import io.ktor.util.logging.Logger
 import net.kyori.adventure.text.Component
@@ -98,10 +99,11 @@ class ChannelMessageHandler(
     ): Component {
         val format = configuration.messageFormat.channelMessageFormat
         val text =
-            format
-                .replace("{sender}", senderName)
-                .replace("{channel}", channelName)
-                .replace("{message}", message)
+            format.withChatPlaceholders(
+                "sender" to senderName,
+                "channel" to channelName,
+                "message" to message,
+            )
 
         return Component.text(text)
     }

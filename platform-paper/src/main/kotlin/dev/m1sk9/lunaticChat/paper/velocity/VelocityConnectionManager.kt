@@ -1,6 +1,7 @@
 package dev.m1sk9.lunaticChat.paper.velocity
 
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessage
+import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageChannel
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageCodec
 import dev.m1sk9.lunaticChat.engine.protocol.ProtocolVersion
 import org.bukkit.entity.Player
@@ -21,7 +22,7 @@ class VelocityConnectionManager(
     private var remotePlayerRegistry: RemotePlayerRegistry? = null,
 ) : PluginMessageListener {
     companion object {
-        private const val CHANNEL = "lunaticchat:main"
+        private val CHANNEL = PluginMessageChannel.ID
         private const val HANDSHAKE_TIMEOUT_SECONDS = 5L
     }
 

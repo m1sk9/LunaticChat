@@ -9,10 +9,9 @@ import dev.m1sk9.lunaticChat.engine.exception.ChannelLimitExceededException
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
-import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
-import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
+import dev.m1sk9.lunaticChat.paper.command.core.LunaticSubCommand
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import io.papermc.paper.command.brigadier.CommandSourceStack
@@ -22,20 +21,15 @@ import io.papermc.paper.command.brigadier.Commands
 class ChannelCreateCommand(
     plugin: LunaticChat,
     private val channelManager: ChannelManager,
-    private val languageManager: LanguageManager,
-) : LunaticCommand(plugin) {
-    fun buildWithPermissionCheck(): LiteralArgumentBuilder<CommandSourceStack> {
-        val builder = build()
-        return applyMethodPermission("build", builder)
-    }
+    override val languageManager: LanguageManager,
+) : LunaticSubCommand(plugin) {
+    override val literal = "create"
+    override val permissionNode = LunaticChatPermissionNode.ChannelCreate
+    override val aliases = listOf("new")
 
-    fun buildAllWithPermissionCheck(): List<LiteralArgumentBuilder<CommandSourceStack>> =
-        withAliases(buildWithPermissionCheck(), listOf("new"))
-
-    @Permission(LunaticChatPermissionNode.ChannelCreate::class)
-    fun build(): LiteralArgumentBuilder<CommandSourceStack> =
+    override fun build(): LiteralArgumentBuilder<CommandSourceStack> =
         Commands
-            .literal("create")
+            .literal(literal)
             .then(
                 Commands
                     .argument("channelId", StringArgumentType.word())
@@ -95,13 +89,9 @@ class ChannelCreateCommand(
 
         // Validate channel ID pattern
         if (!channelId.matches(Channel.CHANNEL_ID_PATTERN)) {
-            return CommandResult.Failure(
-                MessageFormatter.formatError(
-                    languageManager.getMessage(
-                        "channel.create.invalidId",
-                        mapOf("id" to channelId),
-                    ),
-                ),
+            return fail(
+                "channel.create.invalidId",
+                mapOf("id" to channelId),
             )
         }
 
@@ -136,31 +126,13 @@ class ChannelCreateCommand(
                 )
             },
             onFailure = { error ->
-                val messageKey =
-                    when (error) {
-                        is ChannelLimitExceededException ->
-                            "channel.create.limitExceeded"
-                        else ->
-                            "channel.create.alreadyExists"
-                    }
-                val params =
-                    when (error) {
-                        is ChannelLimitExceededException ->
-                            mapOf("limit" to error.limit.toString())
-                        else ->
-                            mapOf("id" to channelId)
-                    }
-                CommandResult.Failure(
-                    MessageFormatter.formatError(
-                        languageManager.getMessage(messageKey, params),
-                    ),
-                )
+                when (error) {
+                    is ChannelLimitExceededException ->
+                        fail("channel.create.limitExceeded", mapOf("limit" to error.limit.toString()))
+                    else ->
+                        fail("channel.create.alreadyExists", mapOf("id" to channelId))
+                }
             },
         )
     }
-
-    override fun buildCommand(): LiteralArgumentBuilder<CommandSourceStack> =
-        throw UnsupportedOperationException(
-            "ChannelCreateCommand should use build() method instead of buildCommand()",
-        )
 }

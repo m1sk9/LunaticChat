@@ -446,7 +446,6 @@ class ChannelManager(
         }
 
         return ChannelContext(
-            channelId = channelId,
             channel = channel,
             members = members,
         )
@@ -480,7 +479,6 @@ class ChannelManager(
         saveToStorage()
 
         return ChannelContext(
-            channelId = channelId,
             channel = channel,
             members = members,
         )

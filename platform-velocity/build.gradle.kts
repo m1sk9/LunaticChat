@@ -57,9 +57,6 @@ tasks {
         filesMatching("velocity-plugin.json") {
             expand(props)
         }
-        filesMatching("build-info.properties") {
-            expand(props)
-        }
     }
 
     build {

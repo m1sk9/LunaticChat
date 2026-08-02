@@ -8,12 +8,10 @@ import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMembershipManager
 import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelNotificationHandler
-import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
-import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
+import dev.m1sk9.lunaticChat.paper.command.core.LunaticSubCommand
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
-import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
 
@@ -23,19 +21,14 @@ class ChannelLeaveCommand(
     private val channelManager: ChannelManager,
     private val membershipManager: ChannelMembershipManager,
     private val notificationHandler: ChannelNotificationHandler,
-    private val languageManager: LanguageManager,
-) : LunaticCommand(plugin) {
-    fun buildWithPermissionCheck(): LiteralArgumentBuilder<CommandSourceStack> {
-        val builder = build()
-        return applyMethodPermission("build", builder)
-    }
+    override val languageManager: LanguageManager,
+) : LunaticSubCommand(plugin) {
+    override val literal = "leave"
+    override val permissionNode = LunaticChatPermissionNode.ChannelLeave
+    override val aliases = listOf("l")
 
-    fun buildAllWithPermissionCheck(): List<LiteralArgumentBuilder<CommandSourceStack>> =
-        withAliases(buildWithPermissionCheck(), listOf("l"))
-
-    @Permission(LunaticChatPermissionNode.ChannelLeave::class)
-    fun build(): LiteralArgumentBuilder<CommandSourceStack> =
-        Commands.literal("leave").executes { ctx ->
+    override fun build(): LiteralArgumentBuilder<CommandSourceStack> =
+        Commands.literal(literal).executes { ctx ->
             val context = wrapContext(ctx)
             checkPlayerOnly(context)?.let { return@executes handleResult(context, it) }
 
@@ -58,38 +51,21 @@ class ChannelLeaveCommand(
                     notificationHandler.broadcastLeave(currentChannelId, sender.name)
                 }
 
-                CommandResult.SuccessWithMessage(
-                    MessageFormatter.format(
-                        languageManager.getMessage(
-                            "channel.leave.success",
-                            mapOf("channelName" to (currentChannel?.name ?: currentChannelId ?: "Unknown")),
-                        ),
-                    ),
+                ok(
+                    "channel.leave.success",
+                    mapOf("channelName" to (currentChannel?.name ?: currentChannelId ?: "Unknown")),
                 )
             },
             onFailure = { error ->
                 when (error) {
                     is ChannelNotMemberException -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage("channel.leave.noActiveChannel"),
-                            ),
-                        )
+                        fail("channel.leave.noActiveChannel")
                     }
                     else -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage("channel.leave.error"),
-                            ),
-                        )
+                        fail("channel.leave.error")
                     }
                 }
             },
         )
     }
-
-    override fun buildCommand(): LiteralArgumentBuilder<CommandSourceStack> =
-        throw UnsupportedOperationException(
-            "ChannelLeaveCommand should use build() method instead of buildCommand()",
-        )
 }

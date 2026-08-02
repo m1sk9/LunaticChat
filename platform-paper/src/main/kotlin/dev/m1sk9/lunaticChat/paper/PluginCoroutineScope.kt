@@ -4,7 +4,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import org.bukkit.plugin.java.JavaPlugin
 import java.util.logging.Logger
 
 /**
@@ -26,7 +25,6 @@ import java.util.logging.Logger
  * ```
  */
 class PluginCoroutineScope(
-    private val plugin: JavaPlugin,
     private val logger: Logger,
 ) {
     private val job = SupervisorJob()

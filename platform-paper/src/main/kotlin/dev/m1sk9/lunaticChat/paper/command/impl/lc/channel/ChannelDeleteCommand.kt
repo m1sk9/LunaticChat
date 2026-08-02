@@ -8,12 +8,10 @@ import dev.m1sk9.lunaticChat.engine.exception.ChannelNotFoundException
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
-import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
-import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
+import dev.m1sk9.lunaticChat.paper.command.core.LunaticSubCommand
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
-import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
 
@@ -21,20 +19,15 @@ import io.papermc.paper.command.brigadier.Commands
 class ChannelDeleteCommand(
     plugin: LunaticChat,
     private val channelManager: ChannelManager,
-    private val languageManager: LanguageManager,
-) : LunaticCommand(plugin) {
-    fun buildWithPermissionCheck(): LiteralArgumentBuilder<CommandSourceStack> {
-        val builder = build()
-        return applyMethodPermission("build", builder)
-    }
+    override val languageManager: LanguageManager,
+) : LunaticSubCommand(plugin) {
+    override val literal = "delete"
+    override val permissionNode = LunaticChatPermissionNode.ChannelDelete
+    override val aliases = listOf("del")
 
-    fun buildAllWithPermissionCheck(): List<LiteralArgumentBuilder<CommandSourceStack>> =
-        withAliases(buildWithPermissionCheck(), listOf("del"))
-
-    @Permission(LunaticChatPermissionNode.ChannelDelete::class)
-    fun build(): LiteralArgumentBuilder<CommandSourceStack> =
+    override fun build(): LiteralArgumentBuilder<CommandSourceStack> =
         Commands
-            .literal("delete")
+            .literal(literal)
             .then(
                 Commands
                     .argument("channelId", StringArgumentType.word())
@@ -85,48 +78,27 @@ class ChannelDeleteCommand(
         val result = channelManager.deleteChannel(channelId, sender.uniqueId, hasBypass)
         return result.fold(
             onSuccess = {
-                CommandResult.SuccessWithMessage(
-                    MessageFormatter.format(
-                        languageManager.getMessage(
-                            "channel.delete.success",
-                            mapOf("id" to channelId),
-                        ),
-                    ),
+                ok(
+                    "channel.delete.success",
+                    mapOf("id" to channelId),
                 )
             },
             onFailure = { error ->
                 when (error) {
                     is ChannelNotFoundException -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage(
-                                    "channel.delete.notFound",
-                                    mapOf("id" to channelId),
-                                ),
-                            ),
+                        fail(
+                            "channel.delete.notFound",
+                            mapOf("id" to channelId),
                         )
                     }
                     is ChannelNoOwnerPermissionException -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage("channel.delete.noPermission"),
-                            ),
-                        )
+                        fail("channel.delete.noPermission")
                     }
                     else -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage("channel.delete.error"),
-                            ),
-                        )
+                        fail("channel.delete.error")
                     }
                 }
             },
         )
     }
-
-    override fun buildCommand(): LiteralArgumentBuilder<CommandSourceStack> =
-        throw UnsupportedOperationException(
-            "ChannelDeleteCommand should use build() method instead of buildCommand()",
-        )
 }

@@ -2,21 +2,38 @@ package dev.m1sk9.lunaticChat.paper.chat.channel
 
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelRole
 import dev.m1sk9.lunaticChat.engine.exception.ChannelAlreadyActiveException
+import dev.m1sk9.lunaticChat.engine.exception.ChannelCannotInviteSelfException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelMemberAlreadyException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelNotFoundException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelNotMemberException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerBannedException
+import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerBypassBanException
+import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerBypassKickException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerMembershipLimitExceededException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelPrivateRequiresInvitationException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelRuntimeException
+import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.config.key.ChannelChatFeatureConfig
+import org.bukkit.Bukkit
 import java.util.UUID
 import java.util.logging.Logger
 
+/**
+ * Whether the player is currently online and holds the moderation bypass permission.
+ * Offline players cannot be checked, matching how the permission is evaluated elsewhere.
+ */
+private fun hasChannelBypassPermission(playerId: UUID): Boolean =
+    Bukkit.getPlayer(playerId)?.hasPermission(LunaticChatPermissionNode.ChannelBypass.permissionNode) == true
+
+/**
+ * @param hasModerationBypass Whether a player is exempt from being kicked or banned. Injected
+ *   rather than read from Bukkit inline so this manager stays testable without a running server.
+ */
 class ChannelMembershipManager(
     private val channelManager: ChannelManager,
     private val logger: Logger,
     private val config: ChannelChatFeatureConfig,
+    private val hasModerationBypass: (UUID) -> Boolean = ::hasChannelBypassPermission,
 ) {
     /**
      * Checks if a player is a member of a channel.
@@ -261,6 +278,58 @@ class ChannelMembershipManager(
         channelManager.setPlayerChannel(playerId, channelId)
         logger.info("Player $playerId switched to channel $channelId")
         return Result.success(Unit)
+    }
+
+    /**
+     * Bans [targetId] from [channelId].
+     *
+     * The bypass rule lives here rather than in the ban command so that every path to a ban -
+     * commands today, anything else later - is held to it.
+     *
+     * @return Result indicating success or failure.
+     * @throws ChannelPlayerBypassBanException if the target is exempt from moderation.
+     */
+    fun banPlayer(
+        targetId: UUID,
+        channelId: String,
+    ): Result<Unit> {
+        if (hasModerationBypass(targetId)) {
+            return Result.failure(ChannelPlayerBypassBanException(targetId, channelId))
+        }
+        return channelManager.banPlayer(channelId, targetId).map { }
+    }
+
+    /**
+     * Removes [targetId] from [channelId] as a moderation action.
+     *
+     * @return Result indicating success or failure.
+     * @throws ChannelPlayerBypassKickException if the target is exempt from moderation.
+     */
+    fun kickPlayer(
+        targetId: UUID,
+        channelId: String,
+    ): Result<Unit> {
+        if (hasModerationBypass(targetId)) {
+            return Result.failure(ChannelPlayerBypassKickException(targetId, channelId))
+        }
+        return channelManager.removeMember(channelId, targetId)
+    }
+
+    /**
+     * Adds [targetId] to [channelId] on [actorId]'s invitation, bypassing the private-channel gate.
+     *
+     * @return Result indicating success or failure.
+     * @throws ChannelCannotInviteSelfException if the actor invited themselves.
+     */
+    fun inviteToChannel(
+        actorId: UUID,
+        targetId: UUID,
+        channelId: String,
+    ): Result<Unit> {
+        if (actorId == targetId) {
+            return Result.failure(ChannelCannotInviteSelfException(actorId))
+        }
+        return joinChannel(targetId, channelId, bypassPrivateCheck = true)
     }
 
     /**

@@ -30,17 +30,17 @@ import java.util.UUID
 data class PlayerSettingsData(
     val version: Int = 1,
     val japaneseConversion: Map<
-        @Serializable(with = UUIDASStringSerializer::class)
+        @Serializable(with = UUIDSerializer::class)
         UUID,
         Boolean,
     > = emptyMap(),
     val directMessageNotification: Map<
-        @Serializable(with = UUIDASStringSerializer::class)
+        @Serializable(with = UUIDSerializer::class)
         UUID,
         Boolean,
     > = emptyMap(),
     val channelMessageNotification: Map<
-        @Serializable(with = UUIDASStringSerializer::class)
+        @Serializable(with = UUIDSerializer::class)
         UUID,
         Boolean,
     > = emptyMap(),

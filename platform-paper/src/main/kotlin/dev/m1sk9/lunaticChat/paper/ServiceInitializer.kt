@@ -36,6 +36,7 @@ private data class ChannelComponents(
     val channelMembershipManager: ChannelMembershipManager,
     val channelMessageHandler: ChannelMessageHandler,
     val channelNotificationHandler: ChannelNotificationHandler,
+    val channelMessageLogger: ChannelMessageLogger?,
 )
 
 /**
@@ -50,16 +51,6 @@ class ServiceInitializer(
     private val httpClient: HttpClient,
     private val logger: Logger,
 ) {
-    private var conversionCache: ConversionCache? = null
-    private var channelManager: ChannelManager? = null
-    private var channelMembershipManager: ChannelMembershipManager? = null
-    private var channelMessageHandler: ChannelMessageHandler? = null
-    private var channelNotificationHandler: ChannelNotificationHandler? = null
-    private var channelMessageLogger: ChannelMessageLogger? = null
-    private var velocityConnectionManager: VelocityConnectionManager? = null
-    private var crossServerChatManager: CrossServerChatManager? = null
-    private var crossServerDirectMessageManager: CrossServerDirectMessageManager? = null
-    private var remotePlayerRegistry: RemotePlayerRegistry? = null
     private val handshakeCompleted = AtomicBoolean(false)
 
     /**
@@ -89,12 +80,13 @@ class ServiceInitializer(
         val playerSettingsManager = initializePlayerSettingsManager()
 
         // 3. Initialize Japanese conversion (optional)
-        val romajiConverter =
+        val japaneseConversion =
             if (configuration.features.japaneseConversion.enabled) {
                 initializeJapaneseConversion()
             } else {
                 null
             }
+        val romajiConverter = japaneseConversion?.first
 
         // 4. Initialize channel manager, membership manager, channel message handler, and notification handler
         val channelComponents =
@@ -103,11 +95,6 @@ class ServiceInitializer(
             } else {
                 null
             }
-        val channelManager = channelComponents?.channelManager
-        val channelMembershipManager = channelComponents?.channelMembershipManager
-        val channelMessageHandler = channelComponents?.channelMessageHandler
-        val channelNotificationHandler = channelComponents?.channelNotificationHandler
-
         // 5. Initialize handlers
         val directMessageHandler =
             DirectMessageHandler(
@@ -137,26 +124,31 @@ class ServiceInitializer(
             }
 
         // 8. Initialize cross-server direct message manager and presence registry (optional)
-        if (configuration.features.velocityIntegration.enabled &&
-            configuration.features.velocityIntegration.crossServerDirectMessage &&
-            velocityManager != null
-        ) {
-            initializeCrossServerDirectMessage(velocityManager, directMessageHandler, languageManager)
-        }
+        val crossServerDirectMessage =
+            if (configuration.features.velocityIntegration.enabled &&
+                configuration.features.velocityIntegration.crossServerDirectMessage &&
+                velocityManager != null
+            ) {
+                initializeCrossServerDirectMessage(velocityManager, directMessageHandler, languageManager)
+            } else {
+                null
+            }
 
         return ServiceContainer(
             languageManager = languageManager,
             playerSettingsManager = playerSettingsManager,
             directMessageHandler = directMessageHandler,
             romajiConverter = romajiConverter,
-            channelManager = channelManager,
-            channelMembershipManager = channelMembershipManager,
-            channelMessageHandler = channelMessageHandler,
-            channelNotificationHandler = channelNotificationHandler,
+            conversionCache = japaneseConversion?.second,
+            channelManager = channelComponents?.channelManager,
+            channelMembershipManager = channelComponents?.channelMembershipManager,
+            channelMessageLogger = channelComponents?.channelMessageLogger,
+            channelMessageHandler = channelComponents?.channelMessageHandler,
+            channelNotificationHandler = channelComponents?.channelNotificationHandler,
             velocityConnectionManager = velocityManager,
             crossServerChatManager = crossServerManager,
-            crossServerDirectMessageManager = crossServerDirectMessageManager,
-            remotePlayerRegistry = remotePlayerRegistry,
+            crossServerDirectMessageManager = crossServerDirectMessage?.first,
+            remotePlayerRegistry = crossServerDirectMessage?.second,
         )
     }
 
@@ -169,7 +161,7 @@ class ServiceInitializer(
         val storage =
             YamlPlayerSettingsStorage(
                 settingsFile = settingsFile,
-                plugin = plugin,
+                saver = DebouncedSaver(plugin),
                 logger = logger,
             )
 
@@ -188,17 +180,16 @@ class ServiceInitializer(
      * - Google IME API client
      * - Romanji converter
      */
-    private fun initializeJapaneseConversion(): RomanjiConverter {
+    private fun initializeJapaneseConversion(): Pair<RomanjiConverter, ConversionCache> {
         // Initialize conversion cache
         val cache =
             ConversionCache(
                 cacheFile = plugin.dataFolder.resolve(configuration.features.japaneseConversion.cacheFilePath).toPath(),
                 maxEntries = configuration.features.japaneseConversion.cacheMaxEntries,
-                plugin = plugin,
+                saver = DebouncedSaver(plugin),
                 logger = logger,
             )
         cache.loadFromDisk()
-        conversionCache = cache
 
         // Initialize Google IME API client
         val apiClient =
@@ -217,7 +208,7 @@ class ServiceInitializer(
             )
 
         logger.info("Japanese conversion feature enabled.")
-        return converter
+        return converter to cache
     }
 
     /**
@@ -242,7 +233,6 @@ class ServiceInitializer(
                 config = configuration.features.channelChat,
             )
         manager.initialize()
-        channelManager = manager
 
         val membershipManager =
             ChannelMembershipManager(
@@ -250,7 +240,6 @@ class ServiceInitializer(
                 logger = logger,
                 config = configuration.features.channelChat,
             )
-        channelMembershipManager = membershipManager
 
         // Initialize channel message logger if enabled
         val messageLogger =
@@ -265,7 +254,6 @@ class ServiceInitializer(
                     maxFileSizeBytes = configuration.features.channelChat.messageLogging.maxFileSizeMB * 1024L * 1024L,
                     retentionDays = configuration.features.channelChat.messageLogging.retentionDays,
                 ).also {
-                    channelMessageLogger = it
                     logger.info(
                         "Channel message logging enabled (retention: ${configuration.features.channelChat.messageLogging.retentionDays} days)",
                     )
@@ -285,14 +273,12 @@ class ServiceInitializer(
                     io.ktor.util.logging
                         .KtorSimpleLogger("ChannelMessageHandler"),
             )
-        channelMessageHandler = messageHandler
 
         val notificationHandler =
             ChannelNotificationHandler(
                 channelManager = manager,
                 languageManager = languageManager,
             )
-        channelNotificationHandler = notificationHandler
 
         logger.info(
             "Channel manager, membership manager, " +
@@ -303,6 +289,7 @@ class ServiceInitializer(
             channelMembershipManager = membershipManager,
             channelMessageHandler = messageHandler,
             channelNotificationHandler = notificationHandler,
+            channelMessageLogger = messageLogger,
         )
     }
 
@@ -318,7 +305,6 @@ class ServiceInitializer(
                 logger = logger,
             )
         manager.initialize()
-        velocityConnectionManager = manager
 
         // Register listener for first player join
         plugin.server.pluginManager.registerEvents(
@@ -360,7 +346,6 @@ class ServiceInitializer(
                 configuration = configuration,
                 cacheSize = configuration.features.velocityIntegration.messageDeduplicationCacheSize,
             )
-        crossServerChatManager = manager
 
         // Set the manager in VelocityConnectionManager to handle incoming messages
         velocityManager.setCrossServerChatManager(manager)
@@ -380,9 +365,8 @@ class ServiceInitializer(
         velocityManager: VelocityConnectionManager,
         directMessageHandler: DirectMessageHandler,
         languageManager: LanguageManager,
-    ) {
+    ): Pair<CrossServerDirectMessageManager, RemotePlayerRegistry> {
         val registry = RemotePlayerRegistry(configuration.features.velocityIntegration.serverName)
-        remotePlayerRegistry = registry
         directMessageHandler.remotePlayerRegistry = registry
 
         val manager =
@@ -394,11 +378,11 @@ class ServiceInitializer(
                 languageManager = languageManager,
                 cacheSize = configuration.features.velocityIntegration.messageDeduplicationCacheSize,
             )
-        crossServerDirectMessageManager = manager
 
         velocityManager.setCrossServerDirectMessageManager(manager, registry)
 
         logger.info("Cross-server direct messages initialized")
+        return manager to registry
     }
 
     /**
@@ -432,15 +416,16 @@ class ServiceInitializer(
      * Schedules periodic tasks such as cache saving.
      * Uses Folia-compatible AsyncScheduler API.
      */
-    fun schedulePeriodicTasks() {
-        if (configuration.features.japaneseConversion.enabled && conversionCache != null) {
+    fun schedulePeriodicTasks(services: ServiceContainer) {
+        val conversionCache = services.conversionCache
+        if (conversionCache != null) {
             val intervalSeconds =
                 configuration.features.japaneseConversion
                     .cacheSaveIntervalSeconds
                     .toLong()
             plugin.server.asyncScheduler.runAtFixedRate(
                 plugin,
-                { conversionCache?.saveToDisk() },
+                { conversionCache.saveToDisk() },
                 intervalSeconds,
                 intervalSeconds,
                 TimeUnit.SECONDS,
@@ -453,9 +438,9 @@ class ServiceInitializer(
      */
     fun shutdown(services: ServiceContainer) {
         services.playerSettingsManager.saveToDisk()
-        conversionCache?.saveToDisk()
+        services.conversionCache?.saveToDisk()
         services.channelManager?.saveToDisk()
-        channelMessageLogger?.shutdown()
+        services.channelMessageLogger?.shutdown()
         services.velocityConnectionManager?.shutdown()
     }
 }

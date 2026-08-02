@@ -6,10 +6,9 @@ import dev.m1sk9.lunaticChat.engine.command.CommandResult
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
-import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
-import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
+import dev.m1sk9.lunaticChat.paper.command.core.LunaticSubCommand
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import io.papermc.paper.command.brigadier.CommandSourceStack
@@ -24,24 +23,19 @@ import kotlin.math.ceil
 class ChannelListCommand(
     plugin: LunaticChat,
     private val channelManager: ChannelManager,
-    private val languageManager: LanguageManager,
-) : LunaticCommand(plugin) {
+    override val languageManager: LanguageManager,
+) : LunaticSubCommand(plugin) {
     companion object {
         private const val CHANNELS_PER_PAGE = 10
     }
 
-    fun buildWithPermissionCheck(): LiteralArgumentBuilder<CommandSourceStack> {
-        val builder = build()
-        return applyMethodPermission("build", builder)
-    }
+    override val literal = "list"
+    override val permissionNode = LunaticChatPermissionNode.ChannelList
+    override val aliases = listOf("ls")
 
-    fun buildAllWithPermissionCheck(): List<LiteralArgumentBuilder<CommandSourceStack>> =
-        withAliases(buildWithPermissionCheck(), listOf("ls"))
-
-    @Permission(LunaticChatPermissionNode.ChannelList::class)
-    fun build(): LiteralArgumentBuilder<CommandSourceStack> =
+    override fun build(): LiteralArgumentBuilder<CommandSourceStack> =
         Commands
-            .literal("list")
+            .literal(literal)
             .executes { ctx ->
                 val context = wrapContext(ctx)
                 checkPlayerOnly(context)?.let { return@executes handleResult(context, it) }
@@ -189,17 +183,8 @@ class ChannelListCommand(
                 CommandResult.Success
             },
             onFailure = { error ->
-                CommandResult.Failure(
-                    MessageFormatter.formatError(
-                        languageManager.getMessage("channel.list.error"),
-                    ),
-                )
+                fail("channel.list.error")
             },
         )
     }
-
-    override fun buildCommand(): LiteralArgumentBuilder<CommandSourceStack> =
-        throw UnsupportedOperationException(
-            "ChannelListCommand should use build() method instead of buildCommand()",
-        )
 }

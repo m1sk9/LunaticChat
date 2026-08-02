@@ -11,6 +11,8 @@ import java.util.UUID
 /**
  * Custom serializer for UUID with kotlinx.serialization.
  * kotlinx.serialization doesn't support UUID by default, so we need a custom serializer.
+ *
+ * Used for both UUID properties and UUID map keys (JSON and YAML alike).
  */
 object UUIDSerializer : KSerializer<UUID> {
     override val descriptor: SerialDescriptor =

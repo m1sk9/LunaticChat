@@ -4,10 +4,9 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
-import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
-import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
+import dev.m1sk9.lunaticChat.paper.command.core.LunaticSubCommand
 import dev.m1sk9.lunaticChat.paper.command.setting.SettingHandlerRegistry
 import dev.m1sk9.lunaticChat.paper.command.setting.SettingKey
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
@@ -28,19 +27,11 @@ import io.papermc.paper.command.brigadier.Commands
 class SettingsCommand(
     plugin: LunaticChat,
     private val settingHandlerRegistry: SettingHandlerRegistry,
-    private val languageManager: LanguageManager,
-) : LunaticCommand(plugin) {
-    /**
-     * Builds the setting subcommand structure with permission checks.
-     * This method should be called from parent commands.
-     */
-    fun buildWithPermissionCheck(): LiteralArgumentBuilder<CommandSourceStack> {
-        val builder = build()
-        return applyMethodPermission("build", builder)
-    }
-
-    fun buildAllWithPermissionCheck(): List<LiteralArgumentBuilder<CommandSourceStack>> =
-        withAliases(buildWithPermissionCheck(), listOf("set"))
+    override val languageManager: LanguageManager,
+) : LunaticSubCommand(plugin) {
+    override val literal = "settings"
+    override val permissionNode = LunaticChatPermissionNode.Settings
+    override val aliases = listOf("set")
 
     /**
      * Builds the setting subcommand structure.
@@ -49,9 +40,8 @@ class SettingsCommand(
      * - /lc setting <key> off
      * - /lc setting <key> (shows status)
      */
-    @Permission(LunaticChatPermissionNode.Settings::class)
-    fun build(): LiteralArgumentBuilder<CommandSourceStack> {
-        val settingCommand = Commands.literal("settings")
+    override fun build(): LiteralArgumentBuilder<CommandSourceStack> {
+        val settingCommand = Commands.literal(literal)
 
         for (settingKey in SettingKey.values()) {
             val handler = settingHandlerRegistry.getHandler(settingKey)
@@ -114,9 +104,4 @@ class SettingsCommand(
         ctx.reply(helpMessage)
         return CommandResult.Success
     }
-
-    override fun buildCommand(): LiteralArgumentBuilder<CommandSourceStack> =
-        throw UnsupportedOperationException(
-            "SettingsSubcommand should use build() method instead of buildCommand()",
-        )
 }

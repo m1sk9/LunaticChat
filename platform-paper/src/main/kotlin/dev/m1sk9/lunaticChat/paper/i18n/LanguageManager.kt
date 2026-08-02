@@ -1,25 +1,12 @@
 package dev.m1sk9.lunaticChat.paper.i18n
 
 import com.charleskorn.kaml.Yaml
+import com.charleskorn.kaml.YamlList
+import com.charleskorn.kaml.YamlMap
+import com.charleskorn.kaml.YamlNode
+import com.charleskorn.kaml.YamlScalar
 import org.bukkit.plugin.java.JavaPlugin
 import java.util.logging.Logger
-
-/**
- * Represents a value in a YAML structure.
- */
-private sealed class YamlValue {
-    data class StringValue(
-        val value: String,
-    ) : YamlValue()
-
-    data class MapValue(
-        val value: Map<String, YamlValue>,
-    ) : YamlValue()
-
-    data class ListValue(
-        val value: List<YamlValue>,
-    ) : YamlValue()
-}
 
 /**
  * Manages language files and provides message retrieval with string-based keys.
@@ -84,87 +71,34 @@ class LanguageManager(
                 ?: throw IllegalStateException("Language file not found: $resourcePath")
 
         val yamlContent = stream.bufferedReader().use { it.readText() }
-        val yamlNode = Yaml.default.parseToYamlNode(yamlContent)
+        val root = Yaml.default.parseToYamlNode(yamlContent)
+        check(root is YamlMap) { "Root YAML node must be a map" }
 
-        val rootMap = yamlNodeToMap(yamlNode)
-        return flattenYaml(rootMap)
+        return buildMap { flattenInto(root, prefix = "", into = this) }
     }
 
     /**
-     * Converts a YamlNode to a type-safe YamlValue structure.
-     */
-    private fun yamlNodeToMap(node: com.charleskorn.kaml.YamlNode): Map<String, YamlValue> =
-        when (node) {
-            is com.charleskorn.kaml.YamlMap -> {
-                val result = mutableMapOf<String, YamlValue>()
-                node.entries.forEach { entry ->
-                    val key = entry.key.content
-                    val value = yamlNodeToValue(entry.value)
-                    result[key] = value
-                }
-                result
-            }
-            else -> throw IllegalStateException("Root YAML node must be a map")
-        }
-
-    /**
-     * Converts a YamlNode to a type-safe YamlValue.
-     */
-    private fun yamlNodeToValue(node: com.charleskorn.kaml.YamlNode): YamlValue =
-        when (node) {
-            is com.charleskorn.kaml.YamlMap -> {
-                val result = mutableMapOf<String, YamlValue>()
-                node.entries.forEach { entry ->
-                    val key = entry.key.content
-                    val value = yamlNodeToValue(entry.value)
-                    result[key] = value
-                }
-                YamlValue.MapValue(result)
-            }
-            is com.charleskorn.kaml.YamlList -> {
-                YamlValue.ListValue(node.items.map { yamlNodeToValue(it) })
-            }
-            is com.charleskorn.kaml.YamlScalar -> YamlValue.StringValue(node.content)
-            else -> YamlValue.StringValue(node.contentToString())
-        }
-
-    /**
-     * Flattens a nested map into dot-notation keys.
+     * Flattens a YAML tree into dot-notation keys.
      * Example: {"toggle": {"on": "有効"}} -> {"toggle.on": "有効"}
      */
-    private fun flattenYaml(
-        map: Map<String, YamlValue>,
-        prefix: String = "",
-    ): Map<String, String> {
-        val result = mutableMapOf<String, String>()
-
-        map.forEach { (key, value) ->
-            val fullKey = if (prefix.isEmpty()) key else "$prefix.$key"
-
-            when (value) {
-                is YamlValue.MapValue -> {
-                    result.putAll(flattenYaml(value.value, fullKey))
+    private fun flattenInto(
+        node: YamlNode,
+        prefix: String,
+        into: MutableMap<String, String>,
+    ) {
+        when (node) {
+            is YamlMap ->
+                node.entries.forEach { (key, value) ->
+                    val fullKey = if (prefix.isEmpty()) key.content else "$prefix.${key.content}"
+                    flattenInto(value, fullKey, into)
                 }
-                is YamlValue.StringValue -> result[fullKey] = value.value
-                is YamlValue.ListValue -> {
-                    // Lists are converted to comma-separated strings for simplicity
-                    result[fullKey] = value.value.joinToString(", ") { yamlValueToString(it) }
-                }
-            }
+            // Lists are converted to comma-separated strings for simplicity
+            is YamlList -> into[prefix] = node.items.joinToString(", ") { scalarText(it) }
+            else -> into[prefix] = scalarText(node)
         }
-
-        return result
     }
 
-    /**
-     * Converts a YamlValue to String for flattening purposes.
-     */
-    private fun yamlValueToString(value: YamlValue): String =
-        when (value) {
-            is YamlValue.StringValue -> value.value
-            is YamlValue.MapValue -> value.value.toString()
-            is YamlValue.ListValue -> value.value.toString()
-        }
+    private fun scalarText(node: YamlNode): String = (node as? YamlScalar)?.content ?: node.contentToString()
 
     /**
      * Retrieves a message for the given string key with optional placeholder substitution.

@@ -1,12 +1,10 @@
 package dev.m1sk9.lunaticChat.paper.converter
 
 import dev.m1sk9.lunaticChat.engine.converter.CacheData
+import dev.m1sk9.lunaticChat.paper.DebouncedSaver
 import kotlinx.serialization.json.Json
-import org.bukkit.plugin.java.JavaPlugin
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.logging.Logger
 import kotlin.io.path.bufferedReader
 import kotlin.io.path.exists
@@ -15,11 +13,10 @@ import kotlin.io.path.writeText
 class ConversionCache(
     private val cacheFile: Path,
     private val maxEntries: Int = 500,
-    private val plugin: JavaPlugin,
+    private val saver: DebouncedSaver,
     private val logger: Logger,
 ) {
     private val conversionMemoryCache = ConcurrentHashMap<String, String>()
-    private val conversionSaveQueue = AtomicBoolean(false)
 
     companion object {
         private const val CACHE_VERSION = "1"
@@ -84,7 +81,7 @@ class ConversionCache(
         }
 
         conversionMemoryCache[key] = value
-        queueSaveToDisk()
+        saver.request(::saveToDisk)
     }
 
     /**
@@ -105,20 +102,6 @@ class ConversionCache(
             logger.info("Saved ${conversionMemoryCache.size} cache entries to disk.")
         } catch (e: Exception) {
             logger.severe("Failed to save conversion cache to disk: ${e.message}")
-        }
-    }
-
-    private fun queueSaveToDisk() {
-        if (conversionSaveQueue.compareAndSet(false, true)) {
-            plugin.server.asyncScheduler.runDelayed(
-                plugin,
-                {
-                    conversionSaveQueue.set(false)
-                    saveToDisk()
-                },
-                5,
-                TimeUnit.SECONDS,
-            )
         }
     }
 

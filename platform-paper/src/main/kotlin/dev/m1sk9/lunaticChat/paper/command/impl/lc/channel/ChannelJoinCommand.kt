@@ -15,13 +15,11 @@ import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMembershipManager
 import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelNotificationHandler
-import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
-import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
+import dev.m1sk9.lunaticChat.paper.command.core.LunaticSubCommand
 import dev.m1sk9.lunaticChat.paper.common.playChannelJoinNotification
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
-import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
 
@@ -31,20 +29,15 @@ class ChannelJoinCommand(
     private val channelManager: ChannelManager,
     private val membershipManager: ChannelMembershipManager,
     private val notificationHandler: ChannelNotificationHandler,
-    private val languageManager: LanguageManager,
-) : LunaticCommand(plugin) {
-    fun buildWithPermissionCheck(): LiteralArgumentBuilder<CommandSourceStack> {
-        val builder = build()
-        return applyMethodPermission("build", builder)
-    }
+    override val languageManager: LanguageManager,
+) : LunaticSubCommand(plugin) {
+    override val literal = "join"
+    override val permissionNode = LunaticChatPermissionNode.ChannelJoin
+    override val aliases = listOf("j")
 
-    fun buildAllWithPermissionCheck(): List<LiteralArgumentBuilder<CommandSourceStack>> =
-        withAliases(buildWithPermissionCheck(), listOf("j"))
-
-    @Permission(LunaticChatPermissionNode.ChannelJoin::class)
-    fun build(): LiteralArgumentBuilder<CommandSourceStack> =
+    override fun build(): LiteralArgumentBuilder<CommandSourceStack> =
         Commands
-            .literal("join")
+            .literal(literal)
             .then(
                 Commands
                     .argument("channelId", StringArgumentType.word())
@@ -82,97 +75,56 @@ class ChannelJoinCommand(
                 // Broadcast join notification to all channel members
                 notificationHandler.broadcastJoin(channelId, sender.name)
 
-                CommandResult.SuccessWithMessage(
-                    MessageFormatter.format(
-                        languageManager.getMessage(
-                            "channel.join.success",
-                            mapOf("channelName" to (channel?.name ?: channelId), "channelId" to channelId),
-                        ),
-                    ),
+                ok(
+                    "channel.join.success",
+                    mapOf("channelName" to (channel?.name ?: channelId), "channelId" to channelId),
                 )
             },
             onFailure = { error ->
                 when (error) {
                     is ChannelNotFoundException -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage(
-                                    "channel.join.notFound",
-                                    mapOf("channelId" to channelId),
-                                ),
-                            ),
+                        fail(
+                            "channel.join.notFound",
+                            mapOf("channelId" to channelId),
                         )
                     }
                     is ChannelAlreadyActiveException -> {
                         val channel = channelManager.getChannel(channelId).getOrNull()
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage(
-                                    "channel.join.alreadyActive",
-                                    mapOf("channelName" to (channel?.name ?: channelId)),
-                                ),
-                            ),
+                        fail(
+                            "channel.join.alreadyActive",
+                            mapOf("channelName" to (channel?.name ?: channelId)),
                         )
                     }
                     is ChannelMemberAlreadyException -> {
                         val channel = channelManager.getChannel(channelId).getOrNull()
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage(
-                                    "channel.join.alreadyMember",
-                                    mapOf("channelName" to (channel?.name ?: channelId)),
-                                ),
-                            ),
+                        fail(
+                            "channel.join.alreadyMember",
+                            mapOf("channelName" to (channel?.name ?: channelId)),
                         )
                     }
                     is ChannelMemberLimitExceededException -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage(
-                                    "channel.join.channelMemberLimitExceeded",
-                                    mapOf("limit" to error.limit.toString()),
-                                ),
-                            ),
+                        fail(
+                            "channel.join.channelMemberLimitExceeded",
+                            mapOf("limit" to error.limit.toString()),
                         )
                     }
                     is ChannelPlayerMembershipLimitExceededException -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage(
-                                    "channel.join.playerChannelLimitExceeded",
-                                    mapOf("limit" to error.limit.toString()),
-                                ),
-                            ),
+                        fail(
+                            "channel.join.playerChannelLimitExceeded",
+                            mapOf("limit" to error.limit.toString()),
                         )
                     }
                     is ChannelPlayerBannedException -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage("channel.join.playerBanned"),
-                            ),
-                        )
+                        fail("channel.join.playerBanned")
                     }
                     is ChannelPrivateRequiresInvitationException -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage("channel.join.privateChannel"),
-                            ),
-                        )
+                        fail("channel.join.privateChannel")
                     }
                     else -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage("channel.join.error"),
-                            ),
-                        )
+                        fail("channel.join.error")
                     }
                 }
             },
         )
     }
-
-    override fun buildCommand(): LiteralArgumentBuilder<CommandSourceStack> =
-        throw UnsupportedOperationException(
-            "ChannelJoinCommand should use build() method instead of buildCommand()",
-        )
 }

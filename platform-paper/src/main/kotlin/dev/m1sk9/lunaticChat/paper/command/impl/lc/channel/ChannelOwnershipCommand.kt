@@ -4,15 +4,12 @@ import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelRole
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
-import dev.m1sk9.lunaticChat.engine.exception.ChannelNotFoundException
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMembershipManager
-import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
-import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import io.papermc.paper.command.brigadier.CommandSourceStack
@@ -22,22 +19,17 @@ import org.bukkit.Bukkit
 @PlayerOnly
 class ChannelOwnershipCommand(
     plugin: LunaticChat,
-    private val channelManager: ChannelManager,
-    private val membershipManager: ChannelMembershipManager,
-    private val languageManager: LanguageManager,
-) : LunaticCommand(plugin) {
-    fun buildWithPermissionCheck(): LiteralArgumentBuilder<CommandSourceStack> {
-        val builder = build()
-        return applyMethodPermission("build", builder)
-    }
+    channelManager: ChannelManager,
+    membershipManager: ChannelMembershipManager,
+    override val languageManager: LanguageManager,
+) : ChannelSubCommand(plugin, channelManager, membershipManager) {
+    override val literal = "ownership"
+    override val permissionNode = LunaticChatPermissionNode.ChannelOwnership
+    override val aliases = listOf("own")
 
-    fun buildAllWithPermissionCheck(): List<LiteralArgumentBuilder<CommandSourceStack>> =
-        withAliases(buildWithPermissionCheck(), listOf("own"))
-
-    @Permission(LunaticChatPermissionNode.ChannelOwnership::class)
-    fun build(): LiteralArgumentBuilder<CommandSourceStack> =
+    override fun build(): LiteralArgumentBuilder<CommandSourceStack> =
         Commands
-            .literal("ownership")
+            .literal(literal)
             .then(
                 Commands
                     .argument("playerName", StringArgumentType.word())
@@ -73,62 +65,15 @@ class ChannelOwnershipCommand(
     ): CommandResult {
         val sender = ctx.requirePlayer()
 
-        // Get sender's active channel
-        val channelId =
-            channelManager.getPlayerChannel(sender.uniqueId)
-                ?: return CommandResult.Failure(
-                    MessageFormatter.formatError(
-                        languageManager.getMessage("channel.ownership.noActiveChannel"),
-                    ),
-                )
+        val channelId = activeChannelOf(sender) ?: return failHere("noActiveChannel")
+        denyUnlessRole(sender.uniqueId, channelId, ChannelRole.OWNER)?.let { return it }
 
-        // Check if sender is OWNER
-        val senderRole = membershipManager.getMemberRoleOrNull(sender.uniqueId, channelId)
-        if (senderRole != ChannelRole.OWNER) {
-            return CommandResult.Failure(
-                MessageFormatter.formatError(
-                    languageManager.getMessage("channel.ownership.noPermission"),
-                ),
-            )
-        }
+        val target = knownPlayer(playerName) ?: return failHere("playerNotFound", mapOf("player" to playerName))
+        if (target.uniqueId == sender.uniqueId) return failHere("cannotTransferToSelf")
 
-        // Find target player
-        val targetPlayer = Bukkit.getOfflinePlayer(playerName)
-
-        // Check if player exists (has played before or is online)
-        if (!targetPlayer.hasPlayedBefore() && !targetPlayer.isOnline) {
-            return CommandResult.Failure(
-                MessageFormatter.formatError(
-                    languageManager.getMessage(
-                        "channel.ownership.playerNotFound",
-                        mapOf("player" to playerName),
-                    ),
-                ),
-            )
-        }
-
-        val targetPlayerId = targetPlayer.uniqueId
-
-        // Check if transferring to self
-        if (targetPlayerId == sender.uniqueId) {
-            return CommandResult.Failure(
-                MessageFormatter.formatError(
-                    languageManager.getMessage("channel.ownership.cannotTransferToSelf"),
-                ),
-            )
-        }
-
-        // Check if target is a member
-        val targetRole = membershipManager.getMemberRoleOrNull(targetPlayerId, channelId)
-        if (targetRole == null) {
-            return CommandResult.Failure(
-                MessageFormatter.formatError(
-                    languageManager.getMessage(
-                        "channel.ownership.notMember",
-                        mapOf("player" to playerName),
-                    ),
-                ),
-            )
+        val targetPlayerId = target.uniqueId
+        if (membershipManager.getMemberRoleOrNull(targetPlayerId, channelId) == null) {
+            return failHere("notMember", mapOf("player" to playerName))
         }
 
         // Transfer ownership
@@ -150,38 +95,14 @@ class ChannelOwnershipCommand(
                     )
                 }
 
-                CommandResult.SuccessWithMessage(
-                    MessageFormatter.format(
-                        languageManager.getMessage(
-                            "channel.ownership.success",
-                            mapOf("player" to playerName, "channel" to channelName),
-                        ),
-                    ),
+                ok(
+                    "channel.ownership.success",
+                    mapOf("player" to playerName, "channel" to channelName),
                 )
             },
             onFailure = { error ->
-                when (error) {
-                    is ChannelNotFoundException -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage("channel.ownership.error"),
-                            ),
-                        )
-                    }
-                    else -> {
-                        CommandResult.Failure(
-                            MessageFormatter.formatError(
-                                languageManager.getMessage("channel.ownership.error"),
-                            ),
-                        )
-                    }
-                }
+                fail("channel.ownership.error")
             },
         )
     }
-
-    override fun buildCommand(): LiteralArgumentBuilder<CommandSourceStack> =
-        throw UnsupportedOperationException(
-            "ChannelOwnershipCommand should use build() method instead of buildCommand()",
-        )
 }

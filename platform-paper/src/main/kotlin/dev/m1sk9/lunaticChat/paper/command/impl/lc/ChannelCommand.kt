@@ -7,10 +7,9 @@ import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMembershipManager
 import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelNotificationHandler
-import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
-import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
+import dev.m1sk9.lunaticChat.paper.command.core.LunaticSubCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.lc.channel.ChannelBanCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.lc.channel.ChannelCreateCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.lc.channel.ChannelDeleteCommand
@@ -37,118 +36,18 @@ class ChannelCommand(
     private val channelManager: ChannelManager,
     private val membershipManager: ChannelMembershipManager,
     private val notificationHandler: ChannelNotificationHandler,
-    private val languageManager: LanguageManager,
-) : LunaticCommand(plugin) {
-    fun buildWithPermissionCheck(): LiteralArgumentBuilder<CommandSourceStack> {
-        val builder = build()
-        return applyMethodPermission("build", builder)
-    }
+    override val languageManager: LanguageManager,
+) : LunaticSubCommand(plugin) {
+    override val literal = "channel"
+    override val permissionNode = LunaticChatPermissionNode.Channel
+    override val aliases = listOf("ch")
 
-    fun buildAllWithPermissionCheck(): List<LiteralArgumentBuilder<CommandSourceStack>> =
-        withAliases(buildWithPermissionCheck(), listOf("ch"))
+    override fun build(): LiteralArgumentBuilder<CommandSourceStack> {
+        val channelCommand = Commands.literal(literal)
 
-    @Permission(LunaticChatPermissionNode.Channel::class)
-    fun build(): LiteralArgumentBuilder<CommandSourceStack> {
-        val channelCommand = Commands.literal("channel")
-
-        // Add subcommands (with aliases)
-        ChannelCreateCommand(
-            plugin,
-            channelManager,
-            languageManager,
-        ).buildAllWithPermissionCheck().forEach { channelCommand.then(it) }
-
-        ChannelListCommand(
-            plugin,
-            channelManager,
-            languageManager,
-        ).buildAllWithPermissionCheck().forEach { channelCommand.then(it) }
-
-        ChannelJoinCommand(
-            plugin,
-            channelManager,
-            membershipManager,
-            notificationHandler,
-            languageManager,
-        ).buildAllWithPermissionCheck().forEach { channelCommand.then(it) }
-
-        ChannelLeaveCommand(
-            plugin,
-            channelManager,
-            membershipManager,
-            notificationHandler,
-            languageManager,
-        ).buildAllWithPermissionCheck().forEach { channelCommand.then(it) }
-
-        ChannelSwitchCommand(
-            plugin,
-            channelManager,
-            membershipManager,
-            languageManager,
-        ).buildAllWithPermissionCheck().forEach { channelCommand.then(it) }
-
-        ChannelStatusCommand(
-            plugin,
-            channelManager,
-            membershipManager,
-            languageManager,
-        ).buildAllWithPermissionCheck().forEach { channelCommand.then(it) }
-
-        ChannelInfoCommand(
-            plugin,
-            channelManager,
-            languageManager,
-        ).buildAllWithPermissionCheck().forEach { channelCommand.then(it) }
-
-        ChannelDeleteCommand(
-            plugin,
-            channelManager,
-            languageManager,
-        ).buildAllWithPermissionCheck().forEach { channelCommand.then(it) }
-
-        ChannelInviteCommand(
-            plugin,
-            channelManager,
-            membershipManager,
-            languageManager,
-        ).buildAllWithPermissionCheck().forEach { channelCommand.then(it) }
-
-        ChannelKickCommand(
-            plugin,
-            channelManager,
-            membershipManager,
-            notificationHandler,
-            languageManager,
-        ).buildAllWithPermissionCheck().forEach { channelCommand.then(it) }
-
-        ChannelBanCommand(
-            plugin,
-            channelManager,
-            membershipManager,
-            notificationHandler,
-            languageManager,
-        ).buildAllWithPermissionCheck().forEach { channelCommand.then(it) }
-
-        ChannelUnbanCommand(
-            plugin,
-            channelManager,
-            membershipManager,
-            languageManager,
-        ).buildAllWithPermissionCheck().forEach { channelCommand.then(it) }
-
-        ChannelModCommand(
-            plugin,
-            channelManager,
-            membershipManager,
-            languageManager,
-        ).buildAllWithPermissionCheck().forEach { channelCommand.then(it) }
-
-        ChannelOwnershipCommand(
-            plugin,
-            channelManager,
-            membershipManager,
-            languageManager,
-        ).buildAllWithPermissionCheck().forEach { channelCommand.then(it) }
+        subcommands().forEach { subcommand ->
+            subcommand.buildAll().forEach { channelCommand.then(it) }
+        }
 
         // Default help message when no subcommand is provided
         channelCommand.executes { ctx ->
@@ -162,6 +61,30 @@ class ChannelCommand(
         return channelCommand
     }
 
+    /**
+     * The subcommands of /lc channel, in the order they are advertised by [showHelp].
+     *
+     * Registration and help share this one list so a new subcommand cannot appear in the tree
+     * while staying invisible in the help output, or the reverse.
+     */
+    private fun subcommands(): List<LunaticSubCommand> =
+        listOf(
+            ChannelCreateCommand(plugin, channelManager, languageManager),
+            ChannelListCommand(plugin, channelManager, languageManager),
+            ChannelJoinCommand(plugin, channelManager, membershipManager, notificationHandler, languageManager),
+            ChannelLeaveCommand(plugin, channelManager, membershipManager, notificationHandler, languageManager),
+            ChannelSwitchCommand(plugin, channelManager, membershipManager, languageManager),
+            ChannelStatusCommand(plugin, channelManager, membershipManager, languageManager),
+            ChannelInfoCommand(plugin, channelManager, languageManager),
+            ChannelDeleteCommand(plugin, channelManager, languageManager),
+            ChannelInviteCommand(plugin, channelManager, membershipManager, languageManager),
+            ChannelKickCommand(plugin, channelManager, membershipManager, notificationHandler, languageManager),
+            ChannelBanCommand(plugin, channelManager, membershipManager, notificationHandler, languageManager),
+            ChannelUnbanCommand(plugin, channelManager, membershipManager, languageManager),
+            ChannelModCommand(plugin, channelManager, membershipManager, languageManager),
+            ChannelOwnershipCommand(plugin, channelManager, membershipManager, languageManager),
+        )
+
     private fun showHelp(ctx: CommandContext): CommandResult {
         val sender = ctx.requirePlayer()
 
@@ -170,138 +93,18 @@ class ChannelCommand(
                 languageManager.getMessage("channel.help.header"),
             ),
         )
-        sender.sendMessage(
-            Component
-                .text("  ")
-                .append(
-                    MessageFormatter.formatSuccess(
-                        languageManager.getMessage("channel.help.create"),
+        subcommands().forEach { subcommand ->
+            sender.sendMessage(
+                Component
+                    .text("  ")
+                    .append(
+                        MessageFormatter.formatSuccess(
+                            languageManager.getMessage("channel.help.${subcommand.literal}"),
+                        ),
                     ),
-                ),
-        )
-        sender.sendMessage(
-            Component
-                .text("  ")
-                .append(
-                    MessageFormatter.formatSuccess(
-                        languageManager.getMessage("channel.help.list"),
-                    ),
-                ),
-        )
-        sender.sendMessage(
-            Component
-                .text("  ")
-                .append(
-                    MessageFormatter.formatSuccess(
-                        languageManager.getMessage("channel.help.join"),
-                    ),
-                ),
-        )
-        sender.sendMessage(
-            Component
-                .text("  ")
-                .append(
-                    MessageFormatter.formatSuccess(
-                        languageManager.getMessage("channel.help.leave"),
-                    ),
-                ),
-        )
-        sender.sendMessage(
-            Component
-                .text("  ")
-                .append(
-                    MessageFormatter.formatSuccess(
-                        languageManager.getMessage("channel.help.switch"),
-                    ),
-                ),
-        )
-        sender.sendMessage(
-            Component
-                .text("  ")
-                .append(
-                    MessageFormatter.formatSuccess(
-                        languageManager.getMessage("channel.help.status"),
-                    ),
-                ),
-        )
-        sender.sendMessage(
-            Component
-                .text("  ")
-                .append(
-                    MessageFormatter.formatSuccess(
-                        languageManager.getMessage("channel.help.info"),
-                    ),
-                ),
-        )
-        sender.sendMessage(
-            Component
-                .text("  ")
-                .append(
-                    MessageFormatter.formatSuccess(
-                        languageManager.getMessage("channel.help.delete"),
-                    ),
-                ),
-        )
-        sender.sendMessage(
-            Component
-                .text("  ")
-                .append(
-                    MessageFormatter.formatSuccess(
-                        languageManager.getMessage("channel.help.invite"),
-                    ),
-                ),
-        )
-        sender.sendMessage(
-            Component
-                .text("  ")
-                .append(
-                    MessageFormatter.formatSuccess(
-                        languageManager.getMessage("channel.help.kick"),
-                    ),
-                ),
-        )
-        sender.sendMessage(
-            Component
-                .text("  ")
-                .append(
-                    MessageFormatter.formatSuccess(
-                        languageManager.getMessage("channel.help.ban"),
-                    ),
-                ),
-        )
-        sender.sendMessage(
-            Component
-                .text("  ")
-                .append(
-                    MessageFormatter.formatSuccess(
-                        languageManager.getMessage("channel.help.unban"),
-                    ),
-                ),
-        )
-        sender.sendMessage(
-            Component
-                .text("  ")
-                .append(
-                    MessageFormatter.formatSuccess(
-                        languageManager.getMessage("channel.help.mod"),
-                    ),
-                ),
-        )
-        sender.sendMessage(
-            Component
-                .text("  ")
-                .append(
-                    MessageFormatter.formatSuccess(
-                        languageManager.getMessage("channel.help.ownership"),
-                    ),
-                ),
-        )
+            )
+        }
 
         return CommandResult.Success
     }
-
-    override fun buildCommand(): LiteralArgumentBuilder<CommandSourceStack> =
-        throw UnsupportedOperationException(
-            "Should use build() method instead of buildCommand()",
-        )
 }

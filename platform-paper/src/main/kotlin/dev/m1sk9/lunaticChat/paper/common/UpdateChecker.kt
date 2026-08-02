@@ -14,12 +14,6 @@ import java.util.logging.Logger
 data class GitHubRelease(
     @SerialName("tag_name")
     val tagName: String,
-    @SerialName("name")
-    val name: String,
-    @SerialName("published_at")
-    val publishedAt: String,
-    @SerialName("html_url")
-    val htmlUrl: String,
 )
 
 class UpdateChecker(

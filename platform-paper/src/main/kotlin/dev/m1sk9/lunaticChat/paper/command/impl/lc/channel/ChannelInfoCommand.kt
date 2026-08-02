@@ -6,10 +6,9 @@ import dev.m1sk9.lunaticChat.engine.command.CommandResult
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
-import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
-import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
+import dev.m1sk9.lunaticChat.paper.command.core.LunaticSubCommand
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import io.papermc.paper.command.brigadier.CommandSourceStack
@@ -22,24 +21,15 @@ import org.bukkit.Bukkit
 class ChannelInfoCommand(
     plugin: LunaticChat,
     private val channelManager: ChannelManager,
-    private val languageManager: LanguageManager,
-) : LunaticCommand(plugin) {
-    companion object {
-        private const val MAX_MEMBERS_DISPLAY = 10
-    }
+    override val languageManager: LanguageManager,
+) : LunaticSubCommand(plugin) {
+    override val literal = "info"
+    override val permissionNode = LunaticChatPermissionNode.ChannelInfo
+    override val aliases = listOf("i")
 
-    fun buildWithPermissionCheck(): LiteralArgumentBuilder<CommandSourceStack> {
-        val builder = build()
-        return applyMethodPermission("build", builder)
-    }
-
-    fun buildAllWithPermissionCheck(): List<LiteralArgumentBuilder<CommandSourceStack>> =
-        withAliases(buildWithPermissionCheck(), listOf("i"))
-
-    @Permission(LunaticChatPermissionNode.ChannelInfo::class)
-    fun build(): LiteralArgumentBuilder<CommandSourceStack> =
+    override fun build(): LiteralArgumentBuilder<CommandSourceStack> =
         Commands
-            .literal("info")
+            .literal(literal)
             .executes { ctx ->
                 val context = wrapContext(ctx)
                 checkPlayerOnly(context)?.let { return@executes handleResult(context, it) }
@@ -75,33 +65,21 @@ class ChannelInfoCommand(
         // Determine which channel to show info for
         val channelId =
             channelIdArg ?: channelManager.getPlayerChannel(sender.uniqueId)
-                ?: return CommandResult.Failure(
-                    MessageFormatter.formatError(
-                        languageManager.getMessage("channel.info.noActiveChannel"),
-                    ),
-                )
+                ?: return fail("channel.info.noActiveChannel")
 
         // Get channel
         val channel =
             channelManager.getChannel(channelId).getOrElse {
-                return CommandResult.Failure(
-                    MessageFormatter.formatError(
-                        languageManager.getMessage(
-                            "channel.info.notFound",
-                            mapOf("channelId" to channelId),
-                        ),
-                    ),
+                return fail(
+                    "channel.info.notFound",
+                    mapOf("channelId" to channelId),
                 )
             }
 
         // Get members
         val members =
             channelManager.getChannelMembers(channelId).getOrElse {
-                return CommandResult.Failure(
-                    MessageFormatter.formatError(
-                        languageManager.getMessage("channel.info.error"),
-                    ),
-                )
+                return fail("channel.info.error")
             }
 
         // Get owner name
@@ -147,36 +125,10 @@ class ChannelInfoCommand(
                 Bukkit.getOfflinePlayer(member.playerId).name
             }
 
-        val membersText =
-            if (memberNames.size > MAX_MEMBERS_DISPLAY) {
-                val displayNames = memberNames.take(MAX_MEMBERS_DISPLAY)
-                val message =
-                    languageManager.getMessage(
-                        "channel.info.membersOmitted",
-                        mapOf("count" to memberNames.size.toString()),
-                    )
-                Component
-                    .text("  ")
-                    .append(Component.text(languageManager.getMessage("channel.info.members"), NamedTextColor.GRAY))
-                    .append(Component.text(": ", NamedTextColor.GRAY))
-                    .append(Component.text(displayNames.joinToString(", "), NamedTextColor.WHITE))
-                    .append(Component.text(" ... ", NamedTextColor.GRAY))
-                    .append(Component.text("($message)", NamedTextColor.YELLOW))
-            } else {
-                Component
-                    .text("  ")
-                    .append(Component.text(languageManager.getMessage("channel.info.members"), NamedTextColor.GRAY))
-                    .append(Component.text(": ", NamedTextColor.GRAY))
-                    .append(Component.text(memberNames.joinToString(", "), NamedTextColor.WHITE))
-            }
+        val membersText = memberListLine(memberNames, indent = "  ", languageManager = languageManager)
 
         sender.sendMessage(membersText)
 
         return CommandResult.Success
     }
-
-    override fun buildCommand(): LiteralArgumentBuilder<CommandSourceStack> =
-        throw UnsupportedOperationException(
-            "ChannelInfoCommand should use build() method instead of buildCommand()",
-        )
 }

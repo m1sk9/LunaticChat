@@ -7,6 +7,7 @@ import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
 import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
 import dev.m1sk9.lunaticChat.paper.converter.convertWithRomaji
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
+import dev.m1sk9.lunaticChat.paper.i18n.withChatPlaceholders
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
 import dev.m1sk9.lunaticChat.paper.velocity.RemotePlayerRegistry
 import net.kyori.adventure.text.Component
@@ -236,10 +237,11 @@ class DirectMessageHandler(
         replyTo: String,
     ): Component {
         val text =
-            format
-                .replace("{sender}", senderName)
-                .replace("{recipient}", recipientName)
-                .replace("{message}", message)
+            format.withChatPlaceholders(
+                "sender" to senderName,
+                "recipient" to recipientName,
+                "message" to message,
+            )
 
         return Component
             .text(text)
