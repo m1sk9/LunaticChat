@@ -107,7 +107,7 @@ class DirectMessageHandler(
      *
      * @return true if message was sent successfully
      */
-    fun sendDirectMessage(
+    suspend fun sendDirectMessage(
         sender: Player,
         recipient: Player,
         message: String,
@@ -145,7 +145,7 @@ class DirectMessageHandler(
      * @return the message body to relay (romaji-converted if applicable), since the
      *   receiving server has no access to the sender's settings.
      */
-    fun handleOutgoingCrossServerMessage(
+    suspend fun handleOutgoingCrossServerMessage(
         sender: Player,
         targetName: String,
         targetServerName: String,
@@ -196,7 +196,7 @@ class DirectMessageHandler(
         lastMessager[recipient.uniqueId] = ReplyTarget.Remote(senderName, sourceServerName)
     }
 
-    private fun convertIfEnabled(
+    private suspend fun convertIfEnabled(
         message: String,
         enabled: Boolean,
     ): String =

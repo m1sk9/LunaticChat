@@ -40,7 +40,10 @@ class LunaticChat :
     private lateinit var services: ServiceContainer
     private lateinit var configuration: LunaticChatConfiguration
     private lateinit var serviceInitializer: ServiceInitializer
-    private lateinit var pluginScope: PluginCoroutineScope
+
+    // Read by commands that must not block the tick thread.
+    lateinit var pluginScope: PluginCoroutineScope
+        private set
     private var updateChecker: UpdateChecker? = null
 
     private val updateAvailable = AtomicBoolean(false)

@@ -39,7 +39,7 @@ class CrossServerDirectMessageManager(
      * notification and reply recording are handled by [DirectMessageHandler];
      * the (possibly romaji-converted) body is what gets relayed.
      */
-    fun sendCrossServerMessage(
+    suspend fun sendCrossServerMessage(
         sender: Player,
         targetName: String,
         targetServerName: String,

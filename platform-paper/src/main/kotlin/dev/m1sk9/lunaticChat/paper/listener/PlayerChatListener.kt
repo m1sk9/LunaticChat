@@ -4,7 +4,7 @@ import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelMessageHandler
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
 import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
-import dev.m1sk9.lunaticChat.paper.converter.convertWithRomaji
+import dev.m1sk9.lunaticChat.paper.converter.convertWithRomajiBlocking
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
 import dev.m1sk9.lunaticChat.paper.velocity.CrossServerChatManager
 import io.papermc.paper.event.player.AsyncChatEvent
@@ -74,7 +74,7 @@ class PlayerChatListener(
 
         val displayMessage =
             if (settings.japaneseConversionEnabled && romajiConverter != null) {
-                convertWithRomaji(messageWithoutPrefix, romajiConverter)
+                convertWithRomajiBlocking(messageWithoutPrefix, romajiConverter)
             } else {
                 messageWithoutPrefix
             }

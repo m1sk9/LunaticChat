@@ -18,6 +18,8 @@ import dev.m1sk9.lunaticChat.paper.velocity.CrossServerDirectMessageManager
 import dev.m1sk9.lunaticChat.paper.velocity.RemotePlayerRegistry
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import java.util.concurrent.CompletableFuture
@@ -37,6 +39,9 @@ class TellCommand(
     private val crossServerDirectMessageManager: CrossServerDirectMessageManager? = null,
     private val remotePlayerRegistry: RemotePlayerRegistry? = null,
     private val localServerName: String = "",
+    // Delivery is dispatched here rather than run inline: romaji conversion can reach the Google
+    // IME API, and a command executor runs on the tick thread.
+    private val scope: CoroutineScope = plugin.pluginScope.scope,
 ) : LunaticCommand(plugin) {
     override val description: String
         get() = languageManager.getMessage("commandDescription.tell")
@@ -99,7 +104,7 @@ class TellCommand(
             ) {
                 return fail("directMessage.yourself")
             }
-            manager.sendCrossServerMessage(sender, name, server, message)
+            scope.launch { manager.sendCrossServerMessage(sender, name, server, message) }
             return CommandResult.Success
         }
 
@@ -111,7 +116,7 @@ class TellCommand(
             return fail("directMessage.yourself")
         }
 
-        directMessageHandler.sendDirectMessage(sender, recipient, message)
+        scope.launch { directMessageHandler.sendDirectMessage(sender, recipient, message) }
 
         return CommandResult.Success
     }
