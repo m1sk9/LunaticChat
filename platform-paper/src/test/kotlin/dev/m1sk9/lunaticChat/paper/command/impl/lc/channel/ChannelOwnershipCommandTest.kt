@@ -69,7 +69,7 @@ class ChannelOwnershipCommandTest {
     fun `execute should transfer ownership successfully`() {
         val ctx = createContext()
         every { channelManager.getPlayerChannel(testUUID) } returns channelId
-        every { membershipManager.getMemberRoleOrNull(testUUID, channelId) } returns ChannelRole.OWNER
+        every { membershipManager.hasRole(testUUID, channelId, any()) } returns Result.success(true)
         setupOfflinePlayer()
         every { membershipManager.getMemberRoleOrNull(targetUUID, channelId) } returns ChannelRole.MEMBER
 
@@ -87,7 +87,7 @@ class ChannelOwnershipCommandTest {
     fun `execute should return Failure when transferring to self`() {
         val ctx = createContext()
         every { channelManager.getPlayerChannel(testUUID) } returns channelId
-        every { membershipManager.getMemberRoleOrNull(testUUID, channelId) } returns ChannelRole.OWNER
+        every { membershipManager.hasRole(testUUID, channelId, any()) } returns Result.success(true)
 
         val offlinePlayer = mockk<OfflinePlayer>(relaxed = true)
         every { offlinePlayer.uniqueId } returns testUUID
@@ -105,7 +105,7 @@ class ChannelOwnershipCommandTest {
     fun `execute should return Failure when target not member`() {
         val ctx = createContext()
         every { channelManager.getPlayerChannel(testUUID) } returns channelId
-        every { membershipManager.getMemberRoleOrNull(testUUID, channelId) } returns ChannelRole.OWNER
+        every { membershipManager.hasRole(testUUID, channelId, any()) } returns Result.success(true)
         setupOfflinePlayer()
         every { membershipManager.getMemberRoleOrNull(targetUUID, channelId) } returns null
 
@@ -118,7 +118,7 @@ class ChannelOwnershipCommandTest {
     fun `execute should return Failure when not owner`() {
         val ctx = createContext()
         every { channelManager.getPlayerChannel(testUUID) } returns channelId
-        every { membershipManager.getMemberRoleOrNull(testUUID, channelId) } returns ChannelRole.MODERATOR
+        every { membershipManager.hasRole(testUUID, channelId, any()) } returns Result.success(false)
 
         val result = command.execute(ctx, "TargetPlayer")
 
@@ -129,7 +129,7 @@ class ChannelOwnershipCommandTest {
     fun `execute should return Failure when player not found`() {
         val ctx = createContext()
         every { channelManager.getPlayerChannel(testUUID) } returns channelId
-        every { membershipManager.getMemberRoleOrNull(testUUID, channelId) } returns ChannelRole.OWNER
+        every { membershipManager.hasRole(testUUID, channelId, any()) } returns Result.success(true)
         setupOfflinePlayer(hasPlayedBefore = false, isOnline = false)
 
         val result = command.execute(ctx, "TargetPlayer")

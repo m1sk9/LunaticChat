@@ -69,7 +69,7 @@ class ChannelModCommandTest {
     fun `execute should promote to moderator`() {
         val ctx = createContext()
         every { channelManager.getPlayerChannel(testUUID) } returns channelId
-        every { membershipManager.getMemberRoleOrNull(testUUID, channelId) } returns ChannelRole.OWNER
+        every { membershipManager.hasRole(testUUID, channelId, any()) } returns Result.success(true)
         setupOfflinePlayer()
         every { membershipManager.getMemberRoleOrNull(targetUUID, channelId) } returns ChannelRole.MEMBER
 
@@ -88,7 +88,7 @@ class ChannelModCommandTest {
     fun `execute should demote from moderator`() {
         val ctx = createContext()
         every { channelManager.getPlayerChannel(testUUID) } returns channelId
-        every { membershipManager.getMemberRoleOrNull(testUUID, channelId) } returns ChannelRole.OWNER
+        every { membershipManager.hasRole(testUUID, channelId, any()) } returns Result.success(true)
         setupOfflinePlayer()
         every { membershipManager.getMemberRoleOrNull(targetUUID, channelId) } returns ChannelRole.MODERATOR
 
@@ -107,7 +107,7 @@ class ChannelModCommandTest {
     fun `execute should return Failure when modding self`() {
         val ctx = createContext()
         every { channelManager.getPlayerChannel(testUUID) } returns channelId
-        every { membershipManager.getMemberRoleOrNull(testUUID, channelId) } returns ChannelRole.OWNER
+        every { membershipManager.hasRole(testUUID, channelId, any()) } returns Result.success(true)
 
         val offlinePlayer = mockk<OfflinePlayer>(relaxed = true)
         every { offlinePlayer.uniqueId } returns testUUID
@@ -125,7 +125,7 @@ class ChannelModCommandTest {
     fun `execute should return Failure when not owner`() {
         val ctx = createContext()
         every { channelManager.getPlayerChannel(testUUID) } returns channelId
-        every { membershipManager.getMemberRoleOrNull(testUUID, channelId) } returns ChannelRole.MODERATOR
+        every { membershipManager.hasRole(testUUID, channelId, any()) } returns Result.success(false)
 
         val result = command.execute(ctx, "TargetPlayer")
 
@@ -136,7 +136,7 @@ class ChannelModCommandTest {
     fun `execute should return Failure when target not member`() {
         val ctx = createContext()
         every { channelManager.getPlayerChannel(testUUID) } returns channelId
-        every { membershipManager.getMemberRoleOrNull(testUUID, channelId) } returns ChannelRole.OWNER
+        every { membershipManager.hasRole(testUUID, channelId, any()) } returns Result.success(true)
         setupOfflinePlayer()
         every { membershipManager.getMemberRoleOrNull(targetUUID, channelId) } returns null
 

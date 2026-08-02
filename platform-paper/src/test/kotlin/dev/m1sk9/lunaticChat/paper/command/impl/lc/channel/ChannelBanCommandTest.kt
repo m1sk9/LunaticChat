@@ -1,7 +1,6 @@
 package dev.m1sk9.lunaticChat.paper.command.impl.lc.channel
 
 import dev.m1sk9.lunaticChat.engine.chat.channel.Channel
-import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelRole
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
 import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerAlreadyBannedException
 import dev.m1sk9.lunaticChat.paper.LunaticChat
@@ -72,18 +71,18 @@ class ChannelBanCommandTest {
     fun `execute should return SuccessWithMessage on ban`() {
         val ctx = createContext()
         every { channelManager.getPlayerChannel(testUUID) } returns channelId
-        every { membershipManager.getMemberRoleOrNull(testUUID, channelId) } returns ChannelRole.OWNER
+        every { membershipManager.hasRole(testUUID, channelId, any()) } returns Result.success(true)
         setupOfflinePlayer()
         every { Bukkit.getPlayer(any<String>()) } returns null
 
         val channel = Channel(id = channelId, name = "Test Channel", ownerId = testUUID, createdAt = 1000L)
-        every { channelManager.banPlayer(channelId, targetUUID) } returns Result.success(channel)
+        every { membershipManager.banPlayer(targetUUID, channelId) } returns Result.success(Unit)
         every { channelManager.getChannel(channelId) } returns Result.success(channel)
 
         val result = command.execute(ctx, "TargetPlayer")
 
         assertIs<CommandResult.SuccessWithMessage>(result)
-        verify { channelManager.banPlayer(channelId, targetUUID) }
+        verify { membershipManager.banPlayer(targetUUID, channelId) }
     }
 
     @Test
@@ -100,7 +99,7 @@ class ChannelBanCommandTest {
     fun `execute should return Failure when no permission`() {
         val ctx = createContext()
         every { channelManager.getPlayerChannel(testUUID) } returns channelId
-        every { membershipManager.getMemberRoleOrNull(testUUID, channelId) } returns ChannelRole.MEMBER
+        every { membershipManager.hasRole(testUUID, channelId, any()) } returns Result.success(false)
 
         val result = command.execute(ctx, "TargetPlayer")
 
@@ -111,7 +110,7 @@ class ChannelBanCommandTest {
     fun `execute should return Failure when player not found`() {
         val ctx = createContext()
         every { channelManager.getPlayerChannel(testUUID) } returns channelId
-        every { membershipManager.getMemberRoleOrNull(testUUID, channelId) } returns ChannelRole.OWNER
+        every { membershipManager.hasRole(testUUID, channelId, any()) } returns Result.success(true)
         setupOfflinePlayer(hasPlayedBefore = false, isOnline = false)
 
         val result = command.execute(ctx, "TargetPlayer")
@@ -123,11 +122,11 @@ class ChannelBanCommandTest {
     fun `execute should return Failure when already banned`() {
         val ctx = createContext()
         every { channelManager.getPlayerChannel(testUUID) } returns channelId
-        every { membershipManager.getMemberRoleOrNull(testUUID, channelId) } returns ChannelRole.OWNER
+        every { membershipManager.hasRole(testUUID, channelId, any()) } returns Result.success(true)
         setupOfflinePlayer()
         every { Bukkit.getPlayer(any<String>()) } returns null
 
-        every { channelManager.banPlayer(channelId, targetUUID) } returns
+        every { membershipManager.banPlayer(targetUUID, channelId) } returns
             Result.failure(ChannelPlayerAlreadyBannedException(targetUUID, channelId))
 
         val result = command.execute(ctx, "TargetPlayer")

@@ -1,7 +1,6 @@
 package dev.m1sk9.lunaticChat.paper.command.impl.lc.channel
 
 import dev.m1sk9.lunaticChat.engine.chat.channel.Channel
-import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelRole
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.TestUtils
@@ -71,20 +70,20 @@ class ChannelKickCommandTest {
     fun `execute should return SuccessWithMessage on kick`() {
         val ctx = createContext()
         every { channelManager.getPlayerChannel(testUUID) } returns channelId
-        every { membershipManager.getMemberRoleOrNull(testUUID, channelId) } returns ChannelRole.OWNER
+        every { membershipManager.hasRole(testUUID, channelId, any()) } returns Result.success(true)
         setupOfflinePlayer()
         every { Bukkit.getPlayer(any<String>()) } returns null
         every { membershipManager.isMember(targetUUID, channelId) } returns Result.success(true)
 
         val channel = Channel(id = channelId, name = "Test Channel", ownerId = testUUID, createdAt = 1000L)
-        every { channelManager.removeMember(channelId, targetUUID) } returns Result.success(Unit)
+        every { membershipManager.kickPlayer(targetUUID, channelId) } returns Result.success(Unit)
         every { channelManager.getPlayerChannel(targetUUID) } returns channelId
         every { channelManager.getChannel(channelId) } returns Result.success(channel)
 
         val result = command.execute(ctx, "TargetPlayer")
 
         assertIs<CommandResult.SuccessWithMessage>(result)
-        verify { channelManager.removeMember(channelId, targetUUID) }
+        verify { membershipManager.kickPlayer(targetUUID, channelId) }
     }
 
     @Test
@@ -101,7 +100,7 @@ class ChannelKickCommandTest {
     fun `execute should return Failure when no permission`() {
         val ctx = createContext()
         every { channelManager.getPlayerChannel(testUUID) } returns channelId
-        every { membershipManager.getMemberRoleOrNull(testUUID, channelId) } returns ChannelRole.MEMBER
+        every { membershipManager.hasRole(testUUID, channelId, any()) } returns Result.success(false)
 
         val result = command.execute(ctx, "TargetPlayer")
 
@@ -112,7 +111,7 @@ class ChannelKickCommandTest {
     fun `execute should return Failure when target not member`() {
         val ctx = createContext()
         every { channelManager.getPlayerChannel(testUUID) } returns channelId
-        every { membershipManager.getMemberRoleOrNull(testUUID, channelId) } returns ChannelRole.OWNER
+        every { membershipManager.hasRole(testUUID, channelId, any()) } returns Result.success(true)
         setupOfflinePlayer()
         every { Bukkit.getPlayer(any<String>()) } returns null
         every { membershipManager.isMember(targetUUID, channelId) } returns Result.success(false)
@@ -126,7 +125,7 @@ class ChannelKickCommandTest {
     fun `execute should return Failure when player not found`() {
         val ctx = createContext()
         every { channelManager.getPlayerChannel(testUUID) } returns channelId
-        every { membershipManager.getMemberRoleOrNull(testUUID, channelId) } returns ChannelRole.OWNER
+        every { membershipManager.hasRole(testUUID, channelId, any()) } returns Result.success(true)
         setupOfflinePlayer(hasPlayedBefore = false, isOnline = false)
 
         val result = command.execute(ctx, "TargetPlayer")

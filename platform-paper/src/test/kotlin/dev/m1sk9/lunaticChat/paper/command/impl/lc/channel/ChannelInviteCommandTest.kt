@@ -1,7 +1,8 @@
 package dev.m1sk9.lunaticChat.paper.command.impl.lc.channel
 
-import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelRole
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
+import dev.m1sk9.lunaticChat.engine.exception.ChannelCannotInviteSelfException
+import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerBannedException
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.TestUtils
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
@@ -53,9 +54,9 @@ class ChannelInviteCommandTest {
         val channel = TestUtils.createTestChannel(id = channelId, ownerId = testUUID)
 
         every { deps.channelManager.getPlayerChannel(testUUID) } returns channelId
-        every { deps.membershipManager.getMemberRoleOrNull(testUUID, channelId) } returns ChannelRole.OWNER
+        every { deps.membershipManager.hasRole(testUUID, channelId, any()) } returns Result.success(true)
         every { deps.channelManager.isPlayerBanned(channelId, targetUUID) } returns Result.success(false)
-        every { deps.membershipManager.joinChannel(targetUUID, channelId, bypassPrivateCheck = true) } returns Result.success(Unit)
+        every { deps.membershipManager.inviteToChannel(testUUID, targetUUID, channelId) } returns Result.success(Unit)
         every { deps.channelManager.getChannel(channelId) } returns Result.success(channel)
 
         mockkStatic(Bukkit::class)
@@ -76,11 +77,13 @@ class ChannelInviteCommandTest {
         val selfTarget = TestUtils.createMockPlayer(uuid = testUUID, name = "Player1")
 
         every { deps.channelManager.getPlayerChannel(testUUID) } returns channelId
-        every { deps.membershipManager.getMemberRoleOrNull(testUUID, channelId) } returns ChannelRole.OWNER
+        every { deps.membershipManager.hasRole(testUUID, channelId, any()) } returns Result.success(true)
 
         mockkStatic(Bukkit::class)
         try {
             every { Bukkit.getPlayer(any<String>()) } returns selfTarget
+            every { deps.membershipManager.inviteToChannel(testUUID, testUUID, channelId) } returns
+                Result.failure(ChannelCannotInviteSelfException(testUUID))
 
             val result = deps.command.execute(deps.ctx, "Player1")
 
@@ -96,8 +99,9 @@ class ChannelInviteCommandTest {
         val targetPlayer = TestUtils.createMockPlayer(uuid = targetUUID, name = "TargetPlayer")
 
         every { deps.channelManager.getPlayerChannel(testUUID) } returns channelId
-        every { deps.membershipManager.getMemberRoleOrNull(testUUID, channelId) } returns ChannelRole.OWNER
-        every { deps.channelManager.isPlayerBanned(channelId, targetUUID) } returns Result.success(true)
+        every { deps.membershipManager.hasRole(testUUID, channelId, any()) } returns Result.success(true)
+        every { deps.membershipManager.inviteToChannel(testUUID, targetUUID, channelId) } returns
+            Result.failure(ChannelPlayerBannedException(targetUUID, channelId))
 
         mockkStatic(Bukkit::class)
         try {
@@ -116,7 +120,7 @@ class ChannelInviteCommandTest {
         val deps = createDependencies()
 
         every { deps.channelManager.getPlayerChannel(testUUID) } returns channelId
-        every { deps.membershipManager.getMemberRoleOrNull(testUUID, channelId) } returns ChannelRole.OWNER
+        every { deps.membershipManager.hasRole(testUUID, channelId, any()) } returns Result.success(true)
 
         mockkStatic(Bukkit::class)
         try {
@@ -136,7 +140,7 @@ class ChannelInviteCommandTest {
         val targetPlayer = TestUtils.createMockPlayer(uuid = targetUUID, name = "TargetPlayer")
 
         every { deps.channelManager.getPlayerChannel(testUUID) } returns channelId
-        every { deps.membershipManager.getMemberRoleOrNull(testUUID, channelId) } returns ChannelRole.MEMBER
+        every { deps.membershipManager.hasRole(testUUID, channelId, any()) } returns Result.success(false)
 
         mockkStatic(Bukkit::class)
         try {

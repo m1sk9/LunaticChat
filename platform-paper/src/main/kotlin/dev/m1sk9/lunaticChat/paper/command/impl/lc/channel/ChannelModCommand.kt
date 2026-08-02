@@ -10,7 +10,6 @@ import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMembershipManager
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
-import dev.m1sk9.lunaticChat.paper.command.core.LunaticSubCommand
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import io.papermc.paper.command.brigadier.CommandSourceStack
@@ -20,10 +19,10 @@ import org.bukkit.Bukkit
 @PlayerOnly
 class ChannelModCommand(
     plugin: LunaticChat,
-    private val channelManager: ChannelManager,
-    private val membershipManager: ChannelMembershipManager,
+    channelManager: ChannelManager,
+    membershipManager: ChannelMembershipManager,
     override val languageManager: LanguageManager,
-) : LunaticSubCommand(plugin) {
+) : ChannelSubCommand(plugin, channelManager, membershipManager) {
     override val literal = "mod"
     override val permissionNode = LunaticChatPermissionNode.ChannelMod
 
@@ -65,43 +64,16 @@ class ChannelModCommand(
     ): CommandResult {
         val sender = ctx.requirePlayer()
 
-        // Get sender's active channel
-        val channelId =
-            channelManager.getPlayerChannel(sender.uniqueId)
-                ?: return fail("channel.mod.noActiveChannel")
+        val channelId = activeChannelOf(sender) ?: return failHere("noActiveChannel")
+        denyUnlessRole(sender.uniqueId, channelId, ChannelRole.OWNER)?.let { return it }
 
-        // Check if sender is OWNER
-        val senderRole = membershipManager.getMemberRoleOrNull(sender.uniqueId, channelId)
-        if (senderRole != ChannelRole.OWNER) {
-            return fail("channel.mod.noPermission")
-        }
+        val target = knownPlayer(playerName) ?: return failHere("playerNotFound", mapOf("player" to playerName))
+        if (target.uniqueId == sender.uniqueId) return failHere("cannotModSelf")
 
-        // Find target player
-        val targetPlayer = Bukkit.getOfflinePlayer(playerName)
-
-        // Check if player exists (has played before or is online)
-        if (!targetPlayer.hasPlayedBefore() && !targetPlayer.isOnline) {
-            return fail(
-                "channel.mod.playerNotFound",
-                mapOf("player" to playerName),
-            )
-        }
-
-        val targetPlayerId = targetPlayer.uniqueId
-
-        // Check if modding self
-        if (targetPlayerId == sender.uniqueId) {
-            return fail("channel.mod.cannotModSelf")
-        }
-
-        // Check if target is a member
-        val targetRole = membershipManager.getMemberRoleOrNull(targetPlayerId, channelId)
-        if (targetRole == null) {
-            return fail(
-                "channel.mod.notMember",
-                mapOf("player" to playerName),
-            )
-        }
+        val targetPlayerId = target.uniqueId
+        val targetRole =
+            membershipManager.getMemberRoleOrNull(targetPlayerId, channelId)
+                ?: return failHere("notMember", mapOf("player" to playerName))
 
         // Toggle mod status
         val newRole =

@@ -1,7 +1,6 @@
 package dev.m1sk9.lunaticChat.paper.command.impl.lc.channel
 
 import dev.m1sk9.lunaticChat.engine.chat.channel.Channel
-import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelRole
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
 import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerNotBannedException
 import dev.m1sk9.lunaticChat.paper.LunaticChat
@@ -70,7 +69,7 @@ class ChannelUnbanCommandTest {
     fun `execute should return SuccessWithMessage on unban`() {
         val ctx = createContext()
         every { channelManager.getPlayerChannel(testUUID) } returns channelId
-        every { membershipManager.getMemberRoleOrNull(testUUID, channelId) } returns ChannelRole.OWNER
+        every { membershipManager.hasRole(testUUID, channelId, any()) } returns Result.success(true)
         setupOfflinePlayer()
 
         val channel = Channel(id = channelId, name = "Test Channel", ownerId = testUUID, createdAt = 1000L)
@@ -97,7 +96,7 @@ class ChannelUnbanCommandTest {
     fun `execute should return Failure when no permission`() {
         val ctx = createContext()
         every { channelManager.getPlayerChannel(testUUID) } returns channelId
-        every { membershipManager.getMemberRoleOrNull(testUUID, channelId) } returns ChannelRole.MEMBER
+        every { membershipManager.hasRole(testUUID, channelId, any()) } returns Result.success(false)
 
         val result = command.execute(ctx, "TargetPlayer")
 
@@ -108,7 +107,7 @@ class ChannelUnbanCommandTest {
     fun `execute should return Failure when player not banned`() {
         val ctx = createContext()
         every { channelManager.getPlayerChannel(testUUID) } returns channelId
-        every { membershipManager.getMemberRoleOrNull(testUUID, channelId) } returns ChannelRole.OWNER
+        every { membershipManager.hasRole(testUUID, channelId, any()) } returns Result.success(true)
         setupOfflinePlayer()
 
         every { channelManager.unbanPlayer(channelId, targetUUID) } returns

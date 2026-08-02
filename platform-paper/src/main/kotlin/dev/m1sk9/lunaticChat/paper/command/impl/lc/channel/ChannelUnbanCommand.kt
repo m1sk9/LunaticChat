@@ -4,7 +4,6 @@ import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelRole
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
-import dev.m1sk9.lunaticChat.engine.exception.ChannelNotFoundException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerNotBannedException
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
@@ -12,7 +11,6 @@ import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMembershipManager
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
-import dev.m1sk9.lunaticChat.paper.command.core.LunaticSubCommand
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
@@ -21,10 +19,10 @@ import org.bukkit.Bukkit
 @PlayerOnly
 class ChannelUnbanCommand(
     plugin: LunaticChat,
-    private val channelManager: ChannelManager,
-    private val membershipManager: ChannelMembershipManager,
+    channelManager: ChannelManager,
+    membershipManager: ChannelMembershipManager,
     override val languageManager: LanguageManager,
-) : LunaticSubCommand(plugin) {
+) : ChannelSubCommand(plugin, channelManager, membershipManager) {
     override val literal = "unban"
     override val permissionNode = LunaticChatPermissionNode.ChannelUnban
 
@@ -64,56 +62,19 @@ class ChannelUnbanCommand(
     ): CommandResult {
         val sender = ctx.requirePlayer()
 
-        // Get sender's active channel
-        val channelId =
-            channelManager.getPlayerChannel(sender.uniqueId)
-                ?: return fail("channel.unban.noActiveChannel")
+        val channelId = activeChannelOf(sender) ?: return failHere("noActiveChannel")
+        denyUnlessRole(sender.uniqueId, channelId, ChannelRole.MODERATOR)?.let { return it }
 
-        // Check if sender has permission (OWNER or MODERATOR)
-        val senderRole = membershipManager.getMemberRoleOrNull(sender.uniqueId, channelId)
-        if (senderRole == null || senderRole == ChannelRole.MEMBER) {
-            return fail("channel.unban.noPermission")
-        }
+        val target = knownPlayer(playerName) ?: return failHere("playerNotFound", mapOf("player" to playerName))
 
-        // Find target player
-        val targetPlayer = Bukkit.getOfflinePlayer(playerName)
-
-        // Check if player exists (has played before or is online)
-        if (!targetPlayer.hasPlayedBefore() && !targetPlayer.isOnline) {
-            return fail(
-                "channel.unban.playerNotFound",
-                mapOf("player" to playerName),
-            )
-        }
-
-        val targetPlayerId = targetPlayer.uniqueId
-
-        // Unban player from channel
-        val unbanResult = channelManager.unbanPlayer(channelId, targetPlayerId)
-        return unbanResult.fold(
+        return channelManager.unbanPlayer(channelId, target.uniqueId).fold(
             onSuccess = {
-                val channel = channelManager.getChannel(channelId).getOrNull()
-                val channelName = channel?.name ?: channelId
-
-                ok(
-                    "channel.unban.success",
-                    mapOf("player" to playerName, "channel" to channelName),
-                )
+                okHere("success", mapOf("player" to playerName, "channel" to channelNameOf(channelId)))
             },
             onFailure = { error ->
                 when (error) {
-                    is ChannelNotFoundException -> {
-                        fail("channel.unban.error")
-                    }
-                    is ChannelPlayerNotBannedException -> {
-                        fail(
-                            "channel.unban.playerNotBanned",
-                            mapOf("player" to playerName),
-                        )
-                    }
-                    else -> {
-                        fail("channel.unban.error")
-                    }
+                    is ChannelPlayerNotBannedException -> failHere("playerNotBanned", mapOf("player" to playerName))
+                    else -> failHere("error")
                 }
             },
         )

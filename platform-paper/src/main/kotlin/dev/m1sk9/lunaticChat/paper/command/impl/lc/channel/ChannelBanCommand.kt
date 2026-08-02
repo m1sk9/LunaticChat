@@ -4,7 +4,6 @@ import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelRole
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
-import dev.m1sk9.lunaticChat.engine.exception.ChannelNotFoundException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerAlreadyBannedException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerBypassBanException
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
@@ -14,7 +13,6 @@ import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMembershipManager
 import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelNotificationHandler
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
-import dev.m1sk9.lunaticChat.paper.command.core.LunaticSubCommand
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import io.papermc.paper.command.brigadier.CommandSourceStack
@@ -24,11 +22,11 @@ import org.bukkit.Bukkit
 @PlayerOnly
 class ChannelBanCommand(
     plugin: LunaticChat,
-    private val channelManager: ChannelManager,
-    private val membershipManager: ChannelMembershipManager,
+    channelManager: ChannelManager,
+    membershipManager: ChannelMembershipManager,
     private val notificationHandler: ChannelNotificationHandler,
     override val languageManager: LanguageManager,
-) : LunaticSubCommand(plugin) {
+) : ChannelSubCommand(plugin, channelManager, membershipManager) {
     override val literal = "ban"
     override val permissionNode = LunaticChatPermissionNode.ChannelBan
 
@@ -70,90 +68,35 @@ class ChannelBanCommand(
     ): CommandResult {
         val sender = ctx.requirePlayer()
 
-        val channelId =
-            channelManager.getPlayerChannel(sender.uniqueId)
-                ?: return fail("channel.ban.noActiveChannel")
+        val channelId = activeChannelOf(sender) ?: return failHere("noActiveChannel")
+        denyUnlessRole(sender.uniqueId, channelId, ChannelRole.MODERATOR)?.let { return it }
 
-        // Check if sender has permission (OWNER or MODERATOR)
-        val senderRole = membershipManager.getMemberRoleOrNull(sender.uniqueId, channelId)
-        if (senderRole == null || senderRole == ChannelRole.MEMBER) {
-            return fail("channel.ban.noPermission")
-        }
+        val target = knownPlayer(playerName) ?: return failHere("playerNotFound", mapOf("player" to playerName))
+        if (target.uniqueId == sender.uniqueId) return failHere("cannotBanSelf")
 
-        // Find target player
-        val targetPlayer = Bukkit.getOfflinePlayer(playerName)
+        val targetName = target.name ?: playerName
 
-        // Check if player exists (has played before or is online)
-        if (!targetPlayer.hasPlayedBefore() && !targetPlayer.isOnline) {
-            return fail(
-                "channel.ban.playerNotFound",
-                mapOf("player" to playerName),
-            )
-        }
-
-        val targetPlayerId = targetPlayer.uniqueId
-
-        // Check if banning self
-        if (targetPlayerId == sender.uniqueId) {
-            return fail("channel.ban.cannotBanSelf")
-        }
-
-        // Check if target has bypass permission
-        val onlineTargetPlayer = Bukkit.getPlayer(playerName)
-        if (onlineTargetPlayer != null && onlineTargetPlayer.hasPermission(LunaticChatPermissionNode.ChannelBypass.permissionNode)) {
-            return fail(
-                "channel.ban.cannotBanBypass",
-                mapOf("player" to onlineTargetPlayer.name),
-            )
-        }
-
-        // Ban player from channel
-        val banResult = channelManager.banPlayer(channelId, targetPlayerId)
-        return banResult.fold(
+        return membershipManager.banPlayer(target.uniqueId, channelId).fold(
             onSuccess = {
-                val channel = channelManager.getChannel(channelId).getOrNull()
-                val channelName = channel?.name ?: channelId
+                val channelName = channelNameOf(channelId)
 
-                // Send notification to banned player if online
-                onlineTargetPlayer?.let { player ->
-                    player.sendMessage(
-                        MessageFormatter.format(
-                            languageManager.getMessage(
-                                "channel.ban.wasBanned",
-                                mapOf("channel" to channelName, "banner" to sender.name),
-                            ),
+                Bukkit.getPlayer(playerName)?.sendMessage(
+                    MessageFormatter.format(
+                        languageManager.getMessage(
+                            "channel.ban.wasBanned",
+                            mapOf("channel" to channelName, "banner" to sender.name),
                         ),
-                    )
-                }
-
-                // Broadcast ban notification to remaining members
+                    ),
+                )
                 notificationHandler.broadcastBan(channelId, playerName, sender.name)
 
-                ok(
-                    "channel.ban.success",
-                    mapOf("player" to playerName, "channel" to channelName),
-                )
+                okHere("success", mapOf("player" to playerName, "channel" to channelName))
             },
             onFailure = { error ->
                 when (error) {
-                    is ChannelNotFoundException -> {
-                        fail("channel.ban.error")
-                    }
-                    is ChannelPlayerBypassBanException -> {
-                        fail(
-                            "channel.ban.cannotBanBypass",
-                            mapOf("player" to playerName),
-                        )
-                    }
-                    is ChannelPlayerAlreadyBannedException -> {
-                        fail(
-                            "channel.ban.alreadyBanned",
-                            mapOf("player" to playerName),
-                        )
-                    }
-                    else -> {
-                        fail("channel.ban.error")
-                    }
+                    is ChannelPlayerBypassBanException -> failHere("cannotBanBypass", mapOf("player" to targetName))
+                    is ChannelPlayerAlreadyBannedException -> failHere("alreadyBanned", mapOf("player" to playerName))
+                    else -> failHere("error")
                 }
             },
         )
