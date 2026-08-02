@@ -17,21 +17,32 @@ class PlayerSettingsManager(
     private val storage: YamlPlayerSettingsStorage,
     private val logger: Logger,
 ) {
-    private val japaneseConversionCache = ConcurrentHashMap<UUID, Boolean>()
-    private val directMessageNotificationCache = ConcurrentHashMap<UUID, Boolean>()
-    private val channelMessageNotificationCache = ConcurrentHashMap<UUID, Boolean>()
-    private lateinit var settingsData: PlayerSettingsData
+    private val settings = ConcurrentHashMap<UUID, PlayerChatSettings>()
+
+    // Written back unchanged: nothing migrates on it yet, but rewriting the file must not
+    // silently relabel a schema this build does not understand.
+    private var schemaVersion = PlayerSettingsData().version
 
     /**
      * Initializes the settings manager by loading all settings from disk into memory.
      * This should be called once during plugin startup.
      */
     fun initialize() {
-        settingsData = storage.loadFromDisk()
-        japaneseConversionCache.putAll(settingsData.japaneseConversion)
-        directMessageNotificationCache.putAll(settingsData.directMessageNotification)
-        channelMessageNotificationCache.putAll(settingsData.channelMessageNotification)
-        logger.info("Loaded settings for ${japaneseConversionCache.size} players")
+        val data = storage.loadFromDisk()
+        schemaVersion = data.version
+        val knownPlayers =
+            data.japaneseConversion.keys + data.directMessageNotification.keys + data.channelMessageNotification.keys
+
+        knownPlayers.forEach { uuid ->
+            settings[uuid] =
+                PlayerChatSettings(
+                    uuid = uuid,
+                    japaneseConversionEnabled = data.japaneseConversion.getOrDefault(uuid, true),
+                    directMessageNotificationEnabled = data.directMessageNotification.getOrDefault(uuid, true),
+                    channelMessageNotificationEnabled = data.channelMessageNotification.getOrDefault(uuid, true),
+                )
+        }
+        logger.info("Loaded settings for ${settings.size} players")
     }
 
     /**
@@ -41,17 +52,7 @@ class PlayerSettingsManager(
      * @param uuid The UUID of the player
      * @return The player's settings
      */
-    fun getSettings(uuid: UUID): PlayerChatSettings {
-        val japaneseConversionEnabled = japaneseConversionCache.getOrDefault(uuid, true)
-        val directMessageNotificationEnabled = directMessageNotificationCache.getOrDefault(uuid, true)
-        val channelMessageNotificationEnabled = channelMessageNotificationCache.getOrDefault(uuid, true)
-        return PlayerChatSettings(
-            uuid = uuid,
-            japaneseConversionEnabled = japaneseConversionEnabled,
-            directMessageNotificationEnabled = directMessageNotificationEnabled,
-            channelMessageNotificationEnabled = channelMessageNotificationEnabled,
-        )
-    }
+    fun getSettings(uuid: UUID): PlayerChatSettings = settings[uuid] ?: PlayerChatSettings(uuid = uuid)
 
     /**
      * Updates player settings in cache and queues async save to disk.
@@ -59,18 +60,8 @@ class PlayerSettingsManager(
      * @param settings The updated settings to save
      */
     fun updateSettings(settings: PlayerChatSettings) {
-        japaneseConversionCache[settings.uuid] = settings.japaneseConversionEnabled
-        directMessageNotificationCache[settings.uuid] = settings.directMessageNotificationEnabled
-        channelMessageNotificationCache[settings.uuid] = settings.channelMessageNotificationEnabled
-
-        settingsData =
-            settingsData.copy(
-                japaneseConversion = japaneseConversionCache.toMap(),
-                directMessageNotification = directMessageNotificationCache.toMap(),
-                channelMessageNotification = channelMessageNotificationCache.toMap(),
-            )
-
-        storage.queueAsyncSave(settingsData)
+        this.settings[settings.uuid] = settings
+        storage.queueAsyncSave(snapshot())
         logger.fine("Updated settings for player ${settings.uuid}")
     }
 
@@ -79,6 +70,14 @@ class PlayerSettingsManager(
      * This should only be called during plugin shutdown.
      */
     fun saveToDisk() {
-        storage.saveToDisk(settingsData)
+        storage.saveToDisk(snapshot())
     }
+
+    private fun snapshot(): PlayerSettingsData =
+        PlayerSettingsData(
+            version = schemaVersion,
+            japaneseConversion = settings.mapValues { it.value.japaneseConversionEnabled },
+            directMessageNotification = settings.mapValues { it.value.directMessageNotificationEnabled },
+            channelMessageNotification = settings.mapValues { it.value.channelMessageNotificationEnabled },
+        )
 }
