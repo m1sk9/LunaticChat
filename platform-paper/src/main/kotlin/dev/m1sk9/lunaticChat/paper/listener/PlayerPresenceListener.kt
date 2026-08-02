@@ -95,6 +95,6 @@ class PlayerPresenceListener(
         channelManager?.setPlayerChannel(playerId, null)
 
         // 3. Trigger async save of player settings
-        playerSettingsManager.saveToDisk()
+        playerSettingsManager.queueSave()
     }
 }
