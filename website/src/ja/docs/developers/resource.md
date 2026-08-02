@@ -53,6 +53,7 @@ Paper と Velocity は別々のバージョン番号を持ち，独立にリリ�
 - `mise.toml` — bun / java zulu-25 (`JVM_25` と整合)
 - `x` — bash 製のデバッグサーバースクリプト．`./x <action> <platform> [--stable]` で start/stop/log/clean/rcon/help．`--stable` 省略時は nightly ビルド．`velocity` 指定時は **1 Velocity + 2 Paper** を立ち上げ，サーバー間チャット中継を実地検証できる
 - `docker/` — paper / velocity / folia の 3 環境に `compose.yaml` (`itzg/minecraft-server:java25` 等)．velocity.toml は `bungee-plugin-message-channel=true` でプラグインメッセージを有効化
+- サーバーのバージョンは `x` が `build.gradle.kts` の `paper-api` / `velocity-api` から導出し，`PAPER_MC_VERSION` / `PAPER_BUILD` / `VELOCITY_VERSION` として Compose に渡す．そのためデバッグ環境は常にプラグインのコンパイル対象と同じビルドで動く．`docker compose` を直接叩くと `./x` を経由するよう促すメッセージで失敗する．Folia のビルド番号だけは Paper と別系列のため手動固定
 
 ## 関連
 

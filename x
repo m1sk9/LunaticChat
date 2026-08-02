@@ -8,6 +8,33 @@ DC_FOLIA="docker compose -f docker/folia/compose.yaml"
 
 GRADLE_EXTRA_ARGS=""
 
+# compose 側に値を複製すると Renovate の依存更新と乖離するため、
+# デバッグ環境のサーバーバージョンは build.gradle.kts を単一の情報源として導出する。
+# compose は未設定時に停止するので、全アクションの前に export しておく必要がある。
+derive_server_versions() {
+    local paper_coord velocity_coord
+
+    paper_coord=$(grep -oE 'paper-api:[0-9.]+\.build\.[0-9]+' platform-paper/build.gradle.kts | head -1)
+    if [[ -z "$paper_coord" ]]; then
+        echo "Error: could not derive paper-api version from platform-paper/build.gradle.kts" >&2
+        exit 1
+    fi
+    paper_coord=${paper_coord#paper-api:}
+    PAPER_BUILD=${paper_coord##*.build.}
+    PAPER_MC_VERSION=${paper_coord%%.build.*}
+
+    velocity_coord=$(grep -oE 'velocity-api:[0-9.]+' platform-velocity/build.gradle.kts | head -1)
+    if [[ -z "$velocity_coord" ]]; then
+        echo "Error: could not derive velocity-api version from platform-velocity/build.gradle.kts" >&2
+        exit 1
+    fi
+    VELOCITY_VERSION=${velocity_coord#velocity-api:}
+
+    export PAPER_MC_VERSION PAPER_BUILD VELOCITY_VERSION
+}
+
+derive_server_versions
+
 help() {
     cat <<EOF
 Usage: ./x <action> <platform> [--stable]

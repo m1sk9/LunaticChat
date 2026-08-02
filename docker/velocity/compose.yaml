@@ -10,9 +10,9 @@ services:
       - ./velocity.toml:/server/velocity.toml
     environment:
       TYPE: "VELOCITY"
-      # 未指定だと latest (現時点では 4.x 系) が落ちてくるため、
-      # platform-velocity/build.gradle.kts の velocity-api と同じ系列に固定する
-      VELOCITY_VERSION: "3.5.1"
+      # 未指定だと latest (現時点では 4.x 系) が落ちてくるため固定する。
+      # platform-velocity/build.gradle.kts の velocity-api から ./x が導出する
+      VELOCITY_VERSION: "${VELOCITY_VERSION:?run via ./x}"
       MEMORY: "512M"
       ONLINE_MODE: "false"
     depends_on:
@@ -44,9 +44,9 @@ services:
     environment:
       EULA: "TRUE"
       TYPE: "PAPER"
-      VERSION: "26.2"
-      # platform-paper/build.gradle.kts の paper-api と同じビルドに固定する
-      PAPER_BUILD: "87"
+      # platform-paper/build.gradle.kts の paper-api から ./x が導出する
+      VERSION: "${PAPER_MC_VERSION:?run via ./x}"
+      PAPER_BUILD: "${PAPER_BUILD:?run via ./x}"
       MEMORY: "1G"
 
       # デバッグ用高速化設定
@@ -93,9 +93,9 @@ services:
     environment:
       EULA: "TRUE"
       TYPE: "PAPER"
-      VERSION: "26.2"
-      # platform-paper/build.gradle.kts の paper-api と同じビルドに固定する
-      PAPER_BUILD: "87"
+      # platform-paper/build.gradle.kts の paper-api から ./x が導出する
+      VERSION: "${PAPER_MC_VERSION:?run via ./x}"
+      PAPER_BUILD: "${PAPER_BUILD:?run via ./x}"
       MEMORY: "1G"
 
       # デバッグ用高速化設定
