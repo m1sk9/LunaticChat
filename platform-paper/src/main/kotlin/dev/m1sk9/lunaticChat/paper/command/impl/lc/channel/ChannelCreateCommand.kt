@@ -9,10 +9,9 @@ import dev.m1sk9.lunaticChat.engine.exception.ChannelLimitExceededException
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
-import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
-import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
+import dev.m1sk9.lunaticChat.paper.command.core.LunaticSubCommand
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import io.papermc.paper.command.brigadier.CommandSourceStack
@@ -23,19 +22,14 @@ class ChannelCreateCommand(
     plugin: LunaticChat,
     private val channelManager: ChannelManager,
     private val languageManager: LanguageManager,
-) : LunaticCommand(plugin) {
-    fun buildWithPermissionCheck(): LiteralArgumentBuilder<CommandSourceStack> {
-        val builder = build()
-        return applyMethodPermission("build", builder)
-    }
+) : LunaticSubCommand(plugin) {
+    override val literal = "create"
+    override val permissionNode = LunaticChatPermissionNode.ChannelCreate
+    override val aliases = listOf("new")
 
-    fun buildAllWithPermissionCheck(): List<LiteralArgumentBuilder<CommandSourceStack>> =
-        withAliases(buildWithPermissionCheck(), listOf("new"))
-
-    @Permission(LunaticChatPermissionNode.ChannelCreate::class)
-    fun build(): LiteralArgumentBuilder<CommandSourceStack> =
+    override fun build(): LiteralArgumentBuilder<CommandSourceStack> =
         Commands
-            .literal("create")
+            .literal(literal)
             .then(
                 Commands
                     .argument("channelId", StringArgumentType.word())
@@ -158,9 +152,4 @@ class ChannelCreateCommand(
             },
         )
     }
-
-    override fun buildCommand(): LiteralArgumentBuilder<CommandSourceStack> =
-        throw UnsupportedOperationException(
-            "ChannelCreateCommand should use build() method instead of buildCommand()",
-        )
 }

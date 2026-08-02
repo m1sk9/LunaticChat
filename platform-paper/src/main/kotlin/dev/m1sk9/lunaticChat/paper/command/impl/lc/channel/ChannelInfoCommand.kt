@@ -6,10 +6,9 @@ import dev.m1sk9.lunaticChat.engine.command.CommandResult
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
-import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
-import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
+import dev.m1sk9.lunaticChat.paper.command.core.LunaticSubCommand
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import io.papermc.paper.command.brigadier.CommandSourceStack
@@ -23,23 +22,18 @@ class ChannelInfoCommand(
     plugin: LunaticChat,
     private val channelManager: ChannelManager,
     private val languageManager: LanguageManager,
-) : LunaticCommand(plugin) {
+) : LunaticSubCommand(plugin) {
     companion object {
         private const val MAX_MEMBERS_DISPLAY = 10
     }
 
-    fun buildWithPermissionCheck(): LiteralArgumentBuilder<CommandSourceStack> {
-        val builder = build()
-        return applyMethodPermission("build", builder)
-    }
+    override val literal = "info"
+    override val permissionNode = LunaticChatPermissionNode.ChannelInfo
+    override val aliases = listOf("i")
 
-    fun buildAllWithPermissionCheck(): List<LiteralArgumentBuilder<CommandSourceStack>> =
-        withAliases(buildWithPermissionCheck(), listOf("i"))
-
-    @Permission(LunaticChatPermissionNode.ChannelInfo::class)
-    fun build(): LiteralArgumentBuilder<CommandSourceStack> =
+    override fun build(): LiteralArgumentBuilder<CommandSourceStack> =
         Commands
-            .literal("info")
+            .literal(literal)
             .executes { ctx ->
                 val context = wrapContext(ctx)
                 checkPlayerOnly(context)?.let { return@executes handleResult(context, it) }
@@ -174,9 +168,4 @@ class ChannelInfoCommand(
 
         return CommandResult.Success
     }
-
-    override fun buildCommand(): LiteralArgumentBuilder<CommandSourceStack> =
-        throw UnsupportedOperationException(
-            "ChannelInfoCommand should use build() method instead of buildCommand()",
-        )
 }

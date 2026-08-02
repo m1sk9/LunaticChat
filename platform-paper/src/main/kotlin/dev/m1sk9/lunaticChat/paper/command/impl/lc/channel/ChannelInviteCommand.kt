@@ -11,10 +11,9 @@ import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMembershipManager
-import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
-import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
+import dev.m1sk9.lunaticChat.paper.command.core.LunaticSubCommand
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import io.papermc.paper.command.brigadier.CommandSourceStack
@@ -27,19 +26,14 @@ class ChannelInviteCommand(
     private val channelManager: ChannelManager,
     private val membershipManager: ChannelMembershipManager,
     private val languageManager: LanguageManager,
-) : LunaticCommand(plugin) {
-    fun buildWithPermissionCheck(): LiteralArgumentBuilder<CommandSourceStack> {
-        val builder = build()
-        return applyMethodPermission("build", builder)
-    }
+) : LunaticSubCommand(plugin) {
+    override val literal = "invite"
+    override val permissionNode = LunaticChatPermissionNode.ChannelInvite
+    override val aliases = listOf("inv")
 
-    fun buildAllWithPermissionCheck(): List<LiteralArgumentBuilder<CommandSourceStack>> =
-        withAliases(buildWithPermissionCheck(), listOf("inv"))
-
-    @Permission(LunaticChatPermissionNode.ChannelInvite::class)
-    fun build(): LiteralArgumentBuilder<CommandSourceStack> =
+    override fun build(): LiteralArgumentBuilder<CommandSourceStack> =
         Commands
-            .literal("invite")
+            .literal(literal)
             .then(
                 Commands
                     .argument("playerName", StringArgumentType.word())
@@ -187,9 +181,4 @@ class ChannelInviteCommand(
             },
         )
     }
-
-    override fun buildCommand(): LiteralArgumentBuilder<CommandSourceStack> =
-        throw UnsupportedOperationException(
-            "ChannelInviteCommand should use build() method instead of buildCommand()",
-        )
 }

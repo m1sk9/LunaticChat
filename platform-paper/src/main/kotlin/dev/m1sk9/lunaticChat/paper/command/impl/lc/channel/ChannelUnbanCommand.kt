@@ -10,10 +10,9 @@ import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMembershipManager
-import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
-import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
+import dev.m1sk9.lunaticChat.paper.command.core.LunaticSubCommand
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import io.papermc.paper.command.brigadier.CommandSourceStack
@@ -26,19 +25,13 @@ class ChannelUnbanCommand(
     private val channelManager: ChannelManager,
     private val membershipManager: ChannelMembershipManager,
     private val languageManager: LanguageManager,
-) : LunaticCommand(plugin) {
-    fun buildWithPermissionCheck(): LiteralArgumentBuilder<CommandSourceStack> {
-        val builder = build()
-        return applyMethodPermission("build", builder)
-    }
+) : LunaticSubCommand(plugin) {
+    override val literal = "unban"
+    override val permissionNode = LunaticChatPermissionNode.ChannelUnban
 
-    fun buildAllWithPermissionCheck(): List<LiteralArgumentBuilder<CommandSourceStack>> =
-        withAliases(buildWithPermissionCheck(), emptyList())
-
-    @Permission(LunaticChatPermissionNode.ChannelUnban::class)
-    fun build(): LiteralArgumentBuilder<CommandSourceStack> =
+    override fun build(): LiteralArgumentBuilder<CommandSourceStack> =
         Commands
-            .literal("unban")
+            .literal(literal)
             .then(
                 Commands
                     .argument("playerName", StringArgumentType.word())
@@ -154,9 +147,4 @@ class ChannelUnbanCommand(
             },
         )
     }
-
-    override fun buildCommand(): LiteralArgumentBuilder<CommandSourceStack> =
-        throw UnsupportedOperationException(
-            "ChannelUnbanCommand should use build() method instead of buildCommand()",
-        )
 }

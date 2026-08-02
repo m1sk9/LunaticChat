@@ -1,28 +1,20 @@
 package dev.m1sk9.lunaticChat.paper.command.core
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
-import dev.m1sk9.lunaticChat.engine.command.CommandResult
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.command.annotation.Command
 import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
-import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
-import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import io.papermc.paper.command.brigadier.CommandSourceStack
-import io.papermc.paper.command.brigadier.Commands
-import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.format.NamedTextColor
-import kotlin.reflect.full.findAnnotation
-import kotlin.reflect.full.memberFunctions
 
 /**
- * Abstract base class for all LunaticChat commands.
- * Provides common functionality and enforces consistent command structure.
+ * A command registered with the server under its own name.
+ *
+ * Subcommands attached under a parent literal extend [LunaticSubCommand] instead: they have no
+ * `@Command` annotation, so [name], [aliases] and [description] would have nothing to read.
  */
 abstract class LunaticCommand(
-    // Reference to the main plugin instance
-    // DO NOT REMOVE - needed for command registration
-    protected val plugin: LunaticChat,
-) {
+    plugin: LunaticChat,
+) : LunaticCommandBase(plugin) {
     private val commandAnnotation: Command by lazy {
         this::class.annotations.filterIsInstance<Command>().firstOrNull()
             ?: throw IllegalStateException("Command class must be annotated with @Command")
@@ -30,10 +22,6 @@ abstract class LunaticCommand(
 
     private val permissionAnnotation: Permission? by lazy {
         this::class.annotations.filterIsInstance<Permission>().firstOrNull()
-    }
-
-    private val isPlayerOnly: Boolean by lazy {
-        this::class.annotations.any { it is PlayerOnly }
     }
 
     /** The primary command name */
@@ -70,93 +58,5 @@ abstract class LunaticCommand(
         }
 
         return builder
-    }
-
-    /**
-     * Helper method for checking player-only restriction.
-     * Called at the beginning of execute methods.
-     */
-    protected fun checkPlayerOnly(ctx: CommandContext): CommandResult? {
-        if (isPlayerOnly && !ctx.isPlayer) {
-            return CommandResult.Failure(
-                MessageFormatter.formatError(
-                    plugin.languageManager.getMessage("general.playerOnlyCommand"),
-                ),
-            )
-        }
-
-        return null
-    }
-
-    /**
-     * Utility to wrap Brigadier context into LunaticChat CommandContext.
-     */
-    protected fun wrapContext(ctx: com.mojang.brigadier.context.CommandContext<CommandSourceStack>): CommandContext =
-        CommandContext(ctx.source)
-
-    /**
-     * Helper for handling command results and sending appropriate messages.
-     */
-    protected fun handleResult(
-        ctx: CommandContext,
-        result: CommandResult,
-    ): Int {
-        when (result) {
-            is CommandResult.Success -> {}
-            is CommandResult.SuccessWithMessage -> ctx.reply(result.message)
-            is CommandResult.Failure -> ctx.reply(result.message)
-            is CommandResult.InvalidUsage ->
-                ctx.reply(
-                    Component
-                        .text("Usage: ${result.usageHint}")
-                        .color(NamedTextColor.RED),
-                )
-        }
-        return result.toBrigadierResult()
-    }
-
-    /**
-     * Creates alias nodes for a subcommand.
-     * Each alias gets the same children, executor, and permission requirement as the primary node.
-     * Brigadier automatically provides tab completion for all registered literal nodes.
-     *
-     * @param primary The primary subcommand builder
-     * @param aliases The alias names for the subcommand
-     * @return A list containing the primary builder followed by alias builders
-     */
-    protected fun withAliases(
-        primary: LiteralArgumentBuilder<CommandSourceStack>,
-        aliases: List<String>,
-    ): List<LiteralArgumentBuilder<CommandSourceStack>> {
-        if (aliases.isEmpty()) return listOf(primary)
-        return listOf(primary) +
-            aliases.map { alias ->
-                val aliasBuilder = Commands.literal(alias)
-                primary.arguments.forEach { aliasBuilder.then(it) }
-                primary.command?.let { aliasBuilder.executes(it) }
-                aliasBuilder.requires(primary.requirement)
-                aliasBuilder
-            }
-    }
-
-    /**
-     * Applies permission checks to a subcommand builder based on method-level @Permission annotation.
-     * Used for subcommands that use build() instead of buildCommand().
-     *
-     * @param methodName The name of the method to check for @Permission annotation
-     * @param builder The subcommand builder to wrap
-     * @return The builder with permission checks applied if annotation is present
-     */
-    protected fun applyMethodPermission(
-        methodName: String,
-        builder: LiteralArgumentBuilder<CommandSourceStack>,
-    ): LiteralArgumentBuilder<CommandSourceStack> {
-        val method = this::class.memberFunctions.find { it.name == methodName } ?: return builder
-        val permissionAnnotation = method.findAnnotation<Permission>() ?: return builder
-        val permissionNode = permissionAnnotation.value.objectInstance?.permissionNode ?: return builder
-
-        return builder.requires { source ->
-            source.sender.hasPermission(permissionNode)
-        }
     }
 }

@@ -9,10 +9,9 @@ import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMembershipManager
-import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
-import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
+import dev.m1sk9.lunaticChat.paper.command.core.LunaticSubCommand
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import io.papermc.paper.command.brigadier.CommandSourceStack
@@ -25,19 +24,14 @@ class ChannelOwnershipCommand(
     private val channelManager: ChannelManager,
     private val membershipManager: ChannelMembershipManager,
     private val languageManager: LanguageManager,
-) : LunaticCommand(plugin) {
-    fun buildWithPermissionCheck(): LiteralArgumentBuilder<CommandSourceStack> {
-        val builder = build()
-        return applyMethodPermission("build", builder)
-    }
+) : LunaticSubCommand(plugin) {
+    override val literal = "ownership"
+    override val permissionNode = LunaticChatPermissionNode.ChannelOwnership
+    override val aliases = listOf("own")
 
-    fun buildAllWithPermissionCheck(): List<LiteralArgumentBuilder<CommandSourceStack>> =
-        withAliases(buildWithPermissionCheck(), listOf("own"))
-
-    @Permission(LunaticChatPermissionNode.ChannelOwnership::class)
-    fun build(): LiteralArgumentBuilder<CommandSourceStack> =
+    override fun build(): LiteralArgumentBuilder<CommandSourceStack> =
         Commands
-            .literal("ownership")
+            .literal(literal)
             .then(
                 Commands
                     .argument("playerName", StringArgumentType.word())
@@ -179,9 +173,4 @@ class ChannelOwnershipCommand(
             },
         )
     }
-
-    override fun buildCommand(): LiteralArgumentBuilder<CommandSourceStack> =
-        throw UnsupportedOperationException(
-            "ChannelOwnershipCommand should use build() method instead of buildCommand()",
-        )
 }

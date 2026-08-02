@@ -10,10 +10,9 @@ import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMembershipManager
 import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelNotificationHandler
-import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
-import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
+import dev.m1sk9.lunaticChat.paper.command.core.LunaticSubCommand
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import io.papermc.paper.command.brigadier.CommandSourceStack
@@ -27,19 +26,14 @@ class ChannelKickCommand(
     private val membershipManager: ChannelMembershipManager,
     private val notificationHandler: ChannelNotificationHandler,
     private val languageManager: LanguageManager,
-) : LunaticCommand(plugin) {
-    fun buildWithPermissionCheck(): LiteralArgumentBuilder<CommandSourceStack> {
-        val builder = build()
-        return applyMethodPermission("build", builder)
-    }
+) : LunaticSubCommand(plugin) {
+    override val literal = "kick"
+    override val permissionNode = LunaticChatPermissionNode.ChannelKick
+    override val aliases = listOf("k")
 
-    fun buildAllWithPermissionCheck(): List<LiteralArgumentBuilder<CommandSourceStack>> =
-        withAliases(buildWithPermissionCheck(), listOf("k"))
-
-    @Permission(LunaticChatPermissionNode.ChannelKick::class)
-    fun build(): LiteralArgumentBuilder<CommandSourceStack> =
+    override fun build(): LiteralArgumentBuilder<CommandSourceStack> =
         Commands
-            .literal("kick")
+            .literal(literal)
             .then(
                 Commands
                     .argument("playerName", StringArgumentType.word())
@@ -202,9 +196,4 @@ class ChannelKickCommand(
             },
         )
     }
-
-    override fun buildCommand(): LiteralArgumentBuilder<CommandSourceStack> =
-        throw UnsupportedOperationException(
-            "ChannelKickCommand should use build() method instead of buildCommand()",
-        )
 }

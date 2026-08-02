@@ -40,13 +40,13 @@ class LunaticChatCommand(
             plugin,
             settingHandlerRegistry,
             languageManager,
-        ).buildAllWithPermissionCheck().forEach { command.then(it) }
+        ).buildAll().forEach { command.then(it) }
 
         StatusCommand(
             plugin,
             languageManager,
             configuration,
-        ).buildAllWithPermissionCheck().forEach { command.then(it) }
+        ).buildAll().forEach { command.then(it) }
 
         // Add channel command if channel manager is available
         plugin.channelManager?.let { manager ->
@@ -58,7 +58,7 @@ class LunaticChatCommand(
                         membershipManager,
                         notificationHandler,
                         languageManager,
-                    ).buildAllWithPermissionCheck().forEach { command.then(it) }
+                    ).buildAll().forEach { command.then(it) }
                 }
             }
         }

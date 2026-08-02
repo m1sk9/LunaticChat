@@ -5,9 +5,8 @@ import dev.m1sk9.lunaticChat.engine.command.CommandResult
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.BuildInfo
 import dev.m1sk9.lunaticChat.paper.LunaticChat
-import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
-import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
+import dev.m1sk9.lunaticChat.paper.command.core.LunaticSubCommand
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
@@ -23,18 +22,13 @@ class StatusCommand(
     plugin: LunaticChat,
     private val languageManager: LanguageManager,
     private val configuration: LunaticChatConfiguration,
-) : LunaticCommand(plugin) {
-    fun buildWithPermissionCheck(): LiteralArgumentBuilder<CommandSourceStack> {
-        val builder = build()
-        return applyMethodPermission("build", builder)
-    }
+) : LunaticSubCommand(plugin) {
+    override val literal = "status"
+    override val permissionNode = LunaticChatPermissionNode.Status
+    override val aliases = listOf("st")
 
-    fun buildAllWithPermissionCheck(): List<LiteralArgumentBuilder<CommandSourceStack>> =
-        withAliases(buildWithPermissionCheck(), listOf("st"))
-
-    @Permission(LunaticChatPermissionNode.Status::class)
-    fun build(): LiteralArgumentBuilder<CommandSourceStack> =
-        Commands.literal("status").executes { ctx ->
+    override fun build(): LiteralArgumentBuilder<CommandSourceStack> =
+        Commands.literal(literal).executes { ctx ->
             val context = wrapContext(ctx)
             checkPlayerOnly(context)?.let { return@executes handleResult(context, it) }
 
@@ -177,9 +171,4 @@ class StatusCommand(
             .append(Component.text("$label: ", NamedTextColor.GRAY))
             .append(Component.text(toggleText, color))
     }
-
-    override fun buildCommand(): LiteralArgumentBuilder<CommandSourceStack> =
-        throw UnsupportedOperationException(
-            "Should use build() method instead of buildCommand()",
-        )
 }

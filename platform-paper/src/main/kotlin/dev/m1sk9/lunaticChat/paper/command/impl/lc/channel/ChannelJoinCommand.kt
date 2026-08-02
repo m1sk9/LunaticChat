@@ -15,10 +15,9 @@ import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMembershipManager
 import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelNotificationHandler
-import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
-import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
+import dev.m1sk9.lunaticChat.paper.command.core.LunaticSubCommand
 import dev.m1sk9.lunaticChat.paper.common.playChannelJoinNotification
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
@@ -32,19 +31,14 @@ class ChannelJoinCommand(
     private val membershipManager: ChannelMembershipManager,
     private val notificationHandler: ChannelNotificationHandler,
     private val languageManager: LanguageManager,
-) : LunaticCommand(plugin) {
-    fun buildWithPermissionCheck(): LiteralArgumentBuilder<CommandSourceStack> {
-        val builder = build()
-        return applyMethodPermission("build", builder)
-    }
+) : LunaticSubCommand(plugin) {
+    override val literal = "join"
+    override val permissionNode = LunaticChatPermissionNode.ChannelJoin
+    override val aliases = listOf("j")
 
-    fun buildAllWithPermissionCheck(): List<LiteralArgumentBuilder<CommandSourceStack>> =
-        withAliases(buildWithPermissionCheck(), listOf("j"))
-
-    @Permission(LunaticChatPermissionNode.ChannelJoin::class)
-    fun build(): LiteralArgumentBuilder<CommandSourceStack> =
+    override fun build(): LiteralArgumentBuilder<CommandSourceStack> =
         Commands
-            .literal("join")
+            .literal(literal)
             .then(
                 Commands
                     .argument("channelId", StringArgumentType.word())
@@ -170,9 +164,4 @@ class ChannelJoinCommand(
             },
         )
     }
-
-    override fun buildCommand(): LiteralArgumentBuilder<CommandSourceStack> =
-        throw UnsupportedOperationException(
-            "ChannelJoinCommand should use build() method instead of buildCommand()",
-        )
 }
