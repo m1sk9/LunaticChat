@@ -2,6 +2,9 @@ package dev.m1sk9.lunaticChat.paper.converter
 
 import dev.m1sk9.lunaticChat.engine.converter.GoogleIMEClient
 import dev.m1sk9.lunaticChat.engine.converter.KanaConverter
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import java.util.logging.Logger
 
 class RomanjiConverter(
@@ -30,52 +33,50 @@ class RomanjiConverter(
             return null
         }
 
-        val words = input.split(" ")
-        val results = mutableListOf<String>()
+        val words = input.split(" ").filter { it.isNotEmpty() }
 
-        for (word in words) {
-            if (word.isEmpty()) {
-                continue
+        // The words are independent, and callers convert under a timeout covering the whole
+        // message. Awaiting them one at a time makes an N-word message cost N round trips, so a
+        // long message runs out of budget after the first word or two.
+        val results =
+            coroutineScope {
+                words.map { word -> async { convertWord(word) } }.awaitAll()
             }
-
-            // Check cache first
-            val cached = cache.get(word)
-            if (cached != null) {
-                if (debugMode) {
-                    logger.info("Cache hit for word: $word -> $cached")
-                }
-                results.add(cached)
-                continue
-            }
-
-            // Pre-validate: Check if the word is valid romaji before attempting conversion
-            // This prevents partial conversion of English words (e.g., "This" -> "てぃs")
-            if (!KanaConverter.isValidRomaji(word)) {
-                if (debugMode) {
-                    logger.info("Word is not valid romaji, keeping original: $word")
-                }
-                results.add(word)
-                continue
-            }
-
-            // Step 1: Romanji -> Hiragana
-            val hiragana = KanaConverter.toHiragana(word)
-
-            // Step 2: Hiragana -> Kanji/Kana
-            val converted =
-                try {
-                    apiClient.convert(hiragana)
-                } catch (e: Exception) {
-                    logger.warning("Failed to convert $hiragana: ${e.message}")
-                    hiragana // Use hiragana if API fails
-                }
-
-            // Cache the word-level conversion
-            cache.put(word, converted)
-            results.add(converted)
-        }
 
         return results.joinToString(" ")
+    }
+
+    private suspend fun convertWord(word: String): String {
+        cache.get(word)?.let { cached ->
+            if (debugMode) {
+                logger.info("Cache hit for word: $word -> $cached")
+            }
+            return cached
+        }
+
+        // Pre-validate: Check if the word is valid romaji before attempting conversion
+        // This prevents partial conversion of English words (e.g., "This" -> "てぃs")
+        if (!KanaConverter.isValidRomaji(word)) {
+            if (debugMode) {
+                logger.info("Word is not valid romaji, keeping original: $word")
+            }
+            return word
+        }
+
+        // Step 1: Romanji -> Hiragana
+        val hiragana = KanaConverter.toHiragana(word)
+
+        // Step 2: Hiragana -> Kanji/Kana
+        val converted =
+            try {
+                apiClient.convert(hiragana)
+            } catch (e: Exception) {
+                logger.warning("Failed to convert $hiragana: ${e.message}")
+                hiragana // Use hiragana if API fails
+            }
+
+        cache.put(word, converted)
+        return converted
     }
 
     private fun isRomajiOnly(input: String): Boolean =
