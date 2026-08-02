@@ -2,10 +2,8 @@ package dev.m1sk9.lunaticChat.paper.settings
 
 import com.charleskorn.kaml.Yaml
 import dev.m1sk9.lunaticChat.engine.settings.PlayerSettingsData
-import org.bukkit.plugin.java.JavaPlugin
+import dev.m1sk9.lunaticChat.paper.DebouncedSaver
 import java.nio.file.Path
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.logging.Logger
 import kotlin.io.path.bufferedReader
 import kotlin.io.path.exists
@@ -16,16 +14,15 @@ import kotlin.io.path.writeText
  * Provides async save with debouncing.
  *
  * @property settingsFile The path to the YAML settings file
- * @property plugin The plugin instance for scheduling async tasks
+ * @property saver Coalesces bursts of save requests into one asynchronous write
  * @property logger The logger for logging operations
  */
 class YamlPlayerSettingsStorage(
     private val settingsFile: Path,
-    private val plugin: JavaPlugin,
+    private val saver: DebouncedSaver,
     private val logger: Logger,
 ) {
     private val yaml = Yaml.default
-    private val saveFlag = AtomicBoolean(false)
 
     /**
      * Loads player settings from the YAML file.
@@ -72,16 +69,6 @@ class YamlPlayerSettingsStorage(
      * @param data The settings data to save
      */
     fun queueAsyncSave(data: PlayerSettingsData) {
-        if (saveFlag.compareAndSet(false, true)) {
-            plugin.server.asyncScheduler.runDelayed(
-                plugin,
-                {
-                    saveFlag.set(false)
-                    saveToDisk(data)
-                },
-                5,
-                TimeUnit.SECONDS,
-            )
-        }
+        saver.request { saveToDisk(data) }
     }
 }
