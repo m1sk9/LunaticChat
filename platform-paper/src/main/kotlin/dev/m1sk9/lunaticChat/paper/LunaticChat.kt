@@ -10,10 +10,9 @@ import dev.m1sk9.lunaticChat.paper.command.impl.ReplyCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.TellCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.lc.LunaticChatCommand
 import dev.m1sk9.lunaticChat.paper.command.impl.lcv.VelocityStatusCommand
+import dev.m1sk9.lunaticChat.paper.command.setting.SettingHandler
 import dev.m1sk9.lunaticChat.paper.command.setting.SettingHandlerRegistry
-import dev.m1sk9.lunaticChat.paper.command.setting.handler.ChannelMessageNoticeSettingHandler
-import dev.m1sk9.lunaticChat.paper.command.setting.handler.DirectMessageNoticeSettingHandler
-import dev.m1sk9.lunaticChat.paper.command.setting.handler.JapaneseConversionSettingHandler
+import dev.m1sk9.lunaticChat.paper.command.setting.SettingKey
 import dev.m1sk9.lunaticChat.paper.common.UpdateCheckResult
 import dev.m1sk9.lunaticChat.paper.common.UpdateChecker
 import dev.m1sk9.lunaticChat.paper.config.ConfigManager
@@ -109,31 +108,16 @@ class LunaticChat :
         val commandRegistry = CommandRegistry(this)
         val settingHandlerRegistry = SettingHandlerRegistry()
 
-        // Always register DM notification setting
-        settingHandlerRegistry.register(
-            DirectMessageNoticeSettingHandler(
-                services.playerSettingsManager,
-                services.languageManager,
-            ),
-        )
-
-        // Always register channel message notification setting if channel is enabled
-        if (services.channelManager != null) {
+        // DM notification is always available; the other two follow their feature
+        val enabledSettings =
+            buildList {
+                add(SettingKey.Notice)
+                if (services.channelManager != null) add(SettingKey.ChNotice)
+                if (services.romajiConverter != null) add(SettingKey.Japanese)
+            }
+        enabledSettings.forEach { key ->
             settingHandlerRegistry.register(
-                ChannelMessageNoticeSettingHandler(
-                    services.playerSettingsManager,
-                    services.languageManager,
-                ),
-            )
-        }
-
-        // Conditionally register Japanese conversion setting
-        if (services.romajiConverter != null) {
-            settingHandlerRegistry.register(
-                JapaneseConversionSettingHandler(
-                    services.playerSettingsManager,
-                    services.languageManager,
-                ),
+                SettingHandler(key, services.playerSettingsManager, services.languageManager),
             )
         }
 

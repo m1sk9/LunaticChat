@@ -1,7 +1,8 @@
 package dev.m1sk9.lunaticChat.paper.command.setting
 
-import dev.m1sk9.lunaticChat.engine.command.CommandResult
-import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
+import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
+import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
+import io.mockk.mockk
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -9,16 +10,7 @@ import kotlin.test.assertTrue
 
 class SettingHandlerRegistryTest {
     private fun createMockHandler(settingKey: SettingKey): SettingHandler =
-        object : SettingHandler {
-            override val key: SettingKey = settingKey
-
-            override fun execute(
-                ctx: CommandContext,
-                enable: Boolean,
-            ): CommandResult = CommandResult.Success
-
-            override fun showStatus(ctx: CommandContext): CommandResult = CommandResult.Success
-        }
+        SettingHandler(settingKey, mockk<PlayerSettingsManager>(relaxed = true), mockk<LanguageManager>(relaxed = true))
 
     @Test
     fun `register should make handler retrievable`() {
