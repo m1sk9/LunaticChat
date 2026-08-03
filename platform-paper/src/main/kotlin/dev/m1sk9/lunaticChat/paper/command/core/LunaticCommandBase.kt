@@ -33,7 +33,7 @@ abstract class LunaticCommandBase(
     protected fun fail(
         key: String,
         args: Map<String, String> = emptyMap(),
-    ): CommandResult = CommandResult.Failure(MessageFormatter.formatError(languageManager.getMessage(key, args)))
+    ): CommandResult = CommandResult.Failure(languageManager.getMessage(key, args))
 
     /**
      * A successful result carrying the localized message at [key].
@@ -41,7 +41,7 @@ abstract class LunaticCommandBase(
     protected fun ok(
         key: String,
         args: Map<String, String> = emptyMap(),
-    ): CommandResult = CommandResult.SuccessWithMessage(MessageFormatter.format(languageManager.getMessage(key, args)))
+    ): CommandResult = CommandResult.SuccessWithMessage(languageManager.getMessage(key, args))
 
     /**
      * Helper method for checking player-only restriction.
@@ -70,8 +70,8 @@ abstract class LunaticCommandBase(
     ): Int {
         when (result) {
             is CommandResult.Success -> {}
-            is CommandResult.SuccessWithMessage -> ctx.reply(result.message)
-            is CommandResult.Failure -> ctx.reply(result.message)
+            is CommandResult.SuccessWithMessage -> ctx.reply(MessageFormatter.format(result.message))
+            is CommandResult.Failure -> ctx.reply(MessageFormatter.formatError(result.message))
             is CommandResult.InvalidUsage ->
                 ctx.reply(
                     Component
