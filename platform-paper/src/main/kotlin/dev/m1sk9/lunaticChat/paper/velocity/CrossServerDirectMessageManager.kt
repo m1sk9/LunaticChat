@@ -132,7 +132,7 @@ class CrossServerDirectMessageManager(
                     val messageKey =
                         when (error.reason) {
                             PluginMessage.DirectMessageError.Reason.SERVER_NOT_FOUND -> "directMessage.remoteServerNotFound"
-                            else -> "directMessage.remoteTargetOffline"
+                            PluginMessage.DirectMessageError.Reason.TARGET_OFFLINE -> "directMessage.remoteTargetOffline"
                         }
                     val text =
                         languageManager.getMessage(

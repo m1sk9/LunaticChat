@@ -78,7 +78,7 @@ class CrossServerDirectMessageRelay(
     private fun sendError(
         sourceServer: RegisteredServer,
         message: PluginMessage.DirectMessageRelay,
-        reason: String,
+        reason: PluginMessage.DirectMessageError.Reason,
     ) {
         val error =
             PluginMessage.DirectMessageError(

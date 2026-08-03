@@ -13,7 +13,13 @@ import java.io.DataOutputStream
  * Format: [subChannel: UTF][messageJson: UTF]
  */
 object PluginMessageCodec {
-    private val json = Json { ignoreUnknownKeys = true }
+    private val json =
+        Json {
+            ignoreUnknownKeys = true
+            // An enum value this build does not know falls back to the property's default rather
+            // than failing the whole message, matching how unknown fields are treated.
+            coerceInputValues = true
+        }
 
     /**
      * Sub-channel names
