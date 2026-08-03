@@ -2,6 +2,7 @@ package dev.m1sk9.lunaticChat.paper.command.impl
 
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
 import dev.m1sk9.lunaticChat.paper.LunaticChat
+import dev.m1sk9.lunaticChat.paper.PerPlayerWorkQueue
 import dev.m1sk9.lunaticChat.paper.TestUtils
 import dev.m1sk9.lunaticChat.paper.chat.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
@@ -20,7 +21,7 @@ class TellCommandTest {
     private fun createCommand(
         crossServerManager: CrossServerDirectMessageManager? = null,
         localServerName: String = "lobby",
-        // Unconfined runs the dispatched delivery inline, so a test can assert on it right after
+        // Unconfined runs the queued delivery inline, so a test can assert on it right after
         // execute() returns.
         scope: CoroutineScope = CoroutineScope(Dispatchers.Unconfined),
     ): TellDeps {
@@ -42,7 +43,7 @@ class TellCommandTest {
                 crossServerManager,
                 null,
                 localServerName,
-                scope,
+                PerPlayerWorkQueue(scope),
             )
         return TellDeps(command, ctx, dmHandler, crossServerManager, sender)
     }

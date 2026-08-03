@@ -44,6 +44,10 @@ class LunaticChat :
     // Read by commands that must not block the tick thread.
     lateinit var pluginScope: PluginCoroutineScope
         private set
+
+    /** Serializes each player's outgoing messages so they arrive in the order they were sent. */
+    lateinit var deliveryQueue: PerPlayerWorkQueue
+        private set
     private var updateChecker: UpdateChecker? = null
 
     private val updateAvailable = AtomicBoolean(false)
@@ -64,6 +68,7 @@ class LunaticChat :
 
         // Initialize plugin coroutine scope
         pluginScope = PluginCoroutineScope(logger)
+        deliveryQueue = PerPlayerWorkQueue(pluginScope.scope)
 
         // Initialize all services
         serviceInitializer =

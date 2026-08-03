@@ -96,5 +96,8 @@ class PlayerPresenceListener(
 
         // 3. Trigger async save of player settings
         playerSettingsManager.queueSave()
+
+        // 4. Drop their delivery queue; anything already queued still runs
+        lunaticChat.deliveryQueue.release(playerId)
     }
 }
