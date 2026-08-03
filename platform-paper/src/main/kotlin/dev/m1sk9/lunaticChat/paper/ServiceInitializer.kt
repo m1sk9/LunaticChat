@@ -418,10 +418,13 @@ class ServiceInitializer(
     fun schedulePeriodicTasks(services: ServiceContainer) {
         val conversionCache = services.conversionCache
         if (conversionCache != null) {
+            // The periodic task is the only writer besides shutdown, so a non-positive interval
+            // would both reject the schedule and leave the cache unsaved until the server stops.
             val intervalSeconds =
                 configuration.features.japaneseConversion
                     .cacheSaveIntervalSeconds
                     .toLong()
+                    .coerceAtLeast(1)
             plugin.server.asyncScheduler.runAtFixedRate(
                 plugin,
                 { conversionCache.saveToDisk() },

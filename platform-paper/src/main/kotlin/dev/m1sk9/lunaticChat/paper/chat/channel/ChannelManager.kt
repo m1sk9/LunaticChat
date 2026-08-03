@@ -29,6 +29,12 @@ class ChannelManager(
     private val membersCache = ConcurrentHashMap<String, CopyOnWriteArrayList<ChannelMember>>()
     private val activeChannels = ConcurrentHashMap<UUID, String>()
 
+    // Handed to the debounced write, which reads it when it finally runs rather than when it was
+    // queued - so a batched write persists every change made during the delay, not just the one
+    // that started it.
+    @Volatile
+    private var latestSnapshot: ChannelData = ChannelData()
+
     /**
      * Initializes the ChannelManager by loading data from storage.
      */
@@ -434,13 +440,18 @@ class ChannelManager(
      * Saves the current state of channels and members to storage asynchronously.
      */
     private fun saveToStorage() {
-        storage.queueAsyncSave(::snapshot)
+        latestSnapshot = snapshot()
+        storage.queueAsyncSave { latestSnapshot }
         logger.fine("${channelsCache.size} channels queued for saving to storage.")
     }
 
     /**
-     * A point-in-time copy of everything persisted. Built inside the write rather than at each
-     * call site, so a burst of changes copies the caches once.
+     * A point-in-time copy of everything persisted.
+     *
+     * Taken on the mutating thread, because the three caches are separate: read from the write
+     * thread instead, a snapshot could catch a channel already removed from [channelsCache] while
+     * its [membersCache] entry still existed, and persist the halves inconsistently. Copying the
+     * caches is cheap; it is the file write that the debounce is there to coalesce.
      */
     private fun snapshot(): ChannelData =
         ChannelData(
