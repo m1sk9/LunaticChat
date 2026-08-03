@@ -1,6 +1,5 @@
 package dev.m1sk9.lunaticChat.paper.converter
 
-import dev.m1sk9.lunaticChat.engine.converter.CacheData
 import dev.m1sk9.lunaticChat.paper.writeTextAtomically
 import kotlinx.serialization.json.Json
 import java.nio.file.Path

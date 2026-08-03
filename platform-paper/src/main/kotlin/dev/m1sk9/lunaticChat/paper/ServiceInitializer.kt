@@ -1,6 +1,5 @@
 package dev.m1sk9.lunaticChat.paper
 
-import dev.m1sk9.lunaticChat.engine.converter.GoogleIMEClient
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMembershipManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMessageLogger
@@ -10,6 +9,7 @@ import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelNotificationHandler
 import dev.m1sk9.lunaticChat.paper.chat.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
 import dev.m1sk9.lunaticChat.paper.converter.ConversionCache
+import dev.m1sk9.lunaticChat.paper.converter.GoogleIMEClient
 import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager

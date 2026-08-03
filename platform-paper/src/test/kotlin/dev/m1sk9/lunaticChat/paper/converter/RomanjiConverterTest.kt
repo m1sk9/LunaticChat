@@ -1,7 +1,7 @@
 package dev.m1sk9.lunaticChat.paper.converter
 
-import dev.m1sk9.lunaticChat.engine.converter.GoogleIMEClient
 import dev.m1sk9.lunaticChat.paper.TestUtils
+import dev.m1sk9.lunaticChat.paper.converter.GoogleIMEClient
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
