@@ -11,6 +11,7 @@ import dev.m1sk9.lunaticChat.paper.velocity.CrossServerDirectMessageManager
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -43,7 +44,7 @@ class TellCommandTest {
                 crossServerManager,
                 null,
                 localServerName,
-                PerPlayerWorkQueue(scope),
+                PerPlayerWorkQueue(scope, TestUtils.TestLogger()),
             )
         return TellDeps(command, ctx, dmHandler, crossServerManager, sender)
     }
@@ -135,5 +136,20 @@ class TellCommandTest {
 
         dispatcher.scheduler.advanceUntilIdle()
         coVerify { manager.sendCrossServerMessage(deps.sender, "Bob", "survival", "hello") }
+    }
+
+    @Test
+    fun `the reply target is visible before delivery has run`() {
+        val dispatcher = StandardTestDispatcher()
+        val manager = mockk<CrossServerDirectMessageManager>(relaxed = true)
+        val deps = createCommand(crossServerManager = manager, scope = CoroutineScope(dispatcher))
+
+        deps.command.execute(deps.ctx, "Bob@survival", "hello")
+
+        // /reply reads the target on the command thread. Recording it inside the queued delivery
+        // would leave it unset for as long as the conversion takes, so /r straight after /tell
+        // would report that there is nobody to reply to.
+        verify { deps.dmHandler.recordRemoteRecipient(deps.sender, "Bob", "survival") }
+        coVerify(exactly = 0) { manager.sendCrossServerMessage(any(), any(), any(), any()) }
     }
 }

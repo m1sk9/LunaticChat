@@ -68,7 +68,7 @@ class LunaticChat :
 
         // Initialize plugin coroutine scope
         pluginScope = PluginCoroutineScope(logger)
-        deliveryQueue = PerPlayerWorkQueue(pluginScope.scope)
+        deliveryQueue = PerPlayerWorkQueue(pluginScope.scope, logger)
 
         // Initialize all services
         serviceInitializer =

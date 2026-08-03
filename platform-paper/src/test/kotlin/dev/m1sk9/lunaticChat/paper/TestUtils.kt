@@ -16,6 +16,7 @@ import io.mockk.mockk
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 import java.util.UUID
+import java.util.logging.Level
 import java.util.logging.Logger
 
 /**
@@ -41,6 +42,20 @@ object TestUtils {
 
         override fun severe(msg: String) {
             severeMessages.add(msg)
+        }
+
+        // Logger.severe/warning/info do not route through each other, so code logging with an
+        // attached throwable would otherwise be invisible to every assertion here.
+        override fun log(
+            level: Level,
+            msg: String,
+            thrown: Throwable,
+        ) {
+            when (level) {
+                Level.SEVERE -> severeMessages.add(msg)
+                Level.WARNING -> warningMessages.add(msg)
+                else -> infoMessages.add(msg)
+            }
         }
 
         fun clear() {

@@ -5,7 +5,9 @@ import dev.m1sk9.lunaticChat.engine.exception.ChannelStorageLoadException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelStorageSaveException
 import dev.m1sk9.lunaticChat.paper.DebouncedSaver
 import kotlinx.serialization.json.Json
+import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardCopyOption
 import java.util.logging.Logger
 import kotlin.io.path.bufferedReader
 import kotlin.io.path.exists
@@ -66,9 +68,15 @@ class ChannelStorage(
     fun saveToDisk(data: ChannelData) {
         try {
             val jsonContent = json.encodeToString(ChannelData.serializer(), data)
-            channelsFile.writeText(jsonContent).also {
-                logger.fine("Successfully saved channels from ${channelsFile.fileName}.")
-            }
+
+            // Written to a sibling and moved into place. Bukkit runs onDisable before cancelling
+            // scheduler tasks, so the shutdown save and a still-pending debounced save can reach
+            // this at the same time; two truncating writes to the same path would interleave and
+            // leave channels.json unparseable.
+            val temporaryFile = channelsFile.resolveSibling("${channelsFile.fileName}.tmp")
+            temporaryFile.writeText(jsonContent)
+            Files.move(temporaryFile, channelsFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE)
+            logger.fine("Successfully saved channels from ${channelsFile.fileName}.")
         } catch (e: Exception) {
             throw ChannelStorageSaveException(
                 "Failed to save channels to ${channelsFile.fileName}: ${e.message}",

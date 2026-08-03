@@ -104,6 +104,9 @@ class TellCommand(
             ) {
                 return fail("directMessage.yourself")
             }
+            // Recorded here rather than inside the queued work: /reply reads the target on this
+            // thread, so it must be visible as soon as /tell returns.
+            directMessageHandler.recordRemoteRecipient(sender, name, server)
             deliveryQueue.submit(sender.uniqueId) { manager.sendCrossServerMessage(sender, name, server, message) }
             return CommandResult.Success
         }
@@ -116,6 +119,7 @@ class TellCommand(
             return fail("directMessage.yourself")
         }
 
+        directMessageHandler.recordMessage(sender, recipient)
         deliveryQueue.submit(sender.uniqueId) { directMessageHandler.sendDirectMessage(sender, recipient, message) }
 
         return CommandResult.Success

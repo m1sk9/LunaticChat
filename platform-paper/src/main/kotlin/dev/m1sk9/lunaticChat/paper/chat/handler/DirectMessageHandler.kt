@@ -66,6 +66,22 @@ class DirectMessageHandler(
     }
 
     /**
+     * Records that [sender] messaged a player on another server, so /reply can find them.
+     *
+     * Separate from the delivery itself because delivery is queued: /reply reads the target on the
+     * command thread, so recording it only once the message has been converted and sent would
+     * leave a window - as long as the conversion timeout - where /reply says there is nobody to
+     * reply to.
+     */
+    fun recordRemoteRecipient(
+        sender: Player,
+        targetName: String,
+        targetServerName: String,
+    ) {
+        lastRecipient[sender.uniqueId] = ReplyTarget.Remote(targetName, targetServerName)
+    }
+
+    /**
      * Gets the target to reply to.
      * First checks if someone has messaged this player, otherwise falls back
      * to the last person they messaged. Targets that are no longer reachable
@@ -167,7 +183,7 @@ class DirectMessageHandler(
                 ?.playMessageSendNotification()
         }
 
-        lastRecipient[sender.uniqueId] = ReplyTarget.Remote(targetName, targetServerName)
+        recordRemoteRecipient(sender, targetName, targetServerName)
         return displayMessage
     }
 

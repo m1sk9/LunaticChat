@@ -5,6 +5,8 @@ import dev.m1sk9.lunaticChat.engine.converter.KanaConverter
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import java.util.logging.Logger
 
 class RomanjiConverter(
@@ -12,7 +14,13 @@ class RomanjiConverter(
     private val apiClient: GoogleIMEClient,
     private val logger: Logger,
     private val debugMode: Boolean = false,
+    maxConcurrentRequests: Int = 4,
 ) {
+    // A long message would otherwise open one request per word at once. Google IME answering with
+    // a rate limit lands in convertWord's catch and degrades silently to hiragana, so it is better
+    // not to ask that hard in the first place.
+    private val limiter = Semaphore(maxConcurrentRequests)
+
     /**
      * Converts the given romaji input to Japanese using the API client.
      * Utilizes a word-level cache to store and retrieve previous conversion results.
@@ -38,12 +46,19 @@ class RomanjiConverter(
         // The words are independent, and callers convert under a timeout covering the whole
         // message. Awaiting them one at a time makes an N-word message cost N round trips, so a
         // long message runs out of budget after the first word or two.
-        val results =
+        //
+        // Converted once per distinct word: the sequential version got that for free because it
+        // cached each word before looking up the next, and a line that repeats a word should not
+        // ask the API twice for it.
+        val converted =
             coroutineScope {
-                words.map { word -> async { convertWord(word) } }.awaitAll()
-            }
+                words
+                    .distinct()
+                    .map { word -> async { word to limiter.withPermit { convertWord(word) } } }
+                    .awaitAll()
+            }.toMap()
 
-        return results.joinToString(" ")
+        return words.joinToString(" ") { converted.getValue(it) }
     }
 
     private suspend fun convertWord(word: String): String {

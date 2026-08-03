@@ -70,6 +70,7 @@ class ReplyCommand(
                 val recipient =
                     Bukkit.getPlayer(target.uuid)
                         ?: return fail("directMessage.replyTargetNotFound")
+                dmHandler.recordMessage(sender, recipient)
                 deliveryQueue.submit(sender.uniqueId) { dmHandler.sendDirectMessage(sender, recipient, message) }
                 CommandResult.Success
             }
@@ -77,6 +78,7 @@ class ReplyCommand(
                 val manager =
                     crossServerDirectMessageManager
                         ?: return fail("directMessage.replyTargetNotFound")
+                dmHandler.recordRemoteRecipient(sender, target.playerName, target.serverName)
                 deliveryQueue.submit(sender.uniqueId) {
                     manager.sendCrossServerMessage(sender, target.playerName, target.serverName, message)
                 }
