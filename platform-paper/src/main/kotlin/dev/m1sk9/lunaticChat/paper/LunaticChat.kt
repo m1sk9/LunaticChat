@@ -58,8 +58,7 @@ class LunaticChat :
 
     override fun onEnable() {
         saveDefaultConfig()
-        val configManager = ConfigManager()
-        configuration = configManager.loadConfiguration(config)
+        configuration = ConfigManager(logger).loadConfiguration(dataFolder.resolve("config.yml").readText())
 
         if (configuration.debug) {
             logger.warning("LunaticChat is running in debug mode.")

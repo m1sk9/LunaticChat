@@ -1,113 +1,38 @@
 package dev.m1sk9.lunaticChat.paper.config
 
-import dev.m1sk9.lunaticChat.paper.config.key.ChannelChatFeatureConfig
-import dev.m1sk9.lunaticChat.paper.config.key.FeaturesConfig
-import dev.m1sk9.lunaticChat.paper.config.key.JapaneseConversionFeatureConfig
-import dev.m1sk9.lunaticChat.paper.config.key.MessageFormatConfig
-import dev.m1sk9.lunaticChat.paper.config.key.QuickRepliesFeatureConfig
-import dev.m1sk9.lunaticChat.paper.config.key.VelocityIntegrationConfig
-import dev.m1sk9.lunaticChat.paper.i18n.Language
-import org.bukkit.configuration.file.FileConfiguration
+import com.charleskorn.kaml.Yaml
+import com.charleskorn.kaml.YamlConfiguration
+import java.util.logging.Logger
 
 /**
- * Manages loading and parsing of plugin configuration.
- * Converted from singleton to dependency injection pattern for better testability.
+ * Reads config.yml into [LunaticChatConfiguration].
+ *
+ * The file is deserialized directly rather than copied key by key, so a default lives only on the
+ * data class. The hand-written mapper it replaced repeated every default in a second place, and
+ * they had already drifted - checkForUpdates disagreed with both config.yml and the data class,
+ * and the whole messageLogging block was documented but never read.
  */
-class ConfigManager {
-    fun loadConfiguration(configFile: FileConfiguration): LunaticChatConfiguration {
-        val loadedConfig =
-            LunaticChatConfiguration(
-                features =
-                    FeaturesConfig(
-                        quickReplies =
-                            QuickRepliesFeatureConfig(
-                                enabled =
-                                    configFile.getBoolean("features.quickReplies.enabled", true),
-                            ),
-                        japaneseConversion =
-                            JapaneseConversionFeatureConfig(
-                                enabled = configFile.getBoolean("features.japaneseConversion.enabled", false),
-                                cacheMaxEntries = configFile.getInt("features.japaneseConversion.cache.maxEntries", 500),
-                                cacheSaveIntervalSeconds =
-                                    configFile.getInt(
-                                        "features.japaneseConversion.cache.saveIntervalSeconds",
-                                        300,
-                                    ),
-                                cacheFilePath =
-                                    configFile.getString(
-                                        "features.japaneseConversion.cache.filePath",
-                                        "conversion_cache.json",
-                                    )!!,
-                                apiTimeout =
-                                    configFile.getLong(
-                                        "features.japaneseConversion.api.timeout",
-                                        3000,
-                                    ),
-                                apiRetryAttempts = configFile.getInt("features.japaneseConversion.api.retryAttempts", 2),
-                            ),
-                        channelChat =
-                            ChannelChatFeatureConfig(
-                                enabled = configFile.getBoolean("features.channelChat.enabled", false),
-                                maxChannelsPerServer = configFile.getInt("features.channelChat.maxChannelsPerServer", 0),
-                                maxMembersPerChannel = configFile.getInt("features.channelChat.maxMembersPerChannel", 0),
-                                maxMembershipPerPlayer = configFile.getInt("features.channelChat.maxMembershipPerPlayer", 0),
-                            ),
-                        velocityIntegration =
-                            VelocityIntegrationConfig(
-                                enabled = configFile.getBoolean("features.velocityIntegration.enabled", false),
-                                crossServerGlobalChat =
-                                    configFile.getBoolean(
-                                        "features.velocityIntegration.crossServerGlobalChat",
-                                        false,
-                                    ),
-                                crossServerDirectMessage =
-                                    configFile.getBoolean(
-                                        "features.velocityIntegration.crossServerDirectMessage",
-                                        false,
-                                    ),
-                                serverName =
-                                    configFile.getString(
-                                        "features.velocityIntegration.serverName",
-                                        "Unknown",
-                                    ) ?: "Unknown",
-                                messageDeduplicationCacheSize =
-                                    configFile.getInt(
-                                        "features.velocityIntegration.messageDeduplicationCacheSize",
-                                        100,
-                                    ),
-                            ),
-                    ),
-                messageFormat =
-                    MessageFormatConfig(
-                        directMessageFormat =
-                            configFile.getString(
-                                "messageFormat.directMessageFormat",
-                                "§7[§e{sender} §7>> §e{recipient}§7] §f{message}",
-                            )!!,
-                        channelMessageFormat =
-                            configFile.getString(
-                                "messageFormat.channelMessageFormat",
-                                "§7[§b#{channel}§7] §e{sender}: §f{message}",
-                            )!!,
-                        crossServerGlobalChatFormat =
-                            configFile.getString(
-                                "messageFormat.crossServerGlobalChatFormat",
-                                "§7[§6{server}§7] §e{sender}: §f{message}",
-                            )!!,
-                    ),
-                debug = configFile.getBoolean("debug", false),
-                checkForUpdates = configFile.getBoolean("checkForUpdates", false),
-                userSettingsFilePath =
-                    configFile.getString(
-                        "userSettingsFilePath",
-                        "player-settings.yaml",
-                    )!!,
-                language =
-                    Language.fromCode(
-                        configFile.getString("language", "en")!!,
-                    ),
-            )
+class ConfigManager(
+    private val logger: Logger,
+) {
+    private val yaml =
+        Yaml(
+            configuration =
+                YamlConfiguration(
+                    // A config.yml from a newer build, or one carrying a key we have retired,
+                    // should not stop the plugin from starting.
+                    strictMode = false,
+                ),
+        )
 
-        return loadedConfig
-    }
+    /**
+     * Parses [contents] as config.yml, falling back to defaults if it cannot be read.
+     */
+    fun loadConfiguration(contents: String): LunaticChatConfiguration =
+        try {
+            yaml.decodeFromString(LunaticChatConfiguration.serializer(), contents)
+        } catch (e: Exception) {
+            logger.severe("Failed to read config.yml, falling back to defaults: ${e.message}")
+            LunaticChatConfiguration()
+        }
 }

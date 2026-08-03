@@ -190,8 +190,8 @@ class ServiceInitializer(
         // Initialize conversion cache
         val cache =
             ConversionCache(
-                cacheFile = plugin.dataFolder.resolve(configuration.features.japaneseConversion.cacheFilePath).toPath(),
-                maxEntries = configuration.features.japaneseConversion.cacheMaxEntries,
+                cacheFile = plugin.dataFolder.resolve(configuration.features.japaneseConversion.cache.filePath).toPath(),
+                maxEntries = configuration.features.japaneseConversion.cache.maxEntries,
                 logger = logger,
             )
         cache.loadFromDisk()
@@ -199,7 +199,7 @@ class ServiceInitializer(
         // Initialize Google IME API client
         val apiClient =
             GoogleIMEClient(
-                timeout = configuration.features.japaneseConversion.apiTimeout.milliseconds,
+                timeout = configuration.features.japaneseConversion.api.timeout.milliseconds,
                 httpClient = httpClient.value,
             )
 
@@ -428,7 +428,7 @@ class ServiceInitializer(
             // would both be rejected by runAtFixedRate and leave the cache unsaved until the
             // server stopped. Fall back to the documented default rather than to one second,
             // which would rewrite the whole cache file every tick anyone chatted.
-            val configuredInterval = configuration.features.japaneseConversion.cacheSaveIntervalSeconds
+            val configuredInterval = configuration.features.japaneseConversion.cache.saveIntervalSeconds
             val intervalSeconds =
                 if (configuredInterval > 0) {
                     configuredInterval.toLong()

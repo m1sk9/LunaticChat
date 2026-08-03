@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ChannelChatFeatureConfig(
-    val enabled: Boolean,
+    val enabled: Boolean = false,
     val maxChannelsPerServer: Int = 0,
     val maxMembersPerChannel: Int = 0,
     val maxMembershipPerPlayer: Int = 0,
