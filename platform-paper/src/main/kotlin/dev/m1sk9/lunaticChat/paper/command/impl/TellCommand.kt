@@ -38,9 +38,6 @@ class TellCommand(
     private val crossServerDirectMessageManager: CrossServerDirectMessageManager? = null,
     private val remotePlayerRegistry: RemotePlayerRegistry? = null,
     private val localServerName: String = "",
-    // Delivery is queued rather than run inline: romaji conversion can reach the Google IME API,
-    // and a command executor runs on the tick thread. Queueing per sender keeps their messages in
-    // the order they typed them.
     private val deliveryQueue: PerPlayerWorkQueue = plugin.deliveryQueue,
 ) : LunaticCommand(plugin) {
     override val description: String

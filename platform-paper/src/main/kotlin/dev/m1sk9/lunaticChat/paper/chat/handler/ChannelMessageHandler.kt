@@ -41,10 +41,11 @@ class ChannelMessageHandler(
             player.playMessageSendNotification()
         }
 
-        // Send to spy players (exclude sender and channel members)
-        val memberIds = context.members.map { it.playerId }.toSet()
+        // Send to spy players (exclude sender and channel members). The member set is built lazily
+        // because notifySpies only consults exclude when a spy is actually online.
+        val memberIds by lazy { context.members.mapTo(HashSet()) { it.playerId } }
         SpyPermissionManager.notifySpies(
-            noticeText = languageManager.getMessage("general.spyMessage"),
+            noticeText = { languageManager.getMessage("general.spyMessage") },
             exclude = { it.uniqueId == playerId || it.uniqueId in memberIds },
         ) { formattedMessage }
         context.members.forEach { member ->

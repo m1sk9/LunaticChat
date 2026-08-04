@@ -38,8 +38,7 @@ class ChannelSwitchCommand(
                         // Tab completion: suggest channels the player is a member of
                         val sender = ctx.source.executor
                         if (sender is org.bukkit.entity.Player) {
-                            val playerChannels = membershipManager.getPlayerChannels(sender.uniqueId).getOrNull() ?: emptyList()
-                            playerChannels.forEach { channelId ->
+                            membershipManager.getPlayerChannels(sender.uniqueId).forEach { channelId ->
                                 builder.suggest(channelId)
                             }
                         }

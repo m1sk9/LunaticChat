@@ -20,30 +20,29 @@ object SpyPermissionManager : Listener {
     private val directMessageSpyPlayers: ConcurrentHashMap<UUID, Player> = ConcurrentHashMap()
 
     /**
-     * Gets all players with spy permission as a map of UUID to Player.
-     */
-    fun getDirectMessageSpyPlayers(): Map<UUID, Player> = directMessageSpyPlayers.toMap()
-
-    /**
      * Sends a copy of a message to every online spy that [exclude] does not reject.
      *
-     * [message] is only invoked when someone will actually read the result, and the "you are
-     * seeing this because you have spy permission" hover is built once for the whole audience
-     * rather than per recipient. Spies are rare, so both matter on the message path.
+     * [noticeText], [exclude] and [message] are only invoked when someone will actually read the
+     * result, and the "you are seeing this because you have spy permission" hover is built once for
+     * the whole audience rather than per recipient. Spies are rare, so all of that matters on the
+     * message path - callers otherwise pay a translation lookup, and channel chat an O(members) set,
+     * for an audience that is usually empty.
      *
      * @param noticeText Text shown on hover, explaining why the reader is seeing the message
      * @param exclude Rejects players who are party to the message already
      * @param message Builds the message body
      */
     fun notifySpies(
-        noticeText: String,
+        noticeText: () -> String,
         exclude: (Player) -> Boolean,
         message: () -> Component,
     ) {
+        if (directMessageSpyPlayers.isEmpty()) return
+
         val spies = directMessageSpyPlayers.values.filter { it.isOnline && !exclude(it) }
         if (spies.isEmpty()) return
 
-        val withNotice = message().hoverEvent(HoverEvent.showText(Component.text(noticeText)))
+        val withNotice = message().hoverEvent(HoverEvent.showText(Component.text(noticeText())))
         spies.forEach { it.sendMessage(withNotice) }
     }
 

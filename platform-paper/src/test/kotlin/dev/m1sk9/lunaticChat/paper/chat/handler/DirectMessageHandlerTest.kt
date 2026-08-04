@@ -24,8 +24,6 @@ import kotlin.test.assertTrue
  * Validates message handling with dependency injection and conversion features.
  */
 class DirectMessageHandlerTest {
-    private fun <T> sync(block: suspend () -> T): T = runBlocking { block() }
-
     private fun createHandler(
         configuration: dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration? = null,
         settingsManager: PlayerSettingsManager? = null,
@@ -43,7 +41,7 @@ class DirectMessageHandlerTest {
         val sender = TestUtils.createMockPlayer()
         val recipient = TestUtils.createMockPlayer()
 
-        val result = sync { handler.sendDirectMessage(sender, recipient, "Test message") }
+        val result = runBlocking { handler.sendDirectMessage(sender, recipient, "Test message") }
 
         assertTrue(result)
     }
@@ -65,7 +63,7 @@ class DirectMessageHandlerTest {
         val sender = TestUtils.createMockPlayer(name = "Alice")
         val recipient = TestUtils.createMockPlayer(name = "Bob")
 
-        val result = sync { handler.sendDirectMessage(sender, recipient, "Test") }
+        val result = runBlocking { handler.sendDirectMessage(sender, recipient, "Test") }
 
         assertTrue(result)
     }
@@ -84,7 +82,7 @@ class DirectMessageHandlerTest {
         val sender = TestUtils.createMockPlayer()
         val recipient = TestUtils.createMockPlayer()
 
-        val result = sync { handler.sendDirectMessage(sender, recipient, "konnichiwa") }
+        val result = runBlocking { handler.sendDirectMessage(sender, recipient, "konnichiwa") }
 
         assertTrue(result)
     }
@@ -110,7 +108,7 @@ class DirectMessageHandlerTest {
         val recipient = TestUtils.createMockPlayer()
 
         // Should not throw exception and should complete quickly (within timeout)
-        val result = sync { handler.sendDirectMessage(sender, recipient, "konnichiwa") }
+        val result = runBlocking { handler.sendDirectMessage(sender, recipient, "konnichiwa") }
 
         assertTrue(result)
     }
@@ -125,7 +123,7 @@ class DirectMessageHandlerTest {
         // This validates Issue #1 refactoring - ConfigManager DI
         val sender = TestUtils.createMockPlayer()
         val recipient = TestUtils.createMockPlayer()
-        val result = sync { handler.sendDirectMessage(sender, recipient, "Test") }
+        val result = runBlocking { handler.sendDirectMessage(sender, recipient, "Test") }
 
         assertTrue(result)
     }
@@ -139,15 +137,24 @@ class DirectMessageHandlerTest {
     }
 
     @Test
-    fun `handleOutgoingCrossServerMessage records a remote reply target and returns the body`() {
+    fun `handleOutgoingCrossServerMessage returns the body to relay`() {
+        val handler = createHandler()
+        val sender = TestUtils.createMockPlayer(name = "Alice")
+
+        val relayed = runBlocking { handler.handleOutgoingCrossServerMessage(sender, "Bob", "survival", "hi") }
+
+        assertEquals("hi", relayed)
+    }
+
+    @Test
+    fun `recordRemoteRecipient makes a remote player the reply target`() {
         val handler = createHandler()
         val registry = RemotePlayerRegistry(localServerName = "lobby")
         registry.replaceAll(listOf(PresenceEntry("Bob", "survival")))
         handler.remotePlayerRegistry = registry
         val sender = TestUtils.createMockPlayer(name = "Alice")
 
-        val relayed = sync { handler.handleOutgoingCrossServerMessage(sender, "Bob", "survival", "hi") }
-        assertEquals("hi", relayed)
+        handler.recordRemoteRecipient(sender, "Bob", "survival")
 
         val target = handler.getReplyTarget(sender)
         assertIs<ReplyTarget.Remote>(target)
@@ -177,7 +184,7 @@ class DirectMessageHandlerTest {
         handler.remotePlayerRegistry = RemotePlayerRegistry(localServerName = "lobby") // empty roster
         val sender = TestUtils.createMockPlayer(name = "Alice")
 
-        sync { handler.handleOutgoingCrossServerMessage(sender, "Bob", "survival", "hi") }
+        handler.recordRemoteRecipient(sender, "Bob", "survival")
 
         assertNull(handler.getReplyTarget(sender))
     }
@@ -209,7 +216,7 @@ class DirectMessageHandlerTest {
         handler.remotePlayerRegistry = registry
         val sender = TestUtils.createMockPlayer(name = "Alice")
 
-        sync { handler.handleOutgoingCrossServerMessage(sender, "Bob", "survival", "hi") }
+        handler.recordRemoteRecipient(sender, "Bob", "survival")
         handler.clearPlayer(sender)
 
         assertNull(handler.getReplyTarget(sender))
@@ -228,7 +235,7 @@ class DirectMessageHandlerTest {
 
         val sender = TestUtils.createMockPlayer()
         val recipient = TestUtils.createMockPlayer()
-        val result = sync { handler.sendDirectMessage(sender, recipient, "Test") }
+        val result = runBlocking { handler.sendDirectMessage(sender, recipient, "Test") }
 
         assertTrue(result)
     }

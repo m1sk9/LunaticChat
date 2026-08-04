@@ -31,9 +31,6 @@ class ReplyCommand(
     private val dmHandler: DirectMessageHandler,
     override val languageManager: LanguageManager,
     private val crossServerDirectMessageManager: CrossServerDirectMessageManager? = null,
-    // Delivery is queued rather than run inline: romaji conversion can reach the Google IME API,
-    // and a command executor runs on the tick thread. Queueing per sender keeps their messages in
-    // the order they typed them.
     private val deliveryQueue: PerPlayerWorkQueue = plugin.deliveryQueue,
 ) : LunaticCommand(plugin) {
     override val description: String

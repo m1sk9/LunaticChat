@@ -382,7 +382,7 @@ class ChannelMembershipManagerTest {
         channelManager.setPlayerChannel(playerId, null)
         membership.joinChannel(playerId, "ch2")
 
-        val channels = membership.getPlayerChannels(playerId).getOrThrow()
+        val channels = membership.getPlayerChannels(playerId)
         assertEquals(2, channels.size)
         assertTrue(channels.contains("ch1"))
         assertTrue(channels.contains("ch2"))
@@ -495,6 +495,6 @@ class ChannelMembershipManagerTest {
 
         channelManager.deleteChannel("drop-ch", ownerId)
 
-        assertEquals(listOf("keep-ch"), membership.getPlayerChannels(playerId).getOrThrow())
+        assertEquals(listOf("keep-ch"), membership.getPlayerChannels(playerId))
     }
 }

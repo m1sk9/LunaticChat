@@ -4,7 +4,6 @@ import com.charleskorn.kaml.YamlException
 import com.charleskorn.kaml.YamlInput
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
@@ -31,18 +30,15 @@ object LenientBooleanSerializer : KSerializer<Boolean> {
     override val descriptor = PrimitiveSerialDescriptor("LenientBoolean", PrimitiveKind.STRING)
 
     override fun deserialize(decoder: Decoder): Boolean {
-        // Captured before decoding: ConfigManager prunes the offending setting by path, and only a
-        // YamlException carries one. A plain SerializationException would escape it and cost the
-        // operator the whole file.
-        val path = (decoder as? YamlInput)?.node?.path
+        // Captured before decoding: ConfigManager prunes the offending setting by the path its
+        // exception carries, and only a YamlException carries one. Throwing without a path would
+        // cost the operator every other setting in the file.
+        val path = (decoder as YamlInput).node.path
         val raw = decoder.decodeString()
         return when (raw.lowercase()) {
             in trueWords -> true
             in falseWords -> false
-            else -> {
-                val reason = "expected true/false, yes/no or on/off but found '$raw'"
-                throw path?.let { YamlException(reason, it) } ?: SerializationException(reason)
-            }
+            else -> throw YamlException("expected true/false, yes/no or on/off but found '$raw'", path)
         }
     }
 
