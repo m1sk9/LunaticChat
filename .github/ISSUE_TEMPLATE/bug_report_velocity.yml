@@ -1,0 +1,156 @@
+name: Bug Report (Velocity)
+description: Report a bug involving the Velocity proxy, cross-server chat, or cross-server direct messages
+labels: ["Type: bug", "Module: Velocity"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out the information below to help us fix the issue.
+
+        Use this template when the problem involves the **Velocity proxy** — cross-server global chat, cross-server direct messages, or the Paper/Folia to Velocity handshake. A bug that reproduces on a single backend server without the proxy belongs in the Paper or Folia template.
+
+        Paper and Velocity compatibility is decided by an internal **protocol version**, not by the plugin version, so the `/lcv status` output below is the most important field on this form.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: Describe the bug you encountered...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior. Please include which server each player was on.
+      placeholder: |
+        1. Player A on 'survival' sends '...'
+        2. Player B on 'lobby' runs '...'
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What you expected to happen
+      placeholder: Describe what you expected to happen...
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+      description: What actually happened
+      placeholder: Describe what actually happened...
+    validations:
+      required: true
+
+  - type: textarea
+    id: lcv-status
+    attributes:
+      label: Output of `/lcv status`
+      description: Run `/lcv status` on an affected backend server. It reports the connection state and the protocol version of both sides.
+      placeholder: Paste the output here...
+    validations:
+      required: true
+
+  - type: input
+    id: velocity-plugin-version
+    attributes:
+      label: LunaticChat Version (Velocity)
+      description: The version of `LunaticChat-<version>-velocity.jar` installed on the proxy.
+      placeholder: "e.g., v1.2.0"
+    validations:
+      required: true
+
+  - type: input
+    id: backend-plugin-version
+    attributes:
+      label: LunaticChat Version (backend Paper / Folia)
+      description: Run `/lc status` on a backend server. If your backend servers run different versions, list all of them.
+      placeholder: "e.g., v1.3.0 (7c54422)"
+    validations:
+      required: true
+
+  - type: input
+    id: velocity-version
+    attributes:
+      label: Velocity Version
+      description: LunaticChat is built against the Velocity 4 API. Velocity 3.5.x and BungeeCord are not supported.
+      placeholder: "e.g., 4.0.0"
+    validations:
+      required: true
+
+  - type: input
+    id: backend-server-version
+    attributes:
+      label: Backend Server Software
+      description: The software and version of the affected backend servers.
+      placeholder: "e.g., Paper 26.2-92 / Folia 26.2-12"
+    validations:
+      required: true
+
+  - type: input
+    id: java-version
+    attributes:
+      label: Java Version
+      description: LunaticChat requires Java 25 or later.
+      placeholder: "e.g., Java 25"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: enabled-features
+    attributes:
+      label: Enabled Cross-Server Features
+      description: Which `features.velocityIntegration` settings are enabled in the backend `config.yml`? All of them are off by default.
+      options:
+        - label: "`enabled`"
+        - label: "`crossServerGlobalChat`"
+        - label: "`crossServerDirectMessage`"
+
+  - type: textarea
+    id: server-layout
+    attributes:
+      label: Server Layout
+      description: The backend servers behind the proxy and the `features.velocityIntegration.serverName` configured on each. Cross-server direct messages are routed by that name, so a mismatch with the Velocity configuration is a common cause.
+      placeholder: |
+        - lobby   (serverName: "lobby")
+        - survival (serverName: "survival")
+        - creative (serverName: "Unknown")  <- not configured
+    validations:
+      required: false
+
+  - type: textarea
+    id: velocity-logs
+    attributes:
+      label: Velocity Proxy Logs
+      description: Please paste relevant logs or error messages from the proxy.
+      placeholder: Paste the proxy logs here...
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: backend-logs
+    attributes:
+      label: Backend Server Logs
+      description: "Please paste relevant logs or error messages from the backend servers. Setting `debug: true` in `config.yml` produces more detail."
+      placeholder: Paste the backend logs here...
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here (screenshots, other installed plugins, related issues, etc.)
+      placeholder: Any additional information...
+    validations:
+      required: false

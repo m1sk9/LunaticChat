@@ -1,11 +1,13 @@
-name: Bug Report
-description: Report a bug or unexpected behavior in LunaticChat
-labels: ["Type: bug"]
+name: Bug Report (Paper)
+description: Report a bug or unexpected behavior on a Paper server
+labels: ["Type: bug", "Module: Paper"]
 body:
   - type: markdown
     attributes:
       value: |
         Thanks for taking the time to report a bug! Please fill out the information below to help us fix the issue.
+
+        If your server runs **Folia**, or if the problem involves a **Velocity** proxy (cross-server chat or cross-server direct messages), please use the corresponding template instead.
 
   - type: textarea
     id: description
@@ -50,8 +52,17 @@ body:
     id: plugin-version
     attributes:
       label: LunaticChat Version
-      description: What version of LunaticChat are you using?
-      placeholder: "e.g., v0.1.0"
+      description: Run `/lc status` in-game to see the version and commit hash.
+      placeholder: "e.g., v1.3.0 (7c54422)"
+    validations:
+      required: true
+
+  - type: input
+    id: paper-version
+    attributes:
+      label: Paper Version
+      description: Run `/version` on the server.
+      placeholder: "e.g., Paper 26.2-92"
     validations:
       required: true
 
@@ -60,16 +71,7 @@ body:
     attributes:
       label: Minecraft Version
       description: What version of Minecraft are you running?
-      placeholder: "e.g., 1.21.4"
-    validations:
-      required: true
-
-  - type: input
-    id: paper-version
-    attributes:
-      label: Paper Version
-      description: What version of Paper are you using?
-      placeholder: "e.g., Paper-1.21.4-123"
+      placeholder: "e.g., 26.2"
     validations:
       required: true
 
@@ -77,16 +79,27 @@ body:
     id: java-version
     attributes:
       label: Java Version
-      description: What version of Java are you running?
-      placeholder: "e.g., Java 21"
+      description: LunaticChat requires Java 25 or later.
+      placeholder: "e.g., Java 25"
     validations:
       required: true
+
+  - type: checkboxes
+    id: enabled-features
+    attributes:
+      label: Enabled Features
+      description: Which optional features are enabled in `config.yml`? Most of them are off by default.
+      options:
+        - label: "`features.quickReplies` (/reply)"
+        - label: "`features.japaneseConversion` (romaji to Japanese)"
+        - label: "`features.channelChat`"
+        - label: "`features.velocityIntegration`"
 
   - type: textarea
     id: logs
     attributes:
       label: Logs and Error Messages
-      description: Please paste relevant logs or error messages here
+      description: "Please paste relevant logs or error messages here. Setting `debug: true` in `config.yml` produces more detail."
       placeholder: Paste your logs here...
       render: shell
     validations:
@@ -96,7 +109,7 @@ body:
     id: additional-context
     attributes:
       label: Additional Context
-      description: Add any other context about the problem here (screenshots, related issues, etc.)
+      description: Add any other context about the problem here (screenshots, other installed plugins, related issues, etc.)
       placeholder: Any additional information...
     validations:
       required: false

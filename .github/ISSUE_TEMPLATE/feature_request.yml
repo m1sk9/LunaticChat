@@ -7,6 +7,19 @@ body:
       value: |
         Thanks for suggesting a new feature! Please provide as much detail as possible.
 
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Target Platform
+      description: Which platform would this feature apply to? A maintainer will add the matching `Module:` label.
+      options:
+        - "Paper"
+        - "Folia"
+        - "Velocity (proxy / cross-server)"
+        - "All platforms / not platform-specific"
+    validations:
+      required: true
+
   - type: textarea
     id: feature-description
     attributes:
