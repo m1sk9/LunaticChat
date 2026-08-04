@@ -57,6 +57,5 @@ Settings related to the connection to the Google IME API.
 | Setting Key | Default | Description |
 |-------------|---------|-------------|
 | `api.timeout` | `3000` | Request timeout (milliseconds) |
-| `api.retryAttempts` | `2` | Number of retry attempts on failure |
 
 If the API times out or fails, the message is sent in hiragana as-is.

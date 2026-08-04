@@ -32,7 +32,6 @@ LunaticChat の設定は `plugins/LunaticChat/config.yml` で管理されます�
 | `cache.saveIntervalSeconds` | Int | `300` | キャッシュのディスク保存間隔(秒) |
 | `cache.filePath` | String | `"conversion_cache.json"` | キャッシュファイルのパス |
 | `api.timeout` | Long | `3000` | API リクエストのタイムアウト(ミリ秒) |
-| `api.retryAttempts` | Int | `2` | API リクエスト失敗時のリトライ回数 |
 
 ### チャンネルチャット (`features.channelChat`)
 

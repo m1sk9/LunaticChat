@@ -32,7 +32,6 @@ LunaticChat's configuration is managed in `plugins/LunaticChat/config.yml`. A de
 | `cache.saveIntervalSeconds` | Int | `300` | Interval (in seconds) for saving cache to disk |
 | `cache.filePath` | String | `"conversion_cache.json"` | Path to the cache file |
 | `api.timeout` | Long | `3000` | API request timeout (in milliseconds) |
-| `api.retryAttempts` | Int | `2` | Number of retries on API request failure |
 
 ### Channel Chat (`features.channelChat`)
 
