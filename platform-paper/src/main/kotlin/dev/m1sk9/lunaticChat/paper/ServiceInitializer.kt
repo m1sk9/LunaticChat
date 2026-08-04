@@ -25,6 +25,7 @@ import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.plugin.java.JavaPlugin
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.logging.Level
 import java.util.logging.Logger
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -452,10 +453,24 @@ class ServiceInitializer(
      * Performs shutdown tasks, including saving all caches to disk.
      */
     fun shutdown(services: ServiceContainer) {
-        services.playerSettingsManager.saveToDisk()
-        services.conversionCache?.saveToDisk()
-        services.channelManager?.saveToDisk()
-        services.channelMessageLogger?.shutdown()
-        services.velocityConnectionManager?.shutdown()
+        shutdownStep("save player settings") { services.playerSettingsManager.saveToDisk() }
+        shutdownStep("save the conversion cache") { services.conversionCache?.saveToDisk() }
+        shutdownStep("save channel data") { services.channelManager?.saveToDisk() }
+        shutdownStep("shut down the channel message logger") { services.channelMessageLogger?.shutdown() }
+        shutdownStep("shut down the Velocity connection") { services.velocityConnectionManager?.shutdown() }
+    }
+
+    // The steps are independent, so one that throws must not skip the ones after it - which is what
+    // an exception escaping onDisable would do, leaving the log flusher and the Velocity connection
+    // to be torn down by the server instead.
+    private fun shutdownStep(
+        what: String,
+        step: () -> Unit,
+    ) {
+        try {
+            step()
+        } catch (e: Exception) {
+            logger.log(Level.SEVERE, "Failed to $what during shutdown", e)
+        }
     }
 }
