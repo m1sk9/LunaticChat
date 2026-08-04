@@ -13,6 +13,7 @@ import dev.m1sk9.lunaticChat.engine.exception.ChannelNoOwnerPermissionException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelNotFoundException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerAlreadyBannedException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerNotBannedException
+import dev.m1sk9.lunaticChat.paper.StoppableService
 import dev.m1sk9.lunaticChat.paper.config.key.ChannelChatFeatureConfig
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -24,7 +25,7 @@ class ChannelManager(
     private val storage: ChannelStorage,
     private val logger: Logger,
     private val config: ChannelChatFeatureConfig,
-) {
+) : StoppableService {
     private val channelsCache = ConcurrentHashMap<String, Channel>()
     private val membersCache = ConcurrentHashMap<String, CopyOnWriteArrayList<ChannelMember>>()
     private val activeChannels = ConcurrentHashMap<UUID, String>()
@@ -464,6 +465,8 @@ class ChannelManager(
      * Saves the current state of channels and members to storage synchronously.
      * Should only br called during server shutdown.
      */
+    override fun stop() = saveToDisk()
+
     fun saveToDisk() {
         storage.saveToDisk(snapshot())
     }
@@ -542,11 +545,18 @@ class ChannelManager(
         playerId: UUID,
         channelId: String?,
     ) {
-        if (channelId == null) {
-            activeChannels.remove(playerId)
-        } else {
-            activeChannels[playerId] = channelId
-        }
+        // Returning early when nothing moved matters on the quit path, which clears the active
+        // channel for every player whether or not they had one: a snapshot copies all three caches
+        // and stringifies every active channel's UUID, and a mass disconnect would pay that once per
+        // player in a single tick.
+        val changed =
+            if (channelId == null) {
+                activeChannels.remove(playerId) != null
+            } else {
+                activeChannels.put(playerId, channelId) != channelId
+            }
+        if (!changed) return
+
         saveToStorage()
     }
 }

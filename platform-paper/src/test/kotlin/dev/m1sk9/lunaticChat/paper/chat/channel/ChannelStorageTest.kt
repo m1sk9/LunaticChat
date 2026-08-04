@@ -5,12 +5,9 @@ import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelData
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelMember
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelRole
 import dev.m1sk9.lunaticChat.engine.exception.ChannelStorageLoadException
-import dev.m1sk9.lunaticChat.paper.DebouncedSaver
 import dev.m1sk9.lunaticChat.paper.TestUtils
-import io.mockk.mockk
-import io.mockk.slot
-import io.mockk.verify
-import java.nio.file.Files
+import dev.m1sk9.lunaticChat.paper.storage.FileStore
+import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
 import java.util.UUID
 import kotlin.io.path.listDirectoryEntries
@@ -42,19 +39,19 @@ class ChannelStorageTest {
             activeChannels = mapOf(owner.toString() to "general"),
         )
 
-    private fun withStorage(block: (ChannelStorage, Path) -> Unit) {
-        val directory = Files.createTempDirectory("channel-storage-test")
-        try {
-            val channelsFile = directory.resolve("channels.json")
-            block(ChannelStorage(channelsFile, mockk(relaxed = true), TestUtils.TestLogger()), channelsFile)
-        } finally {
-            directory.toFile().deleteRecursively()
-        }
+    @TempDir
+    lateinit var directory: Path
+
+    private fun withStorage(block: (ChannelStorage, Path, TestUtils.ManualScheduler) -> Unit) {
+        val channelsFile = directory.resolve("channels.json")
+        val scheduler = TestUtils.ManualScheduler()
+        val store = FileStore(channelsFile, scheduler, TestUtils.TestLogger())
+        block(ChannelStorage(store, TestUtils.TestLogger()), channelsFile, scheduler)
     }
 
     @Test
     fun `saved data is loaded back unchanged`() =
-        withStorage { storage, _ ->
+        withStorage { storage, _, _ ->
             val data = sampleData()
 
             storage.saveToDisk(data)
@@ -64,7 +61,7 @@ class ChannelStorageTest {
 
     @Test
     fun `saving leaves no temporary file beside the channel file`() =
-        withStorage { storage, channelsFile ->
+        withStorage { storage, channelsFile, _ ->
             storage.saveToDisk(sampleData())
 
             assertEquals(listOf(channelsFile), channelsFile.parent.listDirectoryEntries())
@@ -72,13 +69,13 @@ class ChannelStorageTest {
 
     @Test
     fun `loading a missing file yields empty data rather than failing`() =
-        withStorage { storage, _ ->
+        withStorage { storage, _, _ ->
             assertEquals(ChannelData(), storage.loadFromDisk())
         }
 
     @Test
     fun `loading an unparseable file fails loudly`() =
-        withStorage { storage, channelsFile ->
+        withStorage { storage, channelsFile, _ ->
             channelsFile.writeText("{ this is not json")
 
             assertFailsWith<ChannelStorageLoadException> { storage.loadFromDisk() }
@@ -86,20 +83,15 @@ class ChannelStorageTest {
 
     @Test
     fun `unknown fields in the file are ignored`() =
-        withStorage { storage, channelsFile ->
+        withStorage { storage, channelsFile, _ ->
             channelsFile.writeText("""{"version":1,"channels":{},"members":{},"activeChannels":{},"future":true}""")
 
             assertEquals(ChannelData(), storage.loadFromDisk())
         }
 
     @Test
-    fun `a queued save reads the data when the write runs, not when it is queued`() {
-        val directory = Files.createTempDirectory("channel-storage-test")
-        try {
-            val channelsFile = directory.resolve("channels.json")
-            val saver = mockk<DebouncedSaver>(relaxed = true)
-            val storage = ChannelStorage(channelsFile, saver, TestUtils.TestLogger())
-            val queued = slot<() -> Unit>()
+    fun `a queued save reads the data when the write runs, not when it is queued`() =
+        withStorage { storage, _, scheduler ->
             var supplied = false
 
             storage.queueAsyncSave {
@@ -107,15 +99,12 @@ class ChannelStorageTest {
                 sampleData()
             }
 
-            verify { saver.request(capture(queued)) }
+            assertEquals(1, scheduler.pendingCount)
             assertTrue(!supplied, "the snapshot must not be taken while queueing")
 
-            queued.captured.invoke()
+            scheduler.runPending()
 
             assertTrue(supplied)
             assertEquals(sampleData(), storage.loadFromDisk())
-        } finally {
-            directory.toFile().deleteRecursively()
         }
-    }
 }

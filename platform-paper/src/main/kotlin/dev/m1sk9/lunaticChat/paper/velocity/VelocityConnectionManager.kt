@@ -4,6 +4,7 @@ import dev.m1sk9.lunaticChat.engine.protocol.PluginMessage
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageChannel
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageCodec
 import dev.m1sk9.lunaticChat.engine.protocol.ProtocolVersion
+import dev.m1sk9.lunaticChat.paper.StoppableService
 import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.messaging.PluginMessageListener
@@ -20,7 +21,8 @@ class VelocityConnectionManager(
     private var crossServerChatManager: CrossServerChatManager? = null,
     private var crossServerDirectMessageManager: CrossServerDirectMessageManager? = null,
     private var remotePlayerRegistry: RemotePlayerRegistry? = null,
-) : PluginMessageListener {
+) : StoppableService,
+    PluginMessageListener {
     companion object {
         private val CHANNEL = PluginMessageChannel.ID
         private const val HANDSHAKE_TIMEOUT_SECONDS = 5L
@@ -306,7 +308,7 @@ class VelocityConnectionManager(
     /**
      * Shutdown
      */
-    fun shutdown() {
+    override fun stop() {
         plugin.server.messenger.unregisterOutgoingPluginChannel(plugin, CHANNEL)
         plugin.server.messenger.unregisterIncomingPluginChannel(plugin, CHANNEL)
         logger.info("Velocity integration channel unregistered")

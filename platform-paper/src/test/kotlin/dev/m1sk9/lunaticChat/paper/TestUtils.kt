@@ -13,6 +13,7 @@ import dev.m1sk9.lunaticChat.paper.config.key.MessageFormatConfig
 import dev.m1sk9.lunaticChat.paper.config.key.QuickRepliesFeatureConfig
 import dev.m1sk9.lunaticChat.paper.config.key.VelocityIntegrationConfig
 import dev.m1sk9.lunaticChat.paper.i18n.Language
+import dev.m1sk9.lunaticChat.paper.storage.AsyncScheduler
 import io.mockk.mockk
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
@@ -220,6 +221,32 @@ object TestUtils {
     ) {
         if (!list.any(predicate)) {
             throw AssertionError("Expected list to contain at least one matching item")
+        }
+    }
+
+    /**
+     * An [AsyncScheduler] that holds the work until a test releases it.
+     *
+     * Lets a test assert what the debounce actually does - that the snapshot is taken when the write
+     * runs, not when it was queued - which mocking the saver could only assume.
+     */
+    class ManualScheduler : AsyncScheduler {
+        private val pending = mutableListOf<() -> Unit>()
+
+        val pendingCount: Int get() = pending.size
+
+        override fun runDelayed(
+            delaySeconds: Long,
+            task: () -> Unit,
+        ) {
+            pending.add(task)
+        }
+
+        /** Runs everything scheduled so far, as the server's async scheduler eventually would. */
+        fun runPending() {
+            val due = pending.toList()
+            pending.clear()
+            due.forEach { it() }
         }
     }
 }

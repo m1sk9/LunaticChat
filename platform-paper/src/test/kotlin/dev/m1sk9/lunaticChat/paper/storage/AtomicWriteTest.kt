@@ -1,10 +1,9 @@
-package dev.m1sk9.lunaticChat.paper
+package dev.m1sk9.lunaticChat.paper.storage
 
-import java.nio.file.Files
+import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.CyclicBarrier
-import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
@@ -14,14 +13,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class AtomicWriteTest {
-    private fun withTemporaryDirectory(block: (Path) -> Unit) {
-        val directory = Files.createTempDirectory("atomic-write-test")
-        try {
-            block(directory)
-        } finally {
-            directory.toFile().deleteRecursively()
-        }
-    }
+    @TempDir
+    lateinit var temporaryDirectory: Path
+
+    private fun withTemporaryDirectory(block: (Path) -> Unit) = block(temporaryDirectory)
 
     @Test
     fun `writes the content and leaves no temporary file behind`() =
@@ -71,6 +66,5 @@ class AtomicWriteTest {
             assertTrue(failures.isEmpty(), "writes failed: ${failures.map { it.toString() }}")
             assertContains(contents, target.readText())
             assertEquals(listOf(target), directory.listDirectoryEntries())
-            assertTrue(target.exists())
         }
 }

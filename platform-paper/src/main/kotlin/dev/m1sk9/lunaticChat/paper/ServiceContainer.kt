@@ -51,4 +51,11 @@ data class ServiceContainer(
     val crossServerChatManager: CrossServerChatManager? = null,
     val crossServerDirectMessageManager: CrossServerDirectMessageManager? = null,
     val remotePlayerRegistry: RemotePlayerRegistry? = null,
+    /**
+     * The services with teardown, in the order it must happen.
+     *
+     * Built as the services are, so a service that needs stopping is stopped because it was
+     * registered where it was created - not because someone remembered to extend a second list.
+     */
+    val stoppables: List<StoppableService> = emptyList(),
 )
