@@ -41,12 +41,17 @@ class ConfigManager(
     fun loadConfiguration(contents: String): LunaticChatConfiguration {
         var document =
             try {
-                yaml.parseToYamlNode(contents)
+                // Editors that write a UTF-8 BOM would otherwise leave it on the first key, which
+                // strictMode = false then drops as an unknown setting without a word.
+                yaml.parseToYamlNode(contents.removePrefix("\uFEFF"))
             } catch (e: EmptyYamlDocumentException) {
                 // A file that only holds comments is a valid way of saying "use the defaults", so it
                 // is not reported as a failure the operator has to act on.
                 return LunaticChatConfiguration()
-            } catch (e: YamlException) {
+            } catch (e: Exception) {
+                // Not YamlException: a file the reader rejects before it is YAML at all - one saved
+                // as UTF-16, or truncated with NUL padding - fails inside the scanner, and letting
+                // that out of onEnable would disable the plugin over a config file.
                 return allDefaults("config.yml is not valid YAML", e)
             }
 
@@ -65,13 +70,17 @@ class ConfigManager(
                         ?: return allDefaults("config.yml could not be read", e)
                 logger.warning("${setting.joinToString(".")} in config.yml fell back to its default: ${e.message}")
                 document = remaining
+            } catch (e: Exception) {
+                // A serializer can fail without kaml turning it into a YamlException, and there is
+                // no path to prune a single setting by without one.
+                return allDefaults("config.yml could not be read", e)
             }
         }
     }
 
     private fun allDefaults(
         what: String,
-        cause: YamlException,
+        cause: Exception,
     ): LunaticChatConfiguration {
         logger.log(
             Level.SEVERE,

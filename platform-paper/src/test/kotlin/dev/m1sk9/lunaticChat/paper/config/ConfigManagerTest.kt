@@ -177,11 +177,6 @@ class ConfigManagerTest {
     }
 
     @Test
-    fun `a malformed file falls back to defaults instead of failing startup`() {
-        assertEquals(LunaticChatConfiguration(), load("features: [this is not a map"))
-    }
-
-    @Test
     fun `a document that is not YAML at all says that every setting was reset`() {
         val logger = TestUtils.TestLogger()
 
@@ -189,6 +184,24 @@ class ConfigManagerTest {
 
         assertEquals(LunaticChatConfiguration(), config)
         assertTrue(logger.severeMessages.any { it.contains("EVERY setting") })
+    }
+
+    @Test
+    fun `a file the YAML reader rejects before parsing still leaves the plugin running`() {
+        val logger = TestUtils.TestLogger()
+        // What a config.yml saved as UTF-16 looks like once it is read back as UTF-8: the scanner
+        // refuses it over the NUL bytes, before anything is YAML.
+        val notUtf8 = String("debug: true".toByteArray(Charsets.UTF_16), Charsets.UTF_8)
+
+        val config = ConfigManager(logger).loadConfiguration(notUtf8)
+
+        assertEquals(LunaticChatConfiguration(), config)
+        assertTrue(logger.severeMessages.any { it.contains("EVERY setting") })
+    }
+
+    @Test
+    fun `a leading byte order mark does not cost the first setting`() {
+        assertTrue(load("\uFEFFdebug: true").debug)
     }
 
     @Test
