@@ -105,8 +105,8 @@ jobs:
           cat > /tmp/release-notes.md <<EOF
           Release notes:
 
-          - [Paper/Folia v${PAPER_VERSION}](https://lc.m1sk9.dev/ja/changelog/paper/v${PAPER_VERSION})
-          - [Velocity v${VELOCITY_VERSION}](https://lc.m1sk9.dev/ja/changelog/velocity/v${VELOCITY_VERSION})
+          - [Paper/Folia v${PAPER_VERSION}](https://lc.m1sk9.dev/changelog/paper/v${PAPER_VERSION})
+          - [Velocity v${VELOCITY_VERSION}](https://lc.m1sk9.dev/changelog/velocity/v${VELOCITY_VERSION})
           EOF
 
           gh release create "$TAG_NAME" \
@@ -125,7 +125,7 @@ jobs:
           version: ${{ needs.validate.outputs.paper_version }}
           channel: ${{ env.MODRINTH_CHANNEL }}
           changelog: |-
-            Please refer to the [release notes](https://lc.m1sk9.dev/ja/changelog/paper/v${{ needs.validate.outputs.paper_version }}) for update details.
+            Please refer to the [release notes](https://lc.m1sk9.dev/changelog/paper/v${{ needs.validate.outputs.paper_version }}) for update details.
           loaders: |-
             paper
             folia
@@ -141,7 +141,7 @@ jobs:
           version: ${{ needs.validate.outputs.velocity_version }}-velocity
           channel: ${{ env.MODRINTH_CHANNEL }}
           changelog: |-
-            Please refer to the [release notes](https://lc.m1sk9.dev/ja/changelog/velocity/v${{ needs.validate.outputs.velocity_version }}) for update details.
+            Please refer to the [release notes](https://lc.m1sk9.dev/changelog/velocity/v${{ needs.validate.outputs.velocity_version }}) for update details.
           loaders: velocity
           game-versions: ${{ env.MODRINTH_VELOCITY_GAME_VERSIONS }}
           files: platform-velocity/build/libs/${{ needs.validate.outputs.velocity_jar_name }}

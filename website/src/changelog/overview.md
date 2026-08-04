@@ -38,7 +38,7 @@ Releases are cut with a tag naming the target.
 |-----|-----------------|
 | `paper/vX.Y.Z` | The Paper / Folia build only |
 | `velocity/vX.Y.Z` | The Velocity build only |
-| `vX.Y.Z` | Both at once (v1.0.0 on 2026-04-04 was the last of these; it is no longer used) |
+| `vX.Y.Z` | Both at once, for a change that affects them both — such as one in the shared `engine` module |
 
 ### The plugin version does not express compatibility
 

@@ -57,8 +57,8 @@ allowed-tools: Bash(./gradlew *), Bash(git *), Bash(gh *), Read, Grep, WebFetch
    - **Release は draft で作成される**。JAR が添付されていることを確認したうえで、公開するかユーザーに確認する (`gh release edit {tag} --draft=false`)
    - 添付ファイル名が期待どおりであること (Paper は `LunaticChat-{version}.jar`、Velocity は `LunaticChat-{version}-velocity.jar`)
 5. リリースノートのリンク先が存在することを確認する。Release と Modrinth の changelog はどちらもドキュメントサイトを指しているため、対応するページが未デプロイだとリンク切れになる:
-   - Paper: `https://lc.m1sk9.dev/ja/changelog/paper/v{paperVersion}`
-   - Velocity: `https://lc.m1sk9.dev/ja/changelog/velocity/v{velocityVersion}`
+   - Paper: `https://lc.m1sk9.dev/changelog/paper/v{paperVersion}`
+   - Velocity: `https://lc.m1sk9.dev/changelog/velocity/v{velocityVersion}`
 6. Modrinth に該当バージョンが公開されているかユーザーに確認を依頼する (Modrinth のバージョン一覧は API トークンなしでは追えないため、ここは目視確認を頼む)
 
 ## 注意事項

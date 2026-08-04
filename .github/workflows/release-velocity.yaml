@@ -102,7 +102,7 @@ jobs:
             "platform-velocity/build/libs/$JAR_NAME" \
             --title "v${VERSION} (Velocity)" \
             --draft \
-            --notes "Release notes: [Velocity v${VERSION}](https://lc.m1sk9.dev/ja/changelog/velocity/v${VERSION})"
+            --notes "Release notes: [Velocity v${VERSION}](https://lc.m1sk9.dev/changelog/velocity/v${VERSION})"
 
       - name: Publish to Modrinth (Velocity)
         uses: cloudnode-pro/modrinth-publish@8dc596b20b94959bf244180235d90729d05a674f # v2
@@ -113,7 +113,7 @@ jobs:
           version: ${{ needs.validate.outputs.version }}-velocity
           channel: ${{ env.MODRINTH_CHANNEL }}
           changelog: |-
-            Please refer to the [release notes](https://lc.m1sk9.dev/ja/changelog/velocity/v${{ needs.validate.outputs.version }}) for update details.
+            Please refer to the [release notes](https://lc.m1sk9.dev/changelog/velocity/v${{ needs.validate.outputs.version }}) for update details.
           loaders: velocity
           game-versions: ${{ env.MODRINTH_VELOCITY_GAME_VERSIONS }}
           files: platform-velocity/build/libs/${{ needs.validate.outputs.jar_name }}

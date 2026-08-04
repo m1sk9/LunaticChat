@@ -39,6 +39,10 @@ export default defineConfig({
     },
   },
   outDir: './dist',
+  // Templates under assets/ are meant to be copied by hand when writing a new
+  // page, not served: changelog-default.md would otherwise publish a page of
+  // empty headings at /assets/changelog-default.
+  srcExclude: ['assets/**/*.md'],
   srcDir: 'src',
   themeConfig: {
     socialLinks: [

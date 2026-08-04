@@ -100,7 +100,7 @@ jobs:
             "platform-paper/build/libs/$JAR_NAME" \
             --title "v${VERSION} (Paper/Folia)" \
             --draft \
-            --notes "Release notes: [Paper/Folia v${VERSION}](https://lc.m1sk9.dev/ja/changelog/paper/v${VERSION})"
+            --notes "Release notes: [Paper/Folia v${VERSION}](https://lc.m1sk9.dev/changelog/paper/v${VERSION})"
 
       - name: Publish to Modrinth (Paper/Folia)
         uses: cloudnode-pro/modrinth-publish@8dc596b20b94959bf244180235d90729d05a674f # v2
@@ -111,7 +111,7 @@ jobs:
           version: ${{ needs.validate.outputs.version }}
           channel: ${{ env.MODRINTH_CHANNEL }}
           changelog: |-
-            Please refer to the [release notes](https://lc.m1sk9.dev/ja/changelog/paper/v${{ needs.validate.outputs.version }}) for update details.
+            Please refer to the [release notes](https://lc.m1sk9.dev/changelog/paper/v${{ needs.validate.outputs.version }}) for update details.
           loaders: |-
             paper
             folia
