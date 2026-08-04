@@ -1,6 +1,5 @@
 package dev.m1sk9.lunaticChat.paper
 
-import dev.m1sk9.lunaticChat.paper.TestUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -17,6 +16,11 @@ class PerPlayerWorkQueueTest {
     private val alice = UUID.fromString("00000001-0000-0000-0000-000000000000")
     private val bob = UUID.fromString("00000002-0000-0000-0000-000000000000")
 
+    private fun createQueue(
+        logger: TestUtils.TestLogger = TestUtils.TestLogger(),
+        scope: CoroutineScope = CoroutineScope(Dispatchers.Default),
+    ) = PerPlayerWorkQueue(scope, logger)
+
     private suspend fun awaitSize(
         completed: ConcurrentLinkedQueue<String>,
         expected: Int,
@@ -29,7 +33,7 @@ class PerPlayerWorkQueueTest {
     @Test
     fun `a player's work runs in submission order even when later work is faster`() =
         runBlocking {
-            val queue = PerPlayerWorkQueue(CoroutineScope(Dispatchers.Default), TestUtils.TestLogger())
+            val queue = createQueue()
             val completed = ConcurrentLinkedQueue<String>()
 
             // The regression this guards: a cached conversion overtaking an uncached one sent
@@ -47,7 +51,7 @@ class PerPlayerWorkQueueTest {
     @Test
     fun `one player's slow work does not hold up another player`() =
         runBlocking {
-            val queue = PerPlayerWorkQueue(CoroutineScope(Dispatchers.Default), TestUtils.TestLogger())
+            val queue = createQueue()
             val completed = ConcurrentLinkedQueue<String>()
 
             queue.submit(alice) {
@@ -62,7 +66,7 @@ class PerPlayerWorkQueueTest {
 
     @Test
     fun `submit does not block the caller`() {
-        val queue = PerPlayerWorkQueue(CoroutineScope(Dispatchers.Default), TestUtils.TestLogger())
+        val queue = createQueue()
         val started = ConcurrentLinkedQueue<String>()
 
         queue.submit(alice) {
@@ -75,25 +79,28 @@ class PerPlayerWorkQueueTest {
     }
 
     @Test
-    fun `work already queued still runs after the player is released`() =
+    fun `work still queued when the player is released is abandoned`() =
         runBlocking {
-            val queue = PerPlayerWorkQueue(CoroutineScope(Dispatchers.Default), TestUtils.TestLogger())
+            val queue = createQueue()
             val completed = ConcurrentLinkedQueue<String>()
 
+            // Delivering it would spend a conversion round trip to write to a player who has left,
+            // and hold both them and their recipient alive until the backlog drained.
             queue.submit(alice) {
-                delay(50)
-                completed.add("in-flight")
+                delay(5_000)
+                completed.add("first")
             }
+            queue.submit(alice) { completed.add("behind-it") }
             queue.release(alice)
 
-            awaitSize(completed, 1)
-            assertEquals(listOf("in-flight"), completed.toList())
+            delay(200)
+            assertTrue(completed.isEmpty())
         }
 
     @Test
     fun `a released player gets a fresh queue if they come back`() =
         runBlocking {
-            val queue = PerPlayerWorkQueue(CoroutineScope(Dispatchers.Default), TestUtils.TestLogger())
+            val queue = createQueue()
             val completed = ConcurrentLinkedQueue<String>()
 
             queue.submit(alice) { completed.add("before") }
@@ -107,9 +114,10 @@ class PerPlayerWorkQueueTest {
         }
 
     @Test
-    fun `a failed item does not stop the player's later work`() =
+    fun `a failed item is reported and does not stop the player's later work`() =
         runBlocking {
-            val queue = PerPlayerWorkQueue(CoroutineScope(Dispatchers.Default), TestUtils.TestLogger())
+            val logger = TestUtils.TestLogger()
+            val queue = createQueue(logger)
             val completed = ConcurrentLinkedQueue<String>()
 
             // Without a guard around each item, the throw would end the consumer loop while its
@@ -120,19 +128,6 @@ class PerPlayerWorkQueueTest {
 
             awaitSize(completed, 1)
             assertEquals(listOf("after-failure"), completed.toList())
-        }
-
-    @Test
-    fun `a failed item is reported rather than swallowed`() =
-        runBlocking {
-            val logger = TestUtils.TestLogger()
-            val queue = PerPlayerWorkQueue(CoroutineScope(Dispatchers.Default), logger)
-            val completed = ConcurrentLinkedQueue<String>()
-
-            queue.submit(alice) { error("delivery blew up") }
-            queue.submit(alice) { completed.add("done") }
-            awaitSize(completed, 1)
-
             assertTrue(logger.severeMessages.any { it.contains("Queued work failed") })
         }
 
@@ -140,13 +135,33 @@ class PerPlayerWorkQueueTest {
     fun `work submitted after shutdown is reported rather than silently dropped`() {
         val logger = TestUtils.TestLogger()
         val scope = CoroutineScope(Dispatchers.Default)
-        val queue = PerPlayerWorkQueue(scope, logger)
+        val queue = createQueue(logger, scope)
         val completed = ConcurrentLinkedQueue<String>()
 
         scope.cancel()
         queue.submit(alice) { completed.add("never") }
 
         assertTrue(completed.isEmpty())
-        assertTrue(logger.warningMessages.any { it.contains("their queue is closed") })
+        assertTrue(logger.warningMessages.any { it.contains("full or closed") })
     }
+
+    @Test
+    fun `a player who outruns delivery is refused rather than queued without limit`() =
+        runBlocking {
+            val logger = TestUtils.TestLogger()
+            val queue = createQueue(logger)
+            val completed = ConcurrentLinkedQueue<String>()
+
+            // The first item occupies the worker, so everything after it fills the buffer. An
+            // unbounded queue accepted all of them and delivered them minutes later.
+            repeat(64) { index ->
+                queue.submit(alice) {
+                    delay(5_000)
+                    completed.add("item-$index")
+                }
+            }
+
+            assertTrue(logger.warningMessages.any { it.contains("full or closed") })
+            assertTrue(completed.isEmpty())
+        }
 }
