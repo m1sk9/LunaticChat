@@ -17,9 +17,9 @@ import kotlinx.serialization.Serializable
 data class LunaticChatConfiguration(
     val features: FeaturesConfig = FeaturesConfig(),
     val messageFormat: MessageFormatConfig = MessageFormatConfig(),
-    val debug: Boolean = false,
+    val debug: LenientBoolean = false,
     val userSettingsFilePath: String = "player-settings.yaml",
-    val checkForUpdates: Boolean = true,
+    val checkForUpdates: LenientBoolean = true,
     @Serializable(with = LanguageSerializer::class)
     val language: Language = Language.EN,
 )

@@ -180,4 +180,100 @@ class ConfigManagerTest {
     fun `a malformed file falls back to defaults instead of failing startup`() {
         assertEquals(LunaticChatConfiguration(), load("features: [this is not a map"))
     }
+
+    @Test
+    fun `a document that is not YAML at all says that every setting was reset`() {
+        val logger = TestUtils.TestLogger()
+
+        val config = ConfigManager(logger).loadConfiguration("features: [this is not a map")
+
+        assertEquals(LunaticChatConfiguration(), config)
+        assertTrue(logger.severeMessages.any { it.contains("EVERY setting") })
+    }
+
+    @Test
+    fun `a file holding only comments is not reported as a failure`() {
+        val logger = TestUtils.TestLogger()
+
+        val config = ConfigManager(logger).loadConfiguration("# everything left at its default\n")
+
+        assertEquals(LunaticChatConfiguration(), config)
+        assertTrue(logger.severeMessages.isEmpty())
+    }
+
+    @Test
+    fun `the boolean spellings Bukkit accepted are still booleans`() {
+        // Bukkit read config.yml as YAML 1.1, where these are booleans. A file written against that
+        // must keep meaning what it says.
+        val config = load("debug: yes\ncheckForUpdates: off")
+
+        assertTrue(config.debug)
+        assertFalse(config.checkForUpdates)
+    }
+
+    @Test
+    fun `boolean spellings are matched regardless of case`() {
+        assertTrue(load("debug: YES").debug)
+    }
+
+    @Test
+    fun `an unreadable setting falls back alone and leaves the rest of the file standing`() {
+        val logger = TestUtils.TestLogger()
+
+        val config =
+            ConfigManager(logger).loadConfiguration(
+                """
+                debug: perhaps
+                userSettingsFilePath: "custom.yaml"
+                language: "ja"
+                """.trimIndent(),
+            )
+
+        assertFalse(config.debug)
+        assertEquals("custom.yaml", config.userSettingsFilePath)
+        assertEquals(Language.JA, config.language)
+        assertTrue(logger.warningMessages.any { it.contains("debug") })
+        assertTrue(logger.severeMessages.isEmpty())
+    }
+
+    @Test
+    fun `an unreadable nested setting leaves its siblings standing`() {
+        val logger = TestUtils.TestLogger()
+
+        val config =
+            ConfigManager(logger).loadConfiguration(
+                """
+                features:
+                  velocityIntegration:
+                    enabled: true
+                    serverName: "survival"
+                    messageDeduplicationCacheSize: "not a number"
+                """.trimIndent(),
+            )
+
+        val velocity = config.features.velocityIntegration
+        assertTrue(velocity.enabled)
+        assertEquals("survival", velocity.serverName)
+        assertEquals(
+            LunaticChatConfiguration().features.velocityIntegration.messageDeduplicationCacheSize,
+            velocity.messageDeduplicationCacheSize,
+        )
+        assertTrue(logger.warningMessages.any { it.contains("features.velocityIntegration.messageDeduplicationCacheSize") })
+    }
+
+    @Test
+    fun `several unreadable settings each fall back without taking the others`() {
+        val config =
+            load(
+                """
+                debug: perhaps
+                checkForUpdates: sometimes
+                userSettingsFilePath: "custom.yaml"
+                """.trimIndent(),
+            )
+
+        assertFalse(config.debug)
+        assertTrue(config.checkForUpdates)
+        assertEquals("custom.yaml", config.userSettingsFilePath)
+    }
 }
