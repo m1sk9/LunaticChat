@@ -118,8 +118,11 @@ class DirectMessageHandler(
 
     /**
      * Sends a direct message from one player to another on the same server.
-     * Handles formatting and recording the conversation.
-     * Applies romaji-to-Japanese conversion if sender has it enabled.
+     * Handles formatting, and applies romaji-to-Japanese conversion if sender has it enabled.
+     *
+     * The conversation is recorded by the caller via [recordMessage] before the delivery is queued,
+     * for the same reason as [recordRemoteRecipient]. Recording it here as well would also re-insert
+     * entries that [clearPlayer] has already swept, if the recipient quits mid-delivery.
      *
      * @return true if message was sent successfully
      */
@@ -128,8 +131,6 @@ class DirectMessageHandler(
         recipient: Player,
         message: String,
     ): Boolean {
-        recordMessage(sender, recipient)
-
         val senderSettings = settingsManager?.getSettings(sender.uniqueId)
         val recipientSettings = settingsManager?.getSettings(recipient.uniqueId)
 

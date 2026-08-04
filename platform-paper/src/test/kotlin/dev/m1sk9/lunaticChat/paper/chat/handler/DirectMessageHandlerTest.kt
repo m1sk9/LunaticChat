@@ -191,7 +191,7 @@ class DirectMessageHandlerTest {
             val recipient = TestUtils.createMockPlayer(name = "Bob")
             every { Bukkit.getPlayer(recipient.uniqueId) } returns recipient
 
-            sync { handler.sendDirectMessage(sender, recipient, "hi") }
+            handler.recordMessage(sender, recipient)
 
             val target = handler.getReplyTarget(sender)
             assertIs<ReplyTarget.Local>(target)
