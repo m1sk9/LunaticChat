@@ -15,7 +15,7 @@ repositories {
 }
 
 dependencies {
-    // Engine module (provides serialization, coroutines, ktor)
+    // Engine module (provides serialization)
     api(project(":engine"))
 
     // Paper-specific dependencies
