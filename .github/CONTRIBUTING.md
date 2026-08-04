@@ -16,16 +16,24 @@ If your issue is not already reported, please create a new issue using the provi
 
 We welcome contributions to LunaticChat!
 
-LuckPerms adheres to the [Kotlin Coding Conventions](https://kotlinlang.org/docs/coding-conventions.html).
+LunaticChat adheres to the [Kotlin Coding Conventions](https://kotlinlang.org/docs/coding-conventions.html).
 
 It also uses Ktlint. Merging pull requests into the main branch requires passing Ktlint checks. When submitting a pull request, remember to run `./gradlew ktlintFormat`.
 
 When making major changes that break backward compatibility, please discuss them beforehand via an issue or discussion.
 Such changes often cause confusion when made without prior discussion.
 
+### Design Guide
+
+Our documentation site provides an overview of LunaticChat's design. 
+
+We highly recommend reading it before you begin development.
+
+[Introduction / Developer Guide - LunaticChat Documentation](https://lc.m1sk9.dev/docs/developers/introduction)
+
 ### Project Structure
 
-LunaticChat uses a multi-module Gradle setup. 
+LunaticChat uses a multi-module Gradle setup.
 
 - `engine`: Contains code shared across all platforms.
 - `platform-paper`: Contains code specific to the Paper platform.
@@ -35,4 +43,12 @@ LunaticChat uses a multi-module Gradle setup.
 
 LunaticChat comes with a Docker environment that can be launched as a debug server.
 
-Running `./x start` will launch a Paper server with LunaticChat installed.
+It is driven by `./x <action> <platform>`, where the platform is required:
+
+- `./x start paper` builds the plugin and starts a single Paper server (`localhost:25565`)
+- `./x start folia` starts a single Folia server (`localhost:25565`)
+- `./x start velocity` starts a Velocity proxy with two backend Paper servers (`localhost:25577`)
+
+Builds default to a nightly version derived from the current commit; pass `--stable` to build as a stable release.
+
+Run `./x help` for the remaining actions (`stop`, `log`, `clean`, `rcon`).
