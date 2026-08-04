@@ -5,7 +5,7 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
@@ -18,7 +18,11 @@ class GoogleIMEClient(
 ) {
     suspend fun convert(input: String): String =
         withContext(Dispatchers.IO) {
-            withTimeout(timeout) {
+            // withTimeoutOrNull rather than withTimeout: the latter reports a timeout as a
+            // CancellationException, which callers must rethrow rather than degrade. A slow request
+            // then reached the delivery queue looking like shutdown and ended the worker, so the
+            // sender's later messages were buffered and never delivered.
+            withTimeoutOrNull(timeout) {
                 val res =
                     httpClient.get("https://www.google.com/transliterate") {
                         url {
@@ -33,7 +37,7 @@ class GoogleIMEClient(
 
                 val jsonData = res.body<String>()
                 parseResponse(jsonData)
-            }
+            } ?: throw ConversionTimeoutException(timeout)
         }
 
     private fun parseResponse(data: String): String {

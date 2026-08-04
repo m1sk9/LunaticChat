@@ -7,13 +7,16 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIsNot
 import kotlin.test.assertNull
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Tests for RomanjiConverter.
@@ -289,6 +292,26 @@ class RomanjiConverterTest {
         }
 
     // ===== API error handling =====
+
+    @Test
+    fun `a conversion timeout is not cancellation`() {
+        // Reported through the cancellation channel, a slow request reached the delivery queue
+        // looking like shutdown and ended the worker, so the sender's later messages were buffered
+        // and never delivered.
+        assertIsNot<CancellationException>(ConversionTimeoutException(1.seconds))
+    }
+
+    @Test
+    fun `an API timeout degrades to hiragana like any other failure`() =
+        runBlocking {
+            val (converter, cache, apiClient) = createConverter()
+            coEvery { apiClient.convert("おはよう") } throws ConversionTimeoutException(1.seconds)
+
+            val result = converter.convert("ohayou")
+
+            assertEquals("おはよう", result)
+            verify(exactly = 1) { cache.put("ohayou", "おはよう") }
+        }
 
     @Test
     fun `API failure should fallback to hiragana`() =

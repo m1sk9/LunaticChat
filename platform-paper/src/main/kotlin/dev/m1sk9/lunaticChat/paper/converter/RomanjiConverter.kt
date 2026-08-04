@@ -53,7 +53,7 @@ class RomanjiConverter(
             coroutineScope {
                 words
                     .distinct()
-                    .map { word -> async { word to limiter.withPermit { convertWord(word) } } }
+                    .map { word -> async { word to convertWord(word) } }
                     .awaitAll()
             }.toMap()
 
@@ -81,9 +81,13 @@ class RomanjiConverter(
         val hiragana = KanaConverter.toHiragana(word)
 
         // Step 2: Hiragana -> Kanji/Kana
+        //
+        // The permit covers only the request. Holding it across the cache lookup above made cached
+        // words queue behind in-flight requests for a permit they never needed, so a message whose
+        // every word was cached could still run out of the caller's budget and go out unconverted.
         val converted =
             try {
-                apiClient.convert(hiragana)
+                limiter.withPermit { apiClient.convert(hiragana) }
             } catch (e: CancellationException) {
                 // Not an API failure: the caller's timeout fired. Caching the hiragana here would
                 // pin every word of the message to its unconverted form for good, because the words
