@@ -3,6 +3,7 @@ package dev.m1sk9.lunaticChat.paper
 import dev.m1sk9.lunaticChat.paper.TestUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -134,4 +135,18 @@ class PerPlayerWorkQueueTest {
 
             assertTrue(logger.severeMessages.any { it.contains("Queued work failed") })
         }
+
+    @Test
+    fun `work submitted after shutdown is reported rather than silently dropped`() {
+        val logger = TestUtils.TestLogger()
+        val scope = CoroutineScope(Dispatchers.Default)
+        val queue = PerPlayerWorkQueue(scope, logger)
+        val completed = ConcurrentLinkedQueue<String>()
+
+        scope.cancel()
+        queue.submit(alice) { completed.add("never") }
+
+        assertTrue(completed.isEmpty())
+        assertTrue(logger.warningMessages.any { it.contains("their queue is closed") })
+    }
 }

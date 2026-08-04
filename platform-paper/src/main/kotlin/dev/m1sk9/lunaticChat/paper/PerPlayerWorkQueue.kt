@@ -4,6 +4,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -34,7 +35,10 @@ class PerPlayerWorkQueue(
         playerId: UUID,
         work: suspend () -> Unit,
     ) {
-        val accepted = queues.computeIfAbsent(playerId) { startWorker() }.trySend(work).isSuccess
+        // Checked rather than left to trySend: cancelling the scope kills the worker coroutines but
+        // does not close their channels, so after shutdown trySend would keep reporting success for
+        // work nothing will ever read.
+        val accepted = scope.isActive && queues.computeIfAbsent(playerId) { startWorker() }.trySend(work).isSuccess
         if (!accepted) {
             // Reachable once the scope is cancelled at shutdown, or if the player's queue is
             // released in the same tick as their command. Dropping a message in silence is worse
