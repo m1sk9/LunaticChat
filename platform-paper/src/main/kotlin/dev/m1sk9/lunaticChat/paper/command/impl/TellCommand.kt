@@ -7,6 +7,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
+import dev.m1sk9.lunaticChat.paper.PerPlayerWorkQueue
 import dev.m1sk9.lunaticChat.paper.chat.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.command.annotation.Command
 import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
@@ -37,6 +38,10 @@ class TellCommand(
     private val crossServerDirectMessageManager: CrossServerDirectMessageManager? = null,
     private val remotePlayerRegistry: RemotePlayerRegistry? = null,
     private val localServerName: String = "",
+    // Delivery is queued rather than run inline: romaji conversion can reach the Google IME API,
+    // and a command executor runs on the tick thread. Queueing per sender keeps their messages in
+    // the order they typed them.
+    private val deliveryQueue: PerPlayerWorkQueue = plugin.deliveryQueue,
 ) : LunaticCommand(plugin) {
     override val description: String
         get() = languageManager.getMessage("commandDescription.tell")
@@ -99,7 +104,10 @@ class TellCommand(
             ) {
                 return fail("directMessage.yourself")
             }
-            manager.sendCrossServerMessage(sender, name, server, message)
+            // Recorded here rather than inside the queued work: /reply reads the target on this
+            // thread, so it must be visible as soon as /tell returns.
+            directMessageHandler.recordRemoteRecipient(sender, name, server)
+            deliveryQueue.submit(sender.uniqueId) { manager.sendCrossServerMessage(sender, name, server, message) }
             return CommandResult.Success
         }
 
@@ -111,7 +119,8 @@ class TellCommand(
             return fail("directMessage.yourself")
         }
 
-        directMessageHandler.sendDirectMessage(sender, recipient, message)
+        directMessageHandler.recordMessage(sender, recipient)
+        deliveryQueue.submit(sender.uniqueId) { directMessageHandler.sendDirectMessage(sender, recipient, message) }
 
         return CommandResult.Success
     }

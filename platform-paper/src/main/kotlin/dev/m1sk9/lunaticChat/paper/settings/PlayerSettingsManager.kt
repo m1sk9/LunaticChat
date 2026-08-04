@@ -66,8 +66,20 @@ class PlayerSettingsManager(
     }
 
     /**
+     * Queues a debounced asynchronous save without changing any setting.
+     *
+     * Used where the caller wants what is already in memory flushed soon - a player leaving, say -
+     * rather than paying for a write it does not need.
+     */
+    fun queueSave() {
+        storage.queueAsyncSave(::snapshot)
+    }
+
+    /**
      * Forces an immediate synchronous save of all settings to disk.
-     * This should only be called during plugin shutdown.
+     *
+     * Serializes every stored player and writes the whole file inline, so this belongs on the
+     * shutdown path only; everywhere else should use [queueSave] or [updateSettings].
      */
     fun saveToDisk() {
         storage.saveToDisk(snapshot())

@@ -69,7 +69,7 @@ class CrossServerChatManager(
                                 PluginMessageChannel.ID,
                                 PluginMessageCodec.encode(globalChatMessage),
                             )
-                            logger.info("Sent global chat message to Velocity: messageId=$messageId, player=$playerName")
+                            logger.fine { "Sent global chat message to Velocity: messageId=$messageId, player=$playerName" }
                         } else {
                             logger.warning("Cannot send global chat message: player $playerId not found")
                         }
@@ -109,10 +109,10 @@ class CrossServerChatManager(
                 },
             )
 
-            logger.info(
+            logger.fine {
                 "Broadcasted global chat message from ${message.serverName}: " +
-                    "player=${message.playerName}, messageId=${message.messageId}",
-            )
+                    "player=${message.playerName}, messageId=${message.messageId}"
+            }
         } catch (e: Exception) {
             logger.log(Level.SEVERE, "Failed to handle incoming global chat message", e)
         }

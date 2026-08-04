@@ -37,13 +37,16 @@ class LanguageManager(
     private val languageCache = mutableMapOf<Language, Map<String, String>>()
 
     /**
-     * Initializes the language manager by loading all language files.
+     * Initializes the language manager by loading the languages [getMessage] can read: the
+     * selected one and the English fallback. Other bundled languages are never consulted, so
+     * parsing and flattening them at startup would be wasted work.
+     *
      * This should be called during plugin initialization.
      *
      * @throws IllegalStateException if the English fallback file is missing or cannot be loaded
      */
     fun initialize() {
-        Language.entries.forEach { lang ->
+        linkedSetOf(Language.EN, selectedLanguage).forEach { lang ->
             try {
                 val messages = loadLanguageFile(lang)
                 languageCache[lang] = messages

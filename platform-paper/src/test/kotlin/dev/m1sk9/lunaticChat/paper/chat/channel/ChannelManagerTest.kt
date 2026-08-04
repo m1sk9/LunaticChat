@@ -16,6 +16,7 @@ import dev.m1sk9.lunaticChat.paper.TestUtils.createTestUUID
 import dev.m1sk9.lunaticChat.paper.config.key.ChannelChatFeatureConfig
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.verify
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -623,5 +624,40 @@ class ChannelManagerTest {
         manager.saveToDisk()
 
         verify { storage.saveToDisk(any()) }
+    }
+
+    @Test
+    fun `a queued write sees changes made after it was queued`() {
+        val (manager, storage, _) = createManager()
+        val queued = slot<() -> ChannelData>()
+        every { storage.queueAsyncSave(capture(queued)) } returns Unit
+
+        val ownerId = createTestUUID(1)
+        manager.createChannel(createTestChannel(id = "first-ch", name = "First", ownerId = ownerId))
+        manager.createChannel(createTestChannel(id = "second-ch", name = "Second", ownerId = createTestUUID(2)))
+
+        // The debounced write runs later; it must persist the state as of then, not as of the
+        // change that started the timer.
+        val persisted = queued.captured()
+        assertTrue(persisted.channels.containsKey("first-ch"))
+        assertTrue(persisted.channels.containsKey("second-ch"))
+    }
+
+    @Test
+    fun `a queued write never persists a channel without its members`() {
+        val (manager, storage, _) = createManager()
+        val queued = slot<() -> ChannelData>()
+        every { storage.queueAsyncSave(capture(queued)) } returns Unit
+
+        val ownerId = createTestUUID(1)
+        manager.createChannel(createTestChannel(id = "keep-ch", name = "Keep", ownerId = ownerId))
+        manager.createChannel(createTestChannel(id = "drop-ch", name = "Drop", ownerId = ownerId))
+        manager.deleteChannel("drop-ch", ownerId)
+
+        // channelsCache, membersCache and activeChannels are three separate maps. The snapshot has
+        // to be taken where they are mutated, or it can catch them mid-update and persist halves.
+        val persisted = queued.captured()
+        assertEquals(persisted.channels.keys, persisted.members.keys)
+        assertTrue(persisted.activeChannels.values.all { it in persisted.channels.keys })
     }
 }

@@ -7,7 +7,10 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeoutOrNull
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -297,5 +300,41 @@ class RomanjiConverterTest {
 
             assertEquals("おはよう", result)
             verify(exactly = 1) { cache.put("ohayou", "おはよう") }
+        }
+
+    @Test
+    fun `words in one message are converted concurrently`() =
+        runBlocking {
+            val (converter, _, apiClient) = createConverter()
+            val inFlight = AtomicInteger(0)
+            val peakInFlight = AtomicInteger(0)
+
+            coEvery { apiClient.convert(any()) } coAnswers {
+                peakInFlight.updateAndGet { maxOf(it, inFlight.incrementAndGet()) }
+                delay(50)
+                inFlight.decrementAndGet()
+                "変換"
+            }
+
+            converter.convert("konnichiwa ohayou arigatou")
+
+            assertEquals(3, peakInFlight.get(), "each word should be in flight at the same time")
+        }
+
+    @Test
+    fun `a message-level timeout caches nothing`() =
+        runBlocking {
+            val (converter, cache, apiClient) = createConverter()
+            coEvery { apiClient.convert(any()) } coAnswers {
+                delay(1_000)
+                "変換"
+            }
+
+            val result = withTimeoutOrNull(100) { converter.convert("konnichiwa ohayou arigatou") }
+
+            assertNull(result)
+            // The words share one timeout, so caching the hiragana fallback here would pin the whole
+            // message - not just one word - to its unconverted form for the life of the cache.
+            verify(exactly = 0) { cache.put(any(), any()) }
         }
 }

@@ -40,10 +40,21 @@ class LunaticChat :
     private lateinit var services: ServiceContainer
     private lateinit var configuration: LunaticChatConfiguration
     private lateinit var serviceInitializer: ServiceInitializer
-    private lateinit var pluginScope: PluginCoroutineScope
+
+    // Read by commands that must not block the tick thread.
+    lateinit var pluginScope: PluginCoroutineScope
+        private set
+
+    /** Serializes each player's outgoing messages so they arrive in the order they were sent. */
+    lateinit var deliveryQueue: PerPlayerWorkQueue
+        private set
     private var updateChecker: UpdateChecker? = null
 
     private val updateAvailable = AtomicBoolean(false)
+
+    // Only the Japanese conversion and update-check features make HTTP calls, and both default
+    // to off, so a stock install should not pay for a CIO engine and its thread pool.
+    private val httpClient = lazy { HttpClient(CIO) }
 
     override fun onEnable() {
         saveDefaultConfig()
@@ -55,10 +66,9 @@ class LunaticChat :
             logger.info("Debug: $configuration")
         }
 
-        val httpClient = HttpClient(CIO)
-
         // Initialize plugin coroutine scope
         pluginScope = PluginCoroutineScope(logger)
+        deliveryQueue = PerPlayerWorkQueue(pluginScope.scope, logger)
 
         // Initialize all services
         serviceInitializer =
@@ -79,7 +89,7 @@ class LunaticChat :
 
         // Check for updates
         if (configuration.checkForUpdates) {
-            initializeUpdateChecker(httpClient)
+            initializeUpdateChecker(httpClient.value)
         }
 
         logger.info("LunaticChat enabled.")
@@ -88,6 +98,7 @@ class LunaticChat :
     override fun onDisable() {
         pluginScope.cancel()
         serviceInitializer.shutdown(services)
+        if (httpClient.isInitialized()) httpClient.value.close()
         logger.info("LunaticChat disabled.")
     }
 

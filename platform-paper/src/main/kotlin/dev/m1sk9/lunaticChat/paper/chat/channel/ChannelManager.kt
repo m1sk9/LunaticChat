@@ -29,6 +29,12 @@ class ChannelManager(
     private val membersCache = ConcurrentHashMap<String, CopyOnWriteArrayList<ChannelMember>>()
     private val activeChannels = ConcurrentHashMap<UUID, String>()
 
+    // Handed to the debounced write, which reads it when it finally runs rather than when it was
+    // queued - so a batched write persists every change made during the delay, not just the one
+    // that started it.
+    @Volatile
+    private var latestSnapshot: ChannelData = ChannelData()
+
     /**
      * Initializes the ChannelManager by loading data from storage.
      */
@@ -166,6 +172,44 @@ class ChannelManager(
         val members = membersCache[channelId]?.toList() ?: emptyList()
         return Result.success(members)
     }
+
+    /**
+     * Answers whether a player belongs to a channel without handing out the member list.
+     *
+     * [getChannelMembers] copies the list defensively, which is the wrong price to pay for a
+     * question that only needs to scan it.
+     *
+     * @param channelId The ID of the channel.
+     * @param playerId The UUID of the player.
+     * @return Result containing true if the player is a member.
+     * @throws ChannelNotFoundException if the channel does not exist.
+     */
+    fun isMember(
+        channelId: String,
+        playerId: UUID,
+    ): Result<Boolean> {
+        channelsCache[channelId]
+            ?: return Result.failure(ChannelNotFoundException(channelId))
+
+        val members = membersCache[channelId] ?: return Result.success(false)
+        return Result.success(members.any { it.playerId == playerId })
+    }
+
+    /**
+     * Returns the ids of every existing channel the player belongs to.
+     *
+     * Walks the membership lists once in place; asking per channel meant copying every channel's
+     * member list to answer a question about one player.
+     *
+     * @param playerId The UUID of the player.
+     */
+    fun channelIdsOf(playerId: UUID): List<String> =
+        membersCache
+            .asSequence()
+            .filter { (channelId, members) ->
+                channelsCache.containsKey(channelId) && members.any { it.playerId == playerId }
+            }.map { it.key }
+            .toList()
 
     /**
      * Adds a member to a channel.
@@ -396,28 +440,32 @@ class ChannelManager(
      * Saves the current state of channels and members to storage asynchronously.
      */
     private fun saveToStorage() {
-        val data =
-            ChannelData(
-                channels = channelsCache.toMap(),
-                members = membersCache.mapValues { it.value.toList() },
-                activeChannels = activeChannels.mapKeys { it.key.toString() },
-            )
-        storage.queueAsyncSave(data)
+        latestSnapshot = snapshot()
+        storage.queueAsyncSave { latestSnapshot }
         logger.fine("${channelsCache.size} channels queued for saving to storage.")
     }
+
+    /**
+     * A point-in-time copy of everything persisted.
+     *
+     * Taken on the mutating thread, because the three caches are separate: read from the write
+     * thread instead, a snapshot could catch a channel already removed from [channelsCache] while
+     * its [membersCache] entry still existed, and persist the halves inconsistently. Copying the
+     * caches is cheap; it is the file write that the debounce is there to coalesce.
+     */
+    private fun snapshot(): ChannelData =
+        ChannelData(
+            channels = channelsCache.toMap(),
+            members = membersCache.mapValues { it.value.toList() },
+            activeChannels = activeChannels.mapKeys { it.key.toString() },
+        )
 
     /**
      * Saves the current state of channels and members to storage synchronously.
      * Should only br called during server shutdown.
      */
     fun saveToDisk() {
-        val data =
-            ChannelData(
-                channels = channelsCache.toMap(),
-                members = membersCache.mapValues { it.value.toList() },
-                activeChannels = activeChannels.mapKeys { it.key.toString() },
-            )
-        storage.saveToDisk(data)
+        storage.saveToDisk(snapshot())
     }
 
     /**

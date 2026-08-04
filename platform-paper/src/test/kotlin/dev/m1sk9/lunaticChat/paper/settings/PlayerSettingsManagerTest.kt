@@ -154,6 +154,17 @@ class PlayerSettingsManagerTest {
     }
 
     @Test
+    fun `queueSave should not write on the calling thread`() {
+        val (manager, storage, _) = createManager()
+        manager.initialize()
+
+        manager.queueSave()
+
+        verify(exactly = 1) { storage.queueAsyncSave(any()) }
+        verify(exactly = 0) { storage.saveToDisk(any()) }
+    }
+
+    @Test
     fun `multiple players should have independent settings`() {
         val (manager, _, _) = createManager()
         manager.initialize()

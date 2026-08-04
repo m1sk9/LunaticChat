@@ -12,7 +12,6 @@ import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
 import dev.m1sk9.lunaticChat.paper.velocity.RemotePlayerRegistry
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.ClickEvent
-import net.kyori.adventure.text.event.HoverEvent
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import java.util.UUID
@@ -67,6 +66,22 @@ class DirectMessageHandler(
     }
 
     /**
+     * Records that [sender] messaged a player on another server, so /reply can find them.
+     *
+     * Separate from the delivery itself because delivery is queued: /reply reads the target on the
+     * command thread, so recording it only once the message has been converted and sent would
+     * leave a window - as long as the conversion timeout - where /reply says there is nobody to
+     * reply to.
+     */
+    fun recordRemoteRecipient(
+        sender: Player,
+        targetName: String,
+        targetServerName: String,
+    ) {
+        lastRecipient[sender.uniqueId] = ReplyTarget.Remote(targetName, targetServerName)
+    }
+
+    /**
      * Gets the target to reply to.
      * First checks if someone has messaged this player, otherwise falls back
      * to the last person they messaged. Targets that are no longer reachable
@@ -103,18 +118,19 @@ class DirectMessageHandler(
 
     /**
      * Sends a direct message from one player to another on the same server.
-     * Handles formatting and recording the conversation.
-     * Applies romaji-to-Japanese conversion if sender has it enabled.
+     * Handles formatting, and applies romaji-to-Japanese conversion if sender has it enabled.
+     *
+     * The conversation is recorded by the caller via [recordMessage] before the delivery is queued,
+     * for the same reason as [recordRemoteRecipient]. Recording it here as well would also re-insert
+     * entries that [clearPlayer] has already swept, if the recipient quits mid-delivery.
      *
      * @return true if message was sent successfully
      */
-    fun sendDirectMessage(
+    suspend fun sendDirectMessage(
         sender: Player,
         recipient: Player,
         message: String,
     ): Boolean {
-        recordMessage(sender, recipient)
-
         val senderSettings = settingsManager?.getSettings(sender.uniqueId)
         val recipientSettings = settingsManager?.getSettings(recipient.uniqueId)
 
@@ -146,7 +162,7 @@ class DirectMessageHandler(
      * @return the message body to relay (romaji-converted if applicable), since the
      *   receiving server has no access to the sender's settings.
      */
-    fun handleOutgoingCrossServerMessage(
+    suspend fun handleOutgoingCrossServerMessage(
         sender: Player,
         targetName: String,
         targetServerName: String,
@@ -168,7 +184,7 @@ class DirectMessageHandler(
                 ?.playMessageSendNotification()
         }
 
-        lastRecipient[sender.uniqueId] = ReplyTarget.Remote(targetName, targetServerName)
+        recordRemoteRecipient(sender, targetName, targetServerName)
         return displayMessage
     }
 
@@ -197,7 +213,7 @@ class DirectMessageHandler(
         lastMessager[recipient.uniqueId] = ReplyTarget.Remote(senderName, sourceServerName)
     }
 
-    private fun convertIfEnabled(
+    private suspend fun convertIfEnabled(
         message: String,
         enabled: Boolean,
     ): String =
@@ -213,20 +229,12 @@ class DirectMessageHandler(
         recipientName: String,
         rawMessage: String,
     ) {
-        val spyMessage = formatMessage(format, senderName, recipientName, rawMessage, replyTo = senderName)
-        SpyPermissionManager
-            .getDirectMessageSpyPlayers()
-            .values
-            .filter { it.isOnline && it.name !in setOf(senderName, recipientName) }
-            .forEach {
-                it.sendMessage(
-                    spyMessage.hoverEvent(
-                        HoverEvent.showText(
-                            Component.text(languageManager.getMessage("general.spyMessage")),
-                        ),
-                    ),
-                )
-            }
+        SpyPermissionManager.notifySpies(
+            noticeText = languageManager.getMessage("general.spyMessage"),
+            exclude = { it.name == senderName || it.name == recipientName },
+        ) {
+            formatMessage(format, senderName, recipientName, rawMessage, replyTo = senderName)
+        }
     }
 
     private fun formatMessage(

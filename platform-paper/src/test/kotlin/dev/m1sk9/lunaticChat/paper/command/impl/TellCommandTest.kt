@@ -2,14 +2,19 @@ package dev.m1sk9.lunaticChat.paper.command.impl
 
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
 import dev.m1sk9.lunaticChat.paper.LunaticChat
+import dev.m1sk9.lunaticChat.paper.PerPlayerWorkQueue
 import dev.m1sk9.lunaticChat.paper.TestUtils
 import dev.m1sk9.lunaticChat.paper.chat.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.velocity.CrossServerDirectMessageManager
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlin.test.Test
 import kotlin.test.assertIs
 
@@ -17,6 +22,9 @@ class TellCommandTest {
     private fun createCommand(
         crossServerManager: CrossServerDirectMessageManager? = null,
         localServerName: String = "lobby",
+        // Unconfined runs the queued delivery inline, so a test can assert on it right after
+        // execute() returns.
+        scope: CoroutineScope = CoroutineScope(Dispatchers.Unconfined),
     ): TellDeps {
         val plugin = mockk<LunaticChat>(relaxed = true)
         val dmHandler = mockk<DirectMessageHandler>(relaxed = true)
@@ -28,7 +36,16 @@ class TellCommandTest {
         val ctx = mockk<CommandContext>(relaxed = true)
         every { ctx.requirePlayer() } returns sender
 
-        val command = TellCommand(plugin, dmHandler, languageManager, crossServerManager, null, localServerName)
+        val command =
+            TellCommand(
+                plugin,
+                dmHandler,
+                languageManager,
+                crossServerManager,
+                null,
+                localServerName,
+                PerPlayerWorkQueue(scope, TestUtils.TestLogger()),
+            )
         return TellDeps(command, ctx, dmHandler, crossServerManager, sender)
     }
 
@@ -57,7 +74,7 @@ class TellCommandTest {
         val result = deps.command.execute(deps.ctx, "Bob@survival", "hello")
 
         assertIs<CommandResult.Success>(result)
-        verify { manager.sendCrossServerMessage(deps.sender, "Bob", "survival", "hello") }
+        coVerify { manager.sendCrossServerMessage(deps.sender, "Bob", "survival", "hello") }
     }
 
     @Test
@@ -69,7 +86,7 @@ class TellCommandTest {
         val result = deps.command.execute(deps.ctx, "Alice@lobby", "hello")
 
         assertIs<CommandResult.Failure>(result)
-        verify(exactly = 0) { manager.sendCrossServerMessage(any(), any(), any(), any()) }
+        coVerify(exactly = 0) { manager.sendCrossServerMessage(any(), any(), any(), any()) }
     }
 
     @Test
@@ -80,7 +97,7 @@ class TellCommandTest {
         val result = deps.command.execute(deps.ctx, "Bob@", "hello")
 
         assertIs<CommandResult.Failure>(result)
-        verify(exactly = 0) { manager.sendCrossServerMessage(any(), any(), any(), any()) }
+        coVerify(exactly = 0) { manager.sendCrossServerMessage(any(), any(), any(), any()) }
     }
 
     @Test
@@ -91,7 +108,7 @@ class TellCommandTest {
         val result = deps.command.parseAndExecute(deps.ctx, "Bob@survival hello there")
 
         assertIs<CommandResult.Success>(result)
-        verify { manager.sendCrossServerMessage(deps.sender, "Bob", "survival", "hello there") }
+        coVerify { manager.sendCrossServerMessage(deps.sender, "Bob", "survival", "hello there") }
     }
 
     @Test
@@ -102,6 +119,37 @@ class TellCommandTest {
         val result = deps.command.parseAndExecute(deps.ctx, "Bob@survival")
 
         assertIs<CommandResult.Failure>(result)
-        verify(exactly = 0) { manager.sendCrossServerMessage(any(), any(), any(), any()) }
+        coVerify(exactly = 0) { manager.sendCrossServerMessage(any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun `execute returns without waiting for delivery`() {
+        val dispatcher = StandardTestDispatcher()
+        val manager = mockk<CrossServerDirectMessageManager>(relaxed = true)
+        val deps = createCommand(crossServerManager = manager, scope = CoroutineScope(dispatcher))
+
+        val result = deps.command.execute(deps.ctx, "Bob@survival", "hello")
+
+        // Delivery can reach the Google IME API; the command must not hold the tick thread for it.
+        assertIs<CommandResult.Success>(result)
+        coVerify(exactly = 0) { manager.sendCrossServerMessage(any(), any(), any(), any()) }
+
+        dispatcher.scheduler.advanceUntilIdle()
+        coVerify { manager.sendCrossServerMessage(deps.sender, "Bob", "survival", "hello") }
+    }
+
+    @Test
+    fun `the reply target is visible before delivery has run`() {
+        val dispatcher = StandardTestDispatcher()
+        val manager = mockk<CrossServerDirectMessageManager>(relaxed = true)
+        val deps = createCommand(crossServerManager = manager, scope = CoroutineScope(dispatcher))
+
+        deps.command.execute(deps.ctx, "Bob@survival", "hello")
+
+        // /reply reads the target on the command thread. Recording it inside the queued delivery
+        // would leave it unset for as long as the conversion takes, so /r straight after /tell
+        // would report that there is nobody to reply to.
+        verify { deps.dmHandler.recordRemoteRecipient(deps.sender, "Bob", "survival") }
+        coVerify(exactly = 0) { manager.sendCrossServerMessage(any(), any(), any(), any()) }
     }
 }

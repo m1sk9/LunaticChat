@@ -45,10 +45,7 @@ class ChannelMembershipManager(
     fun isMember(
         playerId: UUID,
         channelId: String,
-    ): Result<Boolean> =
-        channelManager.getChannelMembers(channelId).map { members ->
-            members.any { it.playerId == playerId }
-        }
+    ): Result<Boolean> = channelManager.isMember(channelId, playerId)
 
     /**
      * Gets the role of a member in a channel.
@@ -338,18 +335,5 @@ class ChannelMembershipManager(
      * @param playerId The UUID of the player.
      * @return Result containing a list of channel IDs where the player is a member.
      */
-    fun getPlayerChannels(playerId: UUID): Result<List<String>> {
-        val allChannels =
-            channelManager.getAllChannels().getOrElse {
-                return Result.failure(it)
-            }
-
-        val playerChannels =
-            allChannels
-                .filter { channel ->
-                    isMember(playerId, channel.id).getOrElse { false }
-                }.map { it.id }
-
-        return Result.success(playerChannels)
-    }
+    fun getPlayerChannels(playerId: UUID): Result<List<String>> = Result.success(channelManager.channelIdsOf(playerId))
 }

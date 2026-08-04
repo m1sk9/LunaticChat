@@ -25,6 +25,7 @@ import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.plugin.java.JavaPlugin
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.logging.Level
 import java.util.logging.Logger
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -48,10 +49,15 @@ private data class ChannelComponents(
 class ServiceInitializer(
     private val plugin: JavaPlugin,
     private val configuration: LunaticChatConfiguration,
-    private val httpClient: HttpClient,
+    private val httpClient: Lazy<HttpClient>,
     private val logger: Logger,
 ) {
     private val handshakeCompleted = AtomicBoolean(false)
+
+    private companion object {
+        /** Matches the value documented in config.yml. */
+        const val DEFAULT_CACHE_SAVE_INTERVAL_SECONDS = 300L
+    }
 
     /**
      * Initializes all services in dependency order.
@@ -186,7 +192,6 @@ class ServiceInitializer(
             ConversionCache(
                 cacheFile = plugin.dataFolder.resolve(configuration.features.japaneseConversion.cacheFilePath).toPath(),
                 maxEntries = configuration.features.japaneseConversion.cacheMaxEntries,
-                saver = DebouncedSaver(plugin),
                 logger = logger,
             )
         cache.loadFromDisk()
@@ -195,7 +200,7 @@ class ServiceInitializer(
         val apiClient =
             GoogleIMEClient(
                 timeout = configuration.features.japaneseConversion.apiTimeout.milliseconds,
-                httpClient = httpClient,
+                httpClient = httpClient.value,
             )
 
         // Initialize Romanji converter
@@ -222,7 +227,7 @@ class ServiceInitializer(
         val storage =
             ChannelStorage(
                 channelsFile = channelsFile,
-                plugin = plugin,
+                saver = DebouncedSaver(plugin),
                 logger = logger,
             )
 
@@ -419,10 +424,21 @@ class ServiceInitializer(
     fun schedulePeriodicTasks(services: ServiceContainer) {
         val conversionCache = services.conversionCache
         if (conversionCache != null) {
+            // The periodic task is the only writer besides shutdown, so a non-positive interval
+            // would both be rejected by runAtFixedRate and leave the cache unsaved until the
+            // server stopped. Fall back to the documented default rather than to one second,
+            // which would rewrite the whole cache file every tick anyone chatted.
+            val configuredInterval = configuration.features.japaneseConversion.cacheSaveIntervalSeconds
             val intervalSeconds =
-                configuration.features.japaneseConversion
-                    .cacheSaveIntervalSeconds
-                    .toLong()
+                if (configuredInterval > 0) {
+                    configuredInterval.toLong()
+                } else {
+                    logger.warning(
+                        "features.japaneseConversion.cache.saveIntervalSeconds must be positive; " +
+                            "using $DEFAULT_CACHE_SAVE_INTERVAL_SECONDS seconds instead of $configuredInterval",
+                    )
+                    DEFAULT_CACHE_SAVE_INTERVAL_SECONDS
+                }
             plugin.server.asyncScheduler.runAtFixedRate(
                 plugin,
                 { conversionCache.saveToDisk() },
@@ -437,10 +453,24 @@ class ServiceInitializer(
      * Performs shutdown tasks, including saving all caches to disk.
      */
     fun shutdown(services: ServiceContainer) {
-        services.playerSettingsManager.saveToDisk()
-        services.conversionCache?.saveToDisk()
-        services.channelManager?.saveToDisk()
-        services.channelMessageLogger?.shutdown()
-        services.velocityConnectionManager?.shutdown()
+        shutdownStep("save player settings") { services.playerSettingsManager.saveToDisk() }
+        shutdownStep("save the conversion cache") { services.conversionCache?.saveToDisk() }
+        shutdownStep("save channel data") { services.channelManager?.saveToDisk() }
+        shutdownStep("shut down the channel message logger") { services.channelMessageLogger?.shutdown() }
+        shutdownStep("shut down the Velocity connection") { services.velocityConnectionManager?.shutdown() }
+    }
+
+    // The steps are independent, so one that throws must not skip the ones after it - which is what
+    // an exception escaping onDisable would do, leaving the log flusher and the Velocity connection
+    // to be torn down by the server instead.
+    private fun shutdownStep(
+        what: String,
+        step: () -> Unit,
+    ) {
+        try {
+            step()
+        } catch (e: Exception) {
+            logger.log(Level.SEVERE, "Failed to $what during shutdown", e)
+        }
     }
 }

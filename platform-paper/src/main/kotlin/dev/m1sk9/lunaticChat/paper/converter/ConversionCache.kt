@@ -1,22 +1,22 @@
 package dev.m1sk9.lunaticChat.paper.converter
 
 import dev.m1sk9.lunaticChat.engine.converter.CacheData
-import dev.m1sk9.lunaticChat.paper.DebouncedSaver
+import dev.m1sk9.lunaticChat.paper.writeTextAtomically
 import kotlinx.serialization.json.Json
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.logging.Logger
 import kotlin.io.path.bufferedReader
 import kotlin.io.path.exists
-import kotlin.io.path.writeText
 
 class ConversionCache(
     private val cacheFile: Path,
     private val maxEntries: Int = 500,
-    private val saver: DebouncedSaver,
     private val logger: Logger,
 ) {
     private val conversionMemoryCache = ConcurrentHashMap<String, String>()
+    private val dirty = AtomicBoolean(false)
 
     companion object {
         private const val CACHE_VERSION = "1"
@@ -55,7 +55,7 @@ class ConversionCache(
     private fun initializeEmptyCache() {
         val emptyData = CacheData(version = CACHE_VERSION, entries = emptyMap())
         val jsonBuffer = Json.encodeToString(CacheData.serializer(), emptyData)
-        cacheFile.writeText(jsonBuffer)
+        cacheFile.writeTextAtomically(jsonBuffer)
     }
 
     /**
@@ -81,16 +81,21 @@ class ConversionCache(
         }
 
         conversionMemoryCache[key] = value
-        saver.request(::saveToDisk)
+        dirty.set(true)
     }
 
     /**
-     * Saves the conversion cache from memory to disk.
-     * This operation is performed asynchronously.
+     * Writes the cache to disk if anything changed since the last write.
      *
-     * @throws Exception if an error occurs during the save operation.
+     * Called from the periodic task and at shutdown. Skipping a clean cache matters because the
+     * task fires on a fixed interval whether or not anyone chatted.
+     *
+     * A failed write leaves the previous file untouched: a cache that does not parse is discarded
+     * wholesale on the next boot, so a torn file costs every entry accumulated so far.
      */
     fun saveToDisk() {
+        if (!dirty.getAndSet(false)) return
+
         try {
             val data =
                 CacheData(
@@ -98,9 +103,10 @@ class ConversionCache(
                     entries = conversionMemoryCache.toMap(),
                 )
             val jsonBuffer = Json.encodeToString(CacheData.serializer(), data)
-            cacheFile.writeText(jsonBuffer)
+            cacheFile.writeTextAtomically(jsonBuffer)
             logger.info("Saved ${conversionMemoryCache.size} cache entries to disk.")
         } catch (e: Exception) {
+            dirty.set(true)
             logger.severe("Failed to save conversion cache to disk: ${e.message}")
         }
     }

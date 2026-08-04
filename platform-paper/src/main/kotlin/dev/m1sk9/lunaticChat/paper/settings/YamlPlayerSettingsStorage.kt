@@ -3,11 +3,11 @@ package dev.m1sk9.lunaticChat.paper.settings
 import com.charleskorn.kaml.Yaml
 import dev.m1sk9.lunaticChat.engine.settings.PlayerSettingsData
 import dev.m1sk9.lunaticChat.paper.DebouncedSaver
+import dev.m1sk9.lunaticChat.paper.writeTextAtomically
 import java.nio.file.Path
 import java.util.logging.Logger
 import kotlin.io.path.bufferedReader
 import kotlin.io.path.exists
-import kotlin.io.path.writeText
 
 /**
  * Handles YAML file I/O operations for player settings.
@@ -50,12 +50,15 @@ class YamlPlayerSettingsStorage(
      * Saves player settings to the YAML file synchronously.
      * This should only be called from async context or during shutdown.
      *
+     * A failed write leaves the previous file untouched: loading falls back to empty settings when
+     * the YAML does not parse, so a torn file would silently discard every player's settings.
+     *
      * @param data The settings data to save
      */
     fun saveToDisk(data: PlayerSettingsData) {
         try {
             val yamlContent = yaml.encodeToString(PlayerSettingsData.serializer(), data)
-            settingsFile.writeText(yamlContent)
+            settingsFile.writeTextAtomically(yamlContent)
             logger.fine("Saved player settings to disk")
         } catch (e: Exception) {
             logger.severe("Failed to save settings: ${e.message}")

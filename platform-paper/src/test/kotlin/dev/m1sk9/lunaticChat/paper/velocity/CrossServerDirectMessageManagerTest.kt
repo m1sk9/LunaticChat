@@ -7,6 +7,7 @@ import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.runBlocking
 import net.kyori.adventure.text.Component
 import org.bukkit.plugin.Plugin
 import java.util.UUID
@@ -14,6 +15,8 @@ import java.util.logging.Logger
 import kotlin.test.Test
 
 class CrossServerDirectMessageManagerTest {
+    private fun <T> sync(block: suspend () -> T): T = runBlocking { block() }
+
     private class Fixture(
         cacheSize: Int = 100,
     ) {
@@ -53,11 +56,11 @@ class CrossServerDirectMessageManagerTest {
     fun `sendCrossServerMessage relays via plugin channel and delegates display`() {
         val f = Fixture()
         val sender = TestUtils.createMockPlayer(name = "Alice")
-        every { f.dmHandler.handleOutgoingCrossServerMessage(sender, "Bob", "survival", "hi") } returns "hi"
+        every { sync { f.dmHandler.handleOutgoingCrossServerMessage(sender, "Bob", "survival", "hi") } } returns "hi"
 
-        f.manager.sendCrossServerMessage(sender, "Bob", "survival", "hi")
+        sync { f.manager.sendCrossServerMessage(sender, "Bob", "survival", "hi") }
 
-        verify { f.dmHandler.handleOutgoingCrossServerMessage(sender, "Bob", "survival", "hi") }
+        verify { sync { f.dmHandler.handleOutgoingCrossServerMessage(sender, "Bob", "survival", "hi") } }
         verify { sender.sendPluginMessage(f.plugin, "lunaticchat:main", any<ByteArray>()) }
     }
 
@@ -140,9 +143,9 @@ class CrossServerDirectMessageManagerTest {
     fun `sendCrossServerMessage prunes the dedup cache when over capacity`() {
         val f = Fixture(cacheSize = 1)
         val sender = TestUtils.createMockPlayer(name = "Alice")
-        every { f.dmHandler.handleOutgoingCrossServerMessage(any(), any(), any(), any()) } returns "hi"
+        every { sync { f.dmHandler.handleOutgoingCrossServerMessage(any(), any(), any(), any()) } } returns "hi"
 
-        repeat(3) { f.manager.sendCrossServerMessage(sender, "Bob$it", "survival", "hi") }
+        repeat(3) { sync { f.manager.sendCrossServerMessage(sender, "Bob$it", "survival", "hi") } }
 
         verify(atLeast = 1) { sender.sendPluginMessage(f.plugin, "lunaticchat:main", any<ByteArray>()) }
     }
