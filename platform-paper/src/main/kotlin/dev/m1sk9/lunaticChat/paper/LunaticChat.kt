@@ -58,7 +58,7 @@ class LunaticChat :
 
     override fun onEnable() {
         saveDefaultConfig()
-        configuration = ConfigManager(logger).loadConfiguration(dataFolder.resolve("config.yml").readText())
+        configuration = ConfigManager(logger).loadConfiguration(readConfigFile())
 
         if (configuration.debug) {
             logger.warning("LunaticChat is running in debug mode.")
@@ -99,6 +99,21 @@ class LunaticChat :
         serviceInitializer.shutdown(services)
         if (httpClient.isInitialized()) httpClient.value.close()
         logger.info("LunaticChat disabled.")
+    }
+
+    /**
+     * Reads config.yml, or an empty document when it cannot be read.
+     *
+     * [saveDefaultConfig] only logs when it fails to write the file, so the read can still find
+     * nothing there. Handing the parser an empty document starts the plugin on its defaults
+     * instead of throwing out of [onEnable] and disabling it outright.
+     */
+    private fun readConfigFile(): String {
+        val file = dataFolder.resolve("config.yml")
+        return runCatching { file.readText() }.getOrElse { e ->
+            logger.severe("Could not read ${file.path}, falling back to defaults: ${e.message}")
+            ""
+        }
     }
 
     /**
