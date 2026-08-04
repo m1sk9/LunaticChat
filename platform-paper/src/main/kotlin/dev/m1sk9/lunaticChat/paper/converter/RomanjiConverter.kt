@@ -2,6 +2,7 @@ package dev.m1sk9.lunaticChat.paper.converter
 
 import dev.m1sk9.lunaticChat.engine.converter.GoogleIMEClient
 import dev.m1sk9.lunaticChat.engine.converter.KanaConverter
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -85,6 +86,11 @@ class RomanjiConverter(
         val converted =
             try {
                 apiClient.convert(hiragana)
+            } catch (e: CancellationException) {
+                // Not an API failure: the caller's timeout fired. Caching the hiragana here would
+                // pin every word of the message to its unconverted form for good, because the words
+                // are converted concurrently and the timeout cancels all of them at once.
+                throw e
             } catch (e: Exception) {
                 logger.warning("Failed to convert $hiragana: ${e.message}")
                 hiragana // Use hiragana if API fails

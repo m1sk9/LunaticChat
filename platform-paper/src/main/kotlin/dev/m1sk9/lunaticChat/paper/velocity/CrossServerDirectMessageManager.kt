@@ -7,6 +7,7 @@ import dev.m1sk9.lunaticChat.paper.chat.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
+import kotlinx.coroutines.CancellationException
 import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
 import java.util.UUID
@@ -35,9 +36,10 @@ class CrossServerDirectMessageManager(
     /**
      * Sends a direct message to a player on another server through Velocity.
      *
-     * Must be called on the main server thread. The sender-side display, spy
-     * notification and reply recording are handled by [DirectMessageHandler];
-     * the (possibly romaji-converted) body is what gets relayed.
+     * Runs on the sender's delivery queue, off the tick thread, because the romaji conversion it
+     * goes through may wait on the Google IME API. The reply target is recorded by the command
+     * before the work is queued; the sender-side display and the spy notification are handled by
+     * [DirectMessageHandler], and the (possibly romaji-converted) body is what gets relayed.
      */
     suspend fun sendCrossServerMessage(
         sender: Player,
@@ -73,6 +75,10 @@ class CrossServerDirectMessageManager(
                 "Sent direct message to Velocity: messageId=$messageId, " +
                     "target=$targetName@$targetServerName"
             }
+        } catch (e: CancellationException) {
+            // Shutdown cancelling the delivery queue is not a delivery failure, and reporting it as
+            // SEVERE while carrying on past the cancellation would be wrong twice over.
+            throw e
         } catch (e: Exception) {
             logger.log(Level.SEVERE, "Failed to send cross-server direct message", e)
         }

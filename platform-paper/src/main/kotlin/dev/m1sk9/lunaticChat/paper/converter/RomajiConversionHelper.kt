@@ -1,5 +1,6 @@
 package dev.m1sk9.lunaticChat.paper.converter
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
 
@@ -17,11 +18,18 @@ suspend fun convertWithRomaji(
     converter: RomanjiConverter,
     timeoutMs: Long = 1000,
 ): String =
-    runCatching {
+    try {
         withTimeoutOrNull(timeoutMs) {
             converter.convert(message)
         }?.let { "$message §e($it)" } ?: message
-    }.getOrElse { message }
+    } catch (e: CancellationException) {
+        // Rethrown rather than degraded to the original message: this runs on the delivery queue, so
+        // swallowing it would let a message be delivered after the plugin scope has been cancelled.
+        // The conversion's own timeout is handled by withTimeoutOrNull and does not reach here.
+        throw e
+    } catch (_: Exception) {
+        message
+    }
 
 /**
  * Blocking form of [convertWithRomaji], for callers that cannot suspend.
