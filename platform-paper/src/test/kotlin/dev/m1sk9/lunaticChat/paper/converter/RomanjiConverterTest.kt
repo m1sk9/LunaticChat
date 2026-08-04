@@ -302,7 +302,7 @@ class RomanjiConverterTest {
     }
 
     @Test
-    fun `an API timeout degrades to hiragana like any other failure`() =
+    fun `an API timeout degrades to hiragana without caching it`() =
         runBlocking {
             val (converter, cache, apiClient) = createConverter()
             coEvery { apiClient.convert("おはよう") } throws ConversionTimeoutException(1.seconds)
@@ -310,7 +310,28 @@ class RomanjiConverterTest {
             val result = converter.convert("ohayou")
 
             assertEquals("おはよう", result)
-            verify(exactly = 1) { cache.put("ohayou", "おはよう") }
+            // A slow reply says nothing about the word, so caching the hiragana would pin it to its
+            // unconverted form for the life of the cache.
+            verify(exactly = 0) { cache.put(any(), any()) }
+        }
+
+    @Test
+    fun `a word that timed out is converted on the next attempt`() =
+        runBlocking {
+            // A cache that actually remembers, unlike the shared fixture whose get() always returns
+            // null - which would let this pass even if the timeout had been cached.
+            val entries = mutableMapOf<String, String>()
+            val cache = mockk<ConversionCache>(relaxed = true)
+            every { cache.get(any()) } answers { entries[firstArg()] }
+            every { cache.put(any(), any()) } answers { entries[firstArg()] = secondArg() }
+            val apiClient = mockk<GoogleIMEClient>(relaxed = true)
+            val converter = RomanjiConverter(cache, apiClient, TestUtils.TestLogger())
+
+            coEvery { apiClient.convert("おはよう") } throws ConversionTimeoutException(1.seconds)
+            converter.convert("ohayou")
+            coEvery { apiClient.convert("おはよう") } returns "おはよう御座います"
+
+            assertEquals("おはよう御座います", converter.convert("ohayou"))
         }
 
     @Test

@@ -93,6 +93,13 @@ class RomanjiConverter(
                 // pin every word of the message to its unconverted form for good, because the words
                 // are converted concurrently and the timeout cancels all of them at once.
                 throw e
+            } catch (e: ConversionTimeoutException) {
+                // Returned without caching: a timeout says the request was slow, not that the word
+                // has no conversion, so recording the hiragana would pin it for the life of the
+                // cache over one slow reply. A hard API failure is different - the fallback is
+                // cached there deliberately.
+                logger.warning("Timed out converting $hiragana, leaving it uncached: ${e.message}")
+                return hiragana
             } catch (e: Exception) {
                 logger.warning("Failed to convert $hiragana: ${e.message}")
                 hiragana // Use hiragana if API fails
