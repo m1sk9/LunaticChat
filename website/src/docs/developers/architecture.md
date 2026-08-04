@@ -34,15 +34,11 @@ Things that break unless Paper and Velocity share the exact same definition.
 - `exception` — the shared vocabulary of domain errors
 - `permission`, `command` — neutral abstractions for permission node strings and command results
 
-#### (b) Platform-independent pure logic
-
-Logic that could live anywhere, but is pulled into the neutral core because it is pure and reusable.
-
-- `converter` — the pure romaji-conversion algorithm (Trie) plus an external API client
+Everything in `engine` falls into this category. Logic that merely *could* live anywhere is not pulled in for that reason alone: romaji conversion used to sit here as "platform-independent pure logic", and moving it into `platform-paper` — where its only caller is — let `engine` shed its Ktor dependency, which the Velocity build had been paying for in JAR size for nothing.
 
 The primary goal of centralizing (a) in `engine` is to create a **single source of truth for the wire contract**. Paper and Velocity are two artifacts built, deployed, and versioned separately; duplicating the protocol in both modules would inevitably drift. With a single definition in `engine`, a contract mismatch surfaces early as a compile error or a snapshot-test failure rather than a runtime mismatch in production.
 
-`engine` depends on no Bukkit / Velocity API, and borrows only the "meaning of types and values" from Adventure / Brigadier to avoid depending on their runtimes (`compileOnly` Adventure, and `toBrigadierResult()` returning an `Int` without depending on Brigadier itself). This lets `engine` be tested on a pure JVM without spinning up a Minecraft server, while platform concerns (the Folia scheduler, etc.) stay isolated in the platform modules.
+`engine` depends on no Bukkit / Velocity / Adventure / Brigadier API at all — its single dependency is `kotlinx-serialization-json`. Rendering was pushed out to the platform modules (`CommandResult` carries a message key, and `toBrigadierResult()` returns an `Int` without depending on Brigadier), so `engine` borrows nothing from a platform runtime. This lets `engine` be tested on a pure JVM without spinning up a Minecraft server, while platform concerns (the Folia scheduler, HTTP, Adventure components) stay isolated in the platform modules.
 
 ## Compatibility via the protocol version
 
@@ -77,7 +73,7 @@ For details, see [platform-paper - Paper / Folia Plugin](/docs/developers/platfo
 4. **Annotation-driven commands** — `@Command` / `@Permission` / `@PlayerOnly` are read via Kotlin reflection and mapped onto the Brigadier tree. A command's definition and its metadata (permission, aliases) are declared together in one place.
 5. **Folia compatibility** — asynchronous work runs on `asyncScheduler` and `PluginCoroutineScope` (SupervisorJob), and Bukkit API calls are moved back to the main thread via `scheduler.runTask`. Thread boundaries are handled explicitly so it also works on region-threaded Folia.
 6. **Persistence chosen per purpose** — languages / player settings = KAML (YAML), channels / conversion cache = kotlinx.serialization JSON, channel logs = NDJSON. All follow the same pattern: in-memory cache + asynchronous save (debounce/queue) + synchronous save on shutdown.
-7. **DM/channel = local, global = via the proxy** — routing differs by chat type; only global chat goes through Velocity. The relay prevents loops in two stages: "exclude the source server" + "deduplicate by messageId".
+7. **Channel = local, global and DM = optionally via the proxy** — routing differs by chat type. Channel chat is always server-local; global chat crosses the proxy when `crossServerGlobalChat` is on, and direct messages do when `crossServerDirectMessage` is on. The relay prevents loops in two stages: "exclude the source server" + "deduplicate by messageId".
 
 ## Module details
 

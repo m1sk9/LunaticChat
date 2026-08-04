@@ -44,7 +44,7 @@ LunaticChat のすべてのパーミッションノードの一覧です．
 
 | パーミッション | デフォルト | 説明 |
 |---------------|-----------|------|
-| `lunaticchat.spy` | op | サーバー上の全ダイレクトメッセージを閲覧 |
+| `lunaticchat.spy` | op | サーバー上の全ダイレクトメッセージ・チャンネルメッセージを閲覧 |
 | `lunaticchat.noticeupdate` | op | アップデート通知の受信 |
 | `lunaticchat.channelbypass` | op | チャンネル制限のバイパス(キック・BAN 保護，強制削除) |
 | `lunaticchat.command.lcv.status` | op | `/lcv status` コマンドの使用 |

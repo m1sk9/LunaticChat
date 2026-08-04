@@ -42,6 +42,17 @@ To message a player on another server, specify the player argument as `playerNam
 /tell <player>@<server> <message>
 ```
 
+`serverName` is the name of the destination server **as registered in your Velocity configuration** (`velocity.toml`), which is what the proxy resolves the target against. Tab completion offers the names and players it currently knows about.
+
+Set `features.velocityIntegration.serverName` on each backend to that same name. It does not affect routing, but it fills `{server}` in cross-server chat and is how a server recognises which players are its own — if it disagrees with the Velocity name, local players are treated as remote in tab completion.
+
+Delivery can fail in two ways, and the sender is told which:
+
+| Reason | Meaning |
+|--------|---------|
+| `SERVER_NOT_FOUND` | No server registered on the proxy has that name |
+| `TARGET_OFFLINE` | The server exists, but that player is not on it — including when they are online on a different server |
+
 ## Notification Settings
 
 Players can individually control the sound notification when receiving direct messages.

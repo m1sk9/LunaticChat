@@ -58,7 +58,8 @@ LunaticChat で使用できるすべてのコマンドのリファレンスで�
 
 - **エイリアス**: `new`
 - **パーミッション**: `lunaticchat.command.lc.channel.create`
-- `channelId`: 英数字，アンダースコア，ハイフンのみ使用可能
+- `channelId`: 3〜30文字．英数字，アンダースコア，ハイフンのみ使用可能
+- `name`: 空文字は不可
 - `isPrivate`: `true` / `false`(デフォルト: `false`)
 
 #### `/lc channel list [page]`

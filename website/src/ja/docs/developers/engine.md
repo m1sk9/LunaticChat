@@ -48,13 +48,11 @@ Paper–Velocity の互換性は，プラグインバージョンではなく `P
 
 この設計の帰結として Paper と Velocity を独立にリリースできます．詳しくは [ビルド・リリース・バージョニング](/ja/docs/developers/resource#独立バージョニング) を参照してください．
 
-## converter — ローマ字→日本語変換
+## ローマ字変換はここにはない
 
-converter は Paper↔Velocity の契約ではなく (Velocity はローマ字変換をしない)，**プラットフォームに依存しない純ロジックだから** engine に置かれています．3 段構成です．
+ローマ字変換は「プラットフォームに依存しない純ロジックだから」という理由で engine に置かれていましたが，現在は唯一の呼び出し元である [platform-paper](/ja/docs/developers/platform-paper) にあります．
 
-- `KanaConverter` (`object`) — **Trie** でローマ字→ひらがなに変換．`sealed class TrieNode { Leaf, Branch }` の不変構造で，4 文字 (`xtsu`→っ) 〜1 文字 (`a`→あ) を網羅．`isValidRomaji()` で変換前検証，`toHiragana()` は最長一致＋促音処理を行う純アルゴリズム
-- `GoogleIMEClient` — Ktor `HttpClient` を DI で受け取り，Google IME (`langpair=ja-Hira|ja`) でひらがな→漢字仮名交じりに変換．レスポンスの各セグメント第 1 候補を連結する
-- `CacheData` (`@Serializable`) — 変換結果 (`version` ＋ `entries: Map`) の永続化スキーマ．コストの高い IME 変換をキャッシュするための器で，キャッシュ本体のロジックは paper 側にある
+プラットフォーム非依存であることは，engine に置く理由としては不十分でした．ここに置くと engine が Ktor に依存し，両プラットフォームが engine に依存する構図上，**Velocity** の成果物が呼ばれることのない HTTP クライアントを同梱してしまうためです．これを外したことで engine の依存を `kotlinx-serialization-json` だけに絞れました．
 
 ## chat/channel — チャンネルのドメインモデル
 
@@ -81,14 +79,14 @@ UUID シリアライザが 2 つあるのは用途が違うためです．
 
 ## exception — 共通の例外語彙
 
-ドメインエラーを Paper / Velocity 双方で同じ型として扱えるよう，例外を engine に集約しています．共通の封印基底は持たず，`Exception` を直接継承するフラット構造 (23 種) です．存在/参照系・状態系・制限系・権限/BAN・KICK 系に分類でき，多くが `playerId` / `channelId` / `limit` をコンストラクタで受けてメッセージを自前生成します．基底を持たないため，呼び出し側は個別に catch する前提です．
+ドメインエラーを Paper / Velocity 双方で同じ型として扱えるよう，例外を engine に集約しています．共通の封印基底は持たず，`Exception` を直接継承するフラット構造です．存在/参照系・状態系・制限系・権限/BAN・KICK 系に分類でき，多くが `playerId` / `channelId` / `limit` をコンストラクタで受けてメッセージを自前生成します．基底を持たないため，呼び出し側は個別に catch する前提です．
 
 ## permission / command — 中立抽象
 
 Bukkit / Velocity どちらの API にも渡せる中立表現として，権限とコマンド結果を engine に置いています．
 
 - `LunaticChatPermissionNode` — `sealed class` ＋ `object` サブクラスで権限を型安全に列挙．文字列ノードは両プラットフォームの permission API に渡せ，`when` で網羅性チェックも効く
-- `CommandResult` — `sealed class` (`Success` / `SuccessWithMessage` / `Failure` / `InvalidUsage`)．メッセージは Adventure `Component`，`toBrigadierResult()` は Brigadier 本体に依存せず成功=1/失敗=0 という「戻り値の意味」だけを表現する
+- `CommandResult` — `sealed class` (`Success` / `SuccessWithMessage` / `Failure` / `InvalidUsage`)．メッセージは平文の `String` として運ばれ，engine に Adventure の型は入らない (装飾は platform 側の責務)．`toBrigadierResult()` は Brigadier 本体に依存せず成功=1/失敗=0 という「戻り値の意味」だけを表現する
 
 ## 関連
 

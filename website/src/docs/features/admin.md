@@ -24,9 +24,11 @@ Displayed information:
 
 ## Spy Mode
 
-Players with the `lunaticchat.spy` permission (default: op) can view all direct messages sent and received on the server.
+Players with the `lunaticchat.spy` permission (default: op) can view both the direct messages and the channel messages sent on the server.
 
-- Spy players see the original message before romaji conversion
+- Direct messages are delivered to spies, excluding the sender and the recipient
+- Channel messages are delivered to spies, excluding the sender and the channel's own members
+- For direct messages, spies see the original text before romaji conversion. Channel messages reach spies in the same converted form the members see
 - Hover text indicates the message is a spy message
 - Spy players themselves are not included in the normal sender/recipient list
 
@@ -45,6 +47,15 @@ When `checkForUpdates` is `true` (default), the plugin checks for new versions a
 # config.yml
 checkForUpdates: true
 ```
+
+## Nightly Builds
+
+Builds produced from the `main` branch outside of a release are marked as nightly, and the plugin says so rather than letting it go unnoticed.
+
+- Every player is warned on join that the build may be unstable, along with a pointer to GitHub Issues
+- `/lc status` shows the same warning, and displays the release channel in yellow instead of green
+
+Nightly builds are not covered by the [security policy](https://github.com/m1sk9/LunaticChat/blob/main/.github/SECURITY.md); use a release build on a production server.
 
 ## Debug Mode
 
@@ -68,7 +79,7 @@ language: "ja"   # "en" or "ja"
 
 | Permission | Default | Description |
 |-----------|---------|-------------|
-| `lunaticchat.spy` | op | View all direct messages |
+| `lunaticchat.spy` | op | View all direct and channel messages |
 | `lunaticchat.channelbypass` | op | Bypass channel restrictions |
 | `lunaticchat.noticeupdate` | op | Receive update notifications |
 | `lunaticchat.command.lcv.status` | op | Use the `/lcv status` command |

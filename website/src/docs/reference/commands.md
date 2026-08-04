@@ -58,7 +58,8 @@ Creates a new channel. The creator becomes the owner.
 
 - **Aliases**: `new`
 - **Permission**: `lunaticchat.command.lc.channel.create`
-- `channelId`: Only alphanumeric characters, underscores, and hyphens are allowed
+- `channelId`: 3-30 characters; only alphanumeric characters, underscores, and hyphens are allowed
+- `name`: Cannot be blank
 - `isPrivate`: `true` / `false` (default: `false`)
 
 #### `/lc channel list [page]`

@@ -1,0 +1,127 @@
+name: Bug Report (Folia)
+description: Report a bug or unexpected behavior on a Folia server
+labels: ["Type: bug", "Module: Folia"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out the information below to help us fix the issue.
+
+        Use this template only if the problem happens on **Folia**. If it also reproduces on plain Paper, please use the Paper template instead. If the problem involves a **Velocity** proxy, use the Velocity template.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: Describe the bug you encountered...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Run command '...'
+        2. Send message '...'
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What you expected to happen
+      placeholder: Describe what you expected to happen...
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+      description: What actually happened
+      placeholder: Describe what actually happened...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: reproduces-on-paper
+    attributes:
+      label: Does this also happen on Paper?
+      description: Folia-only behavior usually points at a thread or region issue, so this narrows it down a lot.
+      options:
+        - "Folia only (does not happen on Paper)"
+        - "Happens on Paper too"
+        - "Not tested on Paper"
+    validations:
+      required: true
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: LunaticChat Version
+      description: Run `/lc status` in-game to see the version and commit hash.
+      placeholder: "e.g., v1.3.0 (7c54422)"
+    validations:
+      required: true
+
+  - type: input
+    id: folia-version
+    attributes:
+      label: Folia Version
+      description: Run `/version` on the server.
+      placeholder: "e.g., Folia 26.2-12"
+    validations:
+      required: true
+
+  - type: input
+    id: minecraft-version
+    attributes:
+      label: Minecraft Version
+      description: What version of Minecraft are you running?
+      placeholder: "e.g., 26.2"
+    validations:
+      required: true
+
+  - type: input
+    id: java-version
+    attributes:
+      label: Java Version
+      description: LunaticChat requires Java 25 or later.
+      placeholder: "e.g., Java 25"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: enabled-features
+    attributes:
+      label: Enabled Features
+      description: Which optional features are enabled in `config.yml`? Most of them are off by default.
+      options:
+        - label: "`features.quickReplies` (/reply)"
+        - label: "`features.japaneseConversion` (romaji to Japanese)"
+        - label: "`features.channelChat`"
+        - label: "`features.velocityIntegration`"
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs and Error Messages
+      description: "Please paste relevant logs or error messages here. Full stack traces matter on Folia — they show which thread the call came from. Setting `debug: true` in `config.yml` produces more detail."
+      placeholder: Paste your logs here...
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here (how many players and worlds were involved, screenshots, other installed plugins, related issues, etc.)
+      placeholder: Any additional information...
+    validations:
+      required: false

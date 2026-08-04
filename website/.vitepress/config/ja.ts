@@ -8,6 +8,7 @@ export const ja: DefaultTheme.Config = {
   nav: [
     { link: '/ja/download', text: 'ダウンロード' },
     { link: '/ja/docs/getting-started', text: 'ドキュメント' },
+    { link: '/ja/changelog/overview', text: '更新履歴' },
   ],
   sidebar: {
     '/ja/docs/': [
@@ -101,6 +102,42 @@ export const ja: DefaultTheme.Config = {
           {
             link: '/ja/docs/developers/resource',
             text: 'ビルド・リリース・バージョニング',
+          },
+        ],
+      },
+    ],
+    '/ja/changelog/': [
+      /**
+      {
+        link: '/ja/changelog/overview',
+        text: 'パッチノート',
+      },
+      */
+      {
+        text: 'Paper',
+        items: [
+          {
+            text: 'v1',
+            items: [
+              {
+                link: '/ja/changelog/paper/v1.3.0',
+                text: 'v1.3.0',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        text: 'Velocity',
+        items: [
+          {
+            text: 'v1',
+            items: [
+              {
+                link: '/ja/changelog/velocity/v1.2.0',
+                text: 'v1.2.0',
+              },
+            ],
           },
         ],
       },

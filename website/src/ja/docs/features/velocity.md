@@ -51,6 +51,8 @@ features:
 
 各メッセージに一意な ID が付与され，キャッシュにより同じメッセージが重複して表示されることを防ぎます．キャッシュサイズは `messageDeduplicationCacheSize` (デフォルト: `100`) で設定できます．
 
+エントリは記録から 60 秒で期限切れになります．期限切れエントリを削除してもなお設定サイズを超えている場合は，残りのうち古いものから削除されます．
+
 ## クロスサーバーダイレクトメッセージ <Badge type="tip" text="v1.3.0~" />
 
 `crossServerDirectMessage` を `true` にすると，同プロキシ内で接続しているサーバーのプレイヤー同士でメッセージのやり取りができるようになります．
@@ -80,7 +82,8 @@ features:
 |----------|-----------|------|
 | `enabled` | `false` | Velocity 連携を有効にする |
 | `crossServerGlobalChat` | `false` | クロスサーバーグローバルチャットを有効にする |
-| `serverName` | `"Unknown"` | クロスサーバーチャットで表示されるサーバー名 |
+| `crossServerDirectMessage` | `false` | クロスサーバーダイレクトメッセージを有効にする |
+| `serverName` | `"Unknown"` | このサーバー自身の名前．クロスサーバーチャットの `{server}` に入り，自分のプレイヤーを識別するために使われる．`velocity.toml` に登録した名前を設定する |
 | `messageDeduplicationCacheSize` | `100` | メッセージ重複排除キャッシュのサイズ |
 
 ## メッセージフォーマット

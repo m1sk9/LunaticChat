@@ -2,18 +2,49 @@
 
 ## v1
 
-### v1.3.0 (UNRELEASED)
+### v1.3.0
 
 - Paper 26.2 (Minecraft 26.2) is now supported.
   - Support for Paper 26.1 has been dropped. Paper 26.2 bundles Adventure 5.2.0, which is not binary compatible with the Adventure 4.x shipped by 26.1, so `api-version` has been raised to `26.2` and the plugin will no longer load on 26.1 servers.
-- Added cross-server direct messaging functionality
+- Added cross-server direct messaging functionality.
+  - `/tell <player>@<server>` sends a direct message to a player on another backend server. Disabled by default; enable `features.velocityIntegration.crossServerDirectMessage`.
 - Fixed a bug where the player argument for `/tell` used partial matching (we switched from the old Bukkit API to the new API)
+- `config.yml` is now read with KAML, which changes how a broken file is treated.
+  - A `config.yml` that cannot be read no longer disables the plugin; it starts on its defaults instead.
+  - A single unreadable value now falls back to its own default with a warning, instead of discarding every other setting in the file.
+  - `features.channelChat.messageLogging` is now actually read. It was documented but never loaded, so it stayed at its defaults regardless of what the file said.
+- Fixed a bug where a slow Google IME reply could silently stop delivering a player's messages for the rest of their session.
+  - `GoogleIMEClient` reported a request timeout as a `CancellationException`, which the delivery queue worker correctly read as shutdown and ended its loop on — leaving the player's queue registered with nothing draining it. Triggered whenever `features.japaneseConversion.api.timeout` was set below the message conversion budget. Timeouts are now an ordinary exception.
+- Fixed a bug where a single slow conversion pinned a word to hiragana permanently.
+  - A timed-out conversion was cached as though the API had answered, so that word rendered unconverted for the life of the cache. Timeouts now leave the cache untouched and the next message retries.
+- Fixed a bug where `/reply` could not see a reply target that had just been recorded, and a duplicated recording that re-inserted entries already cleared on disconnect.
+- Fixed a bug where a setting changed while a save was already pending was not written to disk.
+- A failed save no longer aborts the remaining shutdown steps, so channel logs and the Velocity connection are always closed.
+- File persistence moved behind a single storage layer. Every data file (`channels.json`, player settings, the conversion cache) is written atomically and debounced by construction rather than per call site, so a crash or a concurrent save can no longer leave a half-written file behind.
+- Service teardown is now driven by a `StoppableService` type registered at construction, so a service cannot be missed from the shutdown path.
+- Per-player delivery queues are now bounded. A player who sends faster than delivery drains is refused with a warning instead of building an unbounded backlog that arrives minutes late.
+- Each player's messages are delivered in the order they were sent. Work still queued when a player disconnects is discarded rather than delivered to a player who has left, and work dropped at shutdown is logged instead of disappearing silently.
+- Performance improvements.
+  - Direct message delivery and channel message logging no longer run on the tick thread.
+  - Cached romaji conversions no longer wait on the shared API concurrency limiter. A message whose every word was already cached could previously exhaust its conversion budget waiting for a permit it did not need, and be sent unconverted.
+  - The words of a message are converted concurrently.
+  - Player settings are only rewritten when something changed. Every player quit previously re-serialized every player stored in the file to write identical bytes.
+  - Clearing a player's active channel on quit no longer snapshots the channel caches when that player had no active channel. A mass disconnect previously paid a full snapshot per player within one tick.
+  - Direct message and channel message spy notification no longer builds its translation lookup and member set when no spy is online.
+  - Channel data writes are coalesced instead of rewriting the file on every change.
+  - Features that are turned off no longer cost anything at startup, and the HTTP client is only created when a feature actually needs it.
+- Internal cleanup. Removed dead code and unreachable error paths: an unused spy accessor, a `Result` that could not fail (with three unreachable handlers and one unreachable user-facing message), a redundant feature-gate clause, and a duplicated error boundary beneath the delivery queue.
+  - Test suite: 561 → 569.
+- The protocol version has been raised to 1.0.1 for the new direct message and presence sub-channels.
+  - This is a PATCH bump, so Paper and Velocity can be updated in any order. Cross-server direct messages require both sides to be updated.
 
 #### Velocity: v1.2.0
 
 - Velocity 4.0.0 is now supported.
   - Support for Velocity 3.5.x has been dropped.
-- Removed an unused YAML dependency, shrinking the Velocity JAR by roughly 1 MB.
+- Added cross-server direct message relay and player presence tracking.
+- The Velocity JAR shrank from about 8.2 MiB to about 2.6 MiB.
+  - Paper-only dependencies (Ktor and the romaji converter) were moved out of the shared module, so they are no longer bundled into the Velocity build.
 
 ### v1.2.2
 

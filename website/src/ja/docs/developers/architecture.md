@@ -36,13 +36,11 @@ Paper と Velocity が同一定義でないと壊れるもの．
 
 #### (b) プラットフォーム非依存の純ロジック
 
-どこに置いてもよいが，純粋な再利用可能のロジックを中立コアに寄せたもの．
-
-- `converter` — ローマ字変換の純アルゴリズム (Trie) ＋外部 API クライアント
+engine の中身はすべて (a) に該当します．「どこに置いてもよい純ロジック」であることは，それだけでは engine に置く理由になりません．ローマ字変換はかつて「プラットフォーム非依存の純ロジック」としてここにありましたが，唯一の呼び出し元である `platform-paper` へ移したことで engine は Ktor 依存を落とせました．Velocity 側のビルドはそれまで，呼ばない HTTP クライアントの分だけ JAR サイズを払っていたためです．
 
 (a) を engine に一元化する最大の狙いは，**ワイヤ契約の「単一の真実源」を作ること**です．Paper と Velocity は別々にビルド・デプロイ・バージョニングされる 2 つの成果物であり，protocol を両モジュールに複製すれば必ず drift します．engine に 1 つだけ置けば，契約の不一致が「本番での実行時ミスマッチ」ではなく「コンパイルエラー / スナップショットテスト失敗」として早期に顕在化します．
 
-engine は Bukkit / Velocity API に依存せず，Adventure / Brigadier も「型・値の意味」だけを借りて本体依存を避けています (`compileOnly` の Adventure，Brigadier に依存せず `Int` を返す `toBrigadierResult()`)．これにより engine は Minecraft サーバーを立てずに pure-JVM でテストでき，プラットフォーム都合 (Folia のスケジューラ等) は platform 側に隔離されます．
+engine は Bukkit / Velocity / Adventure / Brigadier のいずれの API にも依存せず，唯一の依存は `kotlinx-serialization-json` です．描画は platform 側へ押し出されており (`CommandResult` はメッセージを文字列で運び，`toBrigadierResult()` は Brigadier に依存せず `Int` を返す)，プラットフォームのランタイムから何も借りていません．これにより engine は Minecraft サーバーを立てずに pure-JVM でテストでき，プラットフォーム都合 (Folia のスケジューラ，HTTP，Adventure コンポーネント等) は platform 側に隔離されます．
 
 ## プロトコルバージョンによる互換管理
 
@@ -77,7 +75,7 @@ Paper–Velocity 間の互換性は，プラグインのバージョンではな
 4. **アノテーション駆動コマンド** — `@Command` / `@Permission` / `@PlayerOnly` を Kotlin リフレクションで読み Brigadier ツリーへマッピングします．コマンドの定義とメタデータ (権限・エイリアス) が同じ場所に宣言的に並びます．
 5. **Folia 互換性** — 非同期処理は `asyncScheduler` と `PluginCoroutineScope` (SupervisorJob) で行い，Bukkit API 呼び出しは `scheduler.runTask` でメインスレッドへ戻します．リージョンスレッド化された Folia でも壊れないよう，スレッド境界を明示的に扱います．
 6. **永続化の使い分け** — 言語/プレイヤー設定＝KAML(YAML)，チャンネル/変換キャッシュ＝kotlinx.serialization JSON，チャンネルログ＝NDJSON．いずれも「メモリキャッシュ＋非同期保存 (デバウンス/キュー)＋shutdown 同期保存」の共通パターンに従います．
-7. **DM/チャンネル＝ローカル，グローバル＝プロキシ経由** — チャットの種類でルーティングが分かれ，グローバルチャットだけが Velocity を経由します．中継は「送信元サーバー除外」＋「messageId による重複排除」の二段でループを防ぎます．
+7. **チャンネル＝ローカル，グローバルと DM＝任意でプロキシ経由** — チャットの種類でルーティングが分かれます．チャンネルチャットは常にサーバーローカルで，グローバルチャットは `crossServerGlobalChat` が有効なとき，ダイレクトメッセージは `crossServerDirectMessage` が有効なときにプロキシを経由します．中継は「送信元サーバー除外」＋「messageId による重複排除」の二段でループを防ぎます．
 
 ## 各モジュールの詳細についてはこちら
 

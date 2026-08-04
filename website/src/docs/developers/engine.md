@@ -48,13 +48,11 @@ The compatibility check is "**MAJOR matches exactly, the remote MINOR is within 
 
 As a consequence of this design, Paper and Velocity can be released independently. See [Build, Release & Versioning](/docs/developers/resource#independent-versioning).
 
-## converter — Romaji-to-Japanese conversion
+## Romaji conversion is no longer here
 
-`converter` is not a Paper↔Velocity contract (Velocity does no romaji conversion); it lives in `engine` **because it is platform-independent pure logic**. It has three layers.
+Romaji conversion used to live in `engine` on the grounds that it was platform-independent pure logic. It now lives in [platform-paper](/docs/developers/platform-paper), which is its only caller.
 
-- `KanaConverter` (`object`) — converts romaji to hiragana with a **Trie**. An immutable structure of `sealed class TrieNode { Leaf, Branch }` covers mappings from 4 characters (`xtsu`→っ) down to 1 (`a`→あ). `isValidRomaji()` validates before conversion; `toHiragana()` is a pure algorithm using longest-match plus sokuon handling
-- `GoogleIMEClient` — receives a Ktor `HttpClient` via DI and converts hiragana to kanji-kana via Google IME (`langpair=ja-Hira|ja`), concatenating the top candidate of each segment of the response
-- `CacheData` (`@Serializable`) — the persistence schema for conversion results (`version` plus `entries: Map`). It is a container for caching the expensive IME conversions; the caching logic itself lives on the paper side
+Being platform-independent turned out not to be reason enough: keeping it here made `engine` depend on Ktor, and because both platforms depend on `engine`, the **Velocity** artifact shipped an HTTP client it never called. Moving it out is what let `engine` narrow its dependencies to `kotlinx-serialization-json` alone.
 
 ## chat/channel — Channel domain model
 
@@ -79,14 +77,14 @@ There are two UUID serializers because they serve different purposes. `UUIDSeria
 
 ## exception — Shared error vocabulary
 
-So that Paper and Velocity can handle domain errors as the same types, exceptions are centralized in `engine`. There is no common sealed base — it is a flat structure (23 types) that directly extends `Exception`. They fall into existence/reference, state, limit, and permission/BAN/KICK categories, and many take `playerId` / `channelId` / `limit` in the constructor and build their own messages. Because there is no base type, callers are expected to catch each individually.
+So that Paper and Velocity can handle domain errors as the same types, exceptions are centralized in `engine`. There is no common sealed base — it is a flat structure that directly extends `Exception`. They fall into existence/reference, state, limit, and permission/BAN/KICK categories, and many take `playerId` / `channelId` / `limit` in the constructor and build their own messages. Because there is no base type, callers are expected to catch each individually.
 
 ## permission / command — Neutral abstractions
 
 Permissions and command results are placed in `engine` as neutral representations that can be passed to either the Bukkit or Velocity API.
 
 - `LunaticChatPermissionNode` — permissions enumerated type-safely as `sealed class` + `object` subclasses. The string node can be passed to either platform's permission API, and `when` also gives exhaustiveness checking
-- `CommandResult` — a `sealed class` (`Success` / `SuccessWithMessage` / `Failure` / `InvalidUsage`). The message is an Adventure `Component`, and `toBrigadierResult()` expresses only "the meaning of the return value" (success=1/failure=0) without depending on Brigadier itself
+- `CommandResult` — a `sealed class` (`Success` / `SuccessWithMessage` / `Failure` / `InvalidUsage`). Messages travel as plain `String`, so no Adventure type reaches `engine`; turning them into styled output is the platform's job. `toBrigadierResult()` expresses only "the meaning of the return value" (success=1/failure=0) without depending on Brigadier itself
 
 ## Related
 

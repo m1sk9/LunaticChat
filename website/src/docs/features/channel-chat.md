@@ -37,6 +37,19 @@ Players can join multiple channels, but only one channel can be active at a time
 /lc channel status    # Display the current active channel and list of joined channels
 ```
 
+## Sending to Global Chat (`!` Prefix)
+
+While a channel is active, your chat goes to that channel. Prefixing a message with `!` sends that one message to global chat instead, without leaving or switching the channel.
+
+```
+!Hello everyone      # Goes to global chat even while a channel is active
+```
+
+The `!` and any space following it are stripped before the message is sent, so it never appears in the message itself. A message consisting of only `!` is discarded and nothing is sent.
+
+> [!NOTE]
+> The prefix is handled by the chat listener, which is only registered when channel chat, cross-server global chat, or Japanese conversion is enabled. If all three are disabled, a leading `!` stays in the message exactly as typed.
+
 ## Roles and Permissions
 
 Channels have three roles.
@@ -86,6 +99,10 @@ See the `features.channelChat.messageLogging` section on the [Configuration page
 ## Bypass Permission
 
 Players with the `lunaticchat.channelbypass` permission (default: op) are protected from kicks and bans, and can force-delete channels.
+
+## Spy Mode
+
+Channel messages are not private from administrators. Players with the `lunaticchat.spy` permission (default: op) also receive channel messages, excluding the sender and the channel's own members. See [Spy Mode](/docs/features/admin#spy-mode) for details.
 
 ## Message Format
 

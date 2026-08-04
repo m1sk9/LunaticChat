@@ -8,6 +8,7 @@ export const en: DefaultTheme.Config = {
   nav: [
     { link: '/download', text: 'Download' },
     { link: '/docs/getting-started', text: 'Documentation' },
+    { link: '/changelog/overview', text: 'Changelog' },
   ],
   sidebar: {
     '/docs/': [
@@ -101,6 +102,36 @@ export const en: DefaultTheme.Config = {
           {
             link: '/docs/developers/resource',
             text: 'Build, Release & Versioning',
+          },
+        ],
+      },
+    ],
+    '/changelog/': [
+      {
+        text: 'Paper',
+        items: [
+          {
+            text: 'v1',
+            items: [
+              {
+                link: '/changelog/paper/v1.3.0',
+                text: 'v1.3.0',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        text: 'Velocity',
+        items: [
+          {
+            text: 'v1',
+            items: [
+              {
+                link: '/changelog/velocity/v1.2.0',
+                text: 'v1.2.0',
+              },
+            ],
           },
         ],
       },
