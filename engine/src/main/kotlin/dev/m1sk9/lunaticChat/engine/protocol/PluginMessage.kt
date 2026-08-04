@@ -113,7 +113,9 @@ sealed interface PluginMessage {
      * @property senderId Sender UUID as string (used to locate the sender to notify)
      * @property targetName Target player name that was requested
      * @property targetServerName Target server name that was requested
-     * @property reason Failure reason: [Reason.TARGET_OFFLINE] or [Reason.SERVER_NOT_FOUND]
+     * @property reason Why delivery failed. Defaults to [Reason.TARGET_OFFLINE] so that a reason
+     *   added by a newer peer degrades to the generic failure rather than failing to decode -
+     *   [PluginMessageCodec] enables coerceInputValues for exactly this.
      */
     @Serializable
     data class DirectMessageError(
@@ -121,11 +123,18 @@ sealed interface PluginMessage {
         val senderId: String,
         val targetName: String,
         val targetServerName: String,
-        val reason: String,
+        val reason: Reason = Reason.TARGET_OFFLINE,
     ) : PluginMessage {
-        object Reason {
-            const val TARGET_OFFLINE = "TARGET_OFFLINE"
-            const val SERVER_NOT_FOUND = "SERVER_NOT_FOUND"
+        /**
+         * Why a cross-server direct message could not be delivered.
+         *
+         * An enum rather than string constants so that adding a case forces every reader to
+         * decide what to show for it, instead of silently reporting the existing default.
+         */
+        @Serializable
+        enum class Reason {
+            TARGET_OFFLINE,
+            SERVER_NOT_FOUND,
         }
     }
 

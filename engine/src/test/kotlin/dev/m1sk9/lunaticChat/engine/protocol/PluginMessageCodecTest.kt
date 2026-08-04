@@ -291,7 +291,7 @@ class PluginMessageCodecTest {
                 PluginMessage.StatusResponse("1.0.0", "1.0.0", true),
                 PluginMessage.GlobalChatMessage("id", "srv", "pid", "name", "msg", 0L),
                 PluginMessage.DirectMessageRelay("id", "src", "sid", "sname", "tsrv", "tname", "msg", 0L),
-                PluginMessage.DirectMessageError("id", "sid", "tname", "tsrv", "TARGET_OFFLINE"),
+                PluginMessage.DirectMessageError("id", "sid", "tname", "tsrv", PluginMessage.DirectMessageError.Reason.TARGET_OFFLINE),
                 PluginMessage.PresenceSnapshot(listOf(PresenceEntry("p", "s")), 0L),
                 PluginMessage.PresenceRequest,
             )

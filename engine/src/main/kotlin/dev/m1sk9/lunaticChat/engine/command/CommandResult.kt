@@ -1,10 +1,11 @@
 package dev.m1sk9.lunaticChat.engine.command
 
-import net.kyori.adventure.text.Component
-
 /**
  * Represents the result of a command execution.
  * Uses Kotlin sealed classes for type-safe result handling.
+ *
+ * Messages travel as plain text; turning them into styled output is the platform's job, so this
+ * stays free of any Minecraft or Adventure type.
  */
 sealed class CommandResult {
     /** Command executed successfully */
@@ -12,12 +13,12 @@ sealed class CommandResult {
 
     /** Command executed successfully with a message to display */
     data class SuccessWithMessage(
-        val message: Component,
+        val message: String,
     ) : CommandResult()
 
     /** Command failed with an error message */
     data class Failure(
-        val message: Component,
+        val message: String,
     ) : CommandResult()
 
     /** Command failed due to invalid usage */

@@ -1,6 +1,5 @@
 package dev.m1sk9.lunaticChat.engine.command
 
-import net.kyori.adventure.text.Component
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -13,13 +12,13 @@ class CommandResultTest {
 
     @Test
     fun `SuccessWithMessage toBrigadierResult should return 1`() {
-        val result = CommandResult.SuccessWithMessage(Component.text("ok"))
+        val result = CommandResult.SuccessWithMessage("ok")
         assertEquals(1, result.toBrigadierResult())
     }
 
     @Test
     fun `Failure toBrigadierResult should return 0`() {
-        val result = CommandResult.Failure(Component.text("error"))
+        val result = CommandResult.Failure("error")
         assertEquals(0, result.toBrigadierResult())
     }
 
@@ -31,7 +30,7 @@ class CommandResultTest {
 
     @Test
     fun `SuccessWithMessage should preserve message`() {
-        val message = Component.text("Test message")
+        val message = "Test message"
         val result = CommandResult.SuccessWithMessage(message)
         assertIs<CommandResult.SuccessWithMessage>(result)
         assertEquals(message, result.message)
@@ -39,7 +38,7 @@ class CommandResultTest {
 
     @Test
     fun `Failure should preserve message`() {
-        val message = Component.text("Error message")
+        val message = "Error message"
         val result = CommandResult.Failure(message)
         assertIs<CommandResult.Failure>(result)
         assertEquals(message, result.message)

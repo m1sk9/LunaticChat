@@ -174,7 +174,7 @@ class ProtocolBackwardCompatibilityTest {
         assertEquals("00000005-0000-0000-0000-000000000000", decoded.senderId)
         assertEquals("Ghost", decoded.targetName)
         assertEquals("lobby", decoded.targetServerName)
-        assertEquals("TARGET_OFFLINE", decoded.reason)
+        assertEquals(PluginMessage.DirectMessageError.Reason.TARGET_OFFLINE, decoded.reason)
     }
 
     @Test
@@ -195,5 +195,19 @@ class ProtocolBackwardCompatibilityTest {
         val decoded = PluginMessageCodec.decode(data)
 
         assertIs<PluginMessage.PresenceRequest>(decoded)
+    }
+
+    @Test
+    fun `a failure reason this build does not know decodes to the generic failure`() {
+        val fromNewerPeer =
+            """{"messageId":"dm-789","senderId":"00000006-0000-0000-0000-000000000000",""" +
+                """"targetName":"Ghost","targetServerName":"lobby","reason":"RATE_LIMITED"}"""
+
+        val decoded = PluginMessageCodec.decode(buildRawMessage("direct_message_error", fromNewerPeer))
+
+        // A proxy that learns a new reason must not make this build drop the whole message.
+        assertIs<PluginMessage.DirectMessageError>(decoded)
+        assertEquals("dm-789", decoded.messageId)
+        assertEquals(PluginMessage.DirectMessageError.Reason.TARGET_OFFLINE, decoded.reason)
     }
 }

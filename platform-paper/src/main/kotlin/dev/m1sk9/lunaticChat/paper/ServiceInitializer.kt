@@ -1,6 +1,5 @@
 package dev.m1sk9.lunaticChat.paper
 
-import dev.m1sk9.lunaticChat.engine.converter.GoogleIMEClient
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMembershipManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMessageLogger
@@ -10,6 +9,7 @@ import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelNotificationHandler
 import dev.m1sk9.lunaticChat.paper.chat.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
 import dev.m1sk9.lunaticChat.paper.converter.ConversionCache
+import dev.m1sk9.lunaticChat.paper.converter.GoogleIMEClient
 import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
@@ -190,8 +190,8 @@ class ServiceInitializer(
         // Initialize conversion cache
         val cache =
             ConversionCache(
-                cacheFile = plugin.dataFolder.resolve(configuration.features.japaneseConversion.cacheFilePath).toPath(),
-                maxEntries = configuration.features.japaneseConversion.cacheMaxEntries,
+                cacheFile = plugin.dataFolder.resolve(configuration.features.japaneseConversion.cache.filePath).toPath(),
+                maxEntries = configuration.features.japaneseConversion.cache.maxEntries,
                 logger = logger,
             )
         cache.loadFromDisk()
@@ -199,7 +199,7 @@ class ServiceInitializer(
         // Initialize Google IME API client
         val apiClient =
             GoogleIMEClient(
-                timeout = configuration.features.japaneseConversion.apiTimeout.milliseconds,
+                timeout = configuration.features.japaneseConversion.api.timeout.milliseconds,
                 httpClient = httpClient.value,
             )
 
@@ -428,7 +428,7 @@ class ServiceInitializer(
             // would both be rejected by runAtFixedRate and leave the cache unsaved until the
             // server stopped. Fall back to the documented default rather than to one second,
             // which would rewrite the whole cache file every tick anyone chatted.
-            val configuredInterval = configuration.features.japaneseConversion.cacheSaveIntervalSeconds
+            val configuredInterval = configuration.features.japaneseConversion.cache.saveIntervalSeconds
             val intervalSeconds =
                 if (configuredInterval > 0) {
                     configuredInterval.toLong()

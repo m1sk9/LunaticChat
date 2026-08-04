@@ -6,6 +6,7 @@ import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelRole
 import dev.m1sk9.lunaticChat.engine.settings.PlayerChatSettings
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
 import dev.m1sk9.lunaticChat.paper.config.key.ChannelChatFeatureConfig
+import dev.m1sk9.lunaticChat.paper.config.key.ConversionCacheConfig
 import dev.m1sk9.lunaticChat.paper.config.key.FeaturesConfig
 import dev.m1sk9.lunaticChat.paper.config.key.JapaneseConversionFeatureConfig
 import dev.m1sk9.lunaticChat.paper.config.key.MessageFormatConfig
@@ -86,11 +87,7 @@ object TestUtils {
                     japaneseConversion =
                         JapaneseConversionFeatureConfig(
                             enabled = japaneseConversionEnabled,
-                            cacheMaxEntries = 500,
-                            cacheSaveIntervalSeconds = 300,
-                            cacheFilePath = "test-conversion-cache.json",
-                            apiTimeout = 3000,
-                            apiRetryAttempts = 2,
+                            cache = ConversionCacheConfig(filePath = "test-conversion-cache.json"),
                         ),
                     channelChat =
                         ChannelChatFeatureConfig(

@@ -1,5 +1,6 @@
 package dev.m1sk9.lunaticChat.paper.config.key
 
+import dev.m1sk9.lunaticChat.paper.config.LenientBoolean
 import kotlinx.serialization.Serializable
 
 /**
@@ -14,7 +15,7 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class ChannelMessageLoggingConfig(
-    val enabled: Boolean = true,
+    val enabled: LenientBoolean = true,
     val retentionDays: Int = 30,
     val maxFileSizeMB: Int = 100,
 )
