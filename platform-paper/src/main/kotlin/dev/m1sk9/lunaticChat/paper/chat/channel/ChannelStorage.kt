@@ -3,24 +3,18 @@ package dev.m1sk9.lunaticChat.paper.chat.channel
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelData
 import dev.m1sk9.lunaticChat.engine.exception.ChannelStorageLoadException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelStorageSaveException
-import dev.m1sk9.lunaticChat.paper.DebouncedSaver
-import dev.m1sk9.lunaticChat.paper.writeTextAtomically
+import dev.m1sk9.lunaticChat.paper.storage.FileStore
 import kotlinx.serialization.json.Json
-import java.nio.file.Path
 import java.util.logging.Logger
-import kotlin.io.path.bufferedReader
-import kotlin.io.path.exists
 
 /**
  * Manages the storage of channel data on disk.
  *
- * @property channelsFile The path to the file where channel data is stored.
- * @property saver Coalesces bursts of save requests into one asynchronous write.
+ * @property store The file channel data is read from and written to.
  * @property logger The logger for logging messages.
  */
 class ChannelStorage(
-    private val channelsFile: Path,
-    private val saver: DebouncedSaver,
+    private val store: FileStore,
     private val logger: Logger,
 ) {
     private val json =
@@ -36,22 +30,19 @@ class ChannelStorage(
      * @throws ChannelStorageLoadException if there is an error loading the data.
      */
     fun loadFromDisk(): ChannelData {
-        if (!channelsFile.exists()) {
-            logger.warning("Channel storage not found, will create a new one.")
-            return ChannelData()
-        }
+        val jsonContent =
+            store.read() ?: run {
+                logger.warning("Channel storage not found, will create a new one.")
+                return ChannelData()
+            }
 
         return try {
-            val jsonContent =
-                channelsFile.bufferedReader().use {
-                    it.readText()
-                }
             json.decodeFromString(ChannelData.serializer(), jsonContent).also {
-                logger.info("Successfully loaded channels from ${channelsFile.fileName}.")
+                logger.info("Successfully loaded channels from ${store.name}.")
             }
         } catch (e: Exception) {
             throw ChannelStorageLoadException(
-                "Failed to load channels from ${channelsFile.fileName}: ${e.message}",
+                "Failed to load channels from ${store.name}: ${e.message}",
                 e,
             )
         }
@@ -65,12 +56,11 @@ class ChannelStorage(
      */
     fun saveToDisk(data: ChannelData) {
         try {
-            val jsonContent = json.encodeToString(ChannelData.serializer(), data)
-            channelsFile.writeTextAtomically(jsonContent)
-            logger.fine("Successfully saved channels from ${channelsFile.fileName}.")
+            store.write(json.encodeToString(ChannelData.serializer(), data))
+            logger.fine("Successfully saved channels from ${store.name}.")
         } catch (e: Exception) {
             throw ChannelStorageSaveException(
-                "Failed to save channels to ${channelsFile.fileName}: ${e.message}",
+                "Failed to save channels to ${store.name}: ${e.message}",
                 e,
             )
         }
@@ -84,12 +74,6 @@ class ChannelStorage(
      *   write instead of one of each per change.
      */
     fun queueAsyncSave(data: () -> ChannelData) {
-        saver.request {
-            try {
-                saveToDisk(data())
-            } catch (e: ChannelStorageSaveException) {
-                logger.severe("Error saving channel data asynchronously: ${e.message}")
-            }
-        }
+        store.queueWrite { json.encodeToString(ChannelData.serializer(), data()) }
     }
 }

@@ -1,7 +1,6 @@
 package dev.m1sk9.lunaticChat.paper.command.impl.lc.channel
 
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
-import dev.m1sk9.lunaticChat.engine.exception.ChannelNotFoundException
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.TestUtils
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
@@ -64,7 +63,7 @@ class ChannelStatusCommandTest {
         every { deps.channelManager.getPlayerChannel(testUUID) } returns channelId
         every { deps.channelManager.getChannel(channelId) } returns Result.success(channel)
         every { deps.channelManager.getChannelMembers(channelId) } returns Result.success(members)
-        every { deps.membershipManager.getPlayerChannels(testUUID) } returns Result.success(listOf(channelId))
+        every { deps.membershipManager.getPlayerChannels(testUUID) } returns listOf(channelId)
 
         mockkStatic(Bukkit::class)
         try {
@@ -83,7 +82,7 @@ class ChannelStatusCommandTest {
         val deps = createDependencies()
 
         every { deps.channelManager.getPlayerChannel(testUUID) } returns null
-        every { deps.membershipManager.getPlayerChannels(testUUID) } returns Result.success(emptyList())
+        every { deps.membershipManager.getPlayerChannels(testUUID) } returns emptyList()
 
         mockkStatic(Bukkit::class)
         try {
@@ -113,7 +112,7 @@ class ChannelStatusCommandTest {
             Result.success(
                 listOf(TestUtils.createTestChannelMember(playerId = testUUID)),
             )
-        every { deps.membershipManager.getPlayerChannels(testUUID) } returns Result.success(channelIds)
+        every { deps.membershipManager.getPlayerChannels(testUUID) } returns channelIds
 
         mockkStatic(Bukkit::class)
         try {
@@ -125,18 +124,5 @@ class ChannelStatusCommandTest {
         } finally {
             unmockkStatic(Bukkit::class)
         }
-    }
-
-    @Test
-    fun `execute should return Failure on error`() {
-        val deps = createDependencies()
-
-        every { deps.channelManager.getPlayerChannel(testUUID) } returns null
-        every { deps.membershipManager.getPlayerChannels(testUUID) } returns
-            Result.failure(ChannelNotFoundException("error"))
-
-        val result = deps.command.execute(deps.ctx)
-
-        assertIs<CommandResult.Failure>(result)
     }
 }

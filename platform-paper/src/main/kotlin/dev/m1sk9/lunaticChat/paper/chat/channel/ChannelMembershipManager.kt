@@ -176,13 +176,7 @@ class ChannelMembershipManager(
 
         // Check if player has reached max membership limit (0 means unlimited)
         if (config.maxMembershipPerPlayer > 0) {
-            val playerChannelCount =
-                getPlayerChannels(playerId)
-                    .getOrElse {
-                        return Result.failure(
-                            ChannelRuntimeException("Failed to get player channels for $playerId", it),
-                        )
-                    }.size
+            val playerChannelCount = getPlayerChannels(playerId).size
 
             if (playerChannelCount >= config.maxMembershipPerPlayer) {
                 return Result.failure(
@@ -333,7 +327,7 @@ class ChannelMembershipManager(
      * Gets all channels where the player is a member.
      *
      * @param playerId The UUID of the player.
-     * @return Result containing a list of channel IDs where the player is a member.
+     * @return The channel IDs where the player is a member.
      */
-    fun getPlayerChannels(playerId: UUID): Result<List<String>> = Result.success(channelManager.channelIdsOf(playerId))
+    fun getPlayerChannels(playerId: UUID): List<String> = channelManager.channelIdsOf(playerId)
 }

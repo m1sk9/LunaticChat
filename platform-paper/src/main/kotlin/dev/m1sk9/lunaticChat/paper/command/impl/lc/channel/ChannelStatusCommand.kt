@@ -49,10 +49,7 @@ class ChannelStatusCommand(
         val activeChannel = activeChannelId?.let { channelManager.getChannel(it).getOrNull() }
 
         // Get all player's channels
-        val playerChannelIds =
-            membershipManager.getPlayerChannels(sender.uniqueId).getOrElse {
-                return fail("channel.status.error")
-            }
+        val playerChannelIds = membershipManager.getPlayerChannels(sender.uniqueId)
 
         // Display header
         sender.sendMessage(

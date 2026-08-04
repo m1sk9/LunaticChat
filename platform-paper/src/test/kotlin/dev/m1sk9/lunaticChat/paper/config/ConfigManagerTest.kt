@@ -24,15 +24,6 @@ class ConfigManagerTest {
         }.bufferedReader().use { it.readText() }
 
     @Test
-    fun `the bundled config parses`() {
-        val config = load(bundledConfig)
-
-        assertFalse(config.debug)
-        assertEquals("player-settings.yaml", config.userSettingsFilePath)
-        assertEquals(Language.EN, config.language)
-    }
-
-    @Test
     fun `the bundled config agrees with the declared defaults`() {
         // The data class is meant to be the single source of every default. If config.yml ships a
         // different value for a key, one of the two is lying to the operator.

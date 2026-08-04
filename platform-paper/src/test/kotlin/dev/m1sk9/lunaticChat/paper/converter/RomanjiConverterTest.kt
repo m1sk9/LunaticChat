@@ -7,13 +7,16 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIsNot
 import kotlin.test.assertNull
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Tests for RomanjiConverter.
@@ -289,6 +292,47 @@ class RomanjiConverterTest {
         }
 
     // ===== API error handling =====
+
+    @Test
+    fun `a conversion timeout is not cancellation`() {
+        // Reported through the cancellation channel, a slow request reached the delivery queue
+        // looking like shutdown and ended the worker, so the sender's later messages were buffered
+        // and never delivered.
+        assertIsNot<CancellationException>(ConversionTimeoutException(1.seconds))
+    }
+
+    @Test
+    fun `an API timeout degrades to hiragana without caching it`() =
+        runBlocking {
+            val (converter, cache, apiClient) = createConverter()
+            coEvery { apiClient.convert("おはよう") } throws ConversionTimeoutException(1.seconds)
+
+            val result = converter.convert("ohayou")
+
+            assertEquals("おはよう", result)
+            // A slow reply says nothing about the word, so caching the hiragana would pin it to its
+            // unconverted form for the life of the cache.
+            verify(exactly = 0) { cache.put(any(), any()) }
+        }
+
+    @Test
+    fun `a word that timed out is converted on the next attempt`() =
+        runBlocking {
+            // A cache that actually remembers, unlike the shared fixture whose get() always returns
+            // null - which would let this pass even if the timeout had been cached.
+            val entries = mutableMapOf<String, String>()
+            val cache = mockk<ConversionCache>(relaxed = true)
+            every { cache.get(any()) } answers { entries[firstArg()] }
+            every { cache.put(any(), any()) } answers { entries[firstArg()] = secondArg() }
+            val apiClient = mockk<GoogleIMEClient>(relaxed = true)
+            val converter = RomanjiConverter(cache, apiClient, TestUtils.TestLogger())
+
+            coEvery { apiClient.convert("おはよう") } throws ConversionTimeoutException(1.seconds)
+            converter.convert("ohayou")
+            coEvery { apiClient.convert("おはよう") } returns "おはよう御座います"
+
+            assertEquals("おはよう御座います", converter.convert("ohayou"))
+        }
 
     @Test
     fun `API failure should fallback to hiragana`() =

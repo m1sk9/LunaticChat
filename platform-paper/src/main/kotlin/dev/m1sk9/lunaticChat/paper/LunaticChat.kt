@@ -41,11 +41,14 @@ class LunaticChat :
     private lateinit var configuration: LunaticChatConfiguration
     private lateinit var serviceInitializer: ServiceInitializer
 
-    // Read by commands that must not block the tick thread.
-    lateinit var pluginScope: PluginCoroutineScope
-        private set
+    private lateinit var pluginScope: PluginCoroutineScope
 
-    /** Serializes each player's outgoing messages so they arrive in the order they were sent. */
+    /**
+     * Serializes each player's outgoing messages so they arrive in the order they were sent.
+     *
+     * Commands submit delivery here rather than running it inline: romaji conversion can reach the
+     * Google IME API, and a command executor runs on the tick thread.
+     */
     lateinit var deliveryQueue: PerPlayerWorkQueue
         private set
     private var updateChecker: UpdateChecker? = null

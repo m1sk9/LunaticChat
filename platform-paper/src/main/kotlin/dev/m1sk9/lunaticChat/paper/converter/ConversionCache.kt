@@ -1,19 +1,17 @@
 package dev.m1sk9.lunaticChat.paper.converter
 
-import dev.m1sk9.lunaticChat.paper.writeTextAtomically
+import dev.m1sk9.lunaticChat.paper.StoppableService
+import dev.m1sk9.lunaticChat.paper.storage.FileStore
 import kotlinx.serialization.json.Json
-import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.logging.Logger
-import kotlin.io.path.bufferedReader
-import kotlin.io.path.exists
 
 class ConversionCache(
-    private val cacheFile: Path,
+    private val store: FileStore,
     private val maxEntries: Int = 500,
     private val logger: Logger,
-) {
+) : StoppableService {
     private val conversionMemoryCache = ConcurrentHashMap<String, String>()
     private val dirty = AtomicBoolean(false)
 
@@ -26,14 +24,14 @@ class ConversionCache(
      * If the cache file does not exist or version is incompatible, initializes it with an empty cache.
      */
     fun loadFromDisk() {
-        if (!cacheFile.exists()) {
-            logger.info("Cache file not found, initializing new cache file at: $cacheFile")
-            initializeEmptyCache()
-            return
-        }
+        val jsonBuffer =
+            store.read() ?: run {
+                logger.info("Cache file not found, initializing new cache file at: ${store.name}")
+                initializeEmptyCache()
+                return
+            }
 
         try {
-            val jsonBuffer = cacheFile.bufferedReader().use { it.readText() }
             val cacheData = Json.decodeFromString<CacheData>(jsonBuffer)
 
             if (cacheData.version != CACHE_VERSION) {
@@ -53,8 +51,7 @@ class ConversionCache(
 
     private fun initializeEmptyCache() {
         val emptyData = CacheData(version = CACHE_VERSION, entries = emptyMap())
-        val jsonBuffer = Json.encodeToString(CacheData.serializer(), emptyData)
-        cacheFile.writeTextAtomically(jsonBuffer)
+        store.write(Json.encodeToString(CacheData.serializer(), emptyData))
     }
 
     /**
@@ -101,14 +98,16 @@ class ConversionCache(
                     version = CACHE_VERSION,
                     entries = conversionMemoryCache.toMap(),
                 )
-            val jsonBuffer = Json.encodeToString(CacheData.serializer(), data)
-            cacheFile.writeTextAtomically(jsonBuffer)
+            store.write(Json.encodeToString(CacheData.serializer(), data))
             logger.info("Saved ${conversionMemoryCache.size} cache entries to disk.")
         } catch (e: Exception) {
             dirty.set(true)
             logger.severe("Failed to save conversion cache to disk: ${e.message}")
         }
     }
+
+    /** Flushes on the shutdown path; the periodic task calls [saveToDisk] directly. */
+    override fun stop() = saveToDisk()
 
     // FIXME: ConcurrentHashMap keys are unordered, so evicting "oldest" entries
     // actually evicts random entries. Consider using LinkedHashMap with access-order

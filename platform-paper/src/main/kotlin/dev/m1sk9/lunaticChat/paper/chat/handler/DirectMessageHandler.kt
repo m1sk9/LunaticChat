@@ -156,8 +156,10 @@ class DirectMessageHandler(
 
     /**
      * Handles the sender-side display of an outgoing cross-server direct message.
-     * Applies romaji conversion, shows the message to the sender, notifies spies,
-     * and records the remote reply target.
+     * Applies romaji conversion, shows the message to the sender and notifies spies.
+     *
+     * The reply target is recorded by the caller via [recordRemoteRecipient] before the delivery is
+     * queued, for the same reason as [sendDirectMessage]: /reply reads it on the command thread.
      *
      * @return the message body to relay (romaji-converted if applicable), since the
      *   receiving server has no access to the sender's settings.
@@ -184,7 +186,6 @@ class DirectMessageHandler(
                 ?.playMessageSendNotification()
         }
 
-        recordRemoteRecipient(sender, targetName, targetServerName)
         return displayMessage
     }
 
@@ -230,7 +231,7 @@ class DirectMessageHandler(
         rawMessage: String,
     ) {
         SpyPermissionManager.notifySpies(
-            noticeText = languageManager.getMessage("general.spyMessage"),
+            noticeText = { languageManager.getMessage("general.spyMessage") },
             exclude = { it.name == senderName || it.name == recipientName },
         ) {
             formatMessage(format, senderName, recipientName, rawMessage, replyTo = senderName)

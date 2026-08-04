@@ -14,6 +14,8 @@ import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
 import dev.m1sk9.lunaticChat.paper.settings.YamlPlayerSettingsStorage
+import dev.m1sk9.lunaticChat.paper.storage.AsyncScheduler
+import dev.m1sk9.lunaticChat.paper.storage.FileStore
 import dev.m1sk9.lunaticChat.paper.velocity.CrossServerChatManager
 import dev.m1sk9.lunaticChat.paper.velocity.CrossServerDirectMessageManager
 import dev.m1sk9.lunaticChat.paper.velocity.RemotePlayerRegistry
@@ -53,6 +55,14 @@ class ServiceInitializer(
     private val logger: Logger,
 ) {
     private val handshakeCompleted = AtomicBoolean(false)
+
+    private val asyncScheduler =
+        AsyncScheduler { delaySeconds, task ->
+            plugin.server.asyncScheduler.runDelayed(plugin, { task() }, delaySeconds, TimeUnit.SECONDS)
+        }
+
+    /** A store for [relativePath] under the plugin's data folder, with its own debounced saver. */
+    private fun fileStore(relativePath: String) = FileStore(plugin.dataFolder.resolve(relativePath).toPath(), asyncScheduler, logger)
 
     private companion object {
         /** Matches the value documented in config.yml. */
@@ -119,26 +129,19 @@ class ServiceInitializer(
             }
 
         // 7. Initialize cross-server chat manager (optional)
+        //
+        // Gated on velocityManager alone: it is non-null only when velocityIntegration.enabled, so
+        // testing that flag again here would let the two conditions disagree.
         val crossServerManager =
-            if (configuration.features.velocityIntegration.enabled &&
-                configuration.features.velocityIntegration.crossServerGlobalChat &&
-                velocityManager != null
-            ) {
-                initializeCrossServerChatManager(velocityManager)
-            } else {
-                null
-            }
+            velocityManager
+                ?.takeIf { configuration.features.velocityIntegration.crossServerGlobalChat }
+                ?.let { initializeCrossServerChatManager(it) }
 
         // 8. Initialize cross-server direct message manager and presence registry (optional)
         val crossServerDirectMessage =
-            if (configuration.features.velocityIntegration.enabled &&
-                configuration.features.velocityIntegration.crossServerDirectMessage &&
-                velocityManager != null
-            ) {
-                initializeCrossServerDirectMessage(velocityManager, directMessageHandler, languageManager)
-            } else {
-                null
-            }
+            velocityManager
+                ?.takeIf { configuration.features.velocityIntegration.crossServerDirectMessage }
+                ?.let { initializeCrossServerDirectMessage(it, directMessageHandler, languageManager) }
 
         return ServiceContainer(
             languageManager = languageManager,
@@ -155,6 +158,16 @@ class ServiceInitializer(
             crossServerChatManager = crossServerManager,
             crossServerDirectMessageManager = crossServerDirectMessage?.first,
             remotePlayerRegistry = crossServerDirectMessage?.second,
+            // Ordered: player-visible state is persisted first, then the log is flushed, and the
+            // proxy connection is closed last so a relay in flight still has somewhere to go.
+            stoppables =
+                listOfNotNull(
+                    playerSettingsManager,
+                    japaneseConversion?.second,
+                    channelComponents?.channelManager,
+                    channelComponents?.channelMessageLogger,
+                    velocityManager,
+                ),
         )
     }
 
@@ -163,11 +176,9 @@ class ServiceInitializer(
      * This is always needed for features like DM notifications.
      */
     private fun initializePlayerSettingsManager(): PlayerSettingsManager {
-        val settingsFile = plugin.dataFolder.resolve(configuration.userSettingsFilePath).toPath()
         val storage =
             YamlPlayerSettingsStorage(
-                settingsFile = settingsFile,
-                saver = DebouncedSaver(plugin),
+                store = fileStore(configuration.userSettingsFilePath),
                 logger = logger,
             )
 
@@ -190,7 +201,7 @@ class ServiceInitializer(
         // Initialize conversion cache
         val cache =
             ConversionCache(
-                cacheFile = plugin.dataFolder.resolve(configuration.features.japaneseConversion.cache.filePath).toPath(),
+                store = fileStore(configuration.features.japaneseConversion.cache.filePath),
                 maxEntries = configuration.features.japaneseConversion.cache.maxEntries,
                 logger = logger,
             )
@@ -223,11 +234,9 @@ class ServiceInitializer(
         settingsManager: PlayerSettingsManager,
         languageManager: LanguageManager,
     ): ChannelComponents {
-        val channelsFile = plugin.dataFolder.resolve("channels.json").toPath()
         val storage =
             ChannelStorage(
-                channelsFile = channelsFile,
-                saver = DebouncedSaver(plugin),
+                store = fileStore("channels.json"),
                 logger = logger,
             )
 
@@ -453,24 +462,15 @@ class ServiceInitializer(
      * Performs shutdown tasks, including saving all caches to disk.
      */
     fun shutdown(services: ServiceContainer) {
-        shutdownStep("save player settings") { services.playerSettingsManager.saveToDisk() }
-        shutdownStep("save the conversion cache") { services.conversionCache?.saveToDisk() }
-        shutdownStep("save channel data") { services.channelManager?.saveToDisk() }
-        shutdownStep("shut down the channel message logger") { services.channelMessageLogger?.shutdown() }
-        shutdownStep("shut down the Velocity connection") { services.velocityConnectionManager?.shutdown() }
-    }
-
-    // The steps are independent, so one that throws must not skip the ones after it - which is what
-    // an exception escaping onDisable would do, leaving the log flusher and the Velocity connection
-    // to be torn down by the server instead.
-    private fun shutdownStep(
-        what: String,
-        step: () -> Unit,
-    ) {
-        try {
-            step()
-        } catch (e: Exception) {
-            logger.log(Level.SEVERE, "Failed to $what during shutdown", e)
+        // The services are independent, so one that throws must not skip the ones after it - which is
+        // what an exception escaping onDisable would do, leaving the log flusher and the Velocity
+        // connection to be torn down by the server instead.
+        services.stoppables.forEach { service ->
+            try {
+                service.stop()
+            } catch (e: Exception) {
+                logger.log(Level.SEVERE, "Failed to stop ${service::class.simpleName} during shutdown", e)
+            }
         }
     }
 }

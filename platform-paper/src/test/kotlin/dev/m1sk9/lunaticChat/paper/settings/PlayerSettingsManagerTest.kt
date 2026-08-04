@@ -4,6 +4,7 @@ import dev.m1sk9.lunaticChat.engine.settings.PlayerChatSettings
 import dev.m1sk9.lunaticChat.engine.settings.PlayerSettingsData
 import dev.m1sk9.lunaticChat.paper.TestUtils
 import dev.m1sk9.lunaticChat.paper.TestUtils.createTestUUID
+import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -157,11 +158,26 @@ class PlayerSettingsManagerTest {
     fun `queueSave should not write on the calling thread`() {
         val (manager, storage, _) = createManager()
         manager.initialize()
+        manager.updateSettings(PlayerChatSettings(uuid = createTestUUID(1), japaneseConversionEnabled = false))
+        clearMocks(storage, answers = false)
 
         manager.queueSave()
 
         verify(exactly = 1) { storage.queueAsyncSave(any()) }
         verify(exactly = 0) { storage.saveToDisk(any()) }
+    }
+
+    @Test
+    fun `queueSave should not write when nothing has changed`() {
+        val (manager, storage, _) = createManager()
+        manager.initialize()
+        clearMocks(storage, answers = false)
+
+        manager.queueSave()
+
+        // updateSettings is the only thing that changes a setting and it queues its own save, so a
+        // quit would otherwise re-serialize every stored player to write identical bytes.
+        verify(exactly = 0) { storage.queueAsyncSave(any()) }
     }
 
     @Test

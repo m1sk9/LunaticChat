@@ -53,7 +53,7 @@ class RomanjiConverter(
             coroutineScope {
                 words
                     .distinct()
-                    .map { word -> async { word to limiter.withPermit { convertWord(word) } } }
+                    .map { word -> async { word to convertWord(word) } }
                     .awaitAll()
             }.toMap()
 
@@ -81,14 +81,25 @@ class RomanjiConverter(
         val hiragana = KanaConverter.toHiragana(word)
 
         // Step 2: Hiragana -> Kanji/Kana
+        //
+        // The permit covers only the request. Holding it across the cache lookup above made cached
+        // words queue behind in-flight requests for a permit they never needed, so a message whose
+        // every word was cached could still run out of the caller's budget and go out unconverted.
         val converted =
             try {
-                apiClient.convert(hiragana)
+                limiter.withPermit { apiClient.convert(hiragana) }
             } catch (e: CancellationException) {
                 // Not an API failure: the caller's timeout fired. Caching the hiragana here would
                 // pin every word of the message to its unconverted form for good, because the words
                 // are converted concurrently and the timeout cancels all of them at once.
                 throw e
+            } catch (e: ConversionTimeoutException) {
+                // Returned without caching: a timeout says the request was slow, not that the word
+                // has no conversion, so recording the hiragana would pin it for the life of the
+                // cache over one slow reply. A hard API failure is different - the fallback is
+                // cached there deliberately.
+                logger.warning("Timed out converting $hiragana, leaving it uncached: ${e.message}")
+                return hiragana
             } catch (e: Exception) {
                 logger.warning("Failed to convert $hiragana: ${e.message}")
                 hiragana // Use hiragana if API fails

@@ -1,4 +1,4 @@
-package dev.m1sk9.lunaticChat.paper
+package dev.m1sk9.lunaticChat.paper.storage
 
 import java.nio.file.AtomicMoveNotSupportedException
 import java.nio.file.Files
@@ -15,7 +15,7 @@ import kotlin.io.path.writeText
  * reason: a fixed sibling would only move the interleaving from the destination to the temporary
  * file, and the losing move would then fail with it already gone.
  */
-fun Path.writeTextAtomically(content: String) {
+internal fun Path.writeTextAtomically(content: String) {
     val temporaryFile = Files.createTempFile(parent, fileName.toString(), ".tmp")
     try {
         temporaryFile.writeText(content)

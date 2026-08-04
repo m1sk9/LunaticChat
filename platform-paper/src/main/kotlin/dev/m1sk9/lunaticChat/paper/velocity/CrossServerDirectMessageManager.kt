@@ -7,7 +7,6 @@ import dev.m1sk9.lunaticChat.paper.chat.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
-import kotlinx.coroutines.CancellationException
 import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
 import java.util.UUID
@@ -40,6 +39,11 @@ class CrossServerDirectMessageManager(
      * goes through may wait on the Google IME API. The reply target is recorded by the command
      * before the work is queued; the sender-side display and the spy notification are handled by
      * [DirectMessageHandler], and the (possibly romaji-converted) body is what gets relayed.
+     *
+     * Failures are deliberately not caught here. The delivery queue is the error boundary for
+     * queued work and already reports them without stopping the sender's later messages; a second
+     * boundary underneath it only obscured where failures on this path are handled - and made an
+     * ordinary cancellation at shutdown look like a delivery failure.
      */
     suspend fun sendCrossServerMessage(
         sender: Player,
@@ -47,40 +51,32 @@ class CrossServerDirectMessageManager(
         targetServerName: String,
         message: String,
     ) {
-        try {
-            val messageId = UUID.randomUUID().toString()
-            processedMessages.markProcessed(messageId)
+        val messageId = UUID.randomUUID().toString()
+        processedMessages.markProcessed(messageId)
 
-            val relayedMessage =
-                directMessageHandler.handleOutgoingCrossServerMessage(
-                    sender = sender,
-                    targetName = targetName,
-                    targetServerName = targetServerName,
-                    message = message,
-                )
+        val relayedMessage =
+            directMessageHandler.handleOutgoingCrossServerMessage(
+                sender = sender,
+                targetName = targetName,
+                targetServerName = targetServerName,
+                message = message,
+            )
 
-            val relay =
-                PluginMessage.DirectMessageRelay(
-                    messageId = messageId,
-                    sourceServerName = configuration.features.velocityIntegration.serverName,
-                    senderId = sender.uniqueId.toString(),
-                    senderName = sender.name,
-                    targetServerName = targetServerName,
-                    targetName = targetName,
-                    message = relayedMessage,
-                )
+        val relay =
+            PluginMessage.DirectMessageRelay(
+                messageId = messageId,
+                sourceServerName = configuration.features.velocityIntegration.serverName,
+                senderId = sender.uniqueId.toString(),
+                senderName = sender.name,
+                targetServerName = targetServerName,
+                targetName = targetName,
+                message = relayedMessage,
+            )
 
-            sender.sendPluginMessage(plugin, PluginMessageChannel.ID, PluginMessageCodec.encode(relay))
-            logger.fine {
-                "Sent direct message to Velocity: messageId=$messageId, " +
-                    "target=$targetName@$targetServerName"
-            }
-        } catch (e: CancellationException) {
-            // Shutdown cancelling the delivery queue is not a delivery failure, and reporting it as
-            // SEVERE while carrying on past the cancellation would be wrong twice over.
-            throw e
-        } catch (e: Exception) {
-            logger.log(Level.SEVERE, "Failed to send cross-server direct message", e)
+        sender.sendPluginMessage(plugin, PluginMessageChannel.ID, PluginMessageCodec.encode(relay))
+        logger.fine {
+            "Sent direct message to Velocity: messageId=$messageId, " +
+                "target=$targetName@$targetServerName"
         }
     }
 

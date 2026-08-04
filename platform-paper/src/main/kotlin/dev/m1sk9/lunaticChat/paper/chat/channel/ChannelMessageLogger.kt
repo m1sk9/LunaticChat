@@ -1,6 +1,7 @@
 package dev.m1sk9.lunaticChat.paper.chat.channel
 
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelMessageLogEntry
+import dev.m1sk9.lunaticChat.paper.StoppableService
 import io.ktor.util.logging.Logger
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import kotlinx.serialization.encodeToString
@@ -38,7 +39,7 @@ class ChannelMessageLogger(
     private val logger: Logger,
     private val maxFileSizeBytes: Long,
     private val retentionDays: Int,
-) {
+) : StoppableService {
     private val pendingEntries = ConcurrentLinkedQueue<ChannelMessageLogEntry>()
     private val json = Json { encodeDefaults = true }
     private var flushTask: ScheduledTask? = null
@@ -161,7 +162,7 @@ class ChannelMessageLogger(
      * Shuts down the logger by cancelling scheduled tasks and flushing pending entries.
      * Should be called during plugin shutdown.
      */
-    fun shutdown() {
+    override fun stop() {
         // Cancel scheduled tasks
         flushTask?.cancel()
         cleanupTask?.cancel()

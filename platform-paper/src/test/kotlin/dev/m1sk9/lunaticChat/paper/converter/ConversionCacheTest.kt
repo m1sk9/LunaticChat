@@ -1,6 +1,8 @@
 package dev.m1sk9.lunaticChat.paper.converter
 
 import dev.m1sk9.lunaticChat.paper.TestUtils
+import dev.m1sk9.lunaticChat.paper.storage.FileStore
+import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.listDirectoryEntries
@@ -13,19 +15,19 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class ConversionCacheTest {
-    private fun withCacheFile(block: (Path) -> Unit) {
-        val directory = Files.createTempDirectory("conversion-cache-test")
-        try {
-            block(directory.resolve("cache.json"))
-        } finally {
-            directory.toFile().deleteRecursively()
-        }
-    }
+    @TempDir
+    lateinit var directory: Path
+
+    private fun withCacheFile(block: (Path) -> Unit) = block(directory.resolve("cache.json"))
 
     private fun createCache(
         cacheFile: Path,
         maxEntries: Int = 500,
-    ) = ConversionCache(cacheFile, maxEntries, TestUtils.TestLogger())
+    ) = ConversionCache(
+        FileStore(cacheFile, TestUtils.ManualScheduler(), TestUtils.TestLogger()),
+        maxEntries,
+        TestUtils.TestLogger(),
+    )
 
     @Test
     fun `entries survive a save and reload`() =
