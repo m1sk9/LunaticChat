@@ -100,33 +100,13 @@ jobs:
           PAPER_JAR_NAME=${{ needs.validate.outputs.paper_jar_name }}
           VELOCITY_JAR_NAME=${{ needs.validate.outputs.velocity_jar_name }}
 
+          # The notes point at the changelog on the documentation site rather than
+          # repeating it here, so the release notes live in exactly one place.
           cat > /tmp/release-notes.md <<EOF
-          LunaticChat ${TAG_NAME} has been released.
+          Release notes:
 
-          | Platform | Version |
-          |----------|---------|
-          | Paper/Folia | ${PAPER_VERSION} |
-          | Velocity | ${VELOCITY_VERSION} |
-
-          ## Download
-
-          - [GitHub](https://github.com/m1sk9/LunaticChat/releases/tag/${TAG_NAME})
-          - Modrinth: [Paper/Folia](https://modrinth.com/plugin/lunaticchat/version/${PAPER_VERSION}), [Velocity](https://modrinth.com/plugin/lunaticchat/version/${VELOCITY_VERSION}-velocity)
-
-          ## What's new
-
-          ### Highlights
-
-          ### New Features
-
-          ### Improvements
-
-          ### Changes
-
-          ### Bug Fixes
-
-          ### Notes
-
+          - [Paper/Folia v${PAPER_VERSION}](https://lc.m1sk9.dev/ja/changelog/paper/v${PAPER_VERSION})
+          - [Velocity v${VELOCITY_VERSION}](https://lc.m1sk9.dev/ja/changelog/velocity/v${VELOCITY_VERSION})
           EOF
 
           gh release create "$TAG_NAME" \
@@ -145,7 +125,7 @@ jobs:
           version: ${{ needs.validate.outputs.paper_version }}
           channel: ${{ env.MODRINTH_CHANNEL }}
           changelog: |-
-            Please refer to the [GitHub release](https://github.com/m1sk9/LunaticChat/releases/tag/${{ github.ref_name }}) for update details.
+            Please refer to the [release notes](https://lc.m1sk9.dev/ja/changelog/paper/v${{ needs.validate.outputs.paper_version }}) for update details.
           loaders: |-
             paper
             folia
@@ -161,7 +141,7 @@ jobs:
           version: ${{ needs.validate.outputs.velocity_version }}-velocity
           channel: ${{ env.MODRINTH_CHANNEL }}
           changelog: |-
-            Please refer to the [GitHub release](https://github.com/m1sk9/LunaticChat/releases/tag/${{ github.ref_name }}) for update details.
+            Please refer to the [release notes](https://lc.m1sk9.dev/ja/changelog/velocity/v${{ needs.validate.outputs.velocity_version }}) for update details.
           loaders: velocity
           game-versions: ${{ env.MODRINTH_VELOCITY_GAME_VERSIONS }}
           files: platform-velocity/build/libs/${{ needs.validate.outputs.velocity_jar_name }}

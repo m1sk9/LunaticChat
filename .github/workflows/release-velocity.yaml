@@ -96,35 +96,13 @@ jobs:
           VERSION=${{ needs.validate.outputs.version }}
           JAR_NAME=${{ needs.validate.outputs.jar_name }}
 
-          cat > /tmp/release-notes.md <<EOF
-          LunaticChat Velocity v${VERSION} has been released.
-
-          ## Download
-
-          - [GitHub](https://github.com/m1sk9/LunaticChat/releases/tag/${TAG_NAME})
-          - [Modrinth (Velocity)](https://modrinth.com/plugin/lunaticchat/version/${VERSION}-velocity)
-
-          ## What's new
-
-          ### Highlights
-
-          ### New Features
-
-          ### Improvements
-
-          ### Changes
-
-          ### Bug Fixes
-
-          ### Notes
-
-          EOF
-
+          # The notes point at the changelog on the documentation site rather than
+          # repeating it here, so the release notes live in exactly one place.
           gh release create "$TAG_NAME" \
             "platform-velocity/build/libs/$JAR_NAME" \
             --title "v${VERSION} (Velocity)" \
             --draft \
-            --notes-file /tmp/release-notes.md
+            --notes "Release notes: [Velocity v${VERSION}](https://lc.m1sk9.dev/ja/changelog/velocity/v${VERSION})"
 
       - name: Publish to Modrinth (Velocity)
         uses: cloudnode-pro/modrinth-publish@8dc596b20b94959bf244180235d90729d05a674f # v2
@@ -135,7 +113,7 @@ jobs:
           version: ${{ needs.validate.outputs.version }}-velocity
           channel: ${{ env.MODRINTH_CHANNEL }}
           changelog: |-
-            Please refer to the [GitHub release](https://github.com/m1sk9/LunaticChat/releases/tag/velocity/v${{ needs.validate.outputs.version }}) for update details.
+            Please refer to the [release notes](https://lc.m1sk9.dev/ja/changelog/velocity/v${{ needs.validate.outputs.version }}) for update details.
           loaders: velocity
           game-versions: ${{ env.MODRINTH_VELOCITY_GAME_VERSIONS }}
           files: platform-velocity/build/libs/${{ needs.validate.outputs.jar_name }}
