@@ -51,6 +51,8 @@ When `crossServerGlobalChat` is set to `true`, player chat messages are relayed 
 
 Each message is assigned a unique ID, and a cache prevents the same message from being displayed more than once. The cache size can be configured with `messageDeduplicationCacheSize` (default: `100`).
 
+Entries expire 60 seconds after they are recorded. If the cache is still over its configured size after expired entries are cleared, the oldest remaining entries are dropped.
+
 ## Cross-Server Direct Messages <Badge type="tip" text="v1.3.0~" />
 
 Setting `crossServerDirectMessage` to `true` lets players exchange direct messages with players on other servers connected to the same proxy.
@@ -80,7 +82,8 @@ The handshake timeout is 5 seconds. If the handshake times out, the state become
 |-------------|---------|-------------|
 | `enabled` | `false` | Enable Velocity integration |
 | `crossServerGlobalChat` | `false` | Enable cross-server global chat |
-| `serverName` | `"Unknown"` | Server name displayed in cross-server chat |
+| `crossServerDirectMessage` | `false` | Enable cross-server direct messages |
+| `serverName` | `"Unknown"` | Server name displayed in cross-server chat, and the name `/tell <player>@<server>` matches against |
 | `messageDeduplicationCacheSize` | `100` | Size of the message deduplication cache |
 
 ## Message Format

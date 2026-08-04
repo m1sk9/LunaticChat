@@ -121,7 +121,7 @@ config フラグ
 
 ### ダイレクトメッセージ (DirectMessageHandler)
 
-`/tell`・`/reply` の状態を管理します．`lastMessager` / `lastRecipient` の 2 つの `ConcurrentHashMap` で返信先を追跡し，`getReplyTarget()` は「自分に送ってきた人 → 自分が送った人」の優先順でオンラインのプレイヤーを返します．
+`/tell`・`/reply` の状態を管理します．`lastMessager` / `lastRecipient` の 2 つの `ConcurrentHashMap` が返信先を `sealed interface ReplyTarget` (`Local` = UUID / `Remote` = プレイヤー名＋サーバー名) として追跡し，`getReplyTarget()` は「自分に送ってきた人 → 自分が送った人」の優先順で解決しながら検証します．`Local` はオンラインであること，`Remote` は `RemotePlayerRegistry` がそのサーバーに在席を報告していることが条件です．
 
 `sendDirectMessage()` は，送信者設定に応じたローマ字変換 → spy プレイヤーへの hover 付き配信 (送受信者は除外) → 送受信者への整形メッセージ送信＋通知音 (設定依存) を行います．メッセージには `/tell <sender>` を補完する `ClickEvent.suggestCommand` が付きます．
 
@@ -144,13 +144,11 @@ config フラグ
 
 ## config
 
-- `ConfigManager` — メイン `config.yml` を **Bukkit の `FileConfiguration`** からドット記法で読み，`LunaticChatConfiguration` を手組みする (この経路は KAML ではない点に注意)
+- `ConfigManager` — `config.yml` を **KAML** で `LunaticChatConfiguration` にデシリアライズする．デフォルト値の定義箇所をデータクラス 1 箇所に限定するためで，以前のドット記法の手組みマッパーは同じデフォルトを二重に持っており，実際に乖離していた (`checkForUpdates` が `config.yml` とデータクラスの双方と食い違い，`messageLogging` ブロックはドキュメント化されていながら一度も読まれていなかった)
+- 失敗はファイル単位ではなく設定単位で処理する．`YamlException` が出た場合は該当キーをドキュメントから取り除いてデコードを再試行するため，読めない値 1 つの影響はその値だけに留まる．全体をデフォルトに落とすのは「YAML として成立していない」場合だけで，いずれのケースも `onEnable` の外へ例外を投げない
+- `LenientBoolean` — `yes` / `no` / `on` / `off` も受け付けるシリアライザ付きの `Boolean` typealias．Bukkit は `config.yml` を YAML 1.1 として読んでいたためこれらは真偽値だったが，kaml が読む YAML 1.2 では単なる文字列であり，黙ってリセットすると `checkForUpdates: no` がデフォルトの逆の値に反転してしまう
 - 機能デフォルト: `quickReplies=true`, `japaneseConversion=false`, `channelChat=false`, `velocityIntegration=false`
 - `config/key` 以下に `FeaturesConfig` / `ChannelChatFeatureConfig` / `JapaneseConversionFeatureConfig` / `VelocityIntegrationConfig` / `QuickRepliesFeatureConfig` / `MessageFormatConfig` / `ChannelMessageLoggingConfig`
-
-::: warning 実装ノート
-`ChannelChatFeatureConfig.messageLogging` は `ConfigManager` でロードされず，デフォルト値 (enabled=true, retention=30, 100MB) 固定になっています．意図的な仕様か要確認 — 修正するか，仕様として明記するかを決める必要があります．
-:::
 
 ## i18n
 
@@ -158,13 +156,15 @@ config フラグ
 - `LanguageManager` — 起動時に `resources/languages/` を KAML でロードし，ネストした YAML をドット記法 (`toggle.on` 等) にフラット化する．`getMessage(key, placeholders)` は 選択言語 → EN フォールバック で解決し `{placeholder}` を置換，未発見はキー自身を返す．EN が無ければ致命エラー
 - `MessageFormatter` (`object`) — `[LC]` プレフィックス付きの Adventure `Component` を生成し，`{braces}` プレースホルダを正規表現で検出して色分けする
 
-## converter (paper 側) — engine 連携
+## converter — ローマ字→日本語変換
 
-paper 側は「キャッシュ管理・タイムアウト・Bukkit スケジューリング」というプラットフォーム都合を担い，変換アルゴリズムと API 通信は engine に委譲します．
+ローマ字変換はアルゴリズム・API クライアント・キャッシュ・プラットフォーム都合 (タイムアウト，スケジューリング) のすべてがここにあります．かつては「プラットフォーム非依存の純ロジック」として engine にありましたが，呼び出し元は `platform-paper` だけであり，engine に置いたままでは Velocity の成果物が使わない Ktor を同梱することになるため移されました．
 
-- `RomanjiConverter` — 2 段変換のオーケストレータ．単語ごとに キャッシュ確認 → engine `KanaConverter` でローマ字→ひらがな → engine `GoogleIMEClient` でひらがな→漢字．API 失敗時はひらがなにフォールバック
-- `ConversionCache` — engine `CacheData` を JSON 永続化．メモリキャッシュ＋デバウンス保存 (`maxEntries` 超過時の退避は ConcurrentHashMap の順不同により実質ランダム，との FIXME あり)
-- `RomajiConversionHelper` — `convertWithRomaji()`．`runBlocking` + `withTimeoutOrNull` (既定 1000ms) で同期呼び出しし，成功時 `"元文 §e(変換)"`，失敗/タイムアウト時は原文を返す
+- `KanaConverter` (`object`) — **Trie** でローマ字→ひらがなに変換．`sealed class TrieNode { Leaf, Branch }` の不変構造で，4 文字 (`xtsu`→っ) 〜1 文字 (`a`→あ) を網羅．`isValidRomaji()` で変換前検証，`toHiragana()` は最長一致＋促音処理を行う純アルゴリズム
+- `GoogleIMEClient` — Ktor `HttpClient` を DI で受け取り，Google IME (`langpair=ja-Hira|ja`) でひらがな→漢字仮名交じりに変換．レスポンスの各セグメント第 1 候補を連結する
+- `RomanjiConverter` — 2 段変換のオーケストレータ．単語ごとに キャッシュ確認 → `KanaConverter` → `GoogleIMEClient`．単語は並行して変換され，API 失敗時はメッセージ全体を失敗させずひらがなにフォールバックする
+- `ConversionCache` — `CacheData` を JSON 永続化．メモリキャッシュ＋デバウンス保存 (`maxEntries` 超過時に削除されるのは古い順ではなく任意の 10%，ConcurrentHashMap が順不同であるため，との FIXME あり)
+- `RomajiConversionHelper` — `convertWithRomaji()` は `suspend` 関数で `withTimeoutOrNull` (既定 1000ms) により上限が設けられ，成功時 `"元文 §e(変換)"`，失敗/タイムアウト時は原文を返す．`convertWithRomajiBlocking()` はこれを `runBlocking` で包んだもので，イベントをキャンセルするか否かを return 前に決めなければならない `AsyncChatEvent` だけが使う．コマンドハンドラは tick スレッドで動くため suspend 版を使う必要がある
 
 ## velocity 連携 (Paper 側視点)
 
@@ -177,7 +177,7 @@ engine の protocol を使い，Bukkit の Plugin Messaging Channel (`lunaticcha
 ## settings / common
 
 - `PlayerSettingsManager` — 3 種のブール設定を `ConcurrentHashMap` で管理．engine の DTO を使い，未設定はデフォルト true
-- `YamlPlayerSettingsStorage` — KAML で `player-settings.yaml` を read/write．読み込み失敗時はバックアップから復旧，5 秒デバウンス保存
+- `YamlPlayerSettingsStorage` — KAML で `player-settings.yaml` を read/write．5 秒デバウンス保存．バックアップファイルは存在せず，読み込み失敗時はログを出して**空の設定**にフォールバックするため，全プレイヤーの設定が黙ってデフォルトに戻る
 - `UpdateChecker` — GitHub Releases API を Ktor で叩き semver 比較．結果は sealed `UpdateCheckResult`
 - `SoundCollector` — 通知音の Adventure `Sound` 定数と Player 拡張関数
 - `PermissionCollector` — `@PermissionDsl` ＋ `+LunaticChatPermissionNode` 演算子で権限を集める DSL．`requirePermission` は engine の `RequirePermissionException` を投げる

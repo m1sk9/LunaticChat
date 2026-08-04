@@ -57,9 +57,11 @@ The rules (from Velocity's perspective) are:
 
 Compatibility is checked at connection time:
 
-1. The Paper server sends a handshake to Velocity at startup
+1. The Paper server sends a handshake to Velocity one second after the **first player joins**
 2. Velocity validates Paper's protocol version against its own
 3. On mismatch, Velocity rejects the connection and Paper's state becomes `FAILED`
 4. The handshake timeout is 5 seconds
+
+The handshake is sent once per server start, and it is triggered by a player joining rather than by startup itself — the plugin messaging channel needs a player connection to send on. Until the first player joins, `/lcv status` reports `DISCONNECTED`, which is normal and not a sign of a problem.
 
 Live connection state is available via `/lcv status`. See [Velocity Integration](/docs/features/velocity#connection-states) for details.

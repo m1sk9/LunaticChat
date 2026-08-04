@@ -42,6 +42,15 @@ To message a player on another server, specify the player argument as `playerNam
 /tell <player>@<server> <message>
 ```
 
+`serverName` is the `features.velocityIntegration.serverName` configured on the **destination** server, not the name Velocity uses internally. A server left at the default `"Unknown"` cannot be addressed meaningfully, so give every server a name before enabling this.
+
+Delivery can fail in two ways, and the sender is told which:
+
+| Reason | Meaning |
+|--------|---------|
+| `SERVER_NOT_FOUND` | No server behind the proxy reports that `serverName` |
+| `TARGET_OFFLINE` | The server was found, but that player is not online on it |
+
 ## Notification Settings
 
 Players can individually control the sound notification when receiving direct messages.

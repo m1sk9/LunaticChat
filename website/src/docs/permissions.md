@@ -44,7 +44,7 @@ The following permissions are granted to OPs only by default.
 
 | Permission | Default | Description |
 |------------|---------|-------------|
-| `lunaticchat.spy` | op | View all direct messages on the server |
+| `lunaticchat.spy` | op | View all direct and channel messages on the server |
 | `lunaticchat.noticeupdate` | op | Receive update notifications |
 | `lunaticchat.channelbypass` | op | Bypass channel restrictions (kick/ban protection, force deletion) |
 | `lunaticchat.command.lcv.status` | op | Use the `/lcv status` command |

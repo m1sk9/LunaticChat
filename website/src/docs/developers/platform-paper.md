@@ -121,7 +121,7 @@ Branches:
 
 ### Direct messages (DirectMessageHandler)
 
-Manages `/tell`・`/reply` state. Two `ConcurrentHashMap`s, `lastMessager` / `lastRecipient`, track reply targets, and `getReplyTarget()` returns an online player in the order "whoever messaged me → whoever I messaged".
+Manages `/tell`・`/reply` state. Two `ConcurrentHashMap`s, `lastMessager` / `lastRecipient`, track reply targets as a `sealed interface ReplyTarget` of `Local` (a UUID) or `Remote` (a player name plus server name). `getReplyTarget()` resolves in the order "whoever messaged me → whoever I messaged", validating as it goes: a `Local` target must be online, and a `Remote` target must still be reported on that server by `RemotePlayerRegistry`.
 
 `sendDirectMessage()` applies romaji conversion per the sender's settings → delivers a hover-annotated copy to spy players (excluding sender and recipient) → sends the formatted message to sender and recipient plus a notification sound (settings-dependent). The message carries a `ClickEvent.suggestCommand` that fills in `/tell <sender>`.
 
@@ -144,13 +144,11 @@ Channel state itself is managed by the `chat/channel` package.
 
 ## config
 
-- `ConfigManager` — reads the main `config.yml` from **Bukkit's `FileConfiguration`** by dotted keys and hand-assembles `LunaticChatConfiguration` (note: this path is not KAML)
+- `ConfigManager` — deserializes `config.yml` into `LunaticChatConfiguration` with **KAML**, so each default lives in exactly one place: on the data class. It replaced a hand-written dotted-key mapper that repeated every default a second time, and they had already drifted — `checkForUpdates` disagreed with both `config.yml` and the data class, and the whole `messageLogging` block was documented but never read
+- Failure is handled per setting, not per file: on a `YamlException` the offending key is pruned from the document and decoding is retried, so one unreadable value costs only itself. Only a document that is not YAML at all falls back to defaults wholesale, and neither case is allowed to throw out of `onEnable`
+- `LenientBoolean` — a `Boolean` typealias with a serializer that still accepts `yes` / `no` / `on` / `off`. Bukkit read `config.yml` as YAML 1.1, where those are booleans; kaml reads YAML 1.2, where they are plain strings, and silently resetting them would have flipped `checkForUpdates: no` to its opposite default
 - Feature defaults: `quickReplies=true`, `japaneseConversion=false`, `channelChat=false`, `velocityIntegration=false`
 - Under `config/key`: `FeaturesConfig` / `ChannelChatFeatureConfig` / `JapaneseConversionFeatureConfig` / `VelocityIntegrationConfig` / `QuickRepliesFeatureConfig` / `MessageFormatConfig` / `ChannelMessageLoggingConfig`
-
-::: warning Implementation note
-`ChannelChatFeatureConfig.messageLogging` is not loaded by `ConfigManager` and stays at its default values (enabled=true, retention=30, 100MB). Whether this is intentional needs confirmation — decide whether to fix it or document it as intended behavior.
-:::
 
 ## i18n
 
@@ -158,13 +156,15 @@ Channel state itself is managed by the `chat/channel` package.
 - `LanguageManager` — loads `resources/languages/` with KAML at startup and flattens the nested YAML into dotted keys (`toggle.on`, etc.). `getMessage(key, placeholders)` resolves with selected-language → EN fallback and substitutes `{placeholder}`, returning the key itself if not found. A missing EN is a fatal error
 - `MessageFormatter` (`object`) — produces an Adventure `Component` with a `[LC]` prefix and highlights `{braces}` placeholders detected by regex
 
-## converter (paper side) — engine integration
+## converter — Romaji-to-Japanese conversion
 
-The paper side handles the platform concerns of "cache management, timeouts, Bukkit scheduling", and delegates the conversion algorithm and API calls to `engine`.
+Romaji conversion lives here in full: the algorithm, the API client, the cache, and the platform concerns (timeouts, scheduling). It used to sit in `engine` as platform-independent pure logic, but `platform-paper` is its only caller, and keeping it in `engine` made the Velocity artifact carry Ktor for nothing.
 
-- `RomanjiConverter` — the two-stage conversion orchestrator. Per word: cache lookup → engine `KanaConverter` for romaji→hiragana → engine `GoogleIMEClient` for hiragana→kanji. Falls back to hiragana on API failure
-- `ConversionCache` — persists engine `CacheData` as JSON. In-memory cache plus debounced save (a FIXME notes that eviction on `maxEntries` overflow is effectively random due to `ConcurrentHashMap` ordering)
-- `RomajiConversionHelper` — `convertWithRomaji()`. Calls synchronously via `runBlocking` + `withTimeoutOrNull` (default 1000ms), returning `"original §e(converted)"` on success and the original text on failure/timeout
+- `KanaConverter` (`object`) — romaji to hiragana with a **Trie**. An immutable `sealed class TrieNode { Leaf, Branch }` covers mappings from 4 characters (`xtsu`→っ) down to 1 (`a`→あ). `isValidRomaji()` validates before conversion; `toHiragana()` is a pure longest-match algorithm with sokuon handling
+- `GoogleIMEClient` — receives a Ktor `HttpClient` via DI and converts hiragana to kanji-kana via Google IME (`langpair=ja-Hira|ja`), concatenating the top candidate of each segment
+- `RomanjiConverter` — the two-stage orchestrator. Per word: cache lookup → `KanaConverter` → `GoogleIMEClient`. Words are converted concurrently, and an API failure degrades to hiragana rather than failing the message
+- `ConversionCache` — persists `CacheData` as JSON. In-memory cache plus debounced save (a FIXME notes that eviction on `maxEntries` overflow drops an arbitrary 10%, not the oldest, because `ConcurrentHashMap` is unordered)
+- `RomajiConversionHelper` — `convertWithRomaji()` is `suspend` and bounded by `withTimeoutOrNull` (default 1000ms), returning `"original §e(converted)"` on success and the original text on failure or timeout. `convertWithRomajiBlocking()` wraps it in `runBlocking` for `AsyncChatEvent`, the one caller that must decide whether to cancel the event before returning; command handlers run on the tick thread and must use the suspending form
 
 ## Velocity integration (Paper side)
 
@@ -177,7 +177,7 @@ Using the engine's protocol, it communicates with the proxy over Bukkit's Plugin
 ## settings / common
 
 - `PlayerSettingsManager` — manages three boolean settings in `ConcurrentHashMap`s. Uses the engine DTOs; unset values default to true
-- `YamlPlayerSettingsStorage` — reads/writes `player-settings.yaml` with KAML. Recovers from a backup on load failure; debounced save (5s)
+- `YamlPlayerSettingsStorage` — reads/writes `player-settings.yaml` with KAML; debounced save (5s). There is no backup file: a load failure is logged and falls back to **empty settings**, which means every player silently returns to defaults
 - `UpdateChecker` — hits the GitHub Releases API via Ktor and compares semver. The result is a sealed `UpdateCheckResult`
 - `SoundCollector` — Adventure `Sound` constants for notifications plus Player extension functions
 - `PermissionCollector` — a DSL that collects permissions via `@PermissionDsl` + the `+LunaticChatPermissionNode` operator. `requirePermission` throws the engine's `RequirePermissionException`

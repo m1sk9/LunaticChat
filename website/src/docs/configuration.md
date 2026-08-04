@@ -6,6 +6,22 @@ layout: doc
 
 LunaticChat's configuration is managed in `plugins/LunaticChat/config.yml`. A default configuration file is generated on the server's first startup.
 
+## Applying Changes
+
+There is no reload command. Edit `config.yml` and **restart the server** to apply a change.
+
+Boolean settings accept `true` / `false`, and also the `yes` / `no` / `on` / `off` spellings that Bukkit accepted historically, so a file written for an older release keeps working as it did.
+
+## Recovery From an Invalid File <Badge type="tip" text="v1.3.0~" />
+
+A `config.yml` the plugin cannot use never stops the plugin from starting.
+
+- If a **single value** cannot be read, only that setting falls back to its default, and a warning naming the key is logged. Every other setting in the file is still honoured.
+- If the file is **not valid YAML at all**, or cannot be read from disk, every setting falls back to its default and an error is logged.
+- A file containing only comments is a valid way of saying "use the defaults" and is not reported as a problem.
+
+Check the server log after editing `config.yml`: a setting that quietly reverted to its default was reported there.
+
 ## Global Settings
 
 | Key | Type | Default | Description |
@@ -67,6 +83,20 @@ LunaticChat's configuration is managed in `plugins/LunaticChat/config.yml`. A de
 | `directMessageFormat` | `§7[§e{sender} §7>> §e{recipient}§7] §f{message}` | `{sender}`, `{recipient}`, `{message}` |
 | `channelMessageFormat` | `§7[§b#{channel}§7] §e{sender}: §f{message}` | `{sender}`, `{message}`, `{channel}` |
 | `crossServerGlobalChatFormat` | `§7[§6{server}§7] §e{sender}: §f{message}` | `{sender}`, `{message}`, `{server}` |
+
+## Data Files
+
+Everything the plugin writes lives under `plugins/LunaticChat/`.
+
+| File | Written when | Notes |
+|------|--------------|-------|
+| `config.yml` | Generated on first startup | Never rewritten by the plugin |
+| `player-settings.yaml` | A player changes a setting with `/lc settings` | Path configurable via `userSettingsFilePath`. If it cannot be read at startup, **every player's settings fall back to their defaults** |
+| `channels.json` | Channels or memberships change | Only when channel chat is enabled |
+| `conversion_cache.json` | Periodically, per `cache.saveIntervalSeconds` | Only when Japanese conversion is enabled. Path configurable via `cache.filePath` |
+| `logs/channelchat/` | Per channel message | Only when message logging is enabled. See [Message Logging](/docs/features/message-logging) |
+
+Saves are coalesced rather than written on every change, and every file is written atomically, so nothing ever reads a half-written file. All of them are also flushed when the server stops.
 
 ## Default Configuration File
 
