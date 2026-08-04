@@ -1,6 +1,7 @@
 package dev.m1sk9.lunaticChat.paper.converter
 
 import dev.m1sk9.lunaticChat.engine.converter.CacheData
+import dev.m1sk9.lunaticChat.paper.writeTextAtomically
 import kotlinx.serialization.json.Json
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
@@ -8,7 +9,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.logging.Logger
 import kotlin.io.path.bufferedReader
 import kotlin.io.path.exists
-import kotlin.io.path.writeText
 
 class ConversionCache(
     private val cacheFile: Path,
@@ -55,7 +55,7 @@ class ConversionCache(
     private fun initializeEmptyCache() {
         val emptyData = CacheData(version = CACHE_VERSION, entries = emptyMap())
         val jsonBuffer = Json.encodeToString(CacheData.serializer(), emptyData)
-        cacheFile.writeText(jsonBuffer)
+        cacheFile.writeTextAtomically(jsonBuffer)
     }
 
     /**
@@ -89,6 +89,9 @@ class ConversionCache(
      *
      * Called from the periodic task and at shutdown. Skipping a clean cache matters because the
      * task fires on a fixed interval whether or not anyone chatted.
+     *
+     * A failed write leaves the previous file untouched: a cache that does not parse is discarded
+     * wholesale on the next boot, so a torn file costs every entry accumulated so far.
      */
     fun saveToDisk() {
         if (!dirty.getAndSet(false)) return
@@ -100,7 +103,7 @@ class ConversionCache(
                     entries = conversionMemoryCache.toMap(),
                 )
             val jsonBuffer = Json.encodeToString(CacheData.serializer(), data)
-            cacheFile.writeText(jsonBuffer)
+            cacheFile.writeTextAtomically(jsonBuffer)
             logger.info("Saved ${conversionMemoryCache.size} cache entries to disk.")
         } catch (e: Exception) {
             dirty.set(true)
