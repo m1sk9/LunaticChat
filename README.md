@@ -56,7 +56,7 @@ Paper and Folia use `LunaticChat-<version>.jar`; Velocity proxies use `LunaticCh
 1. Place `LunaticChat-<version>-velocity.jar` into the Velocity `plugins/` directory
 2. Start (or restart) the proxy
 3. Set `features.velocityIntegration.enabled` to `true` in the `config.yml` of every backend server
-4. Restart the backend servers, then check the connection with `/lcv status`
+4. Restart the backend servers, then check the connection with `/lcv status` — the handshake is sent once a player joins, so an empty server reports `DISCONNECTED`
 
 For more detail, see [Getting Started](https://lc.m1sk9.dev/docs/getting-started).
 

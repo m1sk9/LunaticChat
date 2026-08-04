@@ -28,7 +28,7 @@ Players with the `lunaticchat.spy` permission (default: op) can view both the di
 
 - Direct messages are delivered to spies, excluding the sender and the recipient
 - Channel messages are delivered to spies, excluding the sender and the channel's own members
-- Spy players see the original message before romaji conversion
+- For direct messages, spies see the original text before romaji conversion. Channel messages reach spies in the same converted form the members see
 - Hover text indicates the message is a spy message
 - Spy players themselves are not included in the normal sender/recipient list
 

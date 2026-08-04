@@ -83,7 +83,7 @@ The handshake timeout is 5 seconds. If the handshake times out, the state become
 | `enabled` | `false` | Enable Velocity integration |
 | `crossServerGlobalChat` | `false` | Enable cross-server global chat |
 | `crossServerDirectMessage` | `false` | Enable cross-server direct messages |
-| `serverName` | `"Unknown"` | Server name displayed in cross-server chat, and the name `/tell <player>@<server>` matches against |
+| `serverName` | `"Unknown"` | This server's own name. Fills `{server}` in cross-server chat and is how the server recognises its own players. Set it to the name registered in `velocity.toml` |
 | `messageDeduplicationCacheSize` | `100` | Size of the message deduplication cache |
 
 ## Message Format

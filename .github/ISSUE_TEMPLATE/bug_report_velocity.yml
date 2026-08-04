@@ -54,7 +54,7 @@ body:
     id: lcv-status
     attributes:
       label: Output of `/lcv status`
-      description: Run `/lcv status` on an affected backend server. It reports the connection state and the protocol version of both sides.
+      description: "Run `/lcv status` on an affected backend server, **after at least one player has joined** — the handshake is only sent once a player connects, so on an empty server the state is always `DISCONNECTED`. It reports the connection state, the plugin version of both sides, and this server's protocol version."
       placeholder: Paste the output here...
     validations:
       required: true

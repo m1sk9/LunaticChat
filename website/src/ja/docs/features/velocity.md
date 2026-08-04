@@ -83,7 +83,7 @@ features:
 | `enabled` | `false` | Velocity 連携を有効にする |
 | `crossServerGlobalChat` | `false` | クロスサーバーグローバルチャットを有効にする |
 | `crossServerDirectMessage` | `false` | クロスサーバーダイレクトメッセージを有効にする |
-| `serverName` | `"Unknown"` | クロスサーバーチャットで表示されるサーバー名．`/tell <player>@<server>` の照合先にもなる |
+| `serverName` | `"Unknown"` | このサーバー自身の名前．クロスサーバーチャットの `{server}` に入り，自分のプレイヤーを識別するために使われる．`velocity.toml` に登録した名前を設定する |
 | `messageDeduplicationCacheSize` | `100` | メッセージ重複排除キャッシュのサイズ |
 
 ## メッセージフォーマット
