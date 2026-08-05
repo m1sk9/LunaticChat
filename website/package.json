@@ -3,6 +3,7 @@
     "dev": "vitepress dev",
     "build": "vitepress build",
     "preview": "vitepress preview",
+    "test": "bun test ./.vitepress/",
     "format": "biome format --write .",
     "format:check": "biome ci .",
     "lint": "biome lint .",

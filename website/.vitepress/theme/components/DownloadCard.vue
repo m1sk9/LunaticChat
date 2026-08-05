@@ -71,14 +71,12 @@ const t = computed(() =>
       },
 );
 
-function formatSize(bytes: number | null): string {
-  if (!bytes) return '-';
+function formatSize(bytes: number): string {
   const mb = bytes / (1024 * 1024);
   return `${mb.toFixed(1)} MB`;
 }
 
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return '-';
+function formatDate(dateStr: string): string {
   const locale = isEn.value ? 'en-US' : 'ja-JP';
   return new Date(dateStr).toLocaleDateString(locale, {
     year: 'numeric',
@@ -138,11 +136,11 @@ function formatDate(dateStr: string | null): string {
               <dd>{{ formatSize(data.paper.fileSize) }}</dd>
             </div>
             <div>
-              <dd><code>{{ data.paper.fileName ?? '-' }}</code></dd>
+              <dd><code>{{ data.paper.fileName }}</code></dd>
             </div>
           </dl>
           <div class="download-actions">
-            <a v-if="data.paper.downloadUrl" :href="data.paper.downloadUrl" class="download-btn primary">{{ t.download }}</a>
+            <a :href="data.paper.downloadUrl" class="download-btn primary">{{ t.download }}</a>
             <a :href="data.paper.releaseUrl" class="download-btn" target="_blank" rel="noopener">{{ t.releaseNotes }}</a>
           </div>
         </div>
@@ -172,11 +170,11 @@ function formatDate(dateStr: string | null): string {
               <dd>{{ formatSize(data.velocity.fileSize) }}</dd>
             </div>
             <div>
-              <dd><code>{{ data.velocity.fileName ?? '-' }}</code></dd>
+              <dd><code>{{ data.velocity.fileName }}</code></dd>
             </div>
           </dl>
           <div class="download-actions">
-            <a v-if="data.velocity.downloadUrl" :href="data.velocity.downloadUrl" class="download-btn primary">{{ t.download }}</a>
+            <a :href="data.velocity.downloadUrl" class="download-btn primary">{{ t.download }}</a>
             <a :href="data.velocity.releaseUrl" class="download-btn" target="_blank" rel="noopener">{{ t.releaseNotes }}</a>
           </div>
         </div>
