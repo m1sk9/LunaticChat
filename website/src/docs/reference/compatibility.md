@@ -18,7 +18,7 @@ The **plugin version** (e.g., Paper v1.2.0) and the **protocol version** (e.g., 
 
 ## Compatibility Matrix
 
-Each cell indicates whether the corresponding Paper × Velocity combination can connect. Data is fetched from GitHub Releases automatically.
+Each cell indicates how far the corresponding Paper × Velocity combination works: ✓ where every feature is available, ⚠ where the pair connects but the older side cannot answer what the newer one adds, and ✗ where the handshake is rejected. Data is fetched from GitHub Releases automatically.
 
 <CompatibilityMatrix />
 
@@ -42,7 +42,7 @@ The rules (from Velocity's perspective) are:
 
 | Level | Example Change | Compatibility | Deployment Order |
 |-------|---------------|---------------|------------------|
-| **PATCH** (1.0.0 → 1.0.1) | Adding optional fields, new sub-channels | Fully compatible (safe with `ignoreUnknownKeys=true`) | Any order, anytime |
+| **PATCH** (1.0.0 → 1.0.1) | Adding optional fields, new sub-channels | Connects (safe with `ignoreUnknownKeys=true`), but the older peer ignores the new sub-channel, so the feature behind it stays unavailable | Any order, anytime |
 | **MINOR** (1.0.x → 1.1.0) | Adding required fields, changing existing sub-channel semantics | Backward compatible within `MIN_SUPPORTED_MINOR` range | **Update Velocity first** → then update each Paper server |
 | **MAJOR** (1.x.x → 2.0.0) | Wire format changes, removing/renaming sub-channels | Incompatible | **Simultaneous deployment of all servers** |
 

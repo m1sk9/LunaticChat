@@ -5,7 +5,7 @@ import {
   useCompatibilityData,
   checkCompatibility,
   formatProtocol,
-  type CompatibilityResult,
+  olderSide,
   type PlatformReleaseEntry,
 } from './useCompatibilityData';
 
@@ -27,14 +27,21 @@ const t = computed(() =>
         protocol: 'Protocol',
         unknown: 'unknown',
         compatible: 'Compatible',
+        degraded: 'Connects with some features unavailable',
         incompatible: 'Incompatible',
         compatibleShort: 'OK',
         compatibilityHeader: 'Compatibility',
         reasonMajorMismatch: 'Major version mismatch',
         reasonPaperTooNew: 'Paper protocol newer than Velocity — update Velocity first',
         reasonPaperTooOld: 'Paper protocol older than Velocity accepts',
+        reasonPaperBehind:
+          'Connects, but Paper speaks an older protocol — features the newer Velocity adds are unavailable',
+        reasonVelocityBehind:
+          'Connects, but Velocity speaks an older protocol — features the newer Paper adds are unavailable',
         legend: 'Legend',
-        legendCompatible: 'Compatible — both can connect.',
+        legendCompatible: 'Fully compatible — every feature is available.',
+        legendDegraded:
+          'Connects — but features added on the newer side are unavailable.',
         legendIncompatible: 'Incompatible — handshake will be rejected.',
       }
     : {
@@ -48,15 +55,21 @@ const t = computed(() =>
         velocityVersion: 'Velocity バージョン',
         protocol: 'プロトコル',
         unknown: '不明',
-        compatible: '互換',
+        compatible: '完全互換',
+        degraded: '接続可能だが一部機能が利用不可',
         incompatible: '非互換',
         compatibleShort: 'OK',
         compatibilityHeader: '互換性',
         reasonMajorMismatch: 'MAJOR バージョン不一致',
         reasonPaperTooNew: 'Paper のプロトコルが Velocity より新しい — Velocity を先に更新',
         reasonPaperTooOld: 'Paper のプロトコルが Velocity の許容範囲より古い',
+        reasonPaperBehind:
+          '接続可能．ただし Paper のプロトコルが古いため，新しい Velocity が追加した一部機能が利用できません',
+        reasonVelocityBehind:
+          '接続可能．ただし Velocity のプロトコルが古いため，新しい Paper が追加した一部機能が利用できません',
         legend: '凡例',
-        legendCompatible: '互換 — 接続可能．',
+        legendCompatible: '完全互換 — 全機能が利用可能．',
+        legendDegraded: '接続可能 — 新しい側が追加した一部機能が利用できません．',
         legendIncompatible: '非互換 — ハンドシェイクで拒否されます．',
       },
 );
@@ -79,29 +92,55 @@ function compareVersion(a: string, b: string): number {
   return 0;
 }
 
-function reasonLabel(result: CompatibilityResult): string {
+type CellState = 'ok' | 'warn' | 'ng';
+
+const MARK: Record<CellState, string> = { ok: '✓', warn: '⚠', ng: '✗' };
+
+interface Cell {
+  key: string;
+  state: CellState;
+  mark: string;
+  label: string;
+  reason: string;
+}
+
+function cell(paper: PlatformReleaseEntry, velocity: PlatformReleaseEntry): Cell {
+  const base = { key: velocity.tag };
+
+  if (!paper.protocol || !velocity.protocol) {
+    return { ...base, state: 'ng', mark: MARK.ng, label: t.value.incompatible, reason: t.value.unknown };
+  }
+
+  const result = checkCompatibility(paper.protocol, velocity.protocol);
   switch (result) {
+    case 'compatible':
+      return { ...base, state: 'ok', mark: MARK.ok, label: t.value.compatible, reason: t.value.legendCompatible };
+    case 'degraded':
+      return {
+        ...base,
+        state: 'warn',
+        mark: MARK.warn,
+        label: t.value.degraded,
+        reason:
+          olderSide(paper.protocol, velocity.protocol) === 'paper'
+            ? t.value.reasonPaperBehind
+            : t.value.reasonVelocityBehind,
+      };
     case 'major-mismatch':
-      return t.value.reasonMajorMismatch;
+      return { ...base, state: 'ng', mark: MARK.ng, label: t.value.incompatible, reason: t.value.reasonMajorMismatch };
     case 'paper-too-new':
-      return t.value.reasonPaperTooNew;
+      return { ...base, state: 'ng', mark: MARK.ng, label: t.value.incompatible, reason: t.value.reasonPaperTooNew };
     case 'paper-too-old':
-      return t.value.reasonPaperTooOld;
-    default:
-      return '';
+      return { ...base, state: 'ng', mark: MARK.ng, label: t.value.incompatible, reason: t.value.reasonPaperTooOld };
   }
 }
 
-function cellResult(
-  paper: PlatformReleaseEntry,
-  velocity: PlatformReleaseEntry,
-): { ok: boolean; reason: string } {
-  if (!paper.protocol || !velocity.protocol) {
-    return { ok: false, reason: t.value.unknown };
-  }
-  const r = checkCompatibility(paper.protocol, velocity.protocol);
-  return { ok: r === 'compatible', reason: r === 'compatible' ? '' : reasonLabel(r) };
-}
+const rows = computed(() =>
+  sortedPaper.value.map((paper) => ({
+    paper,
+    cells: sortedVelocity.value.map((velocity) => cell(paper, velocity)),
+  })),
+);
 </script>
 
 <template>
@@ -143,21 +182,20 @@ function cellResult(
             <tr v-if="sortedPaper.length === 0">
               <td colspan="100" class="compat-empty-cell">{{ t.emptyPaper }}</td>
             </tr>
-            <tr v-for="p in sortedPaper" :key="p.tag">
+            <tr v-for="row in rows" :key="row.paper.tag">
               <th scope="row" class="compat-row-header">
-                <div class="compat-version">v{{ p.version }}</div>
+                <div class="compat-version">v{{ row.paper.version }}</div>
                 <div class="compat-protocol">
-                  {{ t.protocol }}: {{ p.protocol ? formatProtocol(p.protocol) : t.unknown }}
+                  {{ t.protocol }}: {{ row.paper.protocol ? formatProtocol(row.paper.protocol) : t.unknown }}
                 </div>
               </th>
               <td
-                v-for="v in sortedVelocity"
-                :key="v.tag"
-                :class="['compat-cell', cellResult(p, v).ok ? 'compat-ok' : 'compat-ng']"
-                :title="cellResult(p, v).reason || t.compatible"
+                v-for="c in row.cells"
+                :key="c.key"
+                :class="['compat-cell', `compat-${c.state}`]"
+                :title="c.reason"
               >
-                <span v-if="cellResult(p, v).ok" class="compat-mark-ok" :aria-label="t.compatible">✓</span>
-                <span v-else class="compat-mark-ng" :aria-label="t.incompatible">✗</span>
+                <span :class="`compat-mark-${c.state}`" :aria-label="c.label">{{ c.mark }}</span>
               </td>
               <td v-if="sortedVelocity.length === 0" class="compat-empty-cell">{{ t.emptyVelocity }}</td>
             </tr>
@@ -169,6 +207,7 @@ function cellResult(
         <p class="compat-legend-title">{{ t.legend }}</p>
         <ul>
           <li><span class="compat-mark-ok">✓</span> {{ t.legendCompatible }}</li>
+          <li><span class="compat-mark-warn">⚠</span> {{ t.legendDegraded }}</li>
           <li><span class="compat-mark-ng">✗</span> {{ t.legendIncompatible }}</li>
         </ul>
       </div>
@@ -271,6 +310,10 @@ function cellResult(
   background: rgba(20, 200, 100, 0.08);
 }
 
+.compat-warn {
+  background: rgba(230, 160, 30, 0.1);
+}
+
 .compat-ng {
   background: rgba(220, 60, 60, 0.06);
 }
@@ -279,8 +322,18 @@ function cellResult(
   color: rgb(20, 160, 90);
 }
 
+.compat-mark-warn {
+  color: rgb(176, 122, 10);
+}
+
 .compat-mark-ng {
   color: rgb(200, 60, 60);
+}
+
+/* Amber has to lift off a dark background to stay legible, where the green and
+   red marks read well enough unchanged. */
+:global(.dark) .compat-mark-warn {
+  color: rgb(232, 179, 63);
 }
 
 .compat-empty-cell {

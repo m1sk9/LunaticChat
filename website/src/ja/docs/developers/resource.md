@@ -20,8 +20,8 @@ Gradle マルチモジュール構成で，engine を共有しつつ Paper / Vel
 
 ```properties
 # gradle.properties
-paperVersion=1.2.2
-velocityVersion=1.1.0
+paperVersion=1.3.0
+velocityVersion=1.2.0
 ```
 
 Paper と Velocity は別々のバージョン番号を持ち，独立にリリースできます．**互換性を数値バージョンではなく engine 共有の [`ProtocolVersion`](/ja/docs/developers/engine#バージョニング戦略-protocolversion) で保証している**ため，更新頻度の異なる 2 プラットフォームをそれぞれのペースでバンプ・公開できるからです．ワイヤ形式は JSON + `ignoreUnknownKeys` で前方互換，プロトコルの MAJOR 一致 + MINOR 範囲チェックで後方互換をコントロールします．

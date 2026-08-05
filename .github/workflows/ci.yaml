@@ -118,6 +118,9 @@ jobs:
       - name: Check lints
         run: bun run lint
 
+      - name: Run tests
+        run: bun run test
+
       - name: Build documentation
         run: bun run build
 

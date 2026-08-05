@@ -30,7 +30,7 @@ Replies to the last player who sent you a message. If there is no such player, t
 
 To use quick reply, `features.quickReplies.enabled` must be `true` (default) in `config.yml`.
 
-## Cross-Server Direct Messages <Badge type="tip" text="v1.3.0~" />
+## Cross-Server Direct Messages <Badge type="tip" text="Paper v1.3.0~ / Velocity v1.2.0~" />
 
 > [!NOTE]
 >

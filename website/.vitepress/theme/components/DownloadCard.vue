@@ -32,7 +32,7 @@ const t = computed(() =>
         compatLink: 'See Paper / Velocity Compatibility for details.',
         compatMatrixTitle: 'Compatibility Matrix',
         compatMatrixDesc:
-          'Combinations marked ✓ can connect. Hover a cell for details.',
+          '✓ marks a pair where every feature is available, ⚠ a pair that connects but loses the newer side\'s additions. Hover a cell for details.',
         spigotNotice:
           'LunaticChat only supports Paper / Folia servers. It does not work on Spigot or BungeeCord, and there are no plans to support them in the future.',
         spigotAlt:
@@ -62,7 +62,7 @@ const t = computed(() =>
         compatLink: '詳細は Paper / Velocity 互換性 を参照してください．',
         compatMatrixTitle: '互換性マトリクス',
         compatMatrixDesc:
-          '✓ の組み合わせは接続可能です．セルにホバーすると詳細が表示されます．',
+          '✓ は全機能が利用できる組み合わせ，⚠ は接続できるが新しい側の追加機能が使えない組み合わせです．セルにホバーすると詳細が表示されます．',
         spigotNotice:
           'LunaticChat は Paper / Folia サーバーのみをサポートしています．Spigot / BungeeCord では動作せず，今後も対応予定はありません．',
         spigotAlt:
@@ -71,14 +71,12 @@ const t = computed(() =>
       },
 );
 
-function formatSize(bytes: number | null): string {
-  if (!bytes) return '-';
+function formatSize(bytes: number): string {
   const mb = bytes / (1024 * 1024);
   return `${mb.toFixed(1)} MB`;
 }
 
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return '-';
+function formatDate(dateStr: string): string {
   const locale = isEn.value ? 'en-US' : 'ja-JP';
   return new Date(dateStr).toLocaleDateString(locale, {
     year: 'numeric',
@@ -138,11 +136,11 @@ function formatDate(dateStr: string | null): string {
               <dd>{{ formatSize(data.paper.fileSize) }}</dd>
             </div>
             <div>
-              <dd><code>{{ data.paper.fileName ?? '-' }}</code></dd>
+              <dd><code>{{ data.paper.fileName }}</code></dd>
             </div>
           </dl>
           <div class="download-actions">
-            <a v-if="data.paper.downloadUrl" :href="data.paper.downloadUrl" class="download-btn primary">{{ t.download }}</a>
+            <a :href="data.paper.downloadUrl" class="download-btn primary">{{ t.download }}</a>
             <a :href="data.paper.releaseUrl" class="download-btn" target="_blank" rel="noopener">{{ t.releaseNotes }}</a>
           </div>
         </div>
@@ -172,11 +170,11 @@ function formatDate(dateStr: string | null): string {
               <dd>{{ formatSize(data.velocity.fileSize) }}</dd>
             </div>
             <div>
-              <dd><code>{{ data.velocity.fileName ?? '-' }}</code></dd>
+              <dd><code>{{ data.velocity.fileName }}</code></dd>
             </div>
           </dl>
           <div class="download-actions">
-            <a v-if="data.velocity.downloadUrl" :href="data.velocity.downloadUrl" class="download-btn primary">{{ t.download }}</a>
+            <a :href="data.velocity.downloadUrl" class="download-btn primary">{{ t.download }}</a>
             <a :href="data.velocity.releaseUrl" class="download-btn" target="_blank" rel="noopener">{{ t.releaseNotes }}</a>
           </div>
         </div>
