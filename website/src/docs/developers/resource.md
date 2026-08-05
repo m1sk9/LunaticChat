@@ -20,8 +20,8 @@ Both platforms' `processResources` compute `version` / `gitCommitHash` / `channe
 
 ```properties
 # gradle.properties
-paperVersion=1.2.2
-velocityVersion=1.1.0
+paperVersion=1.3.0
+velocityVersion=1.2.0
 ```
 
 Paper and Velocity carry separate version numbers and can be released independently. That's because **compatibility is guaranteed by the engine-shared [`ProtocolVersion`](/docs/developers/engine#versioning-strategy-protocolversion) rather than the numeric version**, so the two platforms — which change at different rates — can be bumped and published at their own pace. The wire format is forward-compatible via JSON + `ignoreUnknownKeys`, and backward compatibility is controlled by matching MAJOR + a MINOR-range check on the protocol.

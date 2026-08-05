@@ -53,7 +53,7 @@ Each message is assigned a unique ID, and a cache prevents the same message from
 
 Entries expire 60 seconds after they are recorded. If the cache is still over its configured size after expired entries are cleared, the oldest remaining entries are dropped.
 
-## Cross-Server Direct Messages <Badge type="tip" text="v1.3.0~" />
+## Cross-Server Direct Messages <Badge type="tip" text="Paper v1.3.0~ / Velocity v1.2.0~" />
 
 Setting `crossServerDirectMessage` to `true` lets players exchange direct messages with players on other servers connected to the same proxy.
 

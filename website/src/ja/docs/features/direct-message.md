@@ -30,7 +30,7 @@ layout: doc
 
 クイック返信を利用するには `config.yml` で `features.quickReplies.enabled` が `true` (デフォルト) である必要があります．
 
-## クロスサーバーダイレクトメッセージ <Badge type="tip" text="v1.3.0~" />
+## クロスサーバーダイレクトメッセージ <Badge type="tip" text="Paper v1.3.0~ / Velocity v1.2.0~" />
 
 > [!NOTE]
 > 
