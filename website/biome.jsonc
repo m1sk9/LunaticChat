@@ -6,7 +6,7 @@
       ".vitepress/config.mts",
       "biome.jsonc",
       ".vitepress/config/**",
-      ".vitepress/theme/*.ts"
+      ".vitepress/theme/**/*.ts"
     ]
   },
   "formatter": {
