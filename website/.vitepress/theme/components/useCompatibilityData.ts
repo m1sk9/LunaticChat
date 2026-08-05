@@ -126,11 +126,12 @@ export function useCompatibilityData() {
 
 export type CompatibilityResult =
   | 'compatible'
+  | 'degraded'
   | 'major-mismatch'
   | 'paper-too-new'
   | 'paper-too-old';
 
-// Mirrors the gatekeeping done by Velocity in
+// The first three checks mirror the gatekeeping done by Velocity in
 // platform-velocity/.../PluginMessageHandler.kt — Paper does not validate.
 export function checkCompatibility(
   paper: ProtocolVersion,
@@ -139,6 +140,16 @@ export function checkCompatibility(
   if (paper.major !== velocity.major) return 'major-mismatch';
   if (paper.minor > velocity.minor) return 'paper-too-new';
   if (paper.minor < velocity.minSupportedMinor) return 'paper-too-old';
+
+  // The handshake is decided by MAJOR and MINOR alone, so what is left is how
+  // much of the protocol both ends speak. ProtocolVersion bumps PATCH for
+  // sub-channels a peer can safely ignore and MINOR for ones whose absence
+  // degrades behaviour, which makes any accepted difference a feature the newer
+  // side offers and the older one will never answer — connected, yet short of
+  // what the pair advertises.
+  if (paper.minor !== velocity.minor || paper.patch !== velocity.patch) {
+    return 'degraded';
+  }
   return 'compatible';
 }
 
@@ -146,7 +157,19 @@ export function isCompatible(
   paper: ProtocolVersion,
   velocity: ProtocolVersion,
 ): boolean {
-  return checkCompatibility(paper, velocity) === 'compatible';
+  const result = checkCompatibility(paper, velocity);
+  return result === 'compatible' || result === 'degraded';
+}
+
+// Which end lags the other, given the pair already connects.
+export function olderSide(
+  paper: ProtocolVersion,
+  velocity: ProtocolVersion,
+): 'paper' | 'velocity' {
+  if (paper.minor !== velocity.minor) {
+    return paper.minor < velocity.minor ? 'paper' : 'velocity';
+  }
+  return paper.patch < velocity.patch ? 'paper' : 'velocity';
 }
 
 export function formatProtocol(p: ProtocolVersion): string {

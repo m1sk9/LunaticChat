@@ -32,7 +32,7 @@ const t = computed(() =>
         compatLink: 'See Paper / Velocity Compatibility for details.',
         compatMatrixTitle: 'Compatibility Matrix',
         compatMatrixDesc:
-          'Combinations marked ✓ can connect. Hover a cell for details.',
+          '✓ marks a pair where every feature is available, ⚠ a pair that connects but loses the newer side\'s additions. Hover a cell for details.',
         spigotNotice:
           'LunaticChat only supports Paper / Folia servers. It does not work on Spigot or BungeeCord, and there are no plans to support them in the future.',
         spigotAlt:
@@ -62,7 +62,7 @@ const t = computed(() =>
         compatLink: '詳細は Paper / Velocity 互換性 を参照してください．',
         compatMatrixTitle: '互換性マトリクス',
         compatMatrixDesc:
-          '✓ の組み合わせは接続可能です．セルにホバーすると詳細が表示されます．',
+          '✓ は全機能が利用できる組み合わせ，⚠ は接続できるが新しい側の追加機能が使えない組み合わせです．セルにホバーすると詳細が表示されます．',
         spigotNotice:
           'LunaticChat は Paper / Folia サーバーのみをサポートしています．Spigot / BungeeCord では動作せず，今後も対応予定はありません．',
         spigotAlt:

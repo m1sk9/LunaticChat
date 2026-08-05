@@ -18,7 +18,7 @@ LunaticChat の Paper プラグインと Velocity プラグインは独立にバ
 
 ## 互換性マトリクス
 
-各セルは「その Paper × Velocity の組み合わせが接続できるか」を示します．データは GitHub Releases から自動取得されます．
+各セルは「その Paper × Velocity の組み合わせがどこまで動作するか」を示します．✓ は全機能が利用可能，⚠ は接続できるが新しい側が追加した機能に古い側が応答できない，✗ はハンドシェイクで拒否されます．データは GitHub Releases から自動取得されます．
 
 <CompatibilityMatrix />
 
@@ -42,7 +42,7 @@ Paper / Velocity 間の通信は LunaticChat 独自のプラグインメッセ�
 
 | レベル | 変更例 | 互換性 | デプロイ順序 |
 |--------|--------|--------|-------------|
-| **PATCH** (1.0.0 → 1.0.1) | optional フィールド追加，新 sub-channel 追加 | 完全互換 (`ignoreUnknownKeys=true` で安全) | 順不同，いつでも |
+| **PATCH** (1.0.0 → 1.0.1) | optional フィールド追加，新 sub-channel 追加 | 接続可能 (`ignoreUnknownKeys=true` で安全)．ただし古い側は新 sub-channel を無視するため，その機能は利用できない | 順不同，いつでも |
 | **MINOR** (1.0.x → 1.1.0) | required フィールド追加，既存 sub-channel のセマンティクス変更 | `MIN_SUPPORTED_MINOR` の範囲内で後方互換 | **Velocity を先に更新** → 各 Paper を順次更新 |
 | **MAJOR** (1.x.x → 2.0.0) | ワイヤフォーマット変更，sub-channel 削除/リネーム | 非互換 | **全サーバー同時デプロイ** |
 
