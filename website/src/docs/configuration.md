@@ -8,7 +8,23 @@ LunaticChat's configuration is managed in `plugins/LunaticChat/config.yml`. A de
 
 ## Applying Changes
 
-There is no reload command. Edit `config.yml` and **restart the server** to apply a change.
+`/lc reload` <Badge type="tip" text="v1.4.0~" /> re-reads `config.yml` while the server runs. It applies the [`messageFormat`](/docs/reference/message-format) settings and nothing else.
+
+Every other setting decides something that is settled once, when the plugin starts: which services exist, which commands and listeners are registered, which files are opened. Rather than pretend otherwise, the command lists the settings you changed that the running server cannot pick up, so you know a restart is still needed.
+
+```
+[LC] Reloaded config.yml.
+[LC] Applied: messageFormat.directMessageFormat
+[LC] Restart the server to apply: features.channelChat
+```
+
+| | Applied by `/lc reload` | Needs a restart |
+|---|---|---|
+| `messageFormat.*` | Yes | — |
+| `features.*` | — | Yes |
+| `debug`, `checkForUpdates`, `language`, `userSettingsFilePath` | — | Yes |
+
+The command is available to the console and RCON as well as to players, and requires `lunaticchat.command.lc.reload` (op by default).
 
 Boolean settings accept `true` / `false`, and also the `yes` / `no` / `on` / `off` spellings that Bukkit accepted historically, so a file written for an older release keeps working as it did.
 
@@ -21,6 +37,10 @@ A `config.yml` the plugin cannot use never stops the plugin from starting.
 - A file containing only comments is a valid way of saying "use the defaults" and is not reported as a problem.
 
 Check the server log after editing `config.yml`: a setting that quietly reverted to its default was reported there.
+
+`/lc reload` is stricter, because it has an option that startup does not — leaving the running configuration alone. It refuses the file rather than falling anything back to a default, naming every setting it could not read in one go, and the server keeps the configuration it already had. A file that holds no settings at all is refused for the same reason: a reload cannot tell a comments-only file apart from one caught halfway through being written.
+
+A misspelled **key** is still not detected, by either path — an unknown key is ignored so that a `config.yml` written for a newer build does not break an older one. When a reload finds nothing to apply, it says so rather than reporting success, which is the signal that a key may be misspelled.
 
 ## Global Settings
 

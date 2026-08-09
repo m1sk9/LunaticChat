@@ -36,6 +36,14 @@ Displays the plugin version, health, enabled features, and configuration values.
 - **Aliases**: `st`
 - **Permission**: `lunaticchat.command.lc.status`
 
+### `/lc reload` <Badge type="tip" text="v1.4.0~" />
+
+Re-reads `config.yml` and applies the `messageFormat` settings, then reports which of the remaining changes still need a restart. See [Applying Changes](/docs/configuration#applying-changes).
+
+- **Permission**: `lunaticchat.command.lc.reload` (op by default)
+- **Usable from the console and RCON**
+- A `config.yml` that cannot be read in full is refused, and the running configuration is kept
+
 ### `/lc settings [key] [on|off]`
 
 Views or changes your personal settings. Without arguments, displays the settings list.

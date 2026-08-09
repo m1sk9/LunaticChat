@@ -5,6 +5,7 @@ import dev.m1sk9.lunaticChat.paper.i18n.Language
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 /**
@@ -16,6 +17,8 @@ import kotlin.test.assertTrue
  */
 class ConfigManagerTest {
     private fun load(yaml: String) = ConfigManager(TestUtils.TestLogger()).loadConfiguration(yaml)
+
+    private fun loadStrictly(yaml: String) = ConfigManager(TestUtils.TestLogger()).loadStrictly(yaml)
 
     /** The file shipped in resources, which is what a fresh install actually reads. */
     private val bundledConfig: String =
@@ -279,5 +282,76 @@ class ConfigManagerTest {
         assertFalse(config.debug)
         assertTrue(config.checkForUpdates)
         assertEquals("custom.yaml", config.userSettingsFilePath)
+    }
+
+    @Test
+    fun `the strict reading accepts a file every setting of which is readable`() {
+        val result = loadStrictly(bundledConfig)
+
+        assertIs<ConfigLoadResult.Success>(result)
+        assertEquals(LunaticChatConfiguration(), result.configuration)
+    }
+
+    @Test
+    fun `the strict reading names the setting it could not read`() {
+        val result = loadStrictly("debug: maybe")
+
+        assertIs<ConfigLoadResult.InvalidSettings>(result)
+        assertEquals(listOf("debug"), result.fallbacks.map { it.settingKey })
+        assertTrue(
+            result.fallbacks
+                .single()
+                .reason
+                .isNotEmpty(),
+        )
+    }
+
+    @Test
+    fun `the strict reading names every unreadable setting, not just the first`() {
+        val result =
+            loadStrictly(
+                """
+                debug: maybe
+                checkForUpdates: perhaps
+                features:
+                  channelChat:
+                    enabled: sometimes
+                """.trimIndent(),
+            )
+
+        assertIs<ConfigLoadResult.InvalidSettings>(result)
+        assertEquals(
+            listOf("debug", "checkForUpdates", "features.channelChat.enabled").sorted(),
+            result.fallbacks.map { it.settingKey }.sorted(),
+        )
+    }
+
+    @Test
+    fun `the strict reading refuses a document holding no settings`() {
+        // The lenient reading takes this as "use the defaults"; a reload cannot tell it apart from
+        // a config.yml caught mid-write, and resetting every setting over that is unacceptable.
+        assertEquals(LunaticChatConfiguration(), load("# nothing but a comment"))
+        assertIs<ConfigLoadResult.InvalidDocument>(loadStrictly("# nothing but a comment"))
+    }
+
+    @Test
+    fun `the strict reading refuses a document that is not YAML`() {
+        assertIs<ConfigLoadResult.InvalidDocument>(loadStrictly("debug: [unclosed"))
+    }
+
+    @Test
+    fun `the strict reading refuses a document that is not a map of settings`() {
+        // No key to pin the failure on, so it must not be reported as a setting with an empty name.
+        assertIs<ConfigLoadResult.InvalidDocument>(loadStrictly("just a string"))
+    }
+
+    @Test
+    fun `the strict reading accepts a setting it does not know`() {
+        // Same forward compatibility the lenient reading has: a config.yml from a newer build must
+        // not block a reload.
+        val result = loadStrictly("aSettingFromTheFuture: true")
+
+        assertIs<ConfigLoadResult.Success>(result)
+        assertEquals(LunaticChatConfiguration(), result.configuration)
     }
 }

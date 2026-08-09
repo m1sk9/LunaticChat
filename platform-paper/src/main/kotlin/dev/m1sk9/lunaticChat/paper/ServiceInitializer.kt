@@ -8,6 +8,7 @@ import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelMessageHandler
 import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelNotificationHandler
 import dev.m1sk9.lunaticChat.paper.chat.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
+import dev.m1sk9.lunaticChat.paper.config.MessageFormatHolder
 import dev.m1sk9.lunaticChat.paper.converter.ConversionCache
 import dev.m1sk9.lunaticChat.paper.converter.GoogleIMEClient
 import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
@@ -51,6 +52,7 @@ private data class ChannelComponents(
 class ServiceInitializer(
     private val plugin: JavaPlugin,
     private val configuration: LunaticChatConfiguration,
+    private val messageFormats: MessageFormatHolder,
     private val httpClient: Lazy<HttpClient>,
     private val logger: Logger,
 ) {
@@ -114,7 +116,7 @@ class ServiceInitializer(
         // 5. Initialize handlers
         val directMessageHandler =
             DirectMessageHandler(
-                configuration = configuration,
+                messageFormats = messageFormats,
                 settingsManager = playerSettingsManager,
                 romanjiConverter = romajiConverter,
                 languageManager = languageManager,
@@ -278,7 +280,7 @@ class ServiceInitializer(
 
         val messageHandler =
             ChannelMessageHandler(
-                configuration = configuration,
+                messageFormats = messageFormats,
                 settingsManager = settingsManager,
                 channelManager = manager,
                 languageManager = languageManager,
@@ -358,6 +360,7 @@ class ServiceInitializer(
                 plugin = plugin,
                 logger = logger,
                 configuration = configuration,
+                messageFormats = messageFormats,
                 cacheSize = configuration.features.velocityIntegration.messageDeduplicationCacheSize,
             )
 

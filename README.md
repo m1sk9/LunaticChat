@@ -49,7 +49,7 @@ Paper and Folia use `LunaticChat-<version>.jar`; Velocity proxies use `LunaticCh
 1. Place `LunaticChat-<version>.jar` into the server's `plugins/` directory
 2. Start (or restart) the server
 3. `plugins/LunaticChat/config.yml` is generated automatically
-4. Adjust the [configuration](#configuration) as needed and restart the server
+4. Adjust the [configuration](#configuration) as needed, then run `/lc reload` or restart the server
 
 ### Velocity
 
@@ -78,7 +78,7 @@ features:
     enabled: false # Velocity proxy integration
 ```
 
-There is no reload command — **restart the server to apply a change**.
+`/lc reload` re-reads `config.yml` and applies the `messageFormat` settings without a restart. Every other setting is fixed when the server starts, so the command reports which of your changes still need a restart. A file it cannot read in full is refused outright and the running configuration is kept.
 
 Chat output is customizable through `messageFormat` with placeholders such as `{sender}`, `{message}`, `{channel}` and `{server}`:
 

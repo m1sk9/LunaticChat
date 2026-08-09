@@ -95,6 +95,7 @@ features:
 # {server} - The name of the server (only for Velocity cross-server chat)
 # ----------------------------------------------
 
+# These are the only settings /lc reload applies without a restart.
 messageFormat:
   # Configure the format for direct messages sent via /tell or /msg
   directMessageFormat: "§7[§e{sender} §7>> §e{recipient}§7] §f{message}"

@@ -65,6 +65,17 @@ status:
 settings:
   availableValues: "使用可能な設定値: {values}"
 
+reload:
+  success: "config.yml を再読み込みしました．"
+  applied: "適用しました: {keys}"
+  restartRequired: "適用するにはサーバーの再起動が必要です: {keys}"
+  noChanges: "config.yml に，再起動なしで適用できる変更はありませんでした．"
+  inProgress: "再読み込みはすでに実行中です．"
+  invalidSettings: "再読み込みを中止しました．config.yml の次の設定を読み取れません:"
+  invalidDocument: "再読み込みを中止しました．config.yml を設定ファイルとして読み取れません:"
+  unreadable: "再読み込みを中止しました．config.yml を読み取れません:"
+  previousKept: "サーバー起動時の設定をそのまま使用します．"
+
 channel:
   help:
     header: "--- チャンネルコマンド ---"

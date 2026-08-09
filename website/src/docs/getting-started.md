@@ -34,7 +34,7 @@ Use `LunaticChat-<version>.jar` for Paper / Folia servers and `LunaticChat-<vers
 1. Place the downloaded `LunaticChat-<version>.jar` into the server's `plugins/` directory
 2. Start (or restart) the server
 3. `plugins/LunaticChat/config.yml` will be generated automatically
-4. Modify the [configuration](/docs/configuration) as needed and restart the server
+4. Modify the [configuration](/docs/configuration) as needed, then run `/lc reload` or restart the server
 
 ### Velocity
 

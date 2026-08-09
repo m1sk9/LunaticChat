@@ -34,7 +34,7 @@ Paper / Folia サーバーには `LunaticChat-<version>.jar` を，Velocity プ�
 1. ダウンロードした `LunaticChat-<version>.jar` をサーバーの `plugins/` ディレクトリに配置します
 2. サーバーを起動 (または再起動) します
 3. `plugins/LunaticChat/config.yml` が自動生成されます
-4. 必要に応じて[設定](/ja/docs/configuration)を変更し，サーバーを再起動します
+4. 必要に応じて[設定](/ja/docs/configuration)を変更し，`/lc reload` を実行するかサーバーを再起動します
 
 ### Velocity
 

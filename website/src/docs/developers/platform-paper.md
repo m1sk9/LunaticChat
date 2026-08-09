@@ -23,7 +23,7 @@ Features are assembled via manual DI, without an external DI framework. The key 
 
 The `onEnable` flow:
 
-1. `saveDefaultConfig()` → build `LunaticChatConfiguration` via `ConfigManager`
+1. `saveDefaultConfig()` → build `LunaticChatConfiguration` via `ConfigManager`, then create the `MessageFormatHolder` and the `ConfigurationReloader` over it
 2. Initialize `HttpClient(CIO)` and `PluginCoroutineScope`
 3. `ServiceInitializer.initialize()` → receive a `ServiceContainer`
 4. Move services into the public properties used by commands
@@ -146,6 +146,9 @@ Channel state itself is managed by the `chat/channel` package.
 
 - `ConfigManager` — deserializes `config.yml` into `LunaticChatConfiguration` with **KAML**, so each default lives in exactly one place: on the data class. It replaced a hand-written dotted-key mapper that repeated every default a second time, and they had already drifted — `checkForUpdates` disagreed with both `config.yml` and the data class, and the whole `messageLogging` block was documented but never read
 - Failure is handled per setting, not per file: on a `YamlException` the offending key is pruned from the document and decoding is retried, so one unreadable value costs only itself. Only a document that is not YAML at all falls back to defaults wholesale, and neither case is allowed to throw out of `onEnable`
+- `ConfigManager.loadStrictly` — the reading `/lc reload` uses. It shares the pruning loop with `loadConfiguration` but reads the outcome the other way round: any setting that had to be pruned means the whole file is refused, with every unreadable setting named at once. A document holding no settings is refused too, because a reload cannot tell a comments-only file apart from one caught mid-write, and resetting every format over that is worse than doing nothing
+- `MessageFormatHolder` — the one part of the configuration that is live. Deliberately narrower than `LunaticChatConfiguration`: taking this type says the value can change under you, taking `LunaticChatConfiguration` says it was frozen at startup. A holder over the whole configuration would produce a tree matching no version of the file, since only `messageFormat` is ever swapped
+- `ConfigurationReloader` — re-reads the file and swaps the holder. It classifies every setting into applied (leaf by leaf, from `MessageFormatConfig`) or restart-required (block by block, riding on the data class `equals`), and a test over `memberProperties` fails when `config.yml` grows a setting neither table covers. The two lists are measured against different baselines: applied against the formats currently in effect, restart-required against the configuration the server actually started on. Nothing beyond `messageFormat` can be applied, because Paper registers commands only through its `COMMANDS` lifecycle event, Bukkit cannot unregister a listener, and the cache saver keeps no task handle to cancel
 - `LenientBoolean` — a `Boolean` typealias with a serializer that still accepts `yes` / `no` / `on` / `off`. Bukkit read `config.yml` as YAML 1.1, where those are booleans; kaml reads YAML 1.2, where they are plain strings, and silently resetting them would have flipped `checkForUpdates: no` to its opposite default
 - Feature defaults: `quickReplies=true`, `japaneseConversion=false`, `channelChat=false`, `velocityIntegration=false`
 - Under `config/key`: `FeaturesConfig` / `ChannelChatFeatureConfig` / `JapaneseConversionFeatureConfig` / `VelocityIntegrationConfig` / `QuickRepliesFeatureConfig` / `MessageFormatConfig` / `ChannelMessageLoggingConfig`

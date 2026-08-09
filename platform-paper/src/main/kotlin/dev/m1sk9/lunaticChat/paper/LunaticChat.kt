@@ -15,7 +15,9 @@ import dev.m1sk9.lunaticChat.paper.command.setting.SettingKey
 import dev.m1sk9.lunaticChat.paper.common.UpdateCheckResult
 import dev.m1sk9.lunaticChat.paper.common.UpdateChecker
 import dev.m1sk9.lunaticChat.paper.config.ConfigManager
+import dev.m1sk9.lunaticChat.paper.config.ConfigurationReloader
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
+import dev.m1sk9.lunaticChat.paper.config.MessageFormatHolder
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.listener.EventListenerRegistry
 import dev.m1sk9.lunaticChat.paper.velocity.VelocityConnectionManager
@@ -40,6 +42,8 @@ class LunaticChat :
     private lateinit var services: ServiceContainer
     private lateinit var configuration: LunaticChatConfiguration
     private lateinit var serviceInitializer: ServiceInitializer
+    private lateinit var messageFormats: MessageFormatHolder
+    private lateinit var configurationReloader: ConfigurationReloader
 
     private lateinit var pluginScope: PluginCoroutineScope
 
@@ -61,7 +65,20 @@ class LunaticChat :
 
     override fun onEnable() {
         saveDefaultConfig()
-        configuration = ConfigManager(logger).loadConfiguration(readConfigFile())
+        val configManager = ConfigManager(logger)
+        configuration = configManager.loadConfiguration(readConfigFile())
+
+        messageFormats = MessageFormatHolder(configuration.messageFormat)
+        configurationReloader =
+            ConfigurationReloader(
+                configManager = configManager,
+                startupConfiguration = configuration,
+                messageFormatHolder = messageFormats,
+                logger = logger,
+                // Throws rather than falling back to an empty document like startup does: a reload
+                // that cannot read the file must leave the running configuration alone.
+                readConfigFile = { configFile.readText() },
+            )
 
         if (configuration.debug) {
             logger.warning("LunaticChat is running in debug mode.")
@@ -77,6 +94,7 @@ class LunaticChat :
             ServiceInitializer(
                 plugin = this,
                 configuration = configuration,
+                messageFormats = messageFormats,
                 httpClient = httpClient,
                 logger = logger,
             )
@@ -104,6 +122,8 @@ class LunaticChat :
         logger.info("LunaticChat disabled.")
     }
 
+    private val configFile get() = dataFolder.resolve("config.yml")
+
     /**
      * Reads config.yml, or an empty document when it cannot be read.
      *
@@ -111,13 +131,11 @@ class LunaticChat :
      * nothing there. Handing the parser an empty document starts the plugin on its defaults
      * instead of throwing out of [onEnable] and disabling it outright.
      */
-    private fun readConfigFile(): String {
-        val file = dataFolder.resolve("config.yml")
-        return runCatching { file.readText() }.getOrElse { e ->
-            logger.severe("Could not read ${file.path}, falling back to defaults: ${e.message}")
+    private fun readConfigFile(): String =
+        runCatching { configFile.readText() }.getOrElse { e ->
+            logger.severe("Could not read ${configFile.path}, falling back to defaults: ${e.message}")
             ""
         }
-    }
 
     /**
      * Registers all commands based on enabled features.
@@ -149,7 +167,7 @@ class LunaticChat :
                 services.remotePlayerRegistry,
                 configuration.features.velocityIntegration.serverName,
             ),
-            LunaticChatCommand(this, settingHandlerRegistry, services.languageManager, configuration),
+            LunaticChatCommand(this, settingHandlerRegistry, services.languageManager, configuration, configurationReloader),
         )
 
         // Conditionally register /reply command if quick replies are enabled

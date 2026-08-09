@@ -36,6 +36,14 @@ LunaticChat で使用できるすべてのコマンドのリファレンスで�
 - **エイリアス**: `st`
 - **パーミッション**: `lunaticchat.command.lc.status`
 
+### `/lc reload` <Badge type="tip" text="v1.4.0~" />
+
+`config.yml` を読み直して `messageFormat` の設定を反映し，残りの変更のうち再起動が必要なものを報告します．[設定の反映](/ja/docs/configuration#設定の反映)を参照してください．
+
+- **パーミッション**: `lunaticchat.command.lc.reload` (デフォルト: op)
+- **コンソール・RCON からも実行可能**
+- `config.yml` を完全に読み取れない場合は拒否され，稼働中の設定がそのまま維持されます
+
 ### `/lc settings [key] [on|off]`
 
 プレイヤー個人の設定を確認・変更します．引数なしで設定一覧を表示します．

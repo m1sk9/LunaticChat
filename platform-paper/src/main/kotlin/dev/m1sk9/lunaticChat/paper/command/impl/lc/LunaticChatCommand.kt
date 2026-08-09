@@ -8,6 +8,7 @@ import dev.m1sk9.lunaticChat.paper.command.annotation.Permission
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.LunaticCommand
 import dev.m1sk9.lunaticChat.paper.command.setting.SettingHandlerRegistry
+import dev.m1sk9.lunaticChat.paper.config.ConfigurationReloader
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import io.papermc.paper.command.brigadier.CommandSourceStack
@@ -29,6 +30,7 @@ class LunaticChatCommand(
     private val settingHandlerRegistry: SettingHandlerRegistry,
     override val languageManager: LanguageManager,
     private val configuration: LunaticChatConfiguration,
+    private val configurationReloader: ConfigurationReloader,
 ) : LunaticCommand(plugin) {
     override val description: String
         get() = languageManager.getMessage("commandDescription.lc")
@@ -46,6 +48,12 @@ class LunaticChatCommand(
             plugin,
             languageManager,
             configuration,
+        ).buildAll().forEach { command.then(it) }
+
+        ReloadCommand(
+            plugin,
+            languageManager,
+            configurationReloader,
         ).buildAll().forEach { command.then(it) }
 
         // Add channel command if channel manager is available

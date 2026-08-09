@@ -2,6 +2,7 @@ package dev.m1sk9.lunaticChat.paper.chat.handler
 
 import dev.m1sk9.lunaticChat.engine.protocol.PresenceEntry
 import dev.m1sk9.lunaticChat.paper.TestUtils
+import dev.m1sk9.lunaticChat.paper.config.MessageFormatHolder
 import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
@@ -32,7 +33,7 @@ class DirectMessageHandlerTest {
     ): DirectMessageHandler {
         val config = configuration ?: TestUtils.createTestConfiguration()
         val langManager = languageManager ?: mockk<LanguageManager>(relaxed = true)
-        return DirectMessageHandler(config, settingsManager, romanjiConverter, langManager)
+        return DirectMessageHandler(MessageFormatHolder(config.messageFormat), settingsManager, romanjiConverter, langManager)
     }
 
     @Test
@@ -117,7 +118,7 @@ class DirectMessageHandlerTest {
     fun `handler can be created with injected configuration`() {
         val config = TestUtils.createTestConfiguration(debug = true)
         val languageManager = mockk<LanguageManager>(relaxed = true)
-        val handler = DirectMessageHandler(config, null, null, languageManager)
+        val handler = DirectMessageHandler(MessageFormatHolder(config.messageFormat), null, null, languageManager)
 
         // Handler should accept configuration via constructor (DI pattern)
         // This validates Issue #1 refactoring - ConfigManager DI
@@ -231,7 +232,7 @@ class DirectMessageHandlerTest {
 
         every { settingsManager.getSettings(any()) } returns TestUtils.createTestPlayerSettings()
 
-        val handler = DirectMessageHandler(config, settingsManager, romanjiConverter, languageManager)
+        val handler = DirectMessageHandler(MessageFormatHolder(config.messageFormat), settingsManager, romanjiConverter, languageManager)
 
         val sender = TestUtils.createMockPlayer()
         val recipient = TestUtils.createMockPlayer()

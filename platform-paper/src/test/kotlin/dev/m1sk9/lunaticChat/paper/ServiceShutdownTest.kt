@@ -19,7 +19,14 @@ class ServiceShutdownTest {
 
     private fun shutdown(stoppables: List<StoppableService>): TestUtils.TestLogger {
         val logger = TestUtils.TestLogger()
-        val initializer = ServiceInitializer(mockk(relaxed = true), TestUtils.createTestConfiguration(), lazy { mockk() }, logger)
+        val initializer =
+            ServiceInitializer(
+                plugin = mockk(relaxed = true),
+                configuration = TestUtils.createTestConfiguration(),
+                messageFormats = TestUtils.createTestMessageFormats(),
+                httpClient = lazy { mockk() },
+                logger = logger,
+            )
         initializer.shutdown(
             ServiceContainer(
                 languageManager = mockk(),

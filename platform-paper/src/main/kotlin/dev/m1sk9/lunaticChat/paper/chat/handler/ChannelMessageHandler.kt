@@ -6,7 +6,7 @@ import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMessageLogger
 import dev.m1sk9.lunaticChat.paper.common.SpyPermissionManager
 import dev.m1sk9.lunaticChat.paper.common.playChannelReceiveNotification
 import dev.m1sk9.lunaticChat.paper.common.playMessageSendNotification
-import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
+import dev.m1sk9.lunaticChat.paper.config.MessageFormatHolder
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.withChatPlaceholders
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
@@ -16,7 +16,7 @@ import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 
 class ChannelMessageHandler(
-    private val configuration: LunaticChatConfiguration,
+    private val messageFormats: MessageFormatHolder,
     private val settingsManager: PlayerSettingsManager?,
     private val channelManager: ChannelManager,
     private val languageManager: LanguageManager,
@@ -88,7 +88,7 @@ class ChannelMessageHandler(
         channelName: String,
         message: String,
     ): Component {
-        val format = configuration.messageFormat.channelMessageFormat
+        val format = messageFormats.current.channelMessageFormat
         val text =
             format.withChatPlaceholders(
                 "sender" to senderName,

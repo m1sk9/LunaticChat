@@ -6,6 +6,8 @@ layout: doc
 
 `config.yml` の `messageFormat` セクションで，チャットメッセージの表示形式をカスタマイズできます．
 
+`/lc reload` <Badge type="tip" text="v1.4.0~" /> が再起動なしで反映できるのはこれらの設定だけです．`config.yml` のほかのセクションはサーバー起動時に固定されます．[設定の反映](/ja/docs/configuration#設定の反映)を参照してください．
+
 ## プレースホルダー
 
 | プレースホルダー | 説明 | 使用可能なフォーマット |

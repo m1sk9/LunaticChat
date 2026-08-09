@@ -5,6 +5,7 @@ import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelMember
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelRole
 import dev.m1sk9.lunaticChat.engine.settings.PlayerChatSettings
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
+import dev.m1sk9.lunaticChat.paper.config.MessageFormatHolder
 import dev.m1sk9.lunaticChat.paper.config.key.ChannelChatFeatureConfig
 import dev.m1sk9.lunaticChat.paper.config.key.ConversionCacheConfig
 import dev.m1sk9.lunaticChat.paper.config.key.FeaturesConfig
@@ -106,12 +107,19 @@ object TestUtils {
                 MessageFormatConfig(
                     directMessageFormat = "§7[§e{sender} §7>> §e{recipient}§7] §f{message}",
                     channelMessageFormat = "§7[§b#{channel}§7] §e{sender}: §f{message}",
+                    crossServerGlobalChatFormat = "§7[§6{server}§7] §e{sender}: §f{message}",
                 ),
             debug = debug,
             checkForUpdates = checkForUpdates,
             userSettingsFilePath = "test-player-settings.yaml",
             language = language,
         )
+
+    /**
+     * Creates a holder over the formats of [createTestConfiguration].
+     */
+    fun createTestMessageFormats(configuration: LunaticChatConfiguration = createTestConfiguration()): MessageFormatHolder =
+        MessageFormatHolder(configuration.messageFormat)
 
     /**
      * Creates a default player settings for testing.

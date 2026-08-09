@@ -65,6 +65,17 @@ status:
 settings:
   availableValues: "Available settings value: {values}"
 
+reload:
+  success: "Reloaded config.yml."
+  applied: "Applied: {keys}"
+  restartRequired: "Restart the server to apply: {keys}"
+  noChanges: "config.yml holds no change that can be applied without a restart."
+  inProgress: "A reload is already running."
+  invalidSettings: "Reload aborted. These settings in config.yml could not be read:"
+  invalidDocument: "Reload aborted. config.yml could not be read as a settings document:"
+  unreadable: "Reload aborted. config.yml could not be read:"
+  previousKept: "The configuration the server started with is still in use."
+
 channel:
   help:
     header: "--- Channel Commands ---"
