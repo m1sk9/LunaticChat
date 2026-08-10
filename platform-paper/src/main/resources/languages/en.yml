@@ -66,13 +66,22 @@ settings:
   availableValues: "Available settings value: {values}"
 
 reload:
-  success: "Reloaded config.yml."
-  restartRequired: "Reloaded config.yml, but some of the changes need a server restart to take effect."
-  noChanges: "config.yml holds no change to apply."
+  success: "Reloaded the configuration file."
+  restartRequired: "Reloaded the configuration file. A server restart is required to apply the changes."
+  noChanges: "There was no change to reload."
   inProgress: "A reload is already running."
-  invalidSettings: "Reload aborted. These settings in config.yml could not be read:"
-  invalidDocument: "Reload aborted. config.yml could not be read as a settings document:"
-  unreadable: "Reload aborted. config.yml could not be read:"
+  # invalidSettings / invalidDocument / unreadable are headings. /lc reload prints the setting it
+  # could not read, and the reason, on the lines beneath them.
+  #
+  # Those detail lines are NOT translated. The reason comes from the YAML parser and stays English
+  # whatever language is selected, so a parser update cannot leave a stale translation behind here.
+  # It also cannot be carried as a {placeholder}: a reason holding braces of its own would be broken
+  # by the next substitution, and the braces would then be coloured as if they were ours.
+  # See ReloadCommand.fallbackLine / reasonLine.
+  invalidSettings: "Reload aborted. The following settings could not be read:"
+  invalidDocument: "Reload aborted. config.yml could not be read as a configuration file:"
+  unreadable: "Reload aborted. The file could not be read"
+  # The closing line shared by all three failures above.
   previousKept: "The configuration the server started with is still in use."
 
 channel:
