@@ -13,10 +13,10 @@ LunaticChat's configuration is managed in `plugins/LunaticChat/config.yml`. A de
 Every other setting decides something that is settled once, when the plugin starts: which services exist, which commands and listeners are registered, which files are opened. Rather than pretend otherwise, the command lists the settings you changed that the running server cannot pick up, so you know a restart is still needed.
 
 ```
-[LC] Reloaded config.yml.
-[LC] Applied: messageFormat.directMessageFormat
-[LC] Restart the server to apply: features.channelChat
+[LC] Reloaded config.yml, but some of the changes need a server restart to take effect.
 ```
+
+The reply says only whether what you edited is in effect. Which settings moved is written to the server log.
 
 | | Applied by `/lc reload` | Needs a restart |
 |---|---|---|

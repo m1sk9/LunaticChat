@@ -63,14 +63,50 @@ class ReloadCommandTest {
     }
 
     @Test
-    fun `a reload the console runs succeeds without a player`() {
+    fun `an applied change reports success, without naming the settings`() {
         val ctx = consoleContext()
 
-        val result = commandReading { "messageFormat:\n  directMessageFormat: \"new {message}\"" }.execute(ctx)
+        val result =
+            commandReading {
+                Yaml.default.encodeToString(
+                    LunaticChatConfiguration.serializer(),
+                    startup.copy(messageFormat = startup.messageFormat.copy(directMessageFormat = "new {message}")),
+                )
+            }.execute(ctx)
 
-        assertIs<CommandResult.Success>(result)
+        assertIs<CommandResult.SuccessWithMessage>(result)
+        assertEquals("reload.success", result.message)
         assertEquals("new {message}", holder.current.directMessageFormat)
-        verify(atLeast = 1) { ctx.reply(any()) }
+        // The one message handleResult sends is the whole reply; no per-setting lines.
+        verify(exactly = 0) { ctx.reply(any()) }
+    }
+
+    @Test
+    fun `a change that cannot take effect asks for a restart`() {
+        val result =
+            commandReading {
+                Yaml.default.encodeToString(
+                    LunaticChatConfiguration.serializer(),
+                    startup.copy(features = startup.features.copy(channelChat = startup.features.channelChat.copy(enabled = true))),
+                )
+            }.execute(consoleContext())
+
+        assertIs<CommandResult.SuccessWithMessage>(result)
+        assertEquals("reload.restartRequired", result.message)
+    }
+
+    @Test
+    fun `a change needing a restart is not reported as no change, even when nothing was applied`() {
+        // Nothing moved, but the operator did edit the file: telling them there was no change would
+        // send them hunting for a typo they had not made.
+        val result =
+            commandReading {
+                Yaml.default.encodeToString(LunaticChatConfiguration.serializer(), startup.copy(debug = !startup.debug))
+            }.execute(consoleContext())
+
+        assertIs<CommandResult.SuccessWithMessage>(result)
+        assertEquals("reload.restartRequired", result.message)
+        assertEquals(startup.messageFormat, holder.current)
     }
 
     @Test

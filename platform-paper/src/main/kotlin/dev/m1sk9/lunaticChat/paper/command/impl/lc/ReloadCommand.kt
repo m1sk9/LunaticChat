@@ -70,7 +70,19 @@ class ReloadCommand(
         result: ReloadResult,
     ): CommandResult =
         when (result) {
-            is ReloadResult.Applied -> reportApplied(ctx, result)
+            // Which settings moved is left to the server log. The sender only needs to know whether
+            // what they edited is in effect, and a list of dotted keys buried the one bit that
+            // changes what they do next: whether they still have to restart.
+            //
+            // Restart-required wins even when nothing was applied, because the operator did change
+            // something - calling that "no change" would send them looking for a typo they had not
+            // made.
+            is ReloadResult.Applied ->
+                when {
+                    result.restartRequired.isNotEmpty() -> ok("reload.restartRequired")
+                    result.applied.isNotEmpty() -> ok("reload.success")
+                    else -> ok("reload.noChanges")
+                }
 
             is ReloadResult.InvalidSettings -> {
                 ctx.reply(MessageFormatter.formatError(languageManager.getMessage("reload.invalidSettings")))
@@ -90,34 +102,6 @@ class ReloadCommand(
                 fail("reload.previousKept")
             }
         }
-
-    private fun reportApplied(
-        ctx: CommandContext,
-        result: ReloadResult.Applied,
-    ): CommandResult {
-        if (result.applied.isEmpty() && result.restartRequired.isEmpty()) {
-            return ok("reload.noChanges")
-        }
-
-        // Sent here rather than returned, so the headline lands before the detail lines instead of
-        // after them, which is where handleResult would put it.
-        ctx.reply(MessageFormatter.format(languageManager.getMessage("reload.success")))
-        if (result.applied.isNotEmpty()) {
-            ctx.reply(
-                MessageFormatter.format(
-                    languageManager.getMessage("reload.applied", mapOf("keys" to result.applied.joinToString(", "))),
-                ),
-            )
-        }
-        if (result.restartRequired.isNotEmpty()) {
-            ctx.reply(
-                MessageFormatter.format(
-                    languageManager.getMessage("reload.restartRequired", mapOf("keys" to result.restartRequired.joinToString(", "))),
-                ),
-            )
-        }
-        return CommandResult.Success
-    }
 
     /**
      * The reason a setting was rejected, as kaml phrased it.

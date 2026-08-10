@@ -33,10 +33,10 @@ Re-read `config.yml` without restarting the server.
 Only the [`messageFormat`](/docs/reference/message-format) settings are applied. Everything else in `config.yml` decides something the plugin settles at startup, so the command lists the changed settings that still need a restart instead of pretending they took effect.
 
 ```
-[LC] Reloaded config.yml.
-[LC] Applied: messageFormat.directMessageFormat
-[LC] Restart the server to apply: features.channelChat
+[LC] Reloaded config.yml, but some of the changes need a server restart to take effect.
 ```
+
+The reply says only whether what you edited is in effect. Which settings moved is written to the server log.
 
 - **Permission**: `lunaticchat.command.lc.reload` (default: op). Usable from the console and RCON
 - A `config.yml` the plugin cannot read in full is refused: every unreadable setting is named at once and the running configuration is kept. This is stricter than startup, which falls a single unreadable setting back to its default so the server can come up

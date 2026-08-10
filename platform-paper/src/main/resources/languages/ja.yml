@@ -67,9 +67,8 @@ settings:
 
 reload:
   success: "config.yml を再読み込みしました．"
-  applied: "適用しました: {keys}"
-  restartRequired: "適用するにはサーバーの再起動が必要です: {keys}"
-  noChanges: "config.yml に，再起動なしで適用できる変更はありませんでした．"
+  restartRequired: "config.yml を再読み込みしましたが，一部の変更の適用にはサーバーの再起動が必要です．"
+  noChanges: "config.yml に適用する変更はありませんでした．"
   inProgress: "再読み込みはすでに実行中です．"
   invalidSettings: "再読み込みを中止しました．config.yml の次の設定を読み取れません:"
   invalidDocument: "再読み込みを中止しました．config.yml を設定ファイルとして読み取れません:"

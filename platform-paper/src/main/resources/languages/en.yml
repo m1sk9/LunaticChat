@@ -67,9 +67,8 @@ settings:
 
 reload:
   success: "Reloaded config.yml."
-  applied: "Applied: {keys}"
-  restartRequired: "Restart the server to apply: {keys}"
-  noChanges: "config.yml holds no change that can be applied without a restart."
+  restartRequired: "Reloaded config.yml, but some of the changes need a server restart to take effect."
+  noChanges: "config.yml holds no change to apply."
   inProgress: "A reload is already running."
   invalidSettings: "Reload aborted. These settings in config.yml could not be read:"
   invalidDocument: "Reload aborted. config.yml could not be read as a settings document:"
