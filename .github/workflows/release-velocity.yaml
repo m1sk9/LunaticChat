@@ -105,7 +105,7 @@ jobs:
             --notes "Release notes: [Velocity v${VERSION}](https://lc.m1sk9.dev/changelog/velocity/v${VERSION})"
 
       - name: Publish to Modrinth (Velocity)
-        uses: cloudnode-pro/modrinth-publish@8dc596b20b94959bf244180235d90729d05a674f # v2
+        uses: cloudnode-pro/modrinth-publish@203bc72a51ae39fba1194fc4097d9f0750c49bd3 # v2
         with:
           token: ${{ secrets.MODRINTH_TOKEN }}
           name: v${{ needs.validate.outputs.version }} (Velocity)
