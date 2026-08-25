@@ -17,10 +17,10 @@ dependencies {
     api(project(":engine"))
 
     // Velocity-specific dependencies
-    compileOnly("com.velocitypowered:velocity-api:4.0.0")
+    compileOnly("com.velocitypowered:velocity-api:4.1.0")
 
     // Test dependencies
-    testImplementation("com.velocitypowered:velocity-api:4.0.0")
+    testImplementation("com.velocitypowered:velocity-api:4.1.0")
     testImplementation("io.mockk:mockk:1.14.11")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
 }
