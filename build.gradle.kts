@@ -7,7 +7,7 @@ plugins {
     kotlin("jvm") version "2.4.10" apply false
     kotlin("plugin.serialization") version "2.4.10" apply false
     id("com.gradleup.shadow") version "9.6.1" apply false
-    id("xyz.jpenilla.run-paper") version "3.0.2" apply false
+    id("xyz.jpenilla.run-paper") version "3.1.0" apply false
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0" apply false
     id("org.jetbrains.dokka") version "2.2.0" apply false
 }
@@ -63,8 +63,8 @@ subprojects {
         dependencies {
             // Common test dependencies (applied to all subprojects)
             add("testImplementation", "org.jetbrains.kotlin:kotlin-test-junit5")
-            add("testImplementation", "org.junit.jupiter:junit-jupiter-api:6.1.2")
-            add("testRuntimeOnly", "org.junit.jupiter:junit-jupiter-engine:6.1.2")
+            add("testImplementation", "org.junit.jupiter:junit-jupiter-api:6.1.3")
+            add("testRuntimeOnly", "org.junit.jupiter:junit-jupiter-engine:6.1.3")
         }
     }
 }
