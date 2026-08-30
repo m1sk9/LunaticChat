@@ -1,5 +1,6 @@
 package dev.m1sk9.lunaticChat.paper.listener
 
+import dev.m1sk9.lunaticChat.engine.debug.DebugLogger
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.ServiceContainer
 import dev.m1sk9.lunaticChat.paper.common.SpyPermissionManager
@@ -20,12 +21,14 @@ object EventListenerRegistry {
      * @param services The initialized services
      * @param configuration The plugin configuration
      * @param updateAvailable Atomic flag for update availability
+     * @param debug Debug logger passed to the listeners that report their routing decisions
      */
     fun registerAll(
         plugin: LunaticChat,
         services: ServiceContainer,
         configuration: LunaticChatConfiguration,
         updateAvailable: AtomicBoolean,
+        debug: DebugLogger = DebugLogger.Disabled,
     ) {
         val pluginManager = plugin.server.pluginManager
 
@@ -63,6 +66,7 @@ object EventListenerRegistry {
                     settingsManager = services.playerSettingsManager,
                     configuration = configuration,
                     crossServerChatManager = services.crossServerChatManager,
+                    debug = debug,
                 ),
                 plugin,
             )

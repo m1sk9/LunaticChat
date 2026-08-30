@@ -1,5 +1,6 @@
 package dev.m1sk9.lunaticChat.paper.velocity
 
+import dev.m1sk9.lunaticChat.engine.debug.DebugLogger
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessage
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageChannel
 import dev.m1sk9.lunaticChat.paper.TestUtils
@@ -26,7 +27,7 @@ class CrossServerChatManagerTest {
         val config = TestUtils.createTestConfiguration()
         val messageFormats = TestUtils.createTestMessageFormats(config)
         val online = TestUtils.createMockPlayer(name = "Bob")
-        val manager = CrossServerChatManager(plugin, logger, config, messageFormats, cacheSize)
+        val manager = CrossServerChatManager(plugin, logger, DebugLogger.Disabled, config, messageFormats, cacheSize)
 
         init {
             // Run scheduled main-thread tasks inline so assertions can observe their effects.

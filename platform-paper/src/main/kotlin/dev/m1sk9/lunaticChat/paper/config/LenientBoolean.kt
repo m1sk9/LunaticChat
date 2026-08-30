@@ -29,17 +29,21 @@ object LenientBooleanSerializer : KSerializer<Boolean> {
     // a boolean at all.
     override val descriptor = PrimitiveSerialDescriptor("LenientBoolean", PrimitiveKind.STRING)
 
+    /** [raw] as a boolean, or null when it is none of the accepted spellings. */
+    internal fun read(raw: String): Boolean? =
+        when (raw.lowercase()) {
+            in trueWords -> true
+            in falseWords -> false
+            else -> null
+        }
+
     override fun deserialize(decoder: Decoder): Boolean {
         // Captured before decoding: ConfigManager prunes the offending setting by the path its
         // exception carries, and only a YamlException carries one. Throwing without a path would
         // cost the operator every other setting in the file.
         val path = (decoder as YamlInput).node.path
         val raw = decoder.decodeString()
-        return when (raw.lowercase()) {
-            in trueWords -> true
-            in falseWords -> false
-            else -> throw YamlException("expected true/false, yes/no or on/off but found '$raw'", path)
-        }
+        return read(raw) ?: throw YamlException("expected true/false, yes/no or on/off but found '$raw'", path)
     }
 
     override fun serialize(

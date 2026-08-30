@@ -1,5 +1,7 @@
 package dev.m1sk9.lunaticChat.paper.velocity
 
+import dev.m1sk9.lunaticChat.engine.debug.DebugCategory
+import dev.m1sk9.lunaticChat.engine.debug.DebugLogger
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessage
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageChannel
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageCodec
@@ -24,6 +26,7 @@ import java.util.logging.Logger
 class CrossServerChatManager(
     private val plugin: Plugin,
     private val logger: Logger,
+    private val debug: DebugLogger = DebugLogger.Disabled,
     private val configuration: LunaticChatConfiguration,
     private val messageFormats: MessageFormatHolder,
     private val cacheSize: Int = 100,
@@ -71,7 +74,9 @@ class CrossServerChatManager(
                                 PluginMessageChannel.ID,
                                 PluginMessageCodec.encode(globalChatMessage),
                             )
-                            logger.fine { "Sent global chat message to Velocity: messageId=$messageId, player=$playerName" }
+                            debug.log(DebugCategory.CHAT) {
+                                "Sent global chat message to Velocity: messageId=$messageId, player=$playerName"
+                            }
                         } else {
                             logger.warning("Cannot send global chat message: player $playerId not found")
                         }
@@ -94,7 +99,7 @@ class CrossServerChatManager(
         try {
             // Check if already processed (deduplication)
             if (!processedMessages.isNew(message.messageId)) {
-                logger.fine("Ignoring duplicate message: messageId=${message.messageId}")
+                debug.log(DebugCategory.CHAT) { "Deduplication hit, ignoring messageId=${message.messageId}" }
                 return
             }
             processedMessages.markProcessed(message.messageId)
@@ -111,7 +116,7 @@ class CrossServerChatManager(
                 },
             )
 
-            logger.fine {
+            debug.log(DebugCategory.CHAT) {
                 "Broadcasted global chat message from ${message.serverName}: " +
                     "player=${message.playerName}, messageId=${message.messageId}"
             }

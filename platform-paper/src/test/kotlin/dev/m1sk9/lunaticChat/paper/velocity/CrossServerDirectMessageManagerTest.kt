@@ -1,5 +1,6 @@
 package dev.m1sk9.lunaticChat.paper.velocity
 
+import dev.m1sk9.lunaticChat.engine.debug.DebugLogger
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessage
 import dev.m1sk9.lunaticChat.paper.TestUtils
 import dev.m1sk9.lunaticChat.paper.chat.handler.DirectMessageHandler
@@ -26,7 +27,7 @@ class CrossServerDirectMessageManagerTest {
         val dmHandler = mockk<DirectMessageHandler>(relaxed = true)
         val languageManager = mockk<LanguageManager>(relaxed = true)
         val manager =
-            CrossServerDirectMessageManager(plugin, logger, config, dmHandler, languageManager, cacheSize)
+            CrossServerDirectMessageManager(plugin, logger, DebugLogger.Disabled, config, dmHandler, languageManager, cacheSize)
 
         init {
             // Run scheduled main-thread tasks inline so assertions can observe their effects.

@@ -8,6 +8,7 @@ import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
 import dev.m1sk9.lunaticChat.paper.config.MessageFormatHolder
 import dev.m1sk9.lunaticChat.paper.config.key.ChannelChatFeatureConfig
 import dev.m1sk9.lunaticChat.paper.config.key.ConversionCacheConfig
+import dev.m1sk9.lunaticChat.paper.config.key.DebugConfig
 import dev.m1sk9.lunaticChat.paper.config.key.FeaturesConfig
 import dev.m1sk9.lunaticChat.paper.config.key.JapaneseConversionFeatureConfig
 import dev.m1sk9.lunaticChat.paper.config.key.MessageFormatConfig
@@ -78,7 +79,7 @@ object TestUtils {
         maxChannelsPerServer: Int = 10,
         maxMembersPerChannel: Int = 50,
         maxMembershipPerPlayer: Int = 5,
-        debug: Boolean = false,
+        debug: DebugConfig = DebugConfig(),
         checkForUpdates: Boolean = false,
         language: Language = Language.EN,
     ): LunaticChatConfiguration =

@@ -84,6 +84,21 @@ reload:
   # 上記 3 つの失敗に共通する締めの行．
   previousKept: "サーバー起動時の設定をそのまま使用します"
 
+debug:
+  # /lc debug は稼働中のサーバーだけを変更します．config.yml は書き換えないため，再起動または
+  # /lc reload でファイルの値に戻ります．
+  list: "現在ログを出力しているデバッグカテゴリ: {categories}"
+  none: "なし"
+  enabled: "デバッグカテゴリ '{category}' のログ出力を開始しました"
+  disabled: "デバッグカテゴリ '{category}' のログ出力を停止しました"
+  unknownCategory: "'{category}' というデバッグカテゴリはありません．指定できるのは: {categories}"
+
+dump:
+  success: "診断レポートを書き出しました"
+  clickToCopy: "クリックしてパスをコピー"
+  # レポートを書き出せなかった理由はサーバーログに出します（DumpCommand を参照）．
+  failed: "診断レポートを書き出せませんでした．理由はサーバーログを確認してください"
+
 channel:
   help:
     header: "--- チャンネルコマンド ---"

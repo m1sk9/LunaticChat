@@ -1,5 +1,7 @@
 package dev.m1sk9.lunaticChat.paper.storage
 
+import dev.m1sk9.lunaticChat.engine.debug.DebugCategory
+import dev.m1sk9.lunaticChat.engine.debug.DebugLogger
 import java.nio.file.Path
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -23,6 +25,7 @@ class FileStore(
     private val file: Path,
     scheduler: AsyncScheduler,
     private val logger: Logger,
+    private val debug: DebugLogger = DebugLogger.Disabled,
     debounceSeconds: Long = 5,
 ) {
     private val saver = DebouncedSaver(scheduler, debounceSeconds)
@@ -37,7 +40,10 @@ class FileStore(
     }
 
     /** Replaces the file with [contents] so nothing ever reads a half-written file. */
-    fun write(contents: String) = file.writeTextAtomically(contents)
+    fun write(contents: String) {
+        file.writeTextAtomically(contents)
+        debug.log(DebugCategory.STORAGE) { "Wrote $name atomically (${contents.length} characters)" }
+    }
 
     /**
      * Queues a debounced asynchronous write.
@@ -51,6 +57,7 @@ class FileStore(
      */
     fun queueWrite(contents: () -> String) =
         saver.request {
+            debug.log(DebugCategory.STORAGE) { "Debounced save of $name fired" }
             try {
                 write(contents())
             } catch (e: Exception) {

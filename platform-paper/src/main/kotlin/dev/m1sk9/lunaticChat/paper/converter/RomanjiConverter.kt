@@ -1,5 +1,7 @@
 package dev.m1sk9.lunaticChat.paper.converter
 
+import dev.m1sk9.lunaticChat.engine.debug.DebugCategory
+import dev.m1sk9.lunaticChat.engine.debug.DebugLogger
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -12,7 +14,7 @@ class RomanjiConverter(
     private val cache: ConversionCache,
     private val apiClient: GoogleIMEClient,
     private val logger: Logger,
-    private val debugMode: Boolean = false,
+    private val debug: DebugLogger = DebugLogger.Disabled,
     maxConcurrentRequests: Int = 4,
 ) {
     // A long message would otherwise open one request per word at once. Google IME answering with
@@ -34,9 +36,7 @@ class RomanjiConverter(
      */
     suspend fun convert(input: String): String? {
         if (!isRomajiOnly(input)) {
-            if (debugMode) {
-                logger.info("Input contains non-romaji characters, skipping conversion: $input")
-            }
+            debug.log(DebugCategory.CONVERSION) { "Input contains non-romaji characters, skipping conversion: $input" }
             return null
         }
 
@@ -62,18 +62,14 @@ class RomanjiConverter(
 
     private suspend fun convertWord(word: String): String {
         cache.get(word)?.let { cached ->
-            if (debugMode) {
-                logger.info("Cache hit for word: $word -> $cached")
-            }
+            debug.log(DebugCategory.CONVERSION) { "Cache hit for word: $word -> $cached" }
             return cached
         }
 
         // Pre-validate: Check if the word is valid romaji before attempting conversion
         // This prevents partial conversion of English words (e.g., "This" -> "てぃs")
         if (!KanaConverter.isValidRomaji(word)) {
-            if (debugMode) {
-                logger.info("Word is not valid romaji, keeping original: $word")
-            }
+            debug.log(DebugCategory.CONVERSION) { "Word is not valid romaji, keeping original: $word" }
             return word
         }
 

@@ -1,8 +1,9 @@
 package dev.m1sk9.lunaticChat.paper.chat.channel
 
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelMessageLogEntry
+import dev.m1sk9.lunaticChat.engine.debug.DebugCategory
+import dev.m1sk9.lunaticChat.engine.debug.DebugLogger
 import dev.m1sk9.lunaticChat.paper.StoppableService
-import io.ktor.util.logging.Logger
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -16,6 +17,8 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.TimeUnit
+import java.util.logging.Level
+import java.util.logging.Logger
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.fileSize
 import kotlin.io.path.listDirectoryEntries
@@ -30,6 +33,7 @@ import kotlin.io.path.name
  * @property logsDirectory Directory where log files are stored
  * @property plugin Bukkit plugin instance for scheduling tasks
  * @property logger Logger for diagnostic messages
+ * @property debug Logger for the per-flush detail, which is only wanted while storage is debugged
  * @property maxFileSizeBytes Maximum size of a single log file
  * @property retentionDays Number of days to retain log files (0 = keep forever)
  */
@@ -37,6 +41,7 @@ class ChannelMessageLogger(
     private val logsDirectory: Path,
     private val plugin: Plugin,
     private val logger: Logger,
+    private val debug: DebugLogger,
     private val maxFileSizeBytes: Long,
     private val retentionDays: Int,
 ) : StoppableService {
@@ -62,7 +67,7 @@ class ChannelMessageLogger(
             schedulePeriodicFlush()
             schedulePeriodicCleanup()
         } catch (e: Exception) {
-            logger.error("Failed to initialize channel message logger", e)
+            logger.log(Level.SEVERE, "Failed to initialize channel message logger", e)
         }
     }
 
@@ -151,8 +156,9 @@ class ChannelMessageLogger(
                     writer.newLine()
                 }
             }
+            debug.log(DebugCategory.STORAGE) { "Flushed ${entries.size} channel log entries to ${logFile.fileName}" }
         } catch (e: Exception) {
-            logger.error("Failed to flush log entries", e)
+            logger.log(Level.SEVERE, "Failed to flush log entries", e)
             // Re-queue entries for retry
             entries.forEach { pendingEntries.offer(it) }
         }
@@ -205,10 +211,10 @@ class ChannelMessageLogger(
                             logger.info("Deleted old log file: $fileName")
                         }
                     } catch (e: Exception) {
-                        logger.warn("Failed to parse date from log file: $fileName", e)
+                        logger.log(Level.WARNING, "Failed to parse date from log file: $fileName", e)
                     }
                 } else {
-                    logger.warn("Log file name does not match expected pattern: $fileName")
+                    logger.warning("Log file name does not match expected pattern: $fileName")
                 }
             }
 
@@ -216,7 +222,7 @@ class ChannelMessageLogger(
                 logger.info("Cleaned up $deletedCount old log file(s)")
             }
         } catch (e: Exception) {
-            logger.error("Failed to cleanup old logs", e)
+            logger.log(Level.SEVERE, "Failed to cleanup old logs", e)
         }
     }
 
@@ -242,7 +248,7 @@ class ChannelMessageLogger(
 
             // Safety limit to prevent infinite loop
             if (suffix > 1000) {
-                logger.error("Too many log files for date $dateStr (limit: 1000), using latest")
+                logger.severe("Too many log files for date $dateStr (limit: 1000), using latest")
                 break
             }
         }

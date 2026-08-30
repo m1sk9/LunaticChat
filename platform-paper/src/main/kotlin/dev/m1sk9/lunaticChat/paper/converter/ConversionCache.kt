@@ -9,11 +9,14 @@ import java.util.logging.Logger
 
 class ConversionCache(
     private val store: FileStore,
-    private val maxEntries: Int = 500,
+    val maxEntries: Int = 500,
     private val logger: Logger,
 ) : StoppableService {
     private val conversionMemoryCache = ConcurrentHashMap<String, String>()
     private val dirty = AtomicBoolean(false)
+
+    /** How full the cache is, for `/lc dump`. Words themselves never leave this class. */
+    val entryCount: Int get() = conversionMemoryCache.size
 
     companion object {
         private const val CACHE_VERSION = "1"

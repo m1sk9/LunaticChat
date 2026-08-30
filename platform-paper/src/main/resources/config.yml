@@ -13,7 +13,21 @@
 #       English:  https://lc.m1sk9.dev/en/admin-guide/configuration
 # ----------------------------------------------
 
-# If enabled, Activate LunaticChat's debug mode, which provides detailed logging for troubleshooting.
+# Detailed logging for troubleshooting. `/lc reload` applies this without a restart.
+#
+# `debug: true` turns on every category. To keep the log readable you can name only the categories
+# you are chasing, either inline or as a block:
+#
+#   debug: velocity,protocol
+#
+#   debug:
+#     enabled: true
+#     categories: [velocity, protocol]
+#
+# Categories: config, chat, channel, conversion, protocol, velocity, storage, command
+#
+# `/lc debug <category> on|off` switches a category for the running server without editing this
+# file; a restart or `/lc reload` puts the value below back in charge.
 debug: false
 
 # Path to the YAML file storing player settings
