@@ -158,7 +158,8 @@ class ConfigManager(
                 document = remaining
             } catch (e: Exception) {
                 // A serializer can fail without kaml turning it into a YamlException, and there is
-                // no path to prune a single setting by without one.
+                // no path to prune a single setting by without one. No config.yml reaches this -
+                // only a serializer bug does - so it is deliberately left without a test.
                 return ParseOutcome.Undecodable(UNREADABLE, e)
             }
         }
