@@ -94,8 +94,10 @@ debug:
   unknownCategory: "Unknown debug category '{category}'. Available: {categories}"
 
 dump:
-  success: "Wrote a diagnostics report."
-  clickToCopy: "Click to copy the path"
+  # Names the folder rather than the path. /lc dump can be granted to someone with no filesystem
+  # access, to whom the layout is not something they can act on; the exact path is in the server
+  # log, which only someone with that access can read anyway.
+  success: "Wrote a diagnostics report to the plugin folder."
   # The reason a report could not be written is left to the server log; see DumpCommand.
   failed: "Could not write the diagnostics report. See the server log for the reason."
 
