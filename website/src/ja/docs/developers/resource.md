@@ -14,7 +14,9 @@ Gradle マルチモジュール構成で，engine を共有しつつ Paper / Vel
 - `platform-velocity` — `version = velocityVersion`．`api(project(":engine"))`．velocity-api を `compileOnly`．成果物は **`LunaticChat-<ver>-velocity.jar`** (classifier で区別)
 - `dokka` — engine/paper/velocity を集約し HTML に README を include
 
-両プラットフォームの `processResources` は git short hash と `isNightly` から `version` / `gitCommitHash` / `channel` を算出し，`paper-plugin.yml` / `velocity-plugin.json` と `build-info.properties` にトークン展開します．
+両プラットフォームのバージョンは `isNightly` から導出されます．`-PisNightly=true` を付けるとベースバージョンに `-nightly.<git short hash>` が付き (`LunaticChat-1.3.0-nightly.44132f3.jar`)，開発ビルドを同じベースバージョンのリリースと取り違えることがなくなります．フラグを付けない場合は `paperVersion` / `velocityVersion` そのままで，リリースワークフローはこちらをビルドします．
+
+`processResources` はこの `version` と `gitCommitHash` / `channel` を `paper-plugin.yml` / `velocity-plugin.json` と `build-info.properties` にトークン展開します．
 
 ## 独立バージョニング
 
@@ -44,7 +46,7 @@ Paper と Velocity は別々のバージョン番号を持ち，独立にリリ�
 
 `ci.yaml` は main への push / PR / 手動実行で動きます．
 
-- `build_plugin` — ktlintCheck → test + jacocoTestReport → Codecov アップロード → nightly shadowJar (`-PisNightly=true`) → artifact 保持
+- `build_plugin` — ktlintCheck → test + jacocoTestReport → Codecov アップロード → nightly shadowJar (`-PisNightly=true`) → `LunaticChat-paper-<sha>` / `LunaticChat-velocity-<sha>` としてプラットフォームごとに artifact 保持 (JAR は artifact 直下)
 - `build_dokka` / `deploy_dokka` — Dokka 生成 → GitHub Pages デプロイ (main push のみ)
 - `build_docs` — `website/` を bun で format/lint/build → Cloudflare Workers (wrangler) へデプロイ (main push のみ)
 
