@@ -56,7 +56,7 @@ status:
   health:
     ok: "正常"
     degraded: "問題あり"
-    degradedHover: "Velocity 連携が有効ですが接続に失敗しました。/lcv status を確認してください。"
+    degradedHover: "Velocity 連携が有効ですが接続に失敗しました。/lcv status を確認してください"
   releaseChannel: "リリースチャンネル"
   channel:
     stable: "安定版"
@@ -66,8 +66,8 @@ settings:
   availableValues: "使用可能な設定値: {values}"
 
 reload:
-  success: "設定ファイルを再読み込みしました。"
-  restartRequired: "設定ファイルを再読み込みしました。変更の適用にはサーバーの再起動が必要です"
+  success: "設定ファイルを再読み込みしました"
+  restartRequired: "設定ファイルを再読み込みしました。この変更の適用にはサーバーの再起動が必要です"
   noChanges: "再読み込みが必要な変更はありませんでした"
   inProgress: "再読み込みはすでに実行中です"
   # invalidSettings / invalidDocument / unreadable は見出しです．/lc reload はこの下に，読み取れな
@@ -78,7 +78,7 @@ reload:
   # が実態と食い違います．{placeholder} として渡すこともできません．理由自体が波括弧を含む場合，
   # 後続の置換で壊れたうえ，その波括弧が LunaticChat のプレースホルダとして着色されるためです．
   # ReloadCommand.fallbackLine / reasonLine を参照してください．
-  invalidSettings: "再読み込みを中止しました。次の設定を読み取れません:"
+  invalidSettings: "再読み込みに失敗しました。次の設定を読み取れません:"
   invalidDocument: "再読み込みを中止しました。config.yml を設定ファイルとして読み取れません:"
   unreadable: "再読み込みを中止しました。ファイルを読み取れません"
   # 上記 3 つの失敗に共通する締めの行．
