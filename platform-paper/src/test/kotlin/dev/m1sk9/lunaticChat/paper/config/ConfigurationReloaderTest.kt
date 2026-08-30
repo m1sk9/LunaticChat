@@ -120,6 +120,15 @@ class ConfigurationReloaderTest {
     }
 
     @Test
+    fun `a read failure carrying no message is still reported`() {
+        val result = reloaderReading { throw java.io.IOException() }.reload()
+
+        assertIs<ReloadResult.Unreadable>(result)
+        assertTrue(result.reason.contains("IOException"))
+        assertEquals(startup.messageFormat, holder.current)
+    }
+
+    @Test
     fun `a reload is recorded in the server log`() {
         reloaderReading {
             fileFor { copy(messageFormat = messageFormat.copy(channelMessageFormat = "new channel format")) }
