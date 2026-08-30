@@ -127,10 +127,20 @@ body:
       required: false
 
   - type: textarea
+    id: diagnostics
+    attributes:
+      label: Output of `/lc dump`
+      description: "Run `/lc dump` on the affected server and paste the report it writes to `plugins/LunaticChat/debug/`. It carries the versions, the enabled features and how full each store is - no player names, UUIDs or messages."
+      placeholder: Paste the report here...
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
     id: velocity-logs
     attributes:
       label: Velocity Proxy Logs
-      description: Please paste relevant logs or error messages from the proxy.
+      description: "Please paste relevant logs or error messages from the proxy. The proxy has no config file of its own: start it with `-Dlunaticchat.debug=velocity,protocol`, or set `LUNATICCHAT_DEBUG=velocity,protocol` in its environment, to get the handshake and relay detail."
       placeholder: Paste the proxy logs here...
       render: shell
     validations:
@@ -140,7 +150,7 @@ body:
     id: backend-logs
     attributes:
       label: Backend Server Logs
-      description: "Please paste relevant logs or error messages from the backend servers. Setting `debug: true` in `config.yml` produces more detail."
+      description: "Please paste relevant logs or error messages from the backend servers. Setting `debug: true` in `config.yml` produces more detail; `debug: velocity,protocol` (or `/lc debug <category> on`) narrows it to one area."
       placeholder: Paste the backend logs here...
       render: shell
     validations:

@@ -96,10 +96,20 @@ body:
         - label: "`features.velocityIntegration`"
 
   - type: textarea
+    id: diagnostics
+    attributes:
+      label: Output of `/lc dump`
+      description: "Run `/lc dump` on the affected server and paste the report it writes to `plugins/LunaticChat/debug/`. It carries the versions, the enabled features and how full each store is - no player names, UUIDs or messages."
+      placeholder: Paste the report here...
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
     id: logs
     attributes:
       label: Logs and Error Messages
-      description: "Please paste relevant logs or error messages here. Setting `debug: true` in `config.yml` produces more detail."
+      description: "Please paste relevant logs or error messages here. Setting `debug: true` in `config.yml` produces more detail; `debug: velocity,protocol` (or `/lc debug <category> on`) narrows it to one area."
       placeholder: Paste your logs here...
       render: shell
     validations:
