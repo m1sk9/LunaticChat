@@ -40,7 +40,7 @@ object VelocityDebugSwitch {
             logger.warn(
                 "Unknown LunaticChat debug category '{}'. Known categories: {}",
                 name,
-                DebugCategory.entries.joinToString(", ") { it.key },
+                DebugCategory.keyList,
             )
         }
         if (parsed.active.isNotEmpty()) {

@@ -1,5 +1,6 @@
 package dev.m1sk9.lunaticChat.paper.config
 
+import dev.m1sk9.lunaticChat.engine.debug.DebugCategory
 import dev.m1sk9.lunaticChat.engine.debug.DebugState
 import dev.m1sk9.lunaticChat.paper.config.key.MessageFormatConfig
 import java.util.logging.Logger
@@ -136,8 +137,10 @@ class ConfigurationReloader(
             }
         val restartRequired = RESTART_REQUIRED.filter { (_, read) -> read(startupConfiguration) != read(incoming) }.map { it.first }
 
+        // Worded exactly as the startup warning is: an operator comparing a reload against a
+        // restart must not have to work out whether two different messages mean the same thing.
         incoming.debug.unknownCategories.forEach { name ->
-            logger.warning("Unknown debug category in config.yml: '$name'")
+            logger.warning("Unknown debug category in config.yml: '$name'. Known categories: ${DebugCategory.keyList}")
         }
         messageFormatHolder.replace(incoming.messageFormat)
         debugState.replace(incoming.debug.activeCategories)

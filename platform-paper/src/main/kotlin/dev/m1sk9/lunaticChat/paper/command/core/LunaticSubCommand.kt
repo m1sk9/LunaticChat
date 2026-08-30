@@ -1,7 +1,6 @@
 package dev.m1sk9.lunaticChat.paper.command.core
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
-import dev.m1sk9.lunaticChat.engine.debug.DebugCategory
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import io.papermc.paper.command.brigadier.CommandSourceStack
@@ -38,18 +37,12 @@ abstract class LunaticSubCommand(
     fun buildAll(): List<LiteralArgumentBuilder<CommandSourceStack>> {
         val primary = build()
         permissionNode?.let { node ->
-            primary.requires { source ->
-                val allowed = source.sender.hasPermission(node.permissionNode)
-                // Reported here rather than at the executor: a denied node is hidden from Brigadier
-                // entirely, so the sender is told the command does not exist and the server log
-                // otherwise says nothing at all about the permission that hid it.
-                if (!allowed) {
-                    plugin.debug.log(DebugCategory.COMMAND) {
-                        "Hid /$literal from ${source.sender.name}: missing ${node.permissionNode}"
-                    }
-                }
-                allowed
-            }
+            // Deliberately not instrumented under the `command` debug category. Brigadier evaluates
+            // this predicate when it builds a command tree to send to a player - on every join and
+            // every updateCommands() - not when someone is refused, so a line here would put one
+            // entry per gated node per player in the log and bury the results the category exists
+            // to show.
+            primary.requires { source -> source.sender.hasPermission(node.permissionNode) }
         }
         return withAliases(primary, aliases)
     }

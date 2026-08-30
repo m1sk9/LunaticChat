@@ -3,6 +3,7 @@ package dev.m1sk9.lunaticChat.paper.command.impl.lc
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
+import dev.m1sk9.lunaticChat.engine.debug.DebugCategories
 import dev.m1sk9.lunaticChat.engine.debug.DebugCategory
 import dev.m1sk9.lunaticChat.engine.debug.DebugState
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
@@ -29,11 +30,14 @@ class DebugCommand(
     override val permissionNode = LunaticChatPermissionNode.Debug
 
     private companion object {
-        /** The word that stands for every category at once, in both the argument and the replies. */
-        const val ALL = "all"
+        /**
+         * The word that stands for every category at once, in both the argument and the replies.
+         *
+         * Taken from [DebugCategories] rather than spelled again here, so the command and the two
+         * config.yml spellings cannot drift apart on what "everything" is called.
+         */
+        const val ALL = DebugCategories.ALL
     }
-
-    private val knownCategories = DebugCategory.entries.joinToString(", ") { it.key }
 
     override fun build(): LiteralArgumentBuilder<CommandSourceStack> =
         Commands
@@ -81,7 +85,7 @@ class DebugCommand(
             DebugCategory.fromKey(categoryName)
                 ?: return fail(
                     "debug.unknownCategory",
-                    mapOf("category" to categoryName, "categories" to knownCategories),
+                    mapOf("category" to categoryName, "categories" to DebugCategory.keyList),
                 )
 
         debugState.set(category, on)

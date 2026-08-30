@@ -36,10 +36,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 class LunaticChat :
     JavaPlugin(),
     Listener {
-    private companion object {
-        val KNOWN_DEBUG_CATEGORIES = DebugCategory.entries.joinToString(", ") { it.key }
-    }
-
     // Read by commands, which reach the plugin instance but not the container.
     val directMessageHandler: DirectMessageHandler get() = services.directMessageHandler
     val languageManager: LanguageManager get() = services.languageManager
@@ -142,7 +138,7 @@ class LunaticChat :
      */
     private fun reportDebugSwitch() {
         configuration.debug.unknownCategories.forEach { name ->
-            logger.warning("Unknown debug category in config.yml: '$name'. Known categories: $KNOWN_DEBUG_CATEGORIES")
+            logger.warning("Unknown debug category in config.yml: '$name'. Known categories: ${DebugCategory.keyList}")
         }
         if (debugState.enabled.isEmpty()) return
 

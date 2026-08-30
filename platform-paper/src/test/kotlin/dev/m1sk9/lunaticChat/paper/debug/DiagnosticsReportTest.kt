@@ -13,8 +13,13 @@ import dev.m1sk9.lunaticChat.paper.velocity.VelocityConnectionManager
 import io.mockk.every
 import io.mockk.mockk
 import org.bukkit.plugin.Plugin
+import org.junit.jupiter.api.io.TempDir
+import java.nio.file.Path
 import java.util.UUID
+import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.readText
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -104,6 +109,29 @@ class DiagnosticsReportTest {
         assertFalse(rendered.contains(playerId.toString()), rendered)
         assertFalse(rendered.contains(channel.id), rendered)
         assertFalse(rendered.contains(channel.name), rendered)
+    }
+
+    @Test
+    fun `a second dump in the same second does not replace the first`(
+        @TempDir directory: Path,
+    ) {
+        // Reproducing a bug means dumping either side of the step that triggers it, and the file
+        // name is only accurate to the second.
+        val report =
+            DiagnosticsReport(
+                plugin = mockk<Plugin>(relaxed = true),
+                configuration = TestUtils.createTestConfiguration(),
+                services = services,
+                debugState = DebugState(),
+                directory = directory,
+            )
+
+        val first = report.write()
+        val second = report.write()
+
+        assertEquals(2, directory.listDirectoryEntries().size)
+        assertTrue(first.readText().contains("LunaticChat diagnostics report"))
+        assertTrue(second.readText().contains("LunaticChat diagnostics report"))
     }
 
     @Test

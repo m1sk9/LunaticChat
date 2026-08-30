@@ -32,14 +32,34 @@ class DiagnosticsReport(
         val FILE_TIMESTAMP: DateTimeFormatter =
             DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss").withZone(ZoneOffset.UTC)
         const val NONE = "(none)"
+
+        /** Matches the guard ChannelMessageLogger puts on its own suffix search. */
+        const val MAX_SUFFIX = 1000
     }
 
     /** Writes the report and returns the file it landed in. */
     fun write(): Path {
         Files.createDirectories(directory)
-        val file = directory.resolve("report-${FILE_TIMESTAMP.format(Instant.now())}.txt")
+        val file = unusedFile(FILE_TIMESTAMP.format(Instant.now()))
         file.writeTextAtomically(render())
         return file
+    }
+
+    /**
+     * The report file for [stamp], suffixed if one is already there.
+     *
+     * The name is only accurate to the second, and reproducing a bug means dumping either side of
+     * the step that triggers it - two dumps a moment apart must not leave one file.
+     */
+    private fun unusedFile(stamp: String): Path {
+        val first = directory.resolve("report-$stamp.txt")
+        if (Files.notExists(first)) return first
+
+        for (suffix in 2..MAX_SUFFIX) {
+            val candidate = directory.resolve("report-$stamp-$suffix.txt")
+            if (Files.notExists(candidate)) return candidate
+        }
+        return first
     }
 
     internal fun render(): String =

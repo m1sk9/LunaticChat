@@ -96,6 +96,21 @@ class DebugConfigSerializerTest {
     }
 
     @Test
+    fun `a block may name every category with the same word the switch takes`() {
+        val debug =
+            debugFrom(
+                """
+                debug:
+                  enabled: true
+                  categories: [all]
+                """.trimIndent(),
+            )
+
+        assertEquals(DebugCategory.entries.toSet(), debug.activeCategories)
+        assertEquals(emptyList(), debug.unknownCategories)
+    }
+
+    @Test
     fun `an unknown category is reported without costing the categories beside it`() {
         val debug =
             debugFrom(

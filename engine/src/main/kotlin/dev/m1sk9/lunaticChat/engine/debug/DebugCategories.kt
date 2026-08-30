@@ -19,7 +19,10 @@ object DebugCategories {
         val active: Set<DebugCategory> get() = if (enabled) categories else emptySet()
     }
 
-    private val allWords = setOf("true", "yes", "on", "y", "all")
+    /** The word that stands for every category at once, wherever a category may be named. */
+    const val ALL = "all"
+
+    private val allWords = setOf("true", "yes", "on", "y", ALL)
     private val noneWords = setOf("false", "no", "off", "n", "none")
 
     /**
@@ -48,6 +51,14 @@ object DebugCategories {
             .map { it.trim() }
             .filter { it.isNotEmpty() }
             .forEach { name ->
+                // [ALL] is honoured here as well as in [parse] and /lc debug: an operator who has
+                // read `debug: all` or `/lc debug all on` writes `categories: [all]` next, and
+                // reporting that as an unknown name would leave them with a switch that logs
+                // nothing while saying it is on.
+                if (name.equals(ALL, ignoreCase = true)) {
+                    categories += DebugCategory.entries
+                    return@forEach
+                }
                 val category = DebugCategory.fromKey(name)
                 if (category == null) unknown += name else categories += category
             }

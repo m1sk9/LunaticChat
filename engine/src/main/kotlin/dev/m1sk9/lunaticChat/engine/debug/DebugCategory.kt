@@ -23,6 +23,9 @@ enum class DebugCategory(
     companion object {
         private val byKey = entries.associateBy { it.key }
 
+        /** Every [key], for the "known categories are ..." half of a message about a typo. */
+        val keyList: String = entries.joinToString(", ") { it.key }
+
         /** The category [key] names, or null when no category is spelled that way. */
         fun fromKey(key: String): DebugCategory? = byKey[key.trim().lowercase()]
     }
