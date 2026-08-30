@@ -14,7 +14,9 @@ A Gradle multi-module setup shares `engine` while building and releasing Paper /
 - `platform-velocity` — `version = velocityVersion`. `api(project(":engine"))`. velocity-api as `compileOnly`. Output is **`LunaticChat-<ver>-velocity.jar`** (distinguished by classifier)
 - `dokka` — aggregates engine/paper/velocity and includes the README in the HTML
 
-Both platforms' `processResources` compute `version` / `gitCommitHash` / `channel` from the git short hash and `isNightly`, and token-expand them into `paper-plugin.yml` / `velocity-plugin.json` and `build-info.properties`.
+Both platforms derive their version from `isNightly`: with `-PisNightly=true` the base version gains a `-nightly.<git short hash>` suffix, so a development build is never mistakable for the release of the same base version (`LunaticChat-1.3.0-nightly.44132f3.jar`). Without the flag the version stays the bare `paperVersion` / `velocityVersion`, which is what the release workflows build.
+
+`processResources` then token-expands `version` / `gitCommitHash` / `channel` into `paper-plugin.yml` / `velocity-plugin.json` and `build-info.properties`.
 
 ## Independent versioning
 
@@ -44,7 +46,7 @@ The release target switches based on the tag pattern.
 
 `ci.yaml` runs on push to main / PR / manual dispatch.
 
-- `build_plugin` — ktlintCheck → test + jacocoTestReport → upload to Codecov → nightly shadowJar (`-PisNightly=true`) → retain artifacts
+- `build_plugin` — ktlintCheck → test + jacocoTestReport → upload to Codecov → nightly shadowJar (`-PisNightly=true`) → retain artifacts as `LunaticChat-paper-<sha>` / `LunaticChat-velocity-<sha>` (one per platform, each holding the JAR at the archive root)
 - `build_dokka` / `deploy_dokka` — generate Dokka → deploy to GitHub Pages (main push only)
 - `build_docs` — format/lint/build `website/` with bun → deploy to Cloudflare Workers (wrangler) (main push only)
 

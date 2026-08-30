@@ -68,10 +68,12 @@ Examples:
 EOF
 }
 
+# The version suffix is derived in build.gradle.kts from -PisNightly; passing -Pversion here
+# has no effect, since each module assigns its own version from paperVersion/velocityVersion.
 setup_nightly() {
     SHORT_HASH=$(git rev-parse --short HEAD)
-    GRADLE_EXTRA_ARGS="-Pversion=1.0.0-nightly.${SHORT_HASH} -PisNightly=true"
-    echo "==> Nightly build: 1.0.0-nightly.${SHORT_HASH}"
+    GRADLE_EXTRA_ARGS="-PisNightly=true"
+    echo "==> Nightly build: nightly.${SHORT_HASH}"
 }
 
 ensure_plugin_dir() {

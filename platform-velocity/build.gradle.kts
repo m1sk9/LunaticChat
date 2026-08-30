@@ -4,7 +4,21 @@ plugins {
     id("com.gradleup.shadow")
 }
 
-version = findProperty("velocityVersion")?.toString() ?: "0.0.0"
+val gitCommitHash: String =
+    providers
+        .exec {
+            commandLine("git", "rev-parse", "--short", "HEAD")
+        }.standardOutput
+        .asText
+        .get()
+        .trim()
+
+val isNightly: Boolean = providers.gradleProperty("isNightly").orNull?.toBoolean() ?: false
+
+// Velocity carries no build-info.properties, so the version is the only place a nightly
+// build can announce itself.
+val baseVersion = findProperty("velocityVersion")?.toString() ?: "0.0.0"
+version = if (isNightly) "$baseVersion-nightly.$gitCommitHash" else baseVersion
 
 repositories {
     maven("https://repo.papermc.io/repository/maven-public/") {
@@ -36,16 +50,6 @@ tasks {
     }
 
     processResources {
-        val gitCommitHash =
-            providers
-                .exec {
-                    commandLine("git", "rev-parse", "--short", "HEAD")
-                }.standardOutput
-                .asText
-                .get()
-                .trim()
-
-        val isNightly = providers.gradleProperty("isNightly").orNull?.toBoolean() ?: false
         val props =
             mapOf(
                 "version" to project.version,

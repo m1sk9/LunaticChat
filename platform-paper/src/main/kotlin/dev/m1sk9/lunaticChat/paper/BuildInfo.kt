@@ -19,5 +19,12 @@ object BuildInfo {
 
     val isNightly: Boolean get() = channel == "nightly"
 
-    fun versionWithCommit(): String = "$version ($commitHash)"
+    fun versionWithCommit(): String = formatVersion(version, commitHash)
+
+    // A nightly version already ends with the commit hash, so appending it again would
+    // make the copied version string repeat itself.
+    internal fun formatVersion(
+        version: String,
+        commitHash: String,
+    ): String = if (version.endsWith(commitHash)) version else "$version ($commitHash)"
 }

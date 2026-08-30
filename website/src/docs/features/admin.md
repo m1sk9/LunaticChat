@@ -72,6 +72,7 @@ checkForUpdates: true
 
 Builds produced from the `main` branch outside of a release are marked as nightly, and the plugin says so rather than letting it go unnoticed.
 
+- The version carries a `-nightly.<commit hash>` suffix (`1.3.0-nightly.44132f3`), so the JAR file name, `/plugins` and `/lc status` all tell it apart from the 1.3.0 release
 - Every player is warned on join that the build may be unstable, along with a pointer to GitHub Issues
 - `/lc status` shows the same warning, and displays the release channel in yellow instead of green
 
