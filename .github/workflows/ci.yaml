@@ -81,12 +81,15 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: build_dokka
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     permissions:
       pages: write
       id-token: write
+    # A superseded docs deploy is worth discarding: keeping it (cancel-in-progress: false)
+    # let one stuck job hold the "pages" group and stall every later main run behind it.
     concurrency:
       group: "pages"
-      cancel-in-progress: false
+      cancel-in-progress: true
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
