@@ -5,6 +5,13 @@
 ### v1.4.0
 
 - Supports reloading configurations while the system is running. Except certain settings, changes can be applied immediately.
+- We have enhanced the debug functionality. You can now toggle individual features, and the displayed logs have also been improved.
+- Added `/lc debug`. Debugging features can now be controlled without restarting.
+- Added `/lc dump`. Diagnostic reports for plugins can now be generated.
+
+#### Velocity: v1.3.0
+
+- Debugging functionality has been implemented in Velocity. It can be controlled by switching environment variables.
 
 ### v1.3.0
 
