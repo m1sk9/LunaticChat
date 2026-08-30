@@ -22,6 +22,26 @@ Displayed information:
 - Configuration values (debug mode, update checking, language)
 - Links to GitHub, Modrinth, and documentation
 
+## Configuration Reload (`/lc reload`) <Badge type="tip" text="v1.4.0~" />
+
+Re-read `config.yml` without restarting the server.
+
+```
+/lc reload
+```
+
+Only the [`messageFormat`](/docs/reference/message-format) settings are applied. Everything else in `config.yml` decides something the plugin settles at startup, so the command lists the changed settings that still need a restart instead of pretending they took effect.
+
+```
+[LC] Reloaded config.yml, but some of the changes need a server restart to take effect.
+```
+
+The reply says only whether what you edited is in effect. Which settings moved is written to the server log.
+
+- **Permission**: `lunaticchat.command.lc.reload` (default: op). Usable from the console and RCON
+- A `config.yml` the plugin cannot read in full is refused: every unreadable setting is named at once and the running configuration is kept. This is stricter than startup, which falls a single unreadable setting back to its default so the server can come up
+- Every reload is written to the server log, so a format change can be dated later. The file is read off the main thread, and an RCON session closes before the reply reaches it, so RCON callers read the outcome from the log rather than from the command output
+
 ## Spy Mode
 
 Players with the `lunaticchat.spy` permission (default: op) can view both the direct messages and the channel messages sent on the server.

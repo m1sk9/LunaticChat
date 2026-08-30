@@ -23,7 +23,7 @@ paper 側は「Bukkit / Folia という現実」を吸収するアダプタと�
 
 `onEnable` の流れは次の通りです．
 
-1. `saveDefaultConfig()` → `ConfigManager` で `LunaticChatConfiguration` を生成
+1. `saveDefaultConfig()` → `ConfigManager` で `LunaticChatConfiguration` を生成し，`MessageFormatHolder` と `ConfigurationReloader` を構築
 2. `HttpClient(CIO)` と `PluginCoroutineScope` を初期化
 3. `ServiceInitializer.initialize()` → `ServiceContainer` を受け取る
 4. コマンドから使う公開プロパティへサービスを移し替え
@@ -146,6 +146,9 @@ config フラグ
 
 - `ConfigManager` — `config.yml` を **KAML** で `LunaticChatConfiguration` にデシリアライズする．デフォルト値の定義箇所をデータクラス 1 箇所に限定するためで，以前のドット記法の手組みマッパーは同じデフォルトを二重に持っており，実際に乖離していた (`checkForUpdates` が `config.yml` とデータクラスの双方と食い違い，`messageLogging` ブロックはドキュメント化されていながら一度も読まれていなかった)
 - 失敗はファイル単位ではなく設定単位で処理する．`YamlException` が出た場合は該当キーをドキュメントから取り除いてデコードを再試行するため，読めない値 1 つの影響はその値だけに留まる．全体をデフォルトに落とすのは「YAML として成立していない」場合だけで，いずれのケースも `onEnable` の外へ例外を投げない
+- `ConfigManager.loadStrictly` — `/lc reload` が使う読み取り経路．pruning ループは `loadConfiguration` と共有するが，結果の解釈が逆で，1 つでも pruning が発生した時点でファイル全体を拒否し，読み取れなかった設定をまとめて報告する．設定を含まないドキュメントも拒否する．コメントのみのファイルと書き込み途中のファイルを見分けられず，それを理由に全フォーマットをリセットするのは何もしないより悪いため
+- `MessageFormatHolder` — 設定のうち唯一実行時に差し替わる部分．`LunaticChatConfiguration` より意図的に狭く，この型を受け取ることが「値が変わりうる」，`LunaticChatConfiguration` を受け取ることが「起動時に凍結された」というシグナルになる．設定全体を holder に入れると，差し替わるのは `messageFormat` だけであるため，どのバージョンのファイルとも一致しないツリーができてしまう
+- `ConfigurationReloader` — ファイルを読み直して holder を差し替える．各設定を「適用済み」(`MessageFormatConfig` から leaf 単位) と「再起動が必要」(データクラスの `equals` に乗せた block 単位) に分類し，`memberProperties` を走査するテストが，どちらの表にも載っていない設定が `config.yml` に増えた時点で失敗する．2 つのリストは比較基準が異なり，適用済みは現在有効なフォーマットとの差分，再起動が必要は実際にサーバーが起動した設定との差分である．`messageFormat` 以外を適用できないのは，Paper がコマンドを `COMMANDS` ライフサイクルイベントでしか登録できず，Bukkit にリスナーの解除手段がなく，キャッシュ保存タスクがキャンセル用のハンドルを保持していないため
 - `LenientBoolean` — `yes` / `no` / `on` / `off` も受け付けるシリアライザ付きの `Boolean` typealias．Bukkit は `config.yml` を YAML 1.1 として読んでいたためこれらは真偽値だったが，kaml が読む YAML 1.2 では単なる文字列であり，黙ってリセットすると `checkForUpdates: no` がデフォルトの逆の値に反転してしまう
 - 機能デフォルト: `quickReplies=true`, `japaneseConversion=false`, `channelChat=false`, `velocityIntegration=false`
 - `config/key` 以下に `FeaturesConfig` / `ChannelChatFeatureConfig` / `JapaneseConversionFeatureConfig` / `VelocityIntegrationConfig` / `QuickRepliesFeatureConfig` / `MessageFormatConfig` / `ChannelMessageLoggingConfig`

@@ -4,6 +4,7 @@ import dev.m1sk9.lunaticChat.engine.protocol.PluginMessage
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageChannel
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageCodec
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
+import dev.m1sk9.lunaticChat.paper.config.MessageFormatHolder
 import dev.m1sk9.lunaticChat.paper.i18n.withChatPlaceholders
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
@@ -24,6 +25,7 @@ class CrossServerChatManager(
     private val plugin: Plugin,
     private val logger: Logger,
     private val configuration: LunaticChatConfiguration,
+    private val messageFormats: MessageFormatHolder,
     private val cacheSize: Int = 100,
 ) {
     private val processedMessages = MessageDeduplicationCache(cacheSize, logger, "global chat")
@@ -125,7 +127,7 @@ class CrossServerChatManager(
      * @return Formatted Component
      */
     private fun formatCrossServerMessage(message: PluginMessage.GlobalChatMessage): Component {
-        val format = configuration.messageFormat.crossServerGlobalChatFormat
+        val format = messageFormats.current.crossServerGlobalChatFormat
         val formattedText =
             format.withChatPlaceholders(
                 "server" to message.serverName,

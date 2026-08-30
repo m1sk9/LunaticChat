@@ -6,6 +6,8 @@ layout: doc
 
 You can customize the display format of chat messages in the `messageFormat` section of `config.yml`.
 
+These are the only settings `/lc reload` <Badge type="tip" text="v1.4.0~" /> applies without a restart; every other section of `config.yml` is fixed when the server starts. See [Applying Changes](/docs/configuration#applying-changes).
+
 ## Placeholders
 
 | Placeholder | Description | Available formats |

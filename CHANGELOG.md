@@ -2,6 +2,10 @@
 
 ## v1
 
+### v1.4.0
+
+- Supports reloading configurations while the system is running. Except certain settings, changes can be applied immediately.
+
 ### v1.3.0
 
 - Paper 26.2 (Minecraft 26.2) is now supported.

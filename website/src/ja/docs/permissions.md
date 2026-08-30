@@ -48,3 +48,4 @@ LunaticChat のすべてのパーミッションノードの一覧です．
 | `lunaticchat.noticeupdate` | op | アップデート通知の受信 |
 | `lunaticchat.channelbypass` | op | チャンネル制限のバイパス(キック・BAN 保護，強制削除) |
 | `lunaticchat.command.lcv.status` | op | `/lcv status` コマンドの使用 |
+| `lunaticchat.command.lc.reload` | op | `/lc reload` コマンドの使用 |

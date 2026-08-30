@@ -48,3 +48,4 @@ The following permissions are granted to OPs only by default.
 | `lunaticchat.noticeupdate` | op | Receive update notifications |
 | `lunaticchat.channelbypass` | op | Bypass channel restrictions (kick/ban protection, force deletion) |
 | `lunaticchat.command.lcv.status` | op | Use the `/lcv status` command |
+| `lunaticchat.command.lc.reload` | op | Use the `/lc reload` command |
