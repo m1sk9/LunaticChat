@@ -7,6 +7,8 @@ import com.velocitypowered.api.event.proxy.ProxyShutdownEvent
 import com.velocitypowered.api.plugin.Plugin
 import com.velocitypowered.api.plugin.PluginContainer
 import com.velocitypowered.api.proxy.ProxyServer
+import dev.m1sk9.lunaticChat.velocity.debug.Slf4jDebugLogger
+import dev.m1sk9.lunaticChat.velocity.debug.VelocityDebugSwitch
 import dev.m1sk9.lunaticChat.velocity.messaging.CrossServerChatRelay
 import dev.m1sk9.lunaticChat.velocity.messaging.CrossServerDirectMessageRelay
 import dev.m1sk9.lunaticChat.velocity.messaging.PluginMessageHandler
@@ -45,6 +47,8 @@ class LunaticChat
         fun onProxyInitialization(event: ProxyInitializeEvent) {
             logger.info("Initializing LunaticChat Velocity plugin")
 
+            val debug = Slf4jDebugLogger(logger, VelocityDebugSwitch.read(logger))
+
             // Get plugin version from velocity-plugin.json (via PluginContainer)
             val pluginVersion =
                 pluginContainer.description.version.orElseThrow {
@@ -56,6 +60,7 @@ class LunaticChat
                 CrossServerChatRelay(
                     server = server,
                     logger = logger,
+                    debug = debug,
                 )
 
             // Initialize cross-server direct message relay
@@ -63,6 +68,7 @@ class LunaticChat
                 CrossServerDirectMessageRelay(
                     server = server,
                     logger = logger,
+                    debug = debug,
                 )
 
             // Initialize presence tracker
@@ -71,6 +77,7 @@ class LunaticChat
                     plugin = this@LunaticChat,
                     server = server,
                     logger = logger,
+                    debug = debug,
                 )
             presenceTracker?.initialize()
 
@@ -80,6 +87,7 @@ class LunaticChat
                     plugin = this@LunaticChat,
                     server = server,
                     logger = logger,
+                    debug = debug,
                     pluginVersion = pluginVersion,
                     crossServerChatRelay = crossServerChatRelay!!,
                     crossServerDirectMessageRelay = crossServerDirectMessageRelay!!,

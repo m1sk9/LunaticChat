@@ -15,6 +15,10 @@ services:
       VELOCITY_VERSION: "${VELOCITY_VERSION:?run via ./x}"
       MEMORY: "512M"
       ONLINE_MODE: "false"
+      # LunaticChat のデバッグログ．プロキシ側には設定ファイルがないため，環境変数か
+      # -Dlunaticchat.debug=... で指定する．カテゴリは config, chat, channel, conversion,
+      # protocol, velocity, storage, command．true ですべて．
+      # LUNATICCHAT_DEBUG: "velocity,protocol"
     depends_on:
       s1:
         condition: service_healthy

@@ -5,6 +5,8 @@ import com.velocitypowered.api.event.connection.PluginMessageEvent
 import com.velocitypowered.api.proxy.ProxyServer
 import com.velocitypowered.api.proxy.ServerConnection
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier
+import dev.m1sk9.lunaticChat.engine.debug.DebugCategory
+import dev.m1sk9.lunaticChat.engine.debug.DebugLogger
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessage
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageChannel
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageCodec
@@ -25,6 +27,7 @@ class PluginMessageHandler(
     private val plugin: Any,
     private val server: ProxyServer,
     private val logger: Logger,
+    private val debug: DebugLogger = DebugLogger.Disabled,
     private val pluginVersion: String,
     private val crossServerChatRelay: CrossServerChatRelay,
     private val crossServerDirectMessageRelay: CrossServerDirectMessageRelay,
@@ -57,6 +60,9 @@ class PluginMessageHandler(
         }
 
         try {
+            debug.log(DebugCategory.PROTOCOL) {
+                "Received ${event.data.size} bytes from ${source.serverInfo.name}"
+            }
             when (val message = PluginMessageCodec.decode(event.data)) {
                 is PluginMessage.Handshake -> {
                     handleHandshake(source, message)
@@ -78,6 +84,9 @@ class PluginMessageHandler(
                 }
             }
         } catch (e: Exception) {
+            debug.log(DebugCategory.PROTOCOL) {
+                "Undecodable message from ${source.serverInfo.name}, first bytes: ${event.data.take(16).toHex()}"
+            }
             logger.error("Failed to decode plugin message: ${e.message}", e)
         }
     }
@@ -89,10 +98,10 @@ class PluginMessageHandler(
         connection: ServerConnection,
         handshake: PluginMessage.Handshake,
     ) {
-        logger.info(
+        debug.log(DebugCategory.VELOCITY) {
             "Received handshake from ${connection.serverInfo.name}: " +
-                "Plugin=${handshake.pluginVersion}, Protocol=${handshake.protocolMajor}.${handshake.protocolMinor}.${handshake.protocolPatch}",
-        )
+                "Plugin=${handshake.pluginVersion}, Protocol=${handshake.protocolMajor}.${handshake.protocolMinor}.${handshake.protocolPatch}"
+        }
 
         // Protocol version check (MAJOR must match, MINOR within supported range)
         val protocolCompatible =
@@ -100,6 +109,16 @@ class PluginMessageHandler(
                 handshake.protocolMajor,
                 handshake.protocolMinor,
             )
+        // Spelled out rather than left to the caller to infer from the two version strings: which
+        // half of the rule failed is the whole answer when a rolling upgrade stops relaying.
+        debug.log(DebugCategory.VELOCITY) {
+            "Compatibility check for ${connection.serverInfo.name}: " +
+                "major ${handshake.protocolMajor} == ${ProtocolVersion.MAJOR} is " +
+                "${handshake.protocolMajor == ProtocolVersion.MAJOR}, " +
+                "minor ${handshake.protocolMinor} in " +
+                "${ProtocolVersion.MIN_SUPPORTED_MINOR}..${ProtocolVersion.MINOR} is " +
+                "${handshake.protocolMinor in ProtocolVersion.MIN_SUPPORTED_MINOR..ProtocolVersion.MINOR}"
+        }
         if (!protocolCompatible) {
             val error =
                 "Protocol version incompatible: Paper=${handshake.protocolMajor}.${handshake.protocolMinor}.${handshake.protocolPatch}, " +
@@ -136,10 +155,12 @@ class PluginMessageHandler(
 
         // Send
         connection.sendPluginMessage(CHANNEL, data)
+        debug.log(DebugCategory.PROTOCOL) { "Sent handshake response (${data.size} bytes) to ${connection.serverInfo.name}" }
 
-        if (compatible) {
-            logger.info("Sent successful handshake response to ${connection.serverInfo.name}")
-        } else {
+        // Only the failure stays at INFO or above. Whether a backend connected is one line an
+        // operator needs; the outcome is already reported by handleHandshake, and a proxy with a
+        // dozen backends should not print the same fact twice per server.
+        if (!compatible) {
             logger.warn("Sent failed handshake response to ${connection.serverInfo.name}: $error")
         }
     }
@@ -148,7 +169,7 @@ class PluginMessageHandler(
      * Handles status request
      */
     private fun handleStatusRequest(connection: ServerConnection) {
-        logger.info("Received status request from ${connection.serverInfo.name}")
+        debug.log(DebugCategory.VELOCITY) { "Received status request from ${connection.serverInfo.name}" }
 
         val response =
             PluginMessage.StatusResponse(
@@ -160,7 +181,7 @@ class PluginMessageHandler(
         val data = PluginMessageCodec.encode(response)
         connection.sendPluginMessage(CHANNEL, data)
 
-        logger.info("Sent status response to ${connection.serverInfo.name}")
+        debug.log(DebugCategory.VELOCITY) { "Sent status response to ${connection.serverInfo.name}" }
     }
 
     /**
@@ -170,12 +191,9 @@ class PluginMessageHandler(
         connection: ServerConnection,
         message: PluginMessage.GlobalChatMessage,
     ) {
-        logger.debug(
-            "Received global chat message from {}: messageId={}, player={}",
-            connection.serverInfo.name,
-            message.messageId,
-            message.playerName,
-        )
+        debug.log(DebugCategory.VELOCITY) {
+            "Received global chat message from ${connection.serverInfo.name}: messageId=${message.messageId}"
+        }
 
         crossServerChatRelay.relayGlobalMessage(message, connection.server)
     }
@@ -188,3 +206,6 @@ class PluginMessageHandler(
         logger.info("Plugin message handler unregistered")
     }
 }
+
+/** The leading bytes of an undecodable message, so a wire mismatch can be recognised on sight. */
+private fun List<Byte>.toHex(): String = joinToString(" ") { "%02x".format(it) }

@@ -7,6 +7,8 @@ import com.velocitypowered.api.proxy.Player
 import com.velocitypowered.api.proxy.ProxyServer
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier
 import com.velocitypowered.api.proxy.server.RegisteredServer
+import dev.m1sk9.lunaticChat.engine.debug.DebugCategory
+import dev.m1sk9.lunaticChat.engine.debug.DebugLogger
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessage
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageChannel
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageCodec
@@ -27,6 +29,7 @@ class PresenceTracker(
     private val plugin: Any,
     private val server: ProxyServer,
     private val logger: Logger,
+    private val debug: DebugLogger = DebugLogger.Disabled,
 ) {
     companion object {
         private val CHANNEL = MinecraftChannelIdentifier.create(PluginMessageChannel.NAMESPACE, PluginMessageChannel.NAME)
@@ -45,6 +48,7 @@ class PresenceTracker(
      */
     @Subscribe
     fun onServerPostConnect(event: ServerPostConnectEvent) {
+        debug.log(DebugCategory.VELOCITY) { "Tracking a join or server switch by ${event.player.username}" }
         broadcastSnapshot()
     }
 
@@ -53,6 +57,7 @@ class PresenceTracker(
      */
     @Subscribe
     fun onDisconnect(event: DisconnectEvent) {
+        debug.log(DebugCategory.VELOCITY) { "Tracking a leave by ${event.player.username}" }
         broadcastSnapshot(exclude = event.player)
     }
 
@@ -68,14 +73,21 @@ class PresenceTracker(
      * Sends the current snapshot to a single server (initial sync on request).
      */
     fun sendSnapshotTo(target: RegisteredServer) {
-        val data = PluginMessageCodec.encode(buildSnapshot())
-        target.sendPluginMessage(CHANNEL, data)
+        val snapshot = buildSnapshot()
+        target.sendPluginMessage(CHANNEL, PluginMessageCodec.encode(snapshot))
+        debug.log(DebugCategory.VELOCITY) {
+            "Sent a presence snapshot of ${snapshot.players.size} players to ${target.serverInfo.name}"
+        }
     }
 
     private fun broadcastSnapshot(exclude: Player? = null) {
         try {
-            val data = PluginMessageCodec.encode(buildSnapshot(exclude))
+            val snapshot = buildSnapshot(exclude)
+            val data = PluginMessageCodec.encode(snapshot)
             server.allServers.forEach { it.sendPluginMessage(CHANNEL, data) }
+            debug.log(DebugCategory.VELOCITY) {
+                "Broadcast a presence snapshot of ${snapshot.players.size} players to ${server.allServers.size} servers"
+            }
         } catch (e: Exception) {
             logger.error("Failed to broadcast presence snapshot: ${e.message}", e)
         }
