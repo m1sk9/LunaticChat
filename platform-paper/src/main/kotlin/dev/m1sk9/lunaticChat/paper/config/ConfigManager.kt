@@ -95,7 +95,7 @@ class ConfigManager(
         when (val outcome = parse(contents)) {
             // Not treated as "use the defaults" like the lenient path does: a reload cannot tell a
             // comments-only file apart from one caught mid-write by an editor or an SFTP upload,
-            // and resetting every message format over that is the worse of the two mistakes.
+            // and resetting every message format over that is the worst of the two mistakes.
             is ParseOutcome.Empty -> ConfigLoadResult.InvalidDocument("config.yml holds no settings")
             is ParseOutcome.Undecodable -> ConfigLoadResult.InvalidDocument("${outcome.what}: ${outcome.cause.message}")
             is ParseOutcome.Decoded ->
