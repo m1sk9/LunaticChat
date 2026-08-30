@@ -22,7 +22,8 @@ LunaticChat の設定は `plugins/LunaticChat/config.yml` で管理されます�
 |---|---|---|
 | `messageFormat.*` | はい | — |
 | `features.*` | — | はい |
-| `debug`, `checkForUpdates`, `language`, `userSettingsFilePath` | — | はい |
+| `debug` | はい | — |
+| `checkForUpdates`, `language`, `userSettingsFilePath` | — | はい |
 
 このコマンドはプレイヤーのほかコンソール・RCON からも実行できます．`lunaticchat.command.lc.reload` (デフォルト: op) が必要です．
 
@@ -46,10 +47,76 @@ LunaticChat の設定は `plugins/LunaticChat/config.yml` で管理されます�
 
 | キー | 型 | デフォルト | 説明 |
 |------|------|------------|------|
-| `debug` | Boolean | `false` | デバッグログを有効にする |
+| `debug` | Boolean またはブロック | `false` | デバッグログ．[デバッグログ](#デバッグログ) を参照 |
 | `userSettingsFilePath` | String | `"player-settings.yaml"` | プレイヤー設定ファイルのパス |
 | `checkForUpdates` | Boolean | `true` | 起動時にアップデートを確認する |
 | `language` | String | `"en"` | プラグインの言語 (`en` / `ja`) |
+
+## デバッグログ <Badge type="tip" text="v1.4.0~" />
+
+`debug` は，LunaticChat がサーバーログにどれだけ書き出すかをカテゴリ単位で決めます．カテゴリはプラグイン
+の領域を表すため，チャット経路の計装を入れてもハンドシェイクの問題が埋もれません．
+
+| カテゴリ | 出力する内容 |
+|---|---|
+| `config` | 起動時に読み込んだ設定と，リロードでの差分 |
+| `chat` | メッセージのルーティング判定，クロスサーバーの重複排除ヒット |
+| `channel` | 参加・離脱と，拒否された理由 |
+| `conversion` | ローマ字変換の判定とキャッシュヒット |
+| `protocol` | 送受信のサブチャネル・バイト長・メッセージ ID |
+| `velocity` | ハンドシェイク，接続状態，presence，リレー判定 |
+| `storage` | デバウンス保存，アトミック書き込みとそのサイズ |
+| `command` | 権限拒否とコマンド結果 |
+
+書き方は 3 通りあります．
+
+```yaml
+debug: false                       # 無効 (yes / no / on / off も使用可)
+
+debug: true                        # 全カテゴリ
+
+debug: velocity,protocol           # 指定したカテゴリのみ
+
+debug:
+  enabled: true
+  categories: [velocity, protocol] # 同じ内容をブロックで書く場合
+```
+
+`enabled: false` は，隣に `categories` が書かれていてもそちらより優先されます．そのビルドが知らない
+カテゴリ名は警告として報告され，正しく書かれたカテゴリはそのまま適用されます．
+
+デバッグ行は `[LC/<カテゴリ>]` を前置して `INFO` で出力します．Paper の既定の log4j 設定では `INFO`
+未満が出力されないためです．
+
+### 稼働中のカテゴリ切り替え
+
+```
+/lc debug                     # 現在出力しているカテゴリ
+/lc debug <category> on|off
+/lc debug all on|off
+```
+
+変更されるのは稼働中のサーバーだけで，`config.yml` は書き換えません．再起動または `/lc reload` で
+ファイルの値に戻ります．`lunaticchat.command.lc.debug` (デフォルト: op) が必要です．
+
+### 診断レポート
+
+`/lc dump` は `plugins/LunaticChat/debug/report-<タイムスタンプ>.txt` を書き出し，プラグインフォルダーに出力した旨をチャットに返します．正確なパスはサーバーログにのみ残ります（このコマンドはファイルアクセスを持たない相手にも渡せるためです）．
+レポートにはプラグイン・プロトコル・サーバー・Java の版数，有効な機能，Velocity の接続状態，各ストアの
+件数が含まれます．メッセージ本文・プレイヤー名・UUID は意図的に含めていないため，そのまま bug report に
+貼れます．`lunaticchat.command.lc.dump` (デフォルト: op) が必要です．
+
+**Velocity プロキシ**には設定ファイルがないため，同じ記法をシステムプロパティまたは環境変数から読み取ります．
+
+```
+java -Dlunaticchat.debug=velocity,protocol -jar velocity.jar
+
+LUNATICCHAT_DEBUG=velocity,protocol
+```
+
+システムプロパティが環境変数より優先されます．これをハンドシェイクで伝播させないのは意図的です．プロキシ
+は複数バックエンドの共有物であり，1 台の Paper サーバーが全体のログ量を決めてしまうためです．
+
 
 ## 機能設定 (`features`)
 

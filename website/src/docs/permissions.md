@@ -49,3 +49,5 @@ The following permissions are granted to OPs only by default.
 | `lunaticchat.channelbypass` | op | Bypass channel restrictions (kick/ban protection, force deletion) |
 | `lunaticchat.command.lcv.status` | op | Use the `/lcv status` command |
 | `lunaticchat.command.lc.reload` | op | Use the `/lc reload` command |
+| `lunaticchat.command.lc.debug` | op | Use the `/lc debug` command |
+| `lunaticchat.command.lc.dump` | op | Use the `/lc dump` command |

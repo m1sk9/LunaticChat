@@ -79,6 +79,17 @@ There are two UUID serializers because they serve different purposes. `UUIDSeria
 
 So that Paper and Velocity can handle domain errors as the same types, exceptions are centralized in `engine`. There is no common sealed base — it is a flat structure that directly extends `Exception`. They fall into existence/reference, state, limit, and permission/BAN/KICK categories, and many take `playerId` / `channelId` / `limit` in the constructor and build their own messages. Because there is no base type, callers are expected to catch each individually.
 
+## debug — One switch both platforms read
+
+Debug logging is a contract before it is an implementation: `config.yml` and the proxy's system property must mean the same thing by `velocity,protocol`, and a category added on one side must exist on the other. So the vocabulary lives here and only the writing is left to the platforms.
+
+- `DebugCategory` — the areas that can be logged, each carrying the `key` operators write
+- `DebugCategories.parse` / `resolve` — the one reading of a debug switch, shared by `DebugConfigSerializer` on Paper and `VelocityDebugSwitch` on Velocity. An unknown name is collected rather than thrown, so a typo costs only itself
+- `DebugLogger` — `log(category) { message }`. The lambda is the point: the chat path is instrumented once per message, and while debugging is off the string is never built
+- `DebugState` — the categories currently on, replaceable at runtime by `/lc reload` and `/lc debug`
+
+`JulDebugLogger` (Paper) and `Slf4jDebugLogger` (Velocity) both write at `INFO`, because neither platform's stock logging configuration prints anything below it.
+
 ## permission / command — Neutral abstractions
 
 Permissions and command results are placed in `engine` as neutral representations that can be passed to either the Bukkit or Velocity API.

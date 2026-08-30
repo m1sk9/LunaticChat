@@ -22,7 +22,8 @@ The reply says only whether what you edited is in effect. Which settings moved i
 |---|---|---|
 | `messageFormat.*` | Yes | — |
 | `features.*` | — | Yes |
-| `debug`, `checkForUpdates`, `language`, `userSettingsFilePath` | — | Yes |
+| `debug` | Yes | — |
+| `checkForUpdates`, `language`, `userSettingsFilePath` | — | Yes |
 
 The command is available to the console and RCON as well as to players, and requires `lunaticchat.command.lc.reload` (op by default).
 
@@ -46,10 +47,81 @@ A misspelled **key** is still not detected, by either path — an unknown key is
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| `debug` | Boolean | `false` | Enable debug logging |
+| `debug` | Boolean or block | `false` | Debug logging. See [Debug Logging](#debug-logging) |
 | `userSettingsFilePath` | String | `"player-settings.yaml"` | Path to the player settings file |
 | `checkForUpdates` | Boolean | `true` | Check for updates on startup |
 | `language` | String | `"en"` | Plugin language (`en` / `ja`) |
+
+## Debug Logging <Badge type="tip" text="v1.4.0~" />
+
+`debug` decides how much LunaticChat writes to the server log, by category. A category is an area of
+the plugin, so instrumenting the chat path does not bury a handshake problem.
+
+| Category | What it reports |
+|---|---|
+| `config` | The configuration read at startup, and what a reload changed |
+| `chat` | How each message was routed, and cross-server deduplication hits |
+| `channel` | Joins, leaves and every refusal, with the reason |
+| `conversion` | Romaji conversion decisions and cache hits |
+| `protocol` | Sub-channel, byte length and message ids on the wire |
+| `velocity` | Handshake, connection state, presence and relay decisions |
+| `storage` | Debounced saves, atomic writes and their size |
+| `command` | Permission denials and command results |
+
+Three spellings are accepted:
+
+```yaml
+debug: false                       # off (yes / no / on / off also work)
+
+debug: true                        # every category
+
+debug: velocity,protocol           # only these
+
+debug:
+  enabled: true
+  categories: [velocity, protocol] # the same, as a block
+```
+
+`enabled: false` wins over any `categories` listed beside it. A category name this build does not
+know is reported as a warning and the categories spelled correctly are still applied.
+
+Debug lines are written at `INFO` with a `[LC/<category>]` prefix, because Paper's stock log4j
+configuration does not print anything below `INFO`.
+
+### Switching Categories at Runtime
+
+```
+/lc debug                     # what is logging now
+/lc debug <category> on|off
+/lc debug all on|off
+```
+
+This changes only the running server — `config.yml` is never rewritten, so a restart or `/lc reload`
+puts the value in the file back in charge. Requires `lunaticchat.command.lc.debug` (op by default).
+
+### Diagnostics Report
+
+`/lc dump` writes `plugins/LunaticChat/debug/report-<timestamp>.txt`, and confirms in chat that it
+wrote one to the plugin folder. The exact path is left to the server log, since the command can be
+granted to someone with no filesystem access. The
+report holds the plugin, protocol, server and Java versions, which features are on, the Velocity
+connection state, and how full each store is. It deliberately contains no message text, player name
+or UUID, so it is safe to paste into a bug report. Requires `lunaticchat.command.lc.dump` (op by
+default).
+
+On the **Velocity proxy** there is no configuration file, so the same switch is read from a system
+property or an environment variable:
+
+```
+java -Dlunaticchat.debug=velocity,protocol -jar velocity.jar
+
+LUNATICCHAT_DEBUG=velocity,protocol
+```
+
+The system property wins over the environment variable. This is deliberately not carried over the
+handshake: the proxy is shared by every backend, so one Paper server must not decide how much the
+proxy logs for everyone else.
+
 
 ## Feature Settings (`features`)
 

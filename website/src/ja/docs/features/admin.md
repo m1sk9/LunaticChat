@@ -42,6 +42,44 @@ layout: doc
 - `config.yml` を完全に読み取れない場合は拒否されます．読み取れなかった設定をすべてまとめて表示し，稼働中の設定はそのまま維持されます．読み取れない設定を個別にデフォルトへフォールバックさせて起動を続行する起動時よりも厳格です
 - リロードはサーバーログにも記録されるため，フォーマットを変更した時期をあとから追跡できます．ファイルの読み取りはメインスレッド外で行われ，RCON セッションは応答が届く前に切断されるため，RCON から実行した場合の結果はコマンド出力ではなくログで確認します
 
+## デバッグログ (`/lc debug`) <Badge type="tip" text="v1.4.0~" />
+
+デバッグログは `config`，`chat`，`channel`，`conversion`，`protocol`，`velocity`，`storage`，`command` のカテゴリに分かれています．ハンドシェイクを追うために有効化しても，チャット 1 通あたり 1 行のログでログが埋まることはありません．各カテゴリが何を出力するかは[デバッグログ](/ja/docs/configuration#デバッグログ)を参照してください．
+
+```
+/lc debug                     # 現在出力しているカテゴリ
+/lc debug velocity on
+/lc debug all off
+```
+
+- **パーミッション**: `lunaticchat.command.lc.debug` (デフォルト: op)．コンソール・RCON からも実行可能
+- 変更は `config.yml` に**書き戻されません**．再起動または `/lc reload` でファイルの値に戻るため，切り忘れたカテゴリがセッションを超えて残ることはありません
+- ログ行は `[LC/<カテゴリ>]` を前置して `INFO` で出力されます．Paper の既定の log4j 設定では `INFO` 未満が出力されないためです
+
+Velocity プロキシには `config.yml` がないため，同じ記法を `-Dlunaticchat.debug=velocity,protocol` または環境変数 `LUNATICCHAT_DEBUG` から読み取ります．
+
+## 診断レポート (`/lc dump`) <Badge type="tip" text="v1.4.0~" />
+
+bug report のトリアージに必要な情報を `plugins/LunaticChat/debug/report-<タイムスタンプ>.txt` に書き出し，プラグインフォルダーに出力した旨をチャットに返します．
+
+```
+/lc dump
+```
+
+レポートに含まれる内容:
+
+- LunaticChat の版数とコミット，プロトコル版数
+- サーバー実装・Bukkit API・Java・OS の版数
+- 有効な機能と，このサーバーの `serverName`
+- ログを出力しているデバッグカテゴリ
+- Velocity の接続状態，プロキシ側プラグインの版数，最後のエラー
+- チャンネル数とメンバー総数，変換キャッシュの使用量，プレイヤー設定の件数
+- 導入されているプラグイン一覧
+
+**メッセージ本文・プレイヤー名・UUID は意図的に含めていません**．公開 issue に貼ることを前提とした成果物であるためです．
+
+- **パーミッション**: `lunaticchat.command.lc.dump` (デフォルト: op)．コンソール・RCON からも実行可能
+
 ## スパイモード
 
 `lunaticchat.spy` パーミッション (デフォルト: op) を持つプレイヤーは，サーバー上で送信されるダイレクトメッセージとチャンネルメッセージの両方を閲覧できます．
@@ -77,15 +115,6 @@ checkForUpdates: true
 
 nightly ビルドは[セキュリティポリシー](https://github.com/m1sk9/LunaticChat/blob/main/.github/SECURITY.md)のサポート対象外です．本番サーバーではリリースビルドを使用してください．
 
-## デバッグモード
-
-`debug` を `true` にすると，プラグインの詳細なログが出力されます．問題の調査やバグ報告時に有用です．
-
-```yaml
-# config.yml
-debug: true
-```
-
 ## 言語設定
 
 プレイヤーに表示されるメッセージの言語を切り替えられます．プラグインログやコンソール出力には影響せず，英語のみ出力となります．
@@ -103,3 +132,5 @@ language: "ja"   # "en" または "ja"
 | `lunaticchat.channelbypass` | op | チャンネル制限のバイパス |
 | `lunaticchat.noticeupdate` | op | アップデート通知の受信 |
 | `lunaticchat.command.lcv.status` | op | `/lcv status` コマンドの使用 |
+| `lunaticchat.command.lc.debug` | op | `/lc debug` コマンドの使用 |
+| `lunaticchat.command.lc.dump` | op | `/lc dump` コマンドの使用 |

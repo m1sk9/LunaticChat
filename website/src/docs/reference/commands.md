@@ -44,6 +44,21 @@ Re-reads `config.yml` and applies the `messageFormat` settings, then reports whi
 - **Usable from the console and RCON**
 - A `config.yml` that cannot be read in full is refused, and the running configuration is kept
 
+### `/lc debug [category] [on|off]` <Badge type="tip" text="v1.4.0~" />
+
+Shows which debug categories are logging, or switches one. `all` stands for every category. See [Debug Logging](/docs/configuration#debug-logging).
+
+- **Permission**: `lunaticchat.command.lc.debug` (op by default)
+- **Usable from the console and RCON**
+- The change is not written to `config.yml`; a restart or `/lc reload` puts the file back in charge
+
+### `/lc dump` <Badge type="tip" text="v1.4.0~" />
+
+Writes a diagnostics report to `plugins/LunaticChat/debug/` and confirms it in chat; the exact path is left to the server log. It holds versions, enabled features, connection state and store sizes, and no message text, player name or UUID.
+
+- **Permission**: `lunaticchat.command.lc.dump` (op by default)
+- **Usable from the console and RCON**
+
 ### `/lc settings [key] [on|off]`
 
 Views or changes your personal settings. Without arguments, displays the settings list.
