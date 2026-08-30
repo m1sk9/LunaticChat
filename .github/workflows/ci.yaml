@@ -46,14 +46,22 @@ jobs:
       - name: Build with shadowJar
         run: ./gradlew :platform-paper:shadowJar :platform-velocity:shadowJar -PisNightly=true --parallel --no-daemon
 
-      - name: Upload build artifacts
+      # One artifact per platform: a single glob path makes upload-artifact root the archive
+      # at libs/, so the JAR lands at the top level instead of nested build directories.
+      - name: Upload Paper build artifact
         uses: actions/upload-artifact@v7
         if: success()
         with:
-          name: LunaticChat-${{ github.sha }}
-          path: |
-            platform-paper/build/libs/LunaticChat-*.jar
-            platform-velocity/build/libs/LunaticChat-*-velocity.jar
+          name: LunaticChat-paper-${{ github.sha }}
+          path: platform-paper/build/libs/LunaticChat-*.jar
+          retention-days: 7
+
+      - name: Upload Velocity build artifact
+        uses: actions/upload-artifact@v7
+        if: success()
+        with:
+          name: LunaticChat-velocity-${{ github.sha }}
+          path: platform-velocity/build/libs/LunaticChat-*-velocity.jar
           retention-days: 7
 
   build_dokka:
