@@ -3,6 +3,8 @@ package dev.m1sk9.lunaticChat.velocity.messaging
 import com.velocitypowered.api.proxy.ProxyServer
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier
 import com.velocitypowered.api.proxy.server.RegisteredServer
+import dev.m1sk9.lunaticChat.engine.debug.DebugCategory
+import dev.m1sk9.lunaticChat.engine.debug.DebugLogger
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessage
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageChannel
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageCodec
@@ -18,6 +20,7 @@ import org.slf4j.Logger
 class CrossServerDirectMessageRelay(
     private val server: ProxyServer,
     private val logger: Logger,
+    private val debug: DebugLogger = DebugLogger.Disabled,
 ) {
     companion object {
         private val CHANNEL = MinecraftChannelIdentifier.create(PluginMessageChannel.NAMESPACE, PluginMessageChannel.NAME)
@@ -62,14 +65,10 @@ class CrossServerDirectMessageRelay(
             }
 
             targetServer.sendPluginMessage(CHANNEL, PluginMessageCodec.encode(message))
-            logger.debug(
-                "Relayed direct message from {}@{} to {}@{} (messageId={})",
-                message.senderName,
-                message.sourceServerName,
-                message.targetName,
-                message.targetServerName,
-                message.messageId,
-            )
+            debug.log(DebugCategory.VELOCITY) {
+                "Relayed direct message from ${message.sourceServerName} to ${message.targetServerName} " +
+                    "(messageId=${message.messageId})"
+            }
         } catch (e: Exception) {
             logger.error("Failed to relay direct message: ${e.message}", e)
         }

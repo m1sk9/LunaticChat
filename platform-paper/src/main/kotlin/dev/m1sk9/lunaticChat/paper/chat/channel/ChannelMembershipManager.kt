@@ -1,6 +1,8 @@
 package dev.m1sk9.lunaticChat.paper.chat.channel
 
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelRole
+import dev.m1sk9.lunaticChat.engine.debug.DebugCategory
+import dev.m1sk9.lunaticChat.engine.debug.DebugLogger
 import dev.m1sk9.lunaticChat.engine.exception.ChannelAlreadyActiveException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelCannotInviteSelfException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelMemberAlreadyException
@@ -33,8 +35,27 @@ class ChannelMembershipManager(
     private val channelManager: ChannelManager,
     private val logger: Logger,
     private val config: ChannelChatFeatureConfig,
+    private val debug: DebugLogger = DebugLogger.Disabled,
     private val hasModerationBypass: (UUID) -> Boolean = ::hasChannelBypassPermission,
 ) {
+    /**
+     * Names the refusal in the debug log, leaving the result untouched.
+     *
+     * The successful paths already log at INFO; a refusal only ever reached the player as a chat
+     * message, so nothing in the server log said which of the several checks turned them away.
+     */
+    private fun Result<Unit>.reportRefusal(
+        action: String,
+        playerId: UUID,
+        channelId: String,
+    ): Result<Unit> =
+        also {
+            val failure = exceptionOrNull() ?: return@also
+            debug.log(DebugCategory.CHANNEL) {
+                "Refused $action of $channelId by $playerId: ${failure::class.simpleName}: ${failure.message}"
+            }
+        }
+
     /**
      * Checks if a player is a member of a channel.
      *
@@ -127,6 +148,12 @@ class ChannelMembershipManager(
         playerId: UUID,
         channelId: String,
         bypassPrivateCheck: Boolean = false,
+    ): Result<Unit> = join(playerId, channelId, bypassPrivateCheck).reportRefusal("join", playerId, channelId)
+
+    private fun join(
+        playerId: UUID,
+        channelId: String,
+        bypassPrivateCheck: Boolean,
     ): Result<Unit> {
         // Check if channel exists
         val channel =
@@ -204,7 +231,9 @@ class ChannelMembershipManager(
      * @return Result indicating success or failure.
      * @throws ChannelNotMemberException if the player does not have an active channel.
      */
-    fun leaveChannel(playerId: UUID): Result<Unit> {
+    fun leaveChannel(playerId: UUID): Result<Unit> = leave(playerId).reportRefusal("leave", playerId, "the active channel")
+
+    private fun leave(playerId: UUID): Result<Unit> {
         val currentChannel =
             channelManager.getPlayerChannel(playerId)
                 ?: return Result.failure(
@@ -232,6 +261,11 @@ class ChannelMembershipManager(
      * @throws ChannelNotMemberException if the player is not a member of the channel.
      */
     fun switchChannel(
+        playerId: UUID,
+        channelId: String,
+    ): Result<Unit> = switchTo(playerId, channelId).reportRefusal("switch", playerId, channelId)
+
+    private fun switchTo(
         playerId: UUID,
         channelId: String,
     ): Result<Unit> {
@@ -285,9 +319,9 @@ class ChannelMembershipManager(
         channelId: String,
     ): Result<Unit> {
         if (hasModerationBypass(targetId)) {
-            return Result.failure(ChannelPlayerBypassBanException(targetId, channelId))
+            return Result.failure<Unit>(ChannelPlayerBypassBanException(targetId, channelId)).reportRefusal("ban", targetId, channelId)
         }
-        return channelManager.banPlayer(channelId, targetId).map { }
+        return channelManager.banPlayer(channelId, targetId).map { }.reportRefusal("ban", targetId, channelId)
     }
 
     /**
@@ -301,9 +335,9 @@ class ChannelMembershipManager(
         channelId: String,
     ): Result<Unit> {
         if (hasModerationBypass(targetId)) {
-            return Result.failure(ChannelPlayerBypassKickException(targetId, channelId))
+            return Result.failure<Unit>(ChannelPlayerBypassKickException(targetId, channelId)).reportRefusal("kick", targetId, channelId)
         }
-        return channelManager.removeMember(channelId, targetId)
+        return channelManager.removeMember(channelId, targetId).reportRefusal("kick", targetId, channelId)
     }
 
     /**
@@ -318,7 +352,7 @@ class ChannelMembershipManager(
         channelId: String,
     ): Result<Unit> {
         if (actorId == targetId) {
-            return Result.failure(ChannelCannotInviteSelfException(actorId))
+            return Result.failure<Unit>(ChannelCannotInviteSelfException(actorId)).reportRefusal("invite", actorId, channelId)
         }
         return joinChannel(targetId, channelId, bypassPrivateCheck = true)
     }

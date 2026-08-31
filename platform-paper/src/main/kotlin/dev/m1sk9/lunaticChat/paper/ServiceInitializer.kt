@@ -1,5 +1,7 @@
 package dev.m1sk9.lunaticChat.paper
 
+import dev.m1sk9.lunaticChat.engine.debug.DebugCategory
+import dev.m1sk9.lunaticChat.engine.debug.DebugLogger
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMembershipManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMessageLogger
@@ -55,6 +57,7 @@ class ServiceInitializer(
     private val messageFormats: MessageFormatHolder,
     private val httpClient: Lazy<HttpClient>,
     private val logger: Logger,
+    private val debug: DebugLogger = DebugLogger.Disabled,
 ) {
     private val handshakeCompleted = AtomicBoolean(false)
 
@@ -64,7 +67,7 @@ class ServiceInitializer(
         }
 
     /** A store for [relativePath] under the plugin's data folder, with its own debounced saver. */
-    private fun fileStore(relativePath: String) = FileStore(plugin.dataFolder.resolve(relativePath).toPath(), asyncScheduler, logger)
+    private fun fileStore(relativePath: String) = FileStore(plugin.dataFolder.resolve(relativePath).toPath(), asyncScheduler, logger, debug)
 
     private companion object {
         /** Matches the value documented in config.yml. */
@@ -222,7 +225,7 @@ class ServiceInitializer(
                 cache = cache,
                 apiClient = apiClient,
                 logger = logger,
-                debugMode = configuration.debug,
+                debug = debug,
             )
 
         logger.info("Japanese conversion feature enabled.")
@@ -254,6 +257,7 @@ class ServiceInitializer(
             ChannelMembershipManager(
                 channelManager = manager,
                 logger = logger,
+                debug = debug,
                 config = configuration.features.channelChat,
             )
 
@@ -264,9 +268,8 @@ class ServiceInitializer(
                 ChannelMessageLogger(
                     logsDirectory = logsDir,
                     plugin = plugin,
-                    logger =
-                        io.ktor.util.logging
-                            .KtorSimpleLogger("ChannelMessageLogger"),
+                    logger = logger,
+                    debug = debug,
                     maxFileSizeBytes = configuration.features.channelChat.messageLogging.maxFileSizeMB * 1024L * 1024L,
                     retentionDays = configuration.features.channelChat.messageLogging.retentionDays,
                 ).also {
@@ -285,9 +288,7 @@ class ServiceInitializer(
                 channelManager = manager,
                 languageManager = languageManager,
                 messageLogger = messageLogger,
-                logger =
-                    io.ktor.util.logging
-                        .KtorSimpleLogger("ChannelMessageHandler"),
+                debug = debug,
             )
 
         val notificationHandler =
@@ -319,6 +320,7 @@ class ServiceInitializer(
                 plugin = plugin,
                 pluginVersion = pluginVersion,
                 logger = logger,
+                debug = debug,
             )
         manager.initialize()
 
@@ -329,6 +331,9 @@ class ServiceInitializer(
                 fun onPlayerJoin(event: PlayerJoinEvent) {
                     // Only perform handshake once
                     if (!handshakeCompleted.getAndSet(true)) {
+                        debug.log(DebugCategory.VELOCITY) {
+                            "First player joined (${event.player.name}); scheduling the handshake in 1 second"
+                        }
                         // Schedule handshake 1 second after first player joins
                         plugin.server.asyncScheduler.runDelayed(
                             plugin,
@@ -359,6 +364,7 @@ class ServiceInitializer(
             CrossServerChatManager(
                 plugin = plugin,
                 logger = logger,
+                debug = debug,
                 configuration = configuration,
                 messageFormats = messageFormats,
                 cacheSize = configuration.features.velocityIntegration.messageDeduplicationCacheSize,
@@ -390,6 +396,7 @@ class ServiceInitializer(
             CrossServerDirectMessageManager(
                 plugin = plugin,
                 logger = logger,
+                debug = debug,
                 configuration = configuration,
                 directMessageHandler = directMessageHandler,
                 languageManager = languageManager,
@@ -417,6 +424,7 @@ class ServiceInitializer(
                         logger.info("Velocity handshake successful with version ${result.velocityVersion}")
                     }
                     is VelocityConnectionManager.HandshakeResult.Error -> {
+                        debug.log(DebugCategory.VELOCITY) { "Handshake failed while the connection was ${manager.getState()}" }
                         logger.severe("Velocity handshake failed: ${result.message}")
                         logger.severe("Velocity integration is disabled. Use /lcv status to check the status.")
                     }

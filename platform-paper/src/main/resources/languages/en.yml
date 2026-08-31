@@ -84,6 +84,23 @@ reload:
   # The closing line shared by all three failures above.
   previousKept: "The configuration the server started with is still in use."
 
+debug:
+  # /lc debug changes only the running server. config.yml is never rewritten, so a restart or
+  # /lc reload puts the value in the file back in charge.
+  list: "Debug categories currently logging: {categories}"
+  none: "none"
+  enabled: "Debug category '{category}' is now logging."
+  disabled: "Debug category '{category}' is no longer logging."
+  unknownCategory: "Unknown debug category '{category}'. Available: {categories}"
+
+dump:
+  # Names the folder rather than the path. /lc dump can be granted to someone with no filesystem
+  # access, to whom the layout is not something they can act on; the exact path is in the server
+  # log, which only someone with that access can read anyway.
+  success: "Wrote a diagnostics report to the plugin folder."
+  # The reason a report could not be written is left to the server log; see DumpCommand.
+  failed: "Could not write the diagnostics report. See the server log for the reason."
+
 channel:
   help:
     header: "--- Channel Commands ---"

@@ -13,6 +13,8 @@ class LunaticChatPermissionNodeTest {
             LunaticChatPermissionNode.Settings,
             LunaticChatPermissionNode.Status,
             LunaticChatPermissionNode.Reload,
+            LunaticChatPermissionNode.Debug,
+            LunaticChatPermissionNode.Dump,
             LunaticChatPermissionNode.Channel,
             LunaticChatPermissionNode.ChannelCreate,
             LunaticChatPermissionNode.ChannelList,
@@ -45,8 +47,8 @@ class LunaticChatPermissionNodeTest {
     }
 
     @Test
-    fun `should have 25 permission nodes`() {
-        assertEquals(25, allNodes.size)
+    fun `should have 27 permission nodes`() {
+        assertEquals(27, allNodes.size)
     }
 
     @Test
@@ -56,6 +58,8 @@ class LunaticChatPermissionNodeTest {
         assertEquals("lunaticchat.command.reply", LunaticChatPermissionNode.Reply.permissionNode)
         assertEquals("lunaticchat.command.lc.settings", LunaticChatPermissionNode.Settings.permissionNode)
         assertEquals("lunaticchat.command.lc.reload", LunaticChatPermissionNode.Reload.permissionNode)
+        assertEquals("lunaticchat.command.lc.debug", LunaticChatPermissionNode.Debug.permissionNode)
+        assertEquals("lunaticchat.command.lc.dump", LunaticChatPermissionNode.Dump.permissionNode)
         assertEquals("lunaticchat.command.lc.channel.create", LunaticChatPermissionNode.ChannelCreate.permissionNode)
         assertEquals("lunaticchat.command.lcv.status", LunaticChatPermissionNode.VelocityStatus.permissionNode)
         assertEquals("lunaticchat.spy", LunaticChatPermissionNode.Spy.permissionNode)

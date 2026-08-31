@@ -1,7 +1,10 @@
 package dev.m1sk9.lunaticChat.paper.config
 
 import com.charleskorn.kaml.Yaml
+import dev.m1sk9.lunaticChat.engine.debug.DebugCategory
+import dev.m1sk9.lunaticChat.engine.debug.DebugState
 import dev.m1sk9.lunaticChat.paper.TestUtils
+import dev.m1sk9.lunaticChat.paper.config.key.DebugConfig
 import dev.m1sk9.lunaticChat.paper.config.key.FeaturesConfig
 import dev.m1sk9.lunaticChat.paper.config.key.MessageFormatConfig
 import kotlin.reflect.full.memberProperties
@@ -14,6 +17,7 @@ import kotlin.test.assertTrue
 class ConfigurationReloaderTest {
     private val startup = TestUtils.createTestConfiguration()
     private val holder = MessageFormatHolder(startup.messageFormat)
+    private val debugState = DebugState(startup.debug.activeCategories)
     private val logger = TestUtils.TestLogger()
 
     private fun reloaderReading(contents: () -> String) =
@@ -21,6 +25,7 @@ class ConfigurationReloaderTest {
             configManager = ConfigManager(logger),
             startupConfiguration = startup,
             messageFormatHolder = holder,
+            debugState = debugState,
             logger = logger,
             readConfigFile = contents,
         )
@@ -93,11 +98,37 @@ class ConfigurationReloaderTest {
 
     @Test
     fun `an unreadable setting leaves the running formats alone`() {
-        val result = reloaderReading { "debug: maybe" }.reload()
+        val result = reloaderReading { "checkForUpdates: maybe" }.reload()
 
         assertIs<ReloadResult.InvalidSettings>(result)
-        assertEquals(listOf("debug"), result.fallbacks.map { it.settingKey })
+        assertEquals(listOf("checkForUpdates"), result.fallbacks.map { it.settingKey })
         assertEquals(startup.messageFormat, holder.current)
+    }
+
+    @Test
+    fun `a changed debug switch is applied and needs no restart`() {
+        val result =
+            reloaderReading {
+                fileFor { copy(debug = DebugConfig(enabled = true, categories = setOf(DebugCategory.VELOCITY))) }
+            }.reload()
+
+        assertIs<ReloadResult.Applied>(result)
+        assertEquals(listOf("debug"), result.applied)
+        assertEquals(emptyList(), result.restartRequired)
+        assertEquals(setOf(DebugCategory.VELOCITY), debugState.enabled)
+    }
+
+    @Test
+    fun `a reload puts the file back in charge of a switch that lc debug had moved`() {
+        // /lc debug is deliberately volatile, so an unchanged file is still a change to apply when
+        // the running server has been switched by hand since it was read.
+        debugState.replace(setOf(DebugCategory.CHAT))
+
+        val result = reloaderReading { fileFor { this } }.reload()
+
+        assertIs<ReloadResult.Applied>(result)
+        assertEquals(listOf("debug"), result.applied)
+        assertEquals(emptySet(), debugState.enabled)
     }
 
     @Test
@@ -176,7 +207,8 @@ class ConfigurationReloaderTest {
             LunaticChatConfiguration::class
                 .memberProperties
                 .map { it.name }
-                .filterNot { it == "features" || it == "messageFormat" }
+                // debug is applied rather than refused; the two tests above cover it.
+                .filterNot { it == "features" || it == "messageFormat" || it == "debug" }
                 .sorted(),
             ConfigurationReloader.RESTART_REQUIRED
                 .map { it.first }

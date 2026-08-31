@@ -22,6 +22,9 @@ class PlayerSettingsManager(
     private val settings = ConcurrentHashMap<UUID, PlayerChatSettings>()
     private val dirty = AtomicBoolean(false)
 
+    /** How many players have stored settings, for `/lc dump`. Who they are never leaves this class. */
+    val trackedPlayerCount: Int get() = settings.size
+
     // Written back unchanged: nothing migrates on it yet, but rewriting the file must not
     // silently relabel a schema this build does not understand.
     private var schemaVersion = PlayerSettingsData().version

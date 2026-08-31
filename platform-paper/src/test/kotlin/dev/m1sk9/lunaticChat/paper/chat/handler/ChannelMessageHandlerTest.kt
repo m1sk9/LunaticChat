@@ -2,6 +2,7 @@ package dev.m1sk9.lunaticChat.paper.chat.handler
 
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelContext
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelMessageLogEntry
+import dev.m1sk9.lunaticChat.engine.debug.DebugLogger
 import dev.m1sk9.lunaticChat.paper.TestUtils
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMessageLogger
@@ -9,7 +10,6 @@ import dev.m1sk9.lunaticChat.paper.common.SoundCollector
 import dev.m1sk9.lunaticChat.paper.config.key.MessageFormatConfig
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
-import io.ktor.util.logging.Logger
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -37,7 +37,6 @@ class ChannelMessageHandlerTest {
     private val messageFormats = TestUtils.createTestMessageFormats()
     private val channelManager = mockk<ChannelManager>(relaxed = true)
     private val languageManager = mockk<LanguageManager>(relaxed = true)
-    private val logger = mockk<Logger>(relaxed = true)
 
     private val sender = TestUtils.createMockPlayer(uuid = senderId, name = "Alice")
     private val member = TestUtils.createMockPlayer(uuid = memberId, name = "Bob")
@@ -67,7 +66,7 @@ class ChannelMessageHandlerTest {
     private fun handler(
         settingsManager: PlayerSettingsManager? = null,
         messageLogger: ChannelMessageLogger? = null,
-    ) = ChannelMessageHandler(messageFormats, settingsManager, channelManager, languageManager, messageLogger, logger)
+    ) = ChannelMessageHandler(messageFormats, settingsManager, channelManager, languageManager, messageLogger, DebugLogger.Disabled)
 
     @Test
     fun `a player with no active channel is not handled`() {

@@ -1,6 +1,7 @@
 package dev.m1sk9.lunaticChat.paper.command.impl.lc
 
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
+import dev.m1sk9.lunaticChat.engine.debug.DebugState
 import dev.m1sk9.lunaticChat.paper.BuildInfo
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.TestUtils
@@ -32,7 +33,7 @@ class StatusCommandTest {
         val ctx = mockk<CommandContext>(relaxed = true)
         every { ctx.requirePlayer() } returns mockPlayer
 
-        val command = StatusCommand(plugin, languageManager, configuration)
+        val command = StatusCommand(plugin, languageManager, configuration, DebugState())
         return TestDeps(command, ctx, plugin, languageManager, configuration, mockPlayer)
     }
 

@@ -1,6 +1,8 @@
 package dev.m1sk9.lunaticChat.paper.chat.handler
 
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelMessageLogEntry
+import dev.m1sk9.lunaticChat.engine.debug.DebugCategory
+import dev.m1sk9.lunaticChat.engine.debug.DebugLogger
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMessageLogger
 import dev.m1sk9.lunaticChat.paper.common.SpyPermissionManager
@@ -10,7 +12,6 @@ import dev.m1sk9.lunaticChat.paper.config.MessageFormatHolder
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.withChatPlaceholders
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
-import io.ktor.util.logging.Logger
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
@@ -21,7 +22,7 @@ class ChannelMessageHandler(
     private val channelManager: ChannelManager,
     private val languageManager: LanguageManager,
     private val messageLogger: ChannelMessageLogger?,
-    private val logger: Logger,
+    private val debug: DebugLogger,
 ) {
     fun sendChannelMessage(
         player: Player,
@@ -66,7 +67,9 @@ class ChannelMessageHandler(
             }
         }
 
-        logger.debug("Channel Message from {} in {}: {}", player.name, context.channel.name, message)
+        debug.log(DebugCategory.CHANNEL) {
+            "Delivered a message from ${player.name} to ${context.members.size} members of ${context.channel.name}"
+        }
 
         // Log message to file if logging is enabled
         messageLogger?.let {

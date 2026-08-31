@@ -3,6 +3,7 @@ package dev.m1sk9.lunaticChat.paper.chat.handler
 import dev.m1sk9.lunaticChat.engine.protocol.PresenceEntry
 import dev.m1sk9.lunaticChat.paper.TestUtils
 import dev.m1sk9.lunaticChat.paper.config.MessageFormatHolder
+import dev.m1sk9.lunaticChat.paper.config.key.DebugConfig
 import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
@@ -116,7 +117,7 @@ class DirectMessageHandlerTest {
 
     @Test
     fun `handler can be created with injected configuration`() {
-        val config = TestUtils.createTestConfiguration(debug = true)
+        val config = TestUtils.createTestConfiguration(debug = DebugConfig(enabled = true))
         val languageManager = mockk<LanguageManager>(relaxed = true)
         val handler = DirectMessageHandler(MessageFormatHolder(config.messageFormat), null, null, languageManager)
 

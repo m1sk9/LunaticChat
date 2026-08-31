@@ -1,5 +1,7 @@
 package dev.m1sk9.lunaticChat.paper.config
 
+import dev.m1sk9.lunaticChat.engine.debug.DebugCategory
+import dev.m1sk9.lunaticChat.engine.debug.DebugState
 import dev.m1sk9.lunaticChat.paper.config.key.MessageFormatConfig
 import java.util.logging.Logger
 
@@ -32,8 +34,8 @@ sealed interface ReloadResult {
 /**
  * Re-reads config.yml and applies what can be applied without restarting the server.
  *
- * Only [MessageFormatConfig] is applied. Everything else in config.yml decides something that is
- * settled once, at startup: which services exist, which commands and listeners are registered,
+ * Only [MessageFormatConfig] and the debug switch are applied. Everything else in config.yml decides
+ * something that is settled once, at startup: which services exist, which commands and listeners are registered,
  * which files are opened. Paper registers commands only through its `COMMANDS` lifecycle event,
  * Bukkit offers no way to unregister a listener that was registered for a plugin, and the cache
  * saver retains no task handle to cancel - so rebuilding the services would leave the old ones
@@ -44,6 +46,7 @@ class ConfigurationReloader(
     private val configManager: ConfigManager,
     private val startupConfiguration: LunaticChatConfiguration,
     private val messageFormatHolder: MessageFormatHolder,
+    private val debugState: DebugState,
     private val logger: Logger,
     private val readConfigFile: () -> String,
 ) {
@@ -63,6 +66,14 @@ class ConfigurationReloader(
             )
 
         /**
+         * The debug switch, applied alongside [APPLIED] but not listed in it.
+         *
+         * It is read from [LunaticChatConfiguration] rather than [MessageFormatConfig] and lands in
+         * a [DebugState] rather than the format holder, so it cannot share that table's signature.
+         */
+        internal const val DEBUG = "debug"
+
+        /**
          * The settings a reload cannot apply, by block.
          *
          * Blocks rather than leaves: the comparison rides on the data class equals, so a leaf added
@@ -74,7 +85,6 @@ class ConfigurationReloader(
                 "features.japaneseConversion" to { it: LunaticChatConfiguration -> it.features.japaneseConversion },
                 "features.channelChat" to { it: LunaticChatConfiguration -> it.features.channelChat },
                 "features.velocityIntegration" to { it: LunaticChatConfiguration -> it.features.velocityIntegration },
-                "debug" to { it: LunaticChatConfiguration -> it.debug },
                 "userSettingsFilePath" to { it: LunaticChatConfiguration -> it.userSettingsFilePath },
                 "checkForUpdates" to { it: LunaticChatConfiguration -> it.checkForUpdates },
                 "language" to { it: LunaticChatConfiguration -> it.language },
@@ -118,10 +128,22 @@ class ConfigurationReloader(
         // is new relative to the formats currently in effect, which an earlier reload may already
         // have moved; what needs a restart is new relative to what the server actually started on,
         // which no reload can move.
-        val applied = APPLIED.filter { (_, read) -> read(messageFormatHolder.current) != read(incoming.messageFormat) }.map { it.first }
+        val applied =
+            buildList {
+                addAll(APPLIED.filter { (_, read) -> read(messageFormatHolder.current) != read(incoming.messageFormat) }.map { it.first })
+                // Measured against the categories in effect, which /lc debug may have moved since
+                // startup: a reload puts the file's value back, and that is a change worth naming.
+                if (debugState.enabled != incoming.debug.activeCategories) add(DEBUG)
+            }
         val restartRequired = RESTART_REQUIRED.filter { (_, read) -> read(startupConfiguration) != read(incoming) }.map { it.first }
 
+        // Worded exactly as the startup warning is: an operator comparing a reload against a
+        // restart must not have to work out whether two different messages mean the same thing.
+        incoming.debug.unknownCategories.forEach { name ->
+            logger.warning("Unknown debug category in config.yml: '$name'. Known categories: ${DebugCategory.keyList}")
+        }
         messageFormatHolder.replace(incoming.messageFormat)
+        debugState.replace(incoming.debug.activeCategories)
 
         // Logged as well as reported to the sender, so a format change can still be dated from the
         // server log long after the chat message that announced it has scrolled away.

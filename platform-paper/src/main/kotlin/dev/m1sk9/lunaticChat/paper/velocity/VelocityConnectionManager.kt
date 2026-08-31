@@ -1,5 +1,7 @@
 package dev.m1sk9.lunaticChat.paper.velocity
 
+import dev.m1sk9.lunaticChat.engine.debug.DebugCategory
+import dev.m1sk9.lunaticChat.engine.debug.DebugLogger
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessage
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageChannel
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageCodec
@@ -18,6 +20,7 @@ class VelocityConnectionManager(
     private val plugin: Plugin,
     private val pluginVersion: String,
     private val logger: Logger,
+    private val debug: DebugLogger = DebugLogger.Disabled,
     private var crossServerChatManager: CrossServerChatManager? = null,
     private var crossServerDirectMessageManager: CrossServerDirectMessageManager? = null,
     private var remotePlayerRegistry: RemotePlayerRegistry? = null,
@@ -52,6 +55,12 @@ class VelocityConnectionManager(
     }
 
     private var state: ConnectionState = ConnectionState.DISCONNECTED
+        set(value) {
+            // Assigned through a setter so every transition is reported once, rather than at each of
+            // the seven places that move the state.
+            if (field != value) debug.log(DebugCategory.VELOCITY) { "Connection state $field -> $value" }
+            field = value
+        }
     private var handshakeFuture: CompletableFuture<HandshakeResult>? = null
     private var statusFuture: CompletableFuture<PluginMessage.StatusResponse>? = null
     private var velocityVersion: String? = null
@@ -121,12 +130,14 @@ class VelocityConnectionManager(
         player.sendPluginMessage(plugin, CHANNEL, data)
 
         logger.info("Sending handshake to Velocity (Plugin: $pluginVersion, Protocol: ${ProtocolVersion.version})")
+        debug.log(DebugCategory.PROTOCOL) { "Sent handshake (${data.size} bytes) through ${player.name}" }
 
         // Timeout handling
         plugin.server.scheduler.runTaskLater(
             plugin,
             Runnable {
                 if (state == ConnectionState.HANDSHAKING) {
+                    debug.log(DebugCategory.VELOCITY) { "No handshake response within ${HANDSHAKE_TIMEOUT_SECONDS}s" }
                     state = ConnectionState.FAILED
                     lastError = "Handshake timeout (${HANDSHAKE_TIMEOUT_SECONDS}s)"
                     logger.warning("Handshake timeout - Velocity plugin may not be installed")
@@ -193,6 +204,7 @@ class VelocityConnectionManager(
         if (channel != CHANNEL) return
 
         try {
+            debug.log(DebugCategory.PROTOCOL) { "Received ${message.size} bytes from Velocity" }
             when (val pluginMessage = PluginMessageCodec.decode(message)) {
                 is PluginMessage.HandshakeResponse -> handleHandshakeResponse(pluginMessage)
                 is PluginMessage.StatusResponse -> handleStatusResponse(pluginMessage)
@@ -203,6 +215,7 @@ class VelocityConnectionManager(
                 else -> logger.warning("Unexpected message type: ${pluginMessage::class.simpleName}")
             }
         } catch (e: Exception) {
+            debug.log(DebugCategory.PROTOCOL) { "Undecodable message, first bytes: ${message.take(16).toHex()}" }
             logger.severe("Failed to decode plugin message: ${e.message}")
             e.printStackTrace()
         }
@@ -291,7 +304,15 @@ class VelocityConnectionManager(
      * Handles a proxy-wide presence snapshot from Velocity
      */
     private fun handlePresenceSnapshot(message: PluginMessage.PresenceSnapshot) {
-        remotePlayerRegistry?.replaceAll(message.players)
+        val registry = remotePlayerRegistry
+        debug.log(DebugCategory.VELOCITY) {
+            if (registry == null) {
+                "Discarded a presence snapshot of ${message.players.size} players: cross-server direct messages are off"
+            } else {
+                "Applied a presence snapshot of ${message.players.size} players"
+            }
+        }
+        registry?.replaceAll(message.players)
     }
 
     /**
@@ -303,6 +324,7 @@ class VelocityConnectionManager(
         val data = PluginMessageCodec.encode(PluginMessage.PresenceRequest)
         player.sendPluginMessage(plugin, CHANNEL, data)
         logger.info("Requested initial presence snapshot from Velocity")
+        debug.log(DebugCategory.VELOCITY) { "Presence requested through ${player.name}" }
     }
 
     /**
@@ -335,3 +357,6 @@ class VelocityConnectionManager(
      */
     fun getLastError(): String? = lastError
 }
+
+/** The leading bytes of an undecodable message, so a wire mismatch can be recognised on sight. */
+private fun List<Byte>.toHex(): String = joinToString(" ") { "%02x".format(it) }

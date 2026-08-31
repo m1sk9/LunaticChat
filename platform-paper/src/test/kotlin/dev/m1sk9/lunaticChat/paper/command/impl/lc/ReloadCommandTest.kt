@@ -2,6 +2,7 @@ package dev.m1sk9.lunaticChat.paper.command.impl.lc
 
 import com.charleskorn.kaml.Yaml
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
+import dev.m1sk9.lunaticChat.engine.debug.DebugState
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.TestUtils
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
@@ -38,6 +39,7 @@ class ReloadCommandTest {
                     configManager = ConfigManager(TestUtils.TestLogger()),
                     startupConfiguration = startup,
                     messageFormatHolder = holder,
+                    debugState = DebugState(startup.debug.activeCategories),
                     logger = TestUtils.TestLogger(),
                     readConfigFile = contents,
                 ),
@@ -101,7 +103,7 @@ class ReloadCommandTest {
         // send them hunting for a typo they had not made.
         val result =
             commandReading {
-                Yaml.default.encodeToString(LunaticChatConfiguration.serializer(), startup.copy(debug = !startup.debug))
+                Yaml.default.encodeToString(LunaticChatConfiguration.serializer(), startup.copy(checkForUpdates = !startup.checkForUpdates))
             }.execute(consoleContext())
 
         assertIs<CommandResult.SuccessWithMessage>(result)
@@ -123,7 +125,7 @@ class ReloadCommandTest {
     fun `an unreadable setting fails the command and names the setting`() {
         val ctx = consoleContext()
 
-        val result = commandReading { "debug: maybe" }.execute(ctx)
+        val result = commandReading { "checkForUpdates: maybe" }.execute(ctx)
 
         assertIs<CommandResult.Failure>(result)
         assertEquals("reload.previousKept", result.message)

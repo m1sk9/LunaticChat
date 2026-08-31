@@ -1,5 +1,7 @@
 package dev.m1sk9.lunaticChat.paper.listener
 
+import dev.m1sk9.lunaticChat.engine.debug.DebugCategory
+import dev.m1sk9.lunaticChat.engine.debug.DebugLogger
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelMessageHandler
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
@@ -21,6 +23,7 @@ class PlayerChatListener(
     private val settingsManager: PlayerSettingsManager,
     private val configuration: LunaticChatConfiguration,
     private val crossServerChatManager: CrossServerChatManager?,
+    private val debug: DebugLogger = DebugLogger.Disabled,
 ) : Listener {
     private val plainTextSerializer = PlainTextComponentSerializer.plainText()
 
@@ -34,6 +37,11 @@ class PlayerChatListener(
     ) {
         val velocityIntegrationEnabled = configuration.features.velocityIntegration.enabled
         val crossServerChatEnabled = configuration.features.velocityIntegration.crossServerGlobalChat
+
+        debug.log(DebugCategory.CHAT) {
+            val relayed = velocityIntegrationEnabled && crossServerChatEnabled && crossServerChatManager != null
+            "Routing ${event.player.name} to global chat (relayed across servers: $relayed)"
+        }
 
         if (velocityIntegrationEnabled && crossServerChatEnabled && crossServerChatManager != null) {
             // Send to Velocity for cross-server broadcast
@@ -68,6 +76,7 @@ class PlayerChatListener(
             }
 
         if (hasPrefix && messageWithoutPrefix.isEmpty()) {
+            debug.log(DebugCategory.CHAT) { "Cancelled a bare '!' from ${player.name}" }
             event.isCancelled = true
             return
         }
@@ -85,6 +94,9 @@ class PlayerChatListener(
         when {
             hasActiveChannel && !hasPrefix -> {
                 // Channel chat: player is in a channel and no '!' prefix
+                debug.log(DebugCategory.CHAT) {
+                    "Routing ${player.name} to their active channel (handler present: ${channelMessageHandler != null})"
+                }
                 if (channelMessageHandler != null) {
                     event.isCancelled = true
                     event.viewers().clear()

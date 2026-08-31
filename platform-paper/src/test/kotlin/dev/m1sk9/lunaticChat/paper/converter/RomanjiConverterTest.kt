@@ -1,7 +1,11 @@
 package dev.m1sk9.lunaticChat.paper.converter
 
+import dev.m1sk9.lunaticChat.engine.debug.DebugCategory
+import dev.m1sk9.lunaticChat.engine.debug.DebugLogger
+import dev.m1sk9.lunaticChat.engine.debug.DebugState
 import dev.m1sk9.lunaticChat.paper.TestUtils
 import dev.m1sk9.lunaticChat.paper.converter.GoogleIMEClient
+import dev.m1sk9.lunaticChat.paper.debug.JulDebugLogger
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -36,7 +40,9 @@ class RomanjiConverterTest {
 
         every { cache.get(any()) } returns null
 
-        val converter = RomanjiConverter(cache, apiClient, logger, debugMode)
+        val debug =
+            if (debugMode) JulDebugLogger(logger, DebugState(DebugCategory.entries.toSet())) else DebugLogger.Disabled
+        val converter = RomanjiConverter(cache, apiClient, logger, debug)
         return Triple(converter, cache, apiClient)
     }
 

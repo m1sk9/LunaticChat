@@ -2,6 +2,7 @@ package dev.m1sk9.lunaticChat.paper.command.core
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
+import dev.m1sk9.lunaticChat.engine.debug.DebugCategory
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
@@ -68,6 +69,7 @@ abstract class LunaticCommandBase(
         ctx: CommandContext,
         result: CommandResult,
     ): Int {
+        plugin.debug.log(DebugCategory.COMMAND) { "${this::class.simpleName} for ${ctx.sender.name} returned $result" }
         when (result) {
             is CommandResult.Success -> {}
             is CommandResult.SuccessWithMessage -> ctx.reply(MessageFormatter.format(result.message))

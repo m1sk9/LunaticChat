@@ -1,5 +1,7 @@
 package dev.m1sk9.lunaticChat.paper.velocity
 
+import dev.m1sk9.lunaticChat.engine.debug.DebugCategory
+import dev.m1sk9.lunaticChat.engine.debug.DebugLogger
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessage
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageChannel
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageCodec
@@ -25,6 +27,7 @@ import java.util.logging.Logger
 class CrossServerDirectMessageManager(
     private val plugin: Plugin,
     private val logger: Logger,
+    private val debug: DebugLogger = DebugLogger.Disabled,
     private val configuration: LunaticChatConfiguration,
     private val directMessageHandler: DirectMessageHandler,
     private val languageManager: LanguageManager,
@@ -74,7 +77,7 @@ class CrossServerDirectMessageManager(
             )
 
         sender.sendPluginMessage(plugin, PluginMessageChannel.ID, PluginMessageCodec.encode(relay))
-        logger.fine {
+        debug.log(DebugCategory.CHAT) {
             "Sent direct message to Velocity: messageId=$messageId, " +
                 "target=$targetName@$targetServerName"
         }
@@ -86,7 +89,7 @@ class CrossServerDirectMessageManager(
     fun handleIncomingMessage(message: PluginMessage.DirectMessageRelay) {
         try {
             if (!processedMessages.isNew(message.messageId)) {
-                logger.fine("Ignoring duplicate direct message: messageId=${message.messageId}")
+                debug.log(DebugCategory.CHAT) { "Deduplication hit, ignoring direct messageId=${message.messageId}" }
                 return
             }
             processedMessages.markProcessed(message.messageId)

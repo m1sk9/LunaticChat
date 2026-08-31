@@ -61,3 +61,7 @@ permissions:
     default: op
   lunaticchat.command.lc.reload:
     default: op
+  lunaticchat.command.lc.debug:
+    default: op
+  lunaticchat.command.lc.dump:
+    default: op

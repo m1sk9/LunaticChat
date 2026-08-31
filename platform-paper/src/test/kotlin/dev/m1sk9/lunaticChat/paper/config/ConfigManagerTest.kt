@@ -42,7 +42,7 @@ class ConfigManagerTest {
     fun `a config missing a section keeps that section's defaults`() {
         val config = load("debug: true")
 
-        assertTrue(config.debug)
+        assertTrue(config.debug.enabled)
         assertEquals(LunaticChatConfiguration().features, config.features)
         assertEquals(LunaticChatConfiguration().messageFormat, config.messageFormat)
     }
@@ -59,7 +59,7 @@ class ConfigManagerTest {
                 """.trimIndent(),
             )
 
-        assertTrue(config.debug)
+        assertTrue(config.debug.enabled)
         assertFalse(config.checkForUpdates)
         assertEquals("custom.yaml", config.userSettingsFilePath)
         assertEquals(Language.JA, config.language)
@@ -167,7 +167,7 @@ class ConfigManagerTest {
         // An operator upgrading from a build that had extra keys must still be able to start.
         val config = load("debug: true\nsomeRetiredOption: 42")
 
-        assertTrue(config.debug)
+        assertTrue(config.debug.enabled)
     }
 
     @Test
@@ -195,7 +195,7 @@ class ConfigManagerTest {
 
     @Test
     fun `a leading byte order mark does not cost the first setting`() {
-        assertTrue(load("\uFEFFdebug: true").debug)
+        assertTrue(load("\uFEFFdebug: true").debug.enabled)
     }
 
     @Test
@@ -214,13 +214,13 @@ class ConfigManagerTest {
         // must keep meaning what it says.
         val config = load("debug: yes\ncheckForUpdates: off")
 
-        assertTrue(config.debug)
+        assertTrue(config.debug.enabled)
         assertFalse(config.checkForUpdates)
     }
 
     @Test
     fun `boolean spellings are matched regardless of case`() {
-        assertTrue(load("debug: YES").debug)
+        assertTrue(load("debug: YES").debug.enabled)
     }
 
     @Test
@@ -230,16 +230,16 @@ class ConfigManagerTest {
         val config =
             ConfigManager(logger).loadConfiguration(
                 """
-                debug: perhaps
+                checkForUpdates: perhaps
                 userSettingsFilePath: "custom.yaml"
                 language: "ja"
                 """.trimIndent(),
             )
 
-        assertFalse(config.debug)
+        assertTrue(config.checkForUpdates)
         assertEquals("custom.yaml", config.userSettingsFilePath)
         assertEquals(Language.JA, config.language)
-        assertTrue(logger.warningMessages.any { it.contains("debug") })
+        assertTrue(logger.warningMessages.any { it.contains("checkForUpdates") })
         assertTrue(logger.severeMessages.isEmpty())
     }
 
@@ -273,14 +273,16 @@ class ConfigManagerTest {
         val config =
             load(
                 """
-                debug: perhaps
                 checkForUpdates: sometimes
                 userSettingsFilePath: "custom.yaml"
+                features:
+                  quickReplies:
+                    enabled: perhaps
                 """.trimIndent(),
             )
 
-        assertFalse(config.debug)
         assertTrue(config.checkForUpdates)
+        assertTrue(config.features.quickReplies.enabled)
         assertEquals("custom.yaml", config.userSettingsFilePath)
     }
 
@@ -294,10 +296,10 @@ class ConfigManagerTest {
 
     @Test
     fun `the strict reading names the setting it could not read`() {
-        val result = loadStrictly("debug: maybe")
+        val result = loadStrictly("checkForUpdates: maybe")
 
         assertIs<ConfigLoadResult.InvalidSettings>(result)
-        assertEquals(listOf("debug"), result.fallbacks.map { it.settingKey })
+        assertEquals(listOf("checkForUpdates"), result.fallbacks.map { it.settingKey })
         assertTrue(
             result.fallbacks
                 .single()
@@ -311,8 +313,8 @@ class ConfigManagerTest {
         val result =
             loadStrictly(
                 """
-                debug: maybe
                 checkForUpdates: perhaps
+                userSettingsFilePath: [not a path]
                 features:
                   channelChat:
                     enabled: sometimes
@@ -321,7 +323,7 @@ class ConfigManagerTest {
 
         assertIs<ConfigLoadResult.InvalidSettings>(result)
         assertEquals(
-            listOf("debug", "checkForUpdates", "features.channelChat.enabled").sorted(),
+            listOf("userSettingsFilePath", "checkForUpdates", "features.channelChat.enabled").sorted(),
             result.fallbacks.map { it.settingKey }.sorted(),
         )
     }

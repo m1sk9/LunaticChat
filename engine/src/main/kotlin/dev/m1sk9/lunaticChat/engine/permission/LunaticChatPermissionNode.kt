@@ -15,6 +15,10 @@ sealed class LunaticChatPermissionNode(
 
     object Reload : LunaticChatPermissionNode("lunaticchat.command.lc.reload")
 
+    object Debug : LunaticChatPermissionNode("lunaticchat.command.lc.debug")
+
+    object Dump : LunaticChatPermissionNode("lunaticchat.command.lc.dump")
+
     object Channel : LunaticChatPermissionNode("lunaticchat.command.lc.channel")
 
     object ChannelCreate : LunaticChatPermissionNode("lunaticchat.command.lc.channel.create")

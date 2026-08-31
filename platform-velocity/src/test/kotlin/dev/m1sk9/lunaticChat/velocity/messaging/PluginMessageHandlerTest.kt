@@ -12,12 +12,14 @@ import com.velocitypowered.api.proxy.server.ServerInfo
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessage
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageCodec
 import dev.m1sk9.lunaticChat.engine.protocol.ProtocolVersion
+import dev.m1sk9.lunaticChat.velocity.debug.RecordingDebugLogger
 import dev.m1sk9.lunaticChat.velocity.presence.PresenceTracker
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.slf4j.Logger
 import kotlin.test.Test
+import kotlin.test.assertTrue
 
 class PluginMessageHandlerTest {
     private val channel = MinecraftChannelIdentifier.create("lunaticchat", "main")
@@ -28,6 +30,7 @@ class PluginMessageHandlerTest {
         val relay: CrossServerChatRelay,
         val dmRelay: CrossServerDirectMessageRelay,
         val presenceTracker: PresenceTracker,
+        val debug: RecordingDebugLogger,
     )
 
     private fun createHandler(pluginVersion: String = "0.10.0"): Handlers {
@@ -37,9 +40,10 @@ class PluginMessageHandlerTest {
         val relay = mockk<CrossServerChatRelay>(relaxed = true)
         val dmRelay = mockk<CrossServerDirectMessageRelay>(relaxed = true)
         val presenceTracker = mockk<PresenceTracker>(relaxed = true)
+        val debug = RecordingDebugLogger()
 
-        val handler = PluginMessageHandler(plugin, server, logger, pluginVersion, relay, dmRelay, presenceTracker)
-        return Handlers(handler, server, relay, dmRelay, presenceTracker)
+        val handler = PluginMessageHandler(plugin, server, logger, debug, pluginVersion, relay, dmRelay, presenceTracker)
+        return Handlers(handler, server, relay, dmRelay, presenceTracker, debug)
     }
 
     private fun createServerConnection(serverName: String = "lobby"): ServerConnection {
@@ -118,6 +122,34 @@ class PluginMessageHandlerTest {
         handler.onPluginMessage(event)
 
         verify { connection.sendPluginMessage(any<ChannelIdentifier>(), any<ByteArray>()) }
+    }
+
+    @Test
+    fun `an incompatible handshake reports both halves of the rule with their measured values`() {
+        // "Protocol version incompatible" alone leaves the operator comparing two version strings
+        // against a rule they cannot see; which half failed is the whole answer.
+        val handlers = createHandler()
+        val connection = createServerConnection()
+
+        val handshake =
+            PluginMessage.Handshake(
+                pluginVersion = "0.10.0",
+                protocolMajor = ProtocolVersion.MAJOR + 1,
+                protocolMinor = ProtocolVersion.MINOR,
+                protocolPatch = ProtocolVersion.PATCH,
+            )
+        val event = createPluginMessageEvent(connection, mockk(relaxed = true), channel, PluginMessageCodec.encode(handshake))
+
+        handlers.handler.onPluginMessage(event)
+
+        val check = handlers.debug.lines.single { it.startsWith("velocity: Compatibility check") }
+        assertTrue(check.contains("major ${ProtocolVersion.MAJOR + 1} == ${ProtocolVersion.MAJOR} is false"), check)
+        assertTrue(
+            check.contains(
+                "minor ${ProtocolVersion.MINOR} in ${ProtocolVersion.MIN_SUPPORTED_MINOR}..${ProtocolVersion.MINOR} is true",
+            ),
+            check,
+        )
     }
 
     @Test

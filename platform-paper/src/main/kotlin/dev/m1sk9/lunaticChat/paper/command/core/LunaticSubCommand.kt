@@ -37,6 +37,11 @@ abstract class LunaticSubCommand(
     fun buildAll(): List<LiteralArgumentBuilder<CommandSourceStack>> {
         val primary = build()
         permissionNode?.let { node ->
+            // Deliberately not instrumented under the `command` debug category. Brigadier evaluates
+            // this predicate when it builds a command tree to send to a player - on every join and
+            // every updateCommands() - not when someone is refused, so a line here would put one
+            // entry per gated node per player in the log and bury the results the category exists
+            // to show.
             primary.requires { source -> source.sender.hasPermission(node.permissionNode) }
         }
         return withAliases(primary, aliases)

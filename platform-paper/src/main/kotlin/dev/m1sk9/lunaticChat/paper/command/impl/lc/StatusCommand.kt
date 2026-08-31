@@ -2,6 +2,7 @@ package dev.m1sk9.lunaticChat.paper.command.impl.lc
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
+import dev.m1sk9.lunaticChat.engine.debug.DebugState
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.BuildInfo
 import dev.m1sk9.lunaticChat.paper.LunaticChat
@@ -22,6 +23,7 @@ class StatusCommand(
     plugin: LunaticChat,
     override val languageManager: LanguageManager,
     private val configuration: LunaticChatConfiguration,
+    private val debugState: DebugState,
 ) : LunaticSubCommand(plugin) {
     override val literal = "status"
     override val permissionNode = LunaticChatPermissionNode.Status
@@ -124,7 +126,7 @@ class StatusCommand(
                     .text("  ", NamedTextColor.GRAY)
                     .append(Component.text(languageManager.getMessage("status.label.config"), NamedTextColor.GRAY)),
             )
-            sendMessage(getToggleLine(languageManager.getMessage("status.config.debug"), configuration.debug))
+            sendMessage(debugLine())
             sendMessage(getToggleLine(languageManager.getMessage("status.config.checkForUpdates"), configuration.checkForUpdates))
             val channelLabel = languageManager.getMessage("status.channel.${BuildInfo.channel}")
             val channelColor = if (BuildInfo.isNightly) NamedTextColor.YELLOW else NamedTextColor.GREEN
@@ -158,6 +160,19 @@ class StatusCommand(
         }
 
         return CommandResult.Success
+    }
+
+    /**
+     * The debug line, read from the live state rather than the startup configuration: `/lc debug`
+     * and `/lc reload` both move it, and a status that reported the file would then be wrong.
+     */
+    private fun debugLine(): Component {
+        val enabled = debugState.enabled
+        val line = getToggleLine(languageManager.getMessage("status.config.debug"), enabled.isNotEmpty())
+        if (enabled.isEmpty()) return line
+        // The category keys are the spellings config.yml and /lc debug take, so they are shown as
+        // they are written rather than translated.
+        return line.append(Component.text(" (${enabled.joinToString(", ") { it.key }})", NamedTextColor.GRAY))
     }
 
     private fun getToggleLine(

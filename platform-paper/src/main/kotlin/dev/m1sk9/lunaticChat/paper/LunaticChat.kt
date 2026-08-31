@@ -1,5 +1,8 @@
 package dev.m1sk9.lunaticChat.paper
 
+import dev.m1sk9.lunaticChat.engine.debug.DebugCategory
+import dev.m1sk9.lunaticChat.engine.debug.DebugLogger
+import dev.m1sk9.lunaticChat.engine.debug.DebugState
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelMembershipManager
 import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelNotificationHandler
@@ -18,6 +21,8 @@ import dev.m1sk9.lunaticChat.paper.config.ConfigManager
 import dev.m1sk9.lunaticChat.paper.config.ConfigurationReloader
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
 import dev.m1sk9.lunaticChat.paper.config.MessageFormatHolder
+import dev.m1sk9.lunaticChat.paper.debug.DiagnosticsReport
+import dev.m1sk9.lunaticChat.paper.debug.JulDebugLogger
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.listener.EventListenerRegistry
 import dev.m1sk9.lunaticChat.paper.velocity.VelocityConnectionManager
@@ -39,7 +44,12 @@ class LunaticChat :
     val channelNotificationHandler: ChannelNotificationHandler? get() = services.channelNotificationHandler
     val velocityConnectionManager: VelocityConnectionManager? get() = services.velocityConnectionManager
 
+    /** Read by the command layer, which reports permission denials and results under `command`. */
+    val debug: DebugLogger get() = debugLogger
+
     private lateinit var services: ServiceContainer
+    private lateinit var debugState: DebugState
+    private lateinit var debugLogger: DebugLogger
     private lateinit var configuration: LunaticChatConfiguration
     private lateinit var serviceInitializer: ServiceInitializer
     private lateinit var messageFormats: MessageFormatHolder
@@ -69,21 +79,21 @@ class LunaticChat :
         configuration = configManager.loadConfiguration(readConfigFile())
 
         messageFormats = MessageFormatHolder(configuration.messageFormat)
+        debugState = DebugState(configuration.debug.activeCategories)
+        debugLogger = JulDebugLogger(logger, debugState)
         configurationReloader =
             ConfigurationReloader(
                 configManager = configManager,
                 startupConfiguration = configuration,
                 messageFormatHolder = messageFormats,
+                debugState = debugState,
                 logger = logger,
                 // Throws rather than falling back to an empty document like startup does: a reload
                 // that cannot read the file must leave the running configuration alone.
                 readConfigFile = { configFile.readText() },
             )
 
-        if (configuration.debug) {
-            logger.warning("LunaticChat is running in debug mode.")
-            logger.info("Debug: $configuration")
-        }
+        reportDebugSwitch()
 
         // Initialize plugin coroutine scope
         pluginScope = PluginCoroutineScope(logger)
@@ -97,6 +107,7 @@ class LunaticChat :
                 messageFormats = messageFormats,
                 httpClient = httpClient,
                 logger = logger,
+                debug = debugLogger,
             )
         services = serviceInitializer.initialize()
 
@@ -120,6 +131,19 @@ class LunaticChat :
         serviceInitializer.shutdown(services)
         if (httpClient.isInitialized()) httpClient.value.close()
         logger.info("LunaticChat disabled.")
+    }
+
+    /**
+     * Announces which debug categories are on, and names any config.yml asked for that do not exist.
+     */
+    private fun reportDebugSwitch() {
+        configuration.debug.unknownCategories.forEach { name ->
+            logger.warning("Unknown debug category in config.yml: '$name'. Known categories: ${DebugCategory.keyList}")
+        }
+        if (debugState.enabled.isEmpty()) return
+
+        logger.warning("LunaticChat is running in debug mode (${debugState.enabled.joinToString(", ") { it.key }}).")
+        debugLogger.log(DebugCategory.CONFIG) { "Startup configuration: $configuration" }
     }
 
     private val configFile get() = dataFolder.resolve("config.yml")
@@ -167,7 +191,15 @@ class LunaticChat :
                 services.remotePlayerRegistry,
                 configuration.features.velocityIntegration.serverName,
             ),
-            LunaticChatCommand(this, settingHandlerRegistry, services.languageManager, configuration, configurationReloader),
+            LunaticChatCommand(
+                this,
+                settingHandlerRegistry,
+                services.languageManager,
+                configuration,
+                configurationReloader,
+                debugState,
+                DiagnosticsReport(this, configuration, services, debugState),
+            ),
         )
 
         // Conditionally register /reply command if quick replies are enabled
@@ -196,7 +228,7 @@ class LunaticChat :
      * Registers all event listeners.
      */
     private fun registerEventListeners() {
-        EventListenerRegistry.registerAll(this, services, configuration, updateAvailable)
+        EventListenerRegistry.registerAll(this, services, configuration, updateAvailable, debugLogger)
     }
 
     /**
