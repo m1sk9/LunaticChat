@@ -44,6 +44,21 @@ LunaticChat で使用できるすべてのコマンドのリファレンスで�
 - **コンソール・RCON からも実行可能**
 - `config.yml` を完全に読み取れない場合は拒否され，稼働中の設定がそのまま維持されます
 
+### `/lc debug [category] [on|off]` <Badge type="tip" text="v1.4.0~" />
+
+ログを出力しているデバッグカテゴリを表示し，個別に切り替えます．`all` は全カテゴリを指します．[デバッグログ](/ja/docs/configuration#デバッグログ)を参照してください．
+
+- **パーミッション**: `lunaticchat.command.lc.debug` (デフォルト: op)
+- **コンソール・RCON からも実行可能**
+- 変更は `config.yml` に書き戻されません．再起動または `/lc reload` でファイルの値に戻ります
+
+### `/lc dump` <Badge type="tip" text="v1.4.0~" />
+
+診断レポートを `plugins/LunaticChat/debug/` に書き出し，その旨をチャットに返します．正確なパスはサーバーログにのみ残ります．版数・有効な機能・接続状態・各ストアの件数を含み，メッセージ本文・プレイヤー名・UUID は含みません．
+
+- **パーミッション**: `lunaticchat.command.lc.dump` (デフォルト: op)
+- **コンソール・RCON からも実行可能**
+
 ### `/lc settings [key] [on|off]`
 
 プレイヤー個人の設定を確認・変更します．引数なしで設定一覧を表示します．

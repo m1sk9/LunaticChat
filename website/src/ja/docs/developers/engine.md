@@ -81,6 +81,17 @@ UUID シリアライザが 2 つあるのは用途が違うためです．
 
 ドメインエラーを Paper / Velocity 双方で同じ型として扱えるよう，例外を engine に集約しています．共通の封印基底は持たず，`Exception` を直接継承するフラット構造です．存在/参照系・状態系・制限系・権限/BAN・KICK 系に分類でき，多くが `playerId` / `channelId` / `limit` をコンストラクタで受けてメッセージを自前生成します．基底を持たないため，呼び出し側は個別に catch する前提です．
 
+## debug — 両プラットフォームが読む単一のスイッチ
+
+デバッグログは実装よりも先に契約です．`config.yml` とプロキシのシステムプロパティは `velocity,protocol` を同じ意味に解釈しなければならず，片側で増えたカテゴリはもう片側にも存在しなければなりません．そのため語彙を engine に置き，書き出しだけを platform 側に残しています．
+
+- `DebugCategory` — ログを出せる領域．運用者が書く綴りを `key` として持つ
+- `DebugCategories.parse` / `resolve` — デバッグスイッチの唯一の解釈．Paper の `DebugConfigSerializer` と Velocity の `VelocityDebugSwitch` が共有する．未知の名前は例外にせず収集するため，タイポの影響はその名前だけに留まる
+- `DebugLogger` — `log(category) { message }`．lambda であることが要点で，チャット経路は 1 通あたり 1 回計装されるが，無効時は文字列自体が組み立てられない
+- `DebugState` — 現在有効なカテゴリ．`/lc reload` と `/lc debug` が稼働中に差し替える
+
+`JulDebugLogger` (Paper) と `Slf4jDebugLogger` (Velocity) はどちらも `INFO` で出力します．どちらのプラットフォームも，既定のログ設定では `INFO` 未満を出力しないためです．
+
 ## permission / command — 中立抽象
 
 Bukkit / Velocity どちらの API にも渡せる中立表現として，権限とコマンド結果を engine に置いています．

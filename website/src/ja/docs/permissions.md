@@ -49,3 +49,5 @@ LunaticChat のすべてのパーミッションノードの一覧です．
 | `lunaticchat.channelbypass` | op | チャンネル制限のバイパス(キック・BAN 保護，強制削除) |
 | `lunaticchat.command.lcv.status` | op | `/lcv status` コマンドの使用 |
 | `lunaticchat.command.lc.reload` | op | `/lc reload` コマンドの使用 |
+| `lunaticchat.command.lc.debug` | op | `/lc debug` コマンドの使用 |
+| `lunaticchat.command.lc.dump` | op | `/lc dump` コマンドの使用 |

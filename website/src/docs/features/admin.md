@@ -42,6 +42,44 @@ The reply says only whether what you edited is in effect. Which settings moved i
 - A `config.yml` the plugin cannot read in full is refused: every unreadable setting is named at once and the running configuration is kept. This is stricter than startup, which falls a single unreadable setting back to its default so the server can come up
 - Every reload is written to the server log, so a format change can be dated later. The file is read off the main thread, and an RCON session closes before the reply reaches it, so RCON callers read the outcome from the log rather than from the command output
 
+## Debug Logging (`/lc debug`) <Badge type="tip" text="v1.4.0~" />
+
+Debug logging is split into categories — `config`, `chat`, `channel`, `conversion`, `protocol`, `velocity`, `storage`, `command` — so that turning it on to chase a handshake does not bury the log under one line per chat message. See [Debug Logging](/docs/configuration#debug-logging) for what each category reports.
+
+```
+/lc debug                     # what is logging now
+/lc debug velocity on
+/lc debug all off
+```
+
+- **Permission**: `lunaticchat.command.lc.debug` (default: op). Usable from the console and RCON
+- The change is **not** written to `config.yml`. A restart or `/lc reload` puts the value in the file back in charge, so a category left on by accident cannot outlive the session
+- Lines are written at `INFO` with a `[LC/<category>]` prefix, because Paper's stock log4j configuration does not print anything below `INFO`
+
+On a Velocity proxy there is no `config.yml`, so the same switch is read from `-Dlunaticchat.debug=velocity,protocol` or the `LUNATICCHAT_DEBUG` environment variable.
+
+## Diagnostics Report (`/lc dump`) <Badge type="tip" text="v1.4.0~" />
+
+Writes everything a maintainer needs to triage a bug report to `plugins/LunaticChat/debug/report-<timestamp>.txt`, and confirms in chat that it wrote one to the plugin folder.
+
+```
+/lc dump
+```
+
+The report holds:
+
+- LunaticChat version and commit, and the protocol version
+- Server software, Bukkit API, Java and OS versions
+- Which features are enabled, and this server's `serverName`
+- Which debug categories are logging
+- Velocity connection state, proxy plugin version and last error
+- Channel and member counts, conversion cache fill, tracked player settings
+- The installed plugins
+
+It deliberately holds **no message text, player name or UUID** — it is meant to be pasted into a public issue.
+
+- **Permission**: `lunaticchat.command.lc.dump` (default: op). Usable from the console and RCON
+
 ## Spy Mode
 
 Players with the `lunaticchat.spy` permission (default: op) can view both the direct messages and the channel messages sent on the server.
@@ -78,15 +116,6 @@ Builds produced from the `main` branch outside of a release are marked as nightl
 
 Nightly builds are not covered by the [security policy](https://github.com/m1sk9/LunaticChat/blob/main/.github/SECURITY.md); use a release build on a production server.
 
-## Debug Mode
-
-Setting `debug` to `true` enables verbose plugin logging. This is useful for troubleshooting issues or submitting bug reports.
-
-```yaml
-# config.yml
-debug: true
-```
-
 ## Language Setting
 
 You can change the language of messages displayed to players. Plugin logs and console output are not affected and remain in English only.
@@ -104,3 +133,5 @@ language: "ja"   # "en" or "ja"
 | `lunaticchat.channelbypass` | op | Bypass channel restrictions |
 | `lunaticchat.noticeupdate` | op | Receive update notifications |
 | `lunaticchat.command.lcv.status` | op | Use the `/lcv status` command |
+| `lunaticchat.command.lc.debug` | op | Use the `/lc debug` command |
+| `lunaticchat.command.lc.dump` | op | Use the `/lc dump` command |
