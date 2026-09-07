@@ -39,7 +39,7 @@ dependencies {
     implementation("io.ktor:ktor-client-core:3.5.2") // Google IME client, update check
     implementation("io.ktor:ktor-client-cio:3.5.2")
     implementation("com.charleskorn.kaml:kaml:0.104.0") // YAML configuration
-    implementation("org.jetbrains.kotlin:kotlin-reflect:2.4.10") // Annotation processing
+    implementation("org.jetbrains.kotlin:kotlin-reflect:2.4.20") // Annotation processing
 
     // Test dependencies
     testImplementation("io.papermc.paper:paper-api:26.2.build.121-stable")
