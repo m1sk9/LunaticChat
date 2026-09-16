@@ -34,7 +34,7 @@ dependencies {
     api(project(":engine"))
 
     // Paper-specific dependencies
-    compileOnly("io.papermc.paper:paper-api:26.2.build.123-stable")
+    compileOnly("io.papermc.paper:paper-api:26.2.build.124-stable")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
     implementation("io.ktor:ktor-client-core:3.5.2") // Google IME client, update check
     implementation("io.ktor:ktor-client-cio:3.5.2")
@@ -42,7 +42,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:2.4.20") // Annotation processing
 
     // Test dependencies
-    testImplementation("io.papermc.paper:paper-api:26.2.build.123-stable")
+    testImplementation("io.papermc.paper:paper-api:26.2.build.124-stable")
     testImplementation("io.mockk:mockk:1.14.11")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
 }
