@@ -30,17 +30,19 @@ Paper と Velocity は別々のバージョン番号を持ち，独立にリリ�
 
 ## リリースワークフロー
 
-タグのパターンでリリース対象が切り替わります．
+1 つのタグで 1 つのプラットフォームをリリースします．タグのパターンで対象が決まります．
 
 | ワークフロー | トリガタグ | ビルド対象 | バージョン検証 |
 |-------------|-----------|-----------|---------------|
-| `release.yaml` | `v*` | Paper + Velocity 両方 | gradle.properties から両バージョン抽出 |
-| `release-paper.yaml` | `paper/v*` | Paper のみ | タグと `paperVersion` の一致を必須検証 |
-| `release-velocity.yaml` | `velocity/v*` | Velocity のみ | タグと `velocityVersion` の一致を必須検証 |
+| `release-paper.yaml` | `vX.Y.Z` | Paper のみ | タグと `paperVersion` の一致を必須検証 |
+| `release-velocity.yaml` | `velocity/vX.Y.Z` | Velocity のみ | タグと `velocityVersion` の一致を必須検証 |
 
-- 共通フロー: `validate` (既存リリースの重複チェック) → `build` (mise + Gradle setup, `shadowJar`) → `release` (`gh release create --draft` + Modrinth 公開)
-- 個別ワークフロー (paper / velocity) はタグと `gradle.properties` の厳密一致を要求する点が `release.yaml` と異なる
-- Modrinth の game-versions は Paper=`26.2.x` (loader: paper, folia)，Velocity=`1.21.x` + `26.1.x` + `26.2.x` (loader: velocity)
+- 両方を同時に出す場合は 2 つのタグをまとめて push する (`git push origin v1.5.0 velocity/v1.4.0`)．GitHub Release もそれぞれ作られる
+- Paper が接頭辞なしの `vX.Y.Z` を使うのは，配布済みの Paper 版のアップデートチェッカーがこの形式しか解釈できないため
+- v1.5.0 より前は `vX.Y.Z` タグで両方をリリースしていた (`v1.0.0`，`v1.3.0`，`v1.4.0`)．Paper 単独のリリースには `paper/vX.Y.Z` を使ったものもある．これらのタグはそのまま残している
+- どちらのワークフローも共通の `_release.yaml` を呼び出す: `validate` (タグの形式，`gradle.properties` との一致，既存リリースの重複チェック) → `build` (mise + Gradle setup，`shadowJar`) → `release` (`gh release create --draft` + Modrinth 公開)
+- GitHub Release は draft で作られる．Velocity のリリースは `--latest=false` を付けて公開し，リポジトリの Latest が Paper のリリースのままになるようにする
+- Modrinth の game-versions は Paper=`26.2.x` (loader: paper, folia)，Velocity=`1.21.x` + `26.1.x` + `26.2.x` (loader: velocity)．呼び出し側の各ワークフローで指定する
 
 ## CI
 

@@ -32,13 +32,20 @@ Cutting a runtime environment loose — "support for Paper 26.1 has ended", "sup
 
 The plugin for Paper / Folia and the plugin for Velocity are released independently, so their version numbers advance separately. Numbers that do not line up are the normal state of affairs.
 
-Releases are cut with a tag naming the target.
+Each release tag carries exactly one platform.
 
 | Tag | Released target |
 |-----|-----------------|
-| `paper/vX.Y.Z` | The Paper / Folia build only |
-| `velocity/vX.Y.Z` | The Velocity build only |
-| `vX.Y.Z` | Both at once, for a change that affects them both — such as one in the shared `engine` module |
+| `vX.Y.Z` | The Paper / Folia build |
+| `velocity/vX.Y.Z` | The Velocity build |
+
+When both are updated together — for a change in the shared `engine` module, for example — the two tags are released at the same time, each with its own GitHub Release.
+
+::: info Tags before v1.5.0
+
+Up to v1.4.0, a `vX.Y.Z` tag could ship both builds at once (`v1.0.0`, `v1.3.0`, `v1.4.0`), and some Paper-only releases were tagged `paper/vX.Y.Z`. From v1.5.0 onward, `vX.Y.Z` is the Paper / Folia build only.
+
+:::
 
 ### The plugin version does not express compatibility
 

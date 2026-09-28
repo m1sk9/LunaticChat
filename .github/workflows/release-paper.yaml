@@ -3,117 +3,15 @@ name: Release Paper
 on:
   push:
     tags:
-      - 'paper/v*'
+      - 'v*.*.*'
 
 jobs:
-  validate:
-    runs-on: ubuntu-24.04
-    outputs:
-      version: ${{ steps.get_version.outputs.version }}
-      jar_name: ${{ steps.get_version.outputs.jar_name }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Extract version from tag and validate
-        id: get_version
-        run: |
-          TAG_VERSION=${GITHUB_REF#refs/tags/paper/v}
-          GRADLE_VERSION=$(grep '^paperVersion=' gradle.properties | cut -d'=' -f2)
-
-          if [ "$TAG_VERSION" != "$GRADLE_VERSION" ]; then
-            echo "Error: Tag version ($TAG_VERSION) does not match gradle.properties paperVersion ($GRADLE_VERSION)"
-            exit 1
-          fi
-
-          echo "version=$TAG_VERSION" >> $GITHUB_OUTPUT
-          echo "jar_name=LunaticChat-$TAG_VERSION.jar" >> $GITHUB_OUTPUT
-          echo "Version validation passed: $TAG_VERSION"
-
-      - name: Check if release already exists
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          TAG_NAME=${GITHUB_REF#refs/tags/}
-          if gh release view "$TAG_NAME" &> /dev/null; then
-            echo "Error: Release $TAG_NAME already exists"
-            exit 1
-          fi
-          echo "Release validation passed: $TAG_NAME does not exist yet"
-
-  build:
-    runs-on: ubuntu-24.04
-    needs: validate
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Setup Development Environment
-        uses: jdx/mise-action@v4
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v6
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: Build Paper shadowJar
-        run: ./gradlew :platform-paper:shadowJar --no-daemon
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: LunaticChat-paper-v${{ needs.validate.outputs.version }}
-          path: platform-paper/build/libs/${{ needs.validate.outputs.jar_name }}
-          retention-days: 90
-
   release:
-    runs-on: ubuntu-24.04
-    needs: [validate, build]
+    uses: ./.github/workflows/_release.yaml
     permissions:
       contents: write
-    env:
-      MODRINTH_CHANNEL: release
-      MODRINTH_PAPER_GAME_VERSIONS: "26.2.x"
-      MODRINTH_MC_VERSION: "26.2"
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Download build artifact
-        uses: actions/download-artifact@v8
-        with:
-          name: LunaticChat-paper-v${{ needs.validate.outputs.version }}
-          path: platform-paper/build/libs
-
-      - name: Create GitHub Release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          TAG_NAME=${GITHUB_REF#refs/tags/}
-          VERSION=${{ needs.validate.outputs.version }}
-          JAR_NAME=${{ needs.validate.outputs.jar_name }}
-
-          # The notes point at the changelog on the documentation site rather than
-          # repeating it here, so the release notes live in exactly one place.
-          gh release create "$TAG_NAME" \
-            "platform-paper/build/libs/$JAR_NAME" \
-            --title "v${VERSION} (Paper/Folia)" \
-            --draft \
-            --notes "Release notes: [Paper/Folia v${VERSION}](https://lc.m1sk9.dev/changelog/paper/v${VERSION})"
-
-      - name: Publish to Modrinth (Paper/Folia)
-        uses: cloudnode-pro/modrinth-publish@3870f66007063f03fb70118ca9eddbc09a4ba666 # v2
-        with:
-          token: ${{ secrets.MODRINTH_TOKEN }}
-          name: v${{ needs.validate.outputs.version }} (Paper/Folia v${{ env.MODRINTH_MC_VERSION }})
-          project: ${{ secrets.MODRINTH_PROJECT_ID }}
-          version: ${{ needs.validate.outputs.version }}
-          channel: ${{ env.MODRINTH_CHANNEL }}
-          changelog: |-
-            Please refer to the [release notes](https://lc.m1sk9.dev/changelog/paper/v${{ needs.validate.outputs.version }}) for update details.
-          loaders: |-
-            paper
-            folia
-          game-versions: ${{ env.MODRINTH_PAPER_GAME_VERSIONS }}
-          files: platform-paper/build/libs/${{ needs.validate.outputs.jar_name }}
+    with:
+      platform: paper
+      modrinth-game-versions: "26.2.x"
+      modrinth-mc-version: "26.2"
+    secrets: inherit

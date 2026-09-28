@@ -123,11 +123,16 @@ Paper and Velocity have independent versions in `gradle.properties` (`paperVersi
 
 | Tag Pattern | Workflow | Target |
 |-------------|----------|--------|
-| `paper/v1.3.0` | `release-paper.yaml` | Paper/Folia JAR only |
-| `velocity/v1.2.0` | `release-velocity.yaml` | Velocity JAR only |
-| `v1.3.0` | `release.yaml` | Both (e.g. engine changes) |
+| `v1.5.0` | `release-paper.yaml` | Paper/Folia JAR only |
+| `velocity/v1.4.0` | `release-velocity.yaml` | Velocity JAR only |
 
-Use the `release` skill (`.claude/skills/release/SKILL.md`) to run the pre-release checks and propose tags.
+One tag ships one platform; both workflows call the shared `_release.yaml`. To release both, push both tags together. Paper keeps the bare `vX.Y.Z` form because `UpdateChecker` in already-deployed Paper builds only understands it — never move Paper to a prefixed tag. Before v1.5.0, `vX.Y.Z` released both platforms and some Paper releases used `paper/vX.Y.Z`; those tags stay as history.
+
+`CHANGELOG.md` headings map one-to-one onto tags: `### vX.Y.Z` is a Paper release (tag `vX.Y.Z`), `#### Velocity: vA.B.C` under it is a Velocity release shipped alongside it (tag `velocity/vA.B.C`), and a Velocity-only release gets its own `### Velocity: vA.B.C` heading.
+
+Release drafts are published by hand; publish a Velocity release with `gh release edit <tag> --draft=false --latest=false` so the repository's latest release stays the Paper one.
+
+Use the `release-lc` skill (`.claude/skills/release-lc/SKILL.md`) to run the pre-release checks, tag, and watch the rollout through GitHub Releases, Modrinth, and the docs site. Write the site release notes first with `create-release-note`; check Paper↔Velocity compatibility of the current tree with `test-integration`; audit the docs site with `correction-docs`.
 
 ### Protocol Version (`engine/protocol/ProtocolVersion.kt`)
 
