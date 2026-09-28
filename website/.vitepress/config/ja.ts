@@ -120,6 +120,10 @@ export const ja: DefaultTheme.Config = {
             text: 'v1',
             items: [
               {
+                link: '/ja/changelog/paper/v1.5.0',
+                text: 'v1.5.0',
+              },
+              {
                 link: '/ja/changelog/paper/v1.4.0',
                 text: 'v1.4.0',
               },
@@ -137,6 +141,10 @@ export const ja: DefaultTheme.Config = {
           {
             text: 'v1',
             items: [
+              {
+                link: '/ja/changelog/velocity/v1.3.1',
+                text: 'v1.3.1',
+              },
               {
                 link: '/ja/changelog/velocity/v1.3.0',
                 text: 'v1.3.0',
