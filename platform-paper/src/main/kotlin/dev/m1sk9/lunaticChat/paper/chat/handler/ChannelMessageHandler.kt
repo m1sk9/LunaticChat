@@ -13,9 +13,9 @@ import dev.m1sk9.lunaticChat.paper.common.playMessageSendNotification
 import dev.m1sk9.lunaticChat.paper.config.MessageFormatHolder
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.channelMessage
+import dev.m1sk9.lunaticChat.paper.i18n.channelRoleLabel
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 
@@ -98,18 +98,12 @@ class ChannelMessageHandler(
             sender = sender.name,
             channel = context.channel.name,
             channelId = context.channel.id,
-            displayName = LegacyComponentSerializer.legacySection().serialize(sender.displayName()),
+            displayName = sender.displayName(),
             message = message,
             world = sender.world.name,
-            role = roleLabel(context.members.firstOrNull { it.playerId == sender.uniqueId }?.role),
-        )
-
-    private fun roleLabel(role: ChannelRole?): String =
-        languageManager.getMessage(
-            when (role) {
-                ChannelRole.OWNER -> "channel.role.owner"
-                ChannelRole.MODERATOR -> "channel.role.moderator"
-                ChannelRole.MEMBER, null -> "channel.role.member"
+            role = {
+                val role = context.members.firstOrNull { it.playerId == sender.uniqueId }?.role ?: ChannelRole.MEMBER
+                languageManager.channelRoleLabel(role)
             },
         )
 }

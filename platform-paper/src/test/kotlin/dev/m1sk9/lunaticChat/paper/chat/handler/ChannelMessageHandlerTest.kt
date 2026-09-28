@@ -124,7 +124,40 @@ class ChannelMessageHandlerTest {
         handler().sendChannelMessage(owner, "hello")
 
         verify { member.sendMessage(capture(delivered)) }
-        assertEquals("ch-1|§cQueen|world_nether|Owner", LegacyComponentSerializer.legacySection().serialize(delivered.captured))
+        assertEquals("ch-1|§cQueen§r|world_nether|Owner", LegacyComponentSerializer.legacySection().serialize(delivered.captured))
+    }
+
+    @Test
+    fun `a moderator's role renders as the moderator label`() {
+        every { channelManager.getPlayerChannelContext(senderId) } returns
+            ChannelContext(
+                channel = channel,
+                members =
+                    listOf(
+                        TestUtils.createTestChannelMember(channelId = channel.id, playerId = senderId, role = ChannelRole.MODERATOR),
+                        TestUtils.createTestChannelMember(channelId = channel.id, playerId = memberId),
+                    ),
+            )
+        every { languageManager.getMessage("channel.role.moderator") } returns "Moderator"
+        messageFormats.replace(MessageFormatConfig(channelMessageFormat = "{role}"))
+        val delivered = slot<Component>()
+
+        handler().sendChannelMessage(sender, "hello")
+
+        verify { member.sendMessage(capture(delivered)) }
+        assertEquals("Moderator", LegacyComponentSerializer.legacySection().serialize(delivered.captured))
+    }
+
+    @Test
+    fun `a regular member's role renders as the member label`() {
+        every { languageManager.getMessage("channel.role.member") } returns "Member"
+        messageFormats.replace(MessageFormatConfig(channelMessageFormat = "{role}"))
+        val delivered = slot<Component>()
+
+        handler().sendChannelMessage(sender, "hello")
+
+        verify { member.sendMessage(capture(delivered)) }
+        assertEquals("Member", LegacyComponentSerializer.legacySection().serialize(delivered.captured))
     }
 
     @Test

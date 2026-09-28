@@ -12,6 +12,7 @@ import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
 import dev.m1sk9.lunaticChat.paper.command.core.LunaticSubCommand
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
+import dev.m1sk9.lunaticChat.paper.i18n.channelRoleLabel
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
 import net.kyori.adventure.text.Component
@@ -90,9 +91,8 @@ class ChannelStatusCommand(
                         val playerName = Bukkit.getOfflinePlayer(member.playerId).name ?: return@mapNotNull null
                         val roleText =
                             when (member.role) {
-                                ChannelRole.OWNER -> " [OWNER]"
-                                ChannelRole.MODERATOR -> " [MOD]"
                                 ChannelRole.MEMBER -> ""
+                                else -> " [${languageManager.channelRoleLabel(member.role)}]"
                             }
                         playerName + roleText
                     }

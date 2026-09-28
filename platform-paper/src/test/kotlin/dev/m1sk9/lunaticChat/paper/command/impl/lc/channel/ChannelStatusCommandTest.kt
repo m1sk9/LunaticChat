@@ -1,5 +1,6 @@
 package dev.m1sk9.lunaticChat.paper.command.impl.lc.channel
 
+import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelRole
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.TestUtils
@@ -11,11 +12,14 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.OfflinePlayer
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertIs
+import kotlin.test.assertTrue
 
 class ChannelStatusCommandTest {
     private val testUUID = UUID.fromString("00000001-0000-0000-0000-000000000000")
@@ -75,6 +79,32 @@ class ChannelStatusCommandTest {
         } finally {
             unmockkStatic(Bukkit::class)
         }
+    }
+
+    @Test
+    fun `members are listed with their role in the configured language`() {
+        val deps = createDependencies()
+        every { deps.languageManager.getMessage("channel.role.owner", any()) } returns "オーナー"
+        val channel = TestUtils.createTestChannel(id = channelId, ownerId = testUUID)
+        val members = listOf(TestUtils.createTestChannelMember(channelId = channelId, playerId = testUUID, role = ChannelRole.OWNER))
+        every { deps.channelManager.getPlayerChannel(testUUID) } returns channelId
+        every { deps.channelManager.getChannel(channelId) } returns Result.success(channel)
+        every { deps.channelManager.getChannelMembers(channelId) } returns Result.success(members)
+        every { deps.membershipManager.getPlayerChannels(testUUID) } returns listOf(channelId)
+        val sent = mutableListOf<Component>()
+        every { deps.mockPlayer.sendMessage(capture(sent)) } returns Unit
+
+        mockkStatic(Bukkit::class)
+        try {
+            mockBukkitOfflinePlayer()
+
+            deps.command.execute(deps.ctx)
+        } finally {
+            unmockkStatic(Bukkit::class)
+        }
+
+        val shown = sent.joinToString("\n") { PlainTextComponentSerializer.plainText().serialize(it) }
+        assertTrue("Player1 [オーナー]" in shown, shown)
     }
 
     @Test

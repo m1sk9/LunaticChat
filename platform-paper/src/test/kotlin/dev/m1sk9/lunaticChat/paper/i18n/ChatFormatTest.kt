@@ -2,25 +2,34 @@ package dev.m1sk9.lunaticChat.paper.i18n
 
 import dev.m1sk9.lunaticChat.paper.config.key.MessageFormatConfig
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.TextComponent
+import net.kyori.adventure.text.event.HoverEvent
 import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import kotlin.reflect.full.memberProperties
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class ChatFormatTest {
     private val defaults = MessageFormatConfig()
-    private val placeholderPattern = Regex("""\{([A-Za-z_]+)}""")
+    private val queen = Component.text("Queen")
 
     private fun Component.legacy(): String = LegacyComponentSerializer.legacySection().serialize(this)
+
+    private fun Component.leafContaining(text: String): Component =
+        generateSequence(listOf(this)) { level -> level.flatMap { it.children() }.ifEmpty { null } }
+            .flatten()
+            .first { it is TextComponent && text in it.content() }
 
     private fun MessageFormatConfig.renderAll(): List<String> =
         listOf(
             directMessage("Alice", "Bob", "hi", "world"),
-            channelMessage("Alice", "general", "general", "Queen", "hi", "world", "Owner"),
+            channelMessage("Alice", "general", "general", queen, "hi", "world", { "Owner" }),
             crossServerGlobalChat("lobby", "Alice", "hi"),
         ).map { it.legacy() }
 
@@ -33,7 +42,7 @@ class ChatFormatTest {
     fun `the default channel message format renders channel, sender and message`() {
         assertEquals(
             "§7[§b#general§7] §eAlice: §fhi",
-            defaults.channelMessage("Alice", "general", "general", "Queen", "hi", "world", "Owner").legacy(),
+            defaults.channelMessage("Alice", "general", "general", queen, "hi", "world", { "Owner" }).legacy(),
         )
     }
 
@@ -55,18 +64,49 @@ class ChatFormatTest {
 
         assertEquals(
             "general-1 Queen world_nether Owner",
-            formats.channelMessage("Alice", "General", "general-1", "Queen", "hi", "world_nether", "Owner").legacy(),
+            formats.channelMessage("Alice", "General", "general-1", queen, "hi", "world_nether", { "Owner" }).legacy(),
         )
     }
 
     @Test
-    fun `section sign codes in a display name become styles`() {
+    fun `a display name keeps its own color without recoloring the rest of the format`() {
+        val formats = MessageFormatConfig(channelMessageFormat = "{display_name}: {message}")
+        val displayName = Component.text("Queen", NamedTextColor.RED)
+
+        val rendered = formats.channelMessage("Alice", "general", "general", displayName, "hi", "world", { "Owner" })
+
+        assertEquals("Queen: hi", PlainTextComponentSerializer.plainText().serialize(rendered))
+        assertEquals(NamedTextColor.RED, rendered.leafContaining("Queen").color())
+        assertNull(rendered.leafContaining(": hi").color())
+    }
+
+    @Test
+    fun `a display name without a color of its own takes the format's color`() {
+        val formats = MessageFormatConfig(channelMessageFormat = "§e{display_name}")
+
+        assertEquals("§eQueen", formats.channelMessage("Alice", "general", "general", queen, "hi", "world", { "Owner" }).legacy())
+    }
+
+    @Test
+    fun `a display name keeps hex colors and hover events`() {
         val formats = MessageFormatConfig(channelMessageFormat = "{display_name}")
+        val hover = HoverEvent.showText(Component.text("Level 42"))
+        val displayName = Component.text("Queen", TextColor.color(0x12AB34)).hoverEvent(hover)
 
-        val rendered = formats.channelMessage("Alice", "general", "general", "§cQueen", "hi", "world", "Owner")
+        val rendered = formats.channelMessage("Alice", "general", "general", displayName, "hi", "world", { "Owner" })
 
-        assertEquals("Queen", PlainTextComponentSerializer.plainText().serialize(rendered))
-        assertEquals(NamedTextColor.RED, rendered.color())
+        val queenLeaf = rendered.leafContaining("Queen")
+        assertEquals(TextColor.color(0x12AB34), queenLeaf.color())
+        assertEquals(hover, queenLeaf.hoverEvent())
+    }
+
+    @Test
+    fun `the role is not computed when the format does not use it`() {
+        var computed = false
+
+        defaults.channelMessage("Alice", "general", "general", queen, "hi", "world") { "Owner".also { computed = true } }
+
+        assertFalse(computed)
     }
 
     @Test
@@ -80,7 +120,7 @@ class ChatFormatTest {
     fun `a value containing a placeholder is inserted literally`() {
         val formats = MessageFormatConfig(channelMessageFormat = "<{channel}> {message}")
 
-        assertEquals("<{message}> hi", formats.channelMessage("Alice", "{message}", "general", "Queen", "hi", "world", "Owner").legacy())
+        assertEquals("<{message}> hi", formats.channelMessage("Alice", "{message}", "general", queen, "hi", "world", { "Owner" }).legacy())
     }
 
     @Test
@@ -102,7 +142,7 @@ class ChatFormatTest {
     fun `every placeholder in the default formats is a known one`() {
         MessageFormatConfig::class.memberProperties.forEach { property ->
             val format = property.get(defaults) as String
-            placeholderPattern.findAll(format).forEach {
+            CHAT_PLACEHOLDER_PATTERN.findAll(format).forEach {
                 val name = it.groupValues[1]
                 assertTrue(ChatPlaceholder.fromKey(name) != null, "${property.name} uses unknown {$name}")
             }
@@ -133,6 +173,6 @@ class ChatFormatTest {
         val keys = ChatPlaceholder.entries.map { it.key }
 
         assertEquals(keys.size, keys.toSet().size)
-        keys.forEach { assertTrue(Regex("[A-Za-z_]+").matches(it), "$it cannot be matched by the renderer") }
+        keys.forEach { assertTrue(CHAT_PLACEHOLDER_PATTERN.matches("{$it}"), "$it cannot be matched by the renderer") }
     }
 }
