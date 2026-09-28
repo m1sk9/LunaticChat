@@ -17,6 +17,8 @@ import dev.m1sk9.lunaticChat.paper.config.key.VelocityIntegrationConfig
 import dev.m1sk9.lunaticChat.paper.i18n.Language
 import dev.m1sk9.lunaticChat.paper.storage.AsyncScheduler
 import io.mockk.mockk
+import net.kyori.adventure.text.Component
+import org.bukkit.World
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 import java.util.UUID
@@ -183,11 +185,17 @@ object TestUtils {
         uuid: UUID = UUID.randomUUID(),
         name: String = "TestPlayer",
         isOnline: Boolean = true,
+        displayName: Component = Component.text(name),
+        worldName: String = "world",
     ): Player {
         val player = mockk<Player>(relaxed = true)
+        val world = mockk<World>(relaxed = true)
+        io.mockk.every { world.name } returns worldName
         io.mockk.every { player.uniqueId } returns uuid
         io.mockk.every { player.name } returns name
         io.mockk.every { player.isOnline } returns isOnline
+        io.mockk.every { player.displayName() } returns displayName
+        io.mockk.every { player.world } returns world
         return player
     }
 

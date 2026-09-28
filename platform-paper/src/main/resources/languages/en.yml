@@ -235,6 +235,10 @@ channel:
     cannotTransferToSelf: "You cannot transfer ownership to yourself"
     receivedOwnership: "You are now the owner of {channel} (previously owned by {previousOwner})"
     error: "Failed to transfer ownership"
+  role:
+    owner: "Owner"
+    moderator: "Moderator"
+    member: "Member"
 
 general:
   playerOnlyCommand: "This command can only be executed by players."

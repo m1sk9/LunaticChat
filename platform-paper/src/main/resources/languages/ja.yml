@@ -235,6 +235,10 @@ channel:
     cannotTransferToSelf: "自分自身にオーナー権限を譲渡することはできません"
     receivedOwnership: "チャンネル {channel} のオーナーになりました (前のオーナー: {previousOwner})"
     error: "オーナー権限の譲渡に失敗しました"
+  role:
+    owner: "オーナー"
+    moderator: "モデレーター"
+    member: "メンバー"
 
 general:
   playerOnlyCommand: "このコマンドはプレイヤーのみが実行できます"

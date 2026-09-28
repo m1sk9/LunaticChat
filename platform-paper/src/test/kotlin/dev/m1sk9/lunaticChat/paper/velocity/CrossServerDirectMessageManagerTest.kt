@@ -2,6 +2,7 @@ package dev.m1sk9.lunaticChat.paper.velocity
 
 import dev.m1sk9.lunaticChat.engine.debug.DebugLogger
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessage
+import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageCodec
 import dev.m1sk9.lunaticChat.paper.TestUtils
 import dev.m1sk9.lunaticChat.paper.chat.handler.DirectMessageHandler
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
@@ -9,6 +10,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import net.kyori.adventure.text.Component
@@ -16,6 +18,8 @@ import org.bukkit.plugin.Plugin
 import java.util.UUID
 import java.util.logging.Logger
 import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
 
 class CrossServerDirectMessageManagerTest {
     private class Fixture(
@@ -51,18 +55,34 @@ class CrossServerDirectMessageManagerTest {
         targetServerName = "survival",
         targetName = targetName,
         message = "hi",
+        senderWorld = "world_nether",
     )
 
     @Test
     fun `sendCrossServerMessage relays via plugin channel and delegates display`() {
         val f = Fixture()
-        val sender = TestUtils.createMockPlayer(name = "Alice")
-        coEvery { f.dmHandler.handleOutgoingCrossServerMessage(sender, "Bob", "survival", "hi") } returns "hi"
+        val sender = TestUtils.createMockPlayer(name = "Alice", worldName = "world_nether")
+        coEvery { f.dmHandler.handleOutgoingCrossServerMessage(sender, "Bob", "survival", "hi", "world_nether") } returns "hi"
 
         runBlocking { f.manager.sendCrossServerMessage(sender, "Bob", "survival", "hi") }
 
-        coVerify { f.dmHandler.handleOutgoingCrossServerMessage(sender, "Bob", "survival", "hi") }
+        coVerify { f.dmHandler.handleOutgoingCrossServerMessage(sender, "Bob", "survival", "hi", "world_nether") }
         verify { sender.sendPluginMessage(f.plugin, "lunaticchat:main", any<ByteArray>()) }
+    }
+
+    @Test
+    fun `sendCrossServerMessage relays the world the sender is in`() {
+        val f = Fixture()
+        val sender = TestUtils.createMockPlayer(name = "Alice", worldName = "world_nether")
+        coEvery { f.dmHandler.handleOutgoingCrossServerMessage(any(), any(), any(), any(), any()) } returns "hi"
+        val sent = slot<ByteArray>()
+
+        runBlocking { f.manager.sendCrossServerMessage(sender, "Bob", "survival", "hi") }
+
+        verify { sender.sendPluginMessage(f.plugin, "lunaticchat:main", capture(sent)) }
+        val relayed = PluginMessageCodec.decode(sent.captured)
+        assertIs<PluginMessage.DirectMessageRelay>(relayed)
+        assertEquals("world_nether", relayed.senderWorld)
     }
 
     @Test
@@ -73,7 +93,7 @@ class CrossServerDirectMessageManagerTest {
 
         f.manager.handleIncomingMessage(relay())
 
-        verify { f.dmHandler.handleIncomingCrossServerMessage(recipient, "Alice", "lobby", "hi") }
+        verify { f.dmHandler.handleIncomingCrossServerMessage(recipient, "Alice", "lobby", "hi", "world_nether") }
     }
 
     @Test
@@ -87,7 +107,7 @@ class CrossServerDirectMessageManagerTest {
         f.manager.handleIncomingMessage(message)
 
         verify(exactly = 1) {
-            f.dmHandler.handleIncomingCrossServerMessage(any(), any(), any(), any())
+            f.dmHandler.handleIncomingCrossServerMessage(any(), any(), any(), any(), any())
         }
     }
 
@@ -99,7 +119,7 @@ class CrossServerDirectMessageManagerTest {
         f.manager.handleIncomingMessage(relay(targetName = "Ghost"))
 
         verify(exactly = 0) {
-            f.dmHandler.handleIncomingCrossServerMessage(any(), any(), any(), any())
+            f.dmHandler.handleIncomingCrossServerMessage(any(), any(), any(), any(), any())
         }
     }
 
@@ -144,7 +164,7 @@ class CrossServerDirectMessageManagerTest {
     fun `sendCrossServerMessage prunes the dedup cache when over capacity`() {
         val f = Fixture(cacheSize = 1)
         val sender = TestUtils.createMockPlayer(name = "Alice")
-        coEvery { f.dmHandler.handleOutgoingCrossServerMessage(any(), any(), any(), any()) } returns "hi"
+        coEvery { f.dmHandler.handleOutgoingCrossServerMessage(any(), any(), any(), any(), any()) } returns "hi"
 
         repeat(3) { runBlocking { f.manager.sendCrossServerMessage(sender, "Bob$it", "survival", "hi") } }
 

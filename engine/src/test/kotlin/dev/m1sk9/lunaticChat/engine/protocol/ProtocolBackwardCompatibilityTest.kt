@@ -42,6 +42,10 @@ class ProtocolBackwardCompatibilityTest {
 
         const val PRESENCE_SNAPSHOT_V1_0_1 =
             """{"players":[{"playerName":"Alice","serverName":"lobby"},{"playerName":"Bob","serverName":"survival"}],"timestamp":5000}"""
+
+        // Protocol 1.0.2 snapshots — NEVER MODIFY after commit
+        const val DIRECT_MESSAGE_V1_0_2 =
+            """{"messageId":"dm-321","sourceServerName":"survival","senderId":"00000007-0000-0000-0000-000000000000","senderName":"Sender","targetServerName":"lobby","targetName":"Recipient","message":"Hello!","timestamp":6000,"senderWorld":"world_nether"}"""
     }
 
     private fun buildRawMessage(
@@ -162,6 +166,19 @@ class ProtocolBackwardCompatibilityTest {
         assertEquals("Recipient", decoded.targetName)
         assertEquals("Hello!", decoded.message)
         assertEquals(4000L, decoded.timestamp)
+        assertEquals("", decoded.senderWorld)
+    }
+
+    @Test
+    fun `current codec can decode protocol 1_0_2 DirectMessageRelay`() {
+        val data = buildRawMessage("direct_message", DIRECT_MESSAGE_V1_0_2)
+        val decoded = PluginMessageCodec.decode(data)
+
+        assertIs<PluginMessage.DirectMessageRelay>(decoded)
+        assertEquals("dm-321", decoded.messageId)
+        assertEquals("Sender", decoded.senderName)
+        assertEquals("Hello!", decoded.message)
+        assertEquals("world_nether", decoded.senderWorld)
     }
 
     @Test

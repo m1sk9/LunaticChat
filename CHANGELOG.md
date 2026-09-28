@@ -2,13 +2,25 @@
 
 ## v1
 
-### v1.4.1
+### v1.5.0
 
+- Added the `{world}`, `{display_name}`, `{channel_id}` and `{role}` placeholders to `messageFormat`.
+  - `{world}` works in direct messages and channel chat; the other three work in channel chat.
+  - `{display_name}` keeps the colors, hex colors and hover text that other plugins give the display name, without recoloring the rest of the message.
+  - `{role}` is shown in the configured language. `/lc channel status` now uses the same names instead of `[OWNER]` / `[MOD]`.
+  - For a direct message from another server, `{world}` needs Paper v1.5.0 on the sending server and Velocity v1.3.1. With an older sender or proxy, it is empty.
+- A channel or player name containing `{message}` or another placeholder is now shown as written instead of being replaced.
 - Fixed a bug where the update checker never reported a new release unless the newest GitHub release happened to be tagged `vX.Y.Z`.
   - It read only the repository's latest release, so a Paper release tagged `paper/vX.Y.Z` or a Velocity release published after it was taken for version 0.x and ignored. It now picks the newest Paper release from the release list.
 - Each release tag now carries exactly one platform: `vX.Y.Z` for Paper / Folia and `velocity/vX.Y.Z` for Velocity.
   - Up to v1.4.0, a `vX.Y.Z` tag could ship both JARs at once. When both are updated together, two tags and two GitHub Releases are published.
 - Fixed the GitHub download links in the v1.3.0 and v1.4.0 release notes (and the matching Velocity v1.2.0 and v1.3.0 notes) pointing at tags that did not exist.
+- The protocol version has been raised to 1.0.2. Cross-server direct messages now carry the world the sender is in.
+  - This is a PATCH bump, so Paper and Velocity can be updated in any order.
+
+#### Velocity: v1.3.1
+
+- Cross-server direct messages now pass on the world the sender is in, so `{world}` works on the receiving server.
 
 ### v1.4.0
 

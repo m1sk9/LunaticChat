@@ -17,6 +17,10 @@ These are the only settings `/lc reload` <Badge type="tip" text="v1.4.0~" /> app
 | `{message}` | Message content | All |
 | `{channel}` | Channel name | `channelMessageFormat` |
 | `{server}` | Server name | `crossServerGlobalChatFormat` |
+| `{world}` <Badge type="tip" text="v1.5.0~" /> | World the sender is in. For a direct message from another server, empty unless the sending server runs Paper v1.5.0+ and the proxy runs Velocity v1.3.1+ | `directMessageFormat`, `channelMessageFormat` |
+| `{display_name}` <Badge type="tip" text="v1.5.0~" /> | Display name of the sender, including colors set by other plugins | `channelMessageFormat` |
+| `{channel_id}` <Badge type="tip" text="v1.5.0~" /> | Channel ID | `channelMessageFormat` |
+| `{role}` <Badge type="tip" text="v1.5.0~" /> | Sender's role in the channel (Owner / Moderator / Member) | `channelMessageFormat` |
 
 ## Format List
 

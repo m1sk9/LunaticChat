@@ -7,12 +7,16 @@ import com.velocitypowered.api.proxy.messages.ChannelIdentifier
 import com.velocitypowered.api.proxy.server.RegisteredServer
 import com.velocitypowered.api.proxy.server.ServerInfo
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessage
+import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageCodec
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.verify
 import org.slf4j.Logger
 import java.util.Optional
 import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
 
 class CrossServerDirectMessageRelayTest {
     private fun createRelay(): Pair<CrossServerDirectMessageRelay, ProxyServer> {
@@ -57,6 +61,7 @@ class CrossServerDirectMessageRelayTest {
             targetName = targetName,
             message = "Hello!",
             timestamp = 1000L,
+            senderWorld = "world_nether",
         )
 
     @Test
@@ -71,6 +76,23 @@ class CrossServerDirectMessageRelayTest {
 
         verify(exactly = 1) { targetServer.sendPluginMessage(any<ChannelIdentifier>(), any<ByteArray>()) }
         verify(exactly = 0) { sourceServer.sendPluginMessage(any<ChannelIdentifier>(), any<ByteArray>()) }
+    }
+
+    @Test
+    fun `relay should pass the sender's world through to the target server`() {
+        val (relay, proxyServer) = createRelay()
+        val sourceServer = createRegisteredServer("lobby")
+        val targetServer = createRegisteredServer("survival")
+        every { proxyServer.allServers } returns listOf(sourceServer, targetServer)
+        every { proxyServer.getPlayer("Recipient") } returns Optional.of(createPlayer("survival"))
+        val forwarded = slot<ByteArray>()
+
+        relay.relay(createMessage(), sourceServer)
+
+        verify { targetServer.sendPluginMessage(any<ChannelIdentifier>(), capture(forwarded)) }
+        val decoded = PluginMessageCodec.decode(forwarded.captured)
+        assertIs<PluginMessage.DirectMessageRelay>(decoded)
+        assertEquals("world_nether", decoded.senderWorld)
     }
 
     @Test

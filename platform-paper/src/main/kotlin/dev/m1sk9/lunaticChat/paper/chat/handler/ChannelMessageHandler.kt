@@ -1,6 +1,8 @@
 package dev.m1sk9.lunaticChat.paper.chat.handler
 
+import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelContext
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelMessageLogEntry
+import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelRole
 import dev.m1sk9.lunaticChat.engine.debug.DebugCategory
 import dev.m1sk9.lunaticChat.engine.debug.DebugLogger
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
@@ -10,7 +12,8 @@ import dev.m1sk9.lunaticChat.paper.common.playChannelReceiveNotification
 import dev.m1sk9.lunaticChat.paper.common.playMessageSendNotification
 import dev.m1sk9.lunaticChat.paper.config.MessageFormatHolder
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
-import dev.m1sk9.lunaticChat.paper.i18n.withChatPlaceholders
+import dev.m1sk9.lunaticChat.paper.i18n.channelMessage
+import dev.m1sk9.lunaticChat.paper.i18n.channelRoleLabel
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
@@ -35,7 +38,7 @@ class ChannelMessageHandler(
 
         val senderSettings = settingsManager?.getSettings(playerId)
 
-        val formattedMessage = formatChannelMessage(player.name, context.channel.name, message)
+        val formattedMessage = formatChannelMessage(player, context, message)
 
         // Play notification sound to sender if enabled
         if (senderSettings?.channelMessageNotificationEnabled == true) {
@@ -87,18 +90,20 @@ class ChannelMessageHandler(
     }
 
     private fun formatChannelMessage(
-        senderName: String,
-        channelName: String,
+        sender: Player,
+        context: ChannelContext,
         message: String,
-    ): Component {
-        val format = messageFormats.current.channelMessageFormat
-        val text =
-            format.withChatPlaceholders(
-                "sender" to senderName,
-                "channel" to channelName,
-                "message" to message,
-            )
-
-        return Component.text(text)
-    }
+    ): Component =
+        messageFormats.current.channelMessage(
+            sender = sender.name,
+            channel = context.channel.name,
+            channelId = context.channel.id,
+            displayName = sender.displayName(),
+            message = message,
+            world = sender.world.name,
+            role = {
+                val role = context.members.firstOrNull { it.playerId == sender.uniqueId }?.role ?: ChannelRole.MEMBER
+                languageManager.channelRoleLabel(role)
+            },
+        )
 }

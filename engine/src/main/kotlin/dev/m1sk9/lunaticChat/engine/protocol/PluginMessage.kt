@@ -93,6 +93,8 @@ sealed interface PluginMessage {
      * @property targetName Target player name
      * @property message Message content (romaji-converted if applicable)
      * @property timestamp Message timestamp (milliseconds since epoch)
+     * @property senderWorld Name of the world the sender is in; empty when relayed by a
+     *   pre-1.0.2 peer
      */
     @Serializable
     data class DirectMessageRelay(
@@ -104,6 +106,7 @@ sealed interface PluginMessage {
         val targetName: String,
         val message: String,
         val timestamp: Long = System.currentTimeMillis(),
+        val senderWorld: String = "",
     ) : PluginMessage
 
     /**

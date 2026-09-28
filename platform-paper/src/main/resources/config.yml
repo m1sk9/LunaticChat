@@ -107,6 +107,10 @@ features:
 # {message} - The content of the message
 # {channel} - The name of the chat channel (only for channel chat)
 # {server} - The name of the server (only for Velocity cross-server chat)
+# {world} - The world the sender is in (direct messages and channel chat; empty for a direct message relayed by an older server or proxy)
+# {display_name} - The display name of the sender (only for channel chat)
+# {channel_id} - The ID of the chat channel (only for channel chat)
+# {role} - The sender's role in the channel, in the configured language (only for channel chat)
 # ----------------------------------------------
 
 # These are the only settings /lc reload applies without a restart.

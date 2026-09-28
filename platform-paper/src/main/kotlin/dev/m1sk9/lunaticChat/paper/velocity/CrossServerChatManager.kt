@@ -7,9 +7,8 @@ import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageChannel
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageCodec
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
 import dev.m1sk9.lunaticChat.paper.config.MessageFormatHolder
-import dev.m1sk9.lunaticChat.paper.i18n.withChatPlaceholders
+import dev.m1sk9.lunaticChat.paper.i18n.crossServerGlobalChat
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.plugin.Plugin
 import java.util.UUID
 import java.util.logging.Level
@@ -131,15 +130,6 @@ class CrossServerChatManager(
      * @param message Global chat message
      * @return Formatted Component
      */
-    private fun formatCrossServerMessage(message: PluginMessage.GlobalChatMessage): Component {
-        val format = messageFormats.current.crossServerGlobalChatFormat
-        val formattedText =
-            format.withChatPlaceholders(
-                "server" to message.serverName,
-                "sender" to message.playerName,
-                "message" to message.message,
-            )
-
-        return LegacyComponentSerializer.legacySection().deserialize(formattedText)
-    }
+    private fun formatCrossServerMessage(message: PluginMessage.GlobalChatMessage): Component =
+        messageFormats.current.crossServerGlobalChat(message.serverName, message.playerName, message.message)
 }

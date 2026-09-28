@@ -12,9 +12,15 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import io.mockk.slot
 import io.mockk.unmockkStatic
+import io.mockk.verify
 import kotlinx.coroutines.runBlocking
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.event.ClickEvent
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.Bukkit
+import org.bukkit.entity.Player
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -36,6 +42,14 @@ class DirectMessageHandlerTest {
         val langManager = languageManager ?: mockk<LanguageManager>(relaxed = true)
         return DirectMessageHandler(MessageFormatHolder(config.messageFormat), settingsManager, romanjiConverter, langManager)
     }
+
+    private fun Player.receivedMessage(): Component {
+        val delivered = slot<Component>()
+        verify { sendMessage(capture(delivered)) }
+        return delivered.captured
+    }
+
+    private fun Component.legacy(): String = LegacyComponentSerializer.legacySection().serialize(this)
 
     @Test
     fun `sendDirectMessage should return true on success`() {
@@ -68,6 +82,69 @@ class DirectMessageHandlerTest {
         val result = runBlocking { handler.sendDirectMessage(sender, recipient, "Test") }
 
         assertTrue(result)
+        assertEquals("[DM] Alice -> Bob: Test", recipient.receivedMessage().legacy())
+    }
+
+    @Test
+    fun `sendDirectMessage shows both players the formatted message that suggests replying to the sender`() {
+        val handler = createHandler()
+        val sender = TestUtils.createMockPlayer(name = "Alice")
+        val recipient = TestUtils.createMockPlayer(name = "Bob")
+
+        runBlocking { handler.sendDirectMessage(sender, recipient, "hello") }
+
+        listOf(sender, recipient).forEach { player ->
+            val delivered = player.receivedMessage()
+            assertEquals("§7[§eAlice §7>> §eBob§7] §fhello", delivered.legacy())
+            assertEquals(ClickEvent.suggestCommand("/tell Alice "), delivered.clickEvent())
+        }
+    }
+
+    @Test
+    fun `handleOutgoingCrossServerMessage shows the sender the recipient qualified by server`() {
+        val handler = createHandler()
+        val sender = TestUtils.createMockPlayer(name = "Alice")
+
+        runBlocking { handler.handleOutgoingCrossServerMessage(sender, "Bob", "survival", "hi", "world") }
+
+        val delivered = sender.receivedMessage()
+        assertEquals("§7[§eAlice §7>> §eBob@survival§7] §fhi", delivered.legacy())
+        assertEquals(ClickEvent.suggestCommand("/tell Bob@survival "), delivered.clickEvent())
+    }
+
+    @Test
+    fun `the direct message format renders the sender's world`() {
+        val formats = TestUtils.createTestConfiguration().messageFormat.copy(directMessageFormat = "{sender}@{world}: {message}")
+        val handler = createHandler(configuration = TestUtils.createTestConfiguration().copy(messageFormat = formats))
+        val sender = TestUtils.createMockPlayer(name = "Alice", worldName = "world_the_end")
+        val recipient = TestUtils.createMockPlayer(name = "Bob")
+
+        runBlocking { handler.sendDirectMessage(sender, recipient, "hi") }
+
+        assertEquals("Alice@world_the_end: hi", recipient.receivedMessage().legacy())
+    }
+
+    @Test
+    fun `a direct message from another server renders the world the sender is in there`() {
+        val formats = TestUtils.createTestConfiguration().messageFormat.copy(directMessageFormat = "{sender}[{world}]: {message}")
+        val handler = createHandler(configuration = TestUtils.createTestConfiguration().copy(messageFormat = formats))
+        val recipient = TestUtils.createMockPlayer(name = "Bob", worldName = "world")
+
+        handler.handleIncomingCrossServerMessage(recipient, "Alice", "lobby", "hi", "world_nether")
+
+        assertEquals("Alice@lobby[world_nether]: hi", recipient.receivedMessage().legacy())
+    }
+
+    @Test
+    fun `handleIncomingCrossServerMessage shows the recipient the sender qualified by server`() {
+        val handler = createHandler()
+        val recipient = TestUtils.createMockPlayer(name = "Bob")
+
+        handler.handleIncomingCrossServerMessage(recipient, "Alice", "lobby", "hi", "world")
+
+        val delivered = recipient.receivedMessage()
+        assertEquals("§7[§eAlice@lobby §7>> §eBob§7] §fhi", delivered.legacy())
+        assertEquals(ClickEvent.suggestCommand("/tell Alice@lobby "), delivered.clickEvent())
     }
 
     @Test
@@ -143,7 +220,7 @@ class DirectMessageHandlerTest {
         val handler = createHandler()
         val sender = TestUtils.createMockPlayer(name = "Alice")
 
-        val relayed = runBlocking { handler.handleOutgoingCrossServerMessage(sender, "Bob", "survival", "hi") }
+        val relayed = runBlocking { handler.handleOutgoingCrossServerMessage(sender, "Bob", "survival", "hi", "world") }
 
         assertEquals("hi", relayed)
     }
@@ -172,7 +249,7 @@ class DirectMessageHandlerTest {
         handler.remotePlayerRegistry = registry
         val recipient = TestUtils.createMockPlayer(name = "Bob")
 
-        handler.handleIncomingCrossServerMessage(recipient, "Alice", "lobby", "hi")
+        handler.handleIncomingCrossServerMessage(recipient, "Alice", "lobby", "hi", "world")
 
         val target = handler.getReplyTarget(recipient)
         assertIs<ReplyTarget.Remote>(target)

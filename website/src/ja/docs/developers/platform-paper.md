@@ -158,6 +158,7 @@ config フラグ
 - `Language` (enum) — `EN` / `JA`．未知コードは EN にフォールバック
 - `LanguageManager` — 起動時に `resources/languages/` を KAML でロードし，ネストした YAML をドット記法 (`toggle.on` 等) にフラット化する．`getMessage(key, placeholders)` は 選択言語 → EN フォールバック で解決し `{placeholder}` を置換，未発見はキー自身を返す．EN が無ければ致命エラー
 - `MessageFormatter` (`object`) — `[LC]` プレフィックス付きの Adventure `Component` を生成し，`{braces}` プレースホルダを正規表現で検出して色分けする
+- `ChatPlaceholder` / `ChatFormat.kt` — `messageFormat` のプレースホルダ語彙と唯一のレンダラ．フォーマットごとの入口 (`directMessage` / `channelMessage` / `crossServerGlobalChat`) が 1 パスで置換し，結果を `LegacyComponentSerializer` に渡したうえで，`{display_name}` のような Component 値を差し込む (スタイルやイベントがその値の範囲に閉じるように)．ハンドラがプレースホルダ名を綴ることはない
 
 ## converter — ローマ字→日本語変換
 
