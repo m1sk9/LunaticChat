@@ -141,11 +141,12 @@ class DirectMessageHandler(
         val displayMessage = convertIfEnabled(message, senderSettings?.japaneseConversionEnabled == true)
 
         val formats = messageFormats.current
+        val world = sender.world.name
 
-        notifySpies(formats, sender.name, recipient.name, message, sender.world.name)
+        notifySpies(formats, sender.name, recipient.name, message, world)
 
         val userMessage =
-            formatMessage(formats, sender.name, recipient.name, displayMessage, sender.world.name, replyTo = sender.name)
+            formatMessage(formats, sender.name, recipient.name, displayMessage, world, replyTo = sender.name)
         sender.apply {
             sendMessage(userMessage)
             takeIf { senderSettings?.directMessageNotificationEnabled == true }
@@ -174,6 +175,7 @@ class DirectMessageHandler(
         targetName: String,
         targetServerName: String,
         message: String,
+        world: String,
     ): String {
         val senderSettings = settingsManager?.getSettings(sender.uniqueId)
         val displayMessage = convertIfEnabled(message, senderSettings?.japaneseConversionEnabled == true)
@@ -181,10 +183,10 @@ class DirectMessageHandler(
         val formats = messageFormats.current
         val recipientDisplay = "$targetName@$targetServerName"
 
-        notifySpies(formats, sender.name, recipientDisplay, message, sender.world.name)
+        notifySpies(formats, sender.name, recipientDisplay, message, world)
 
         val userMessage =
-            formatMessage(formats, sender.name, recipientDisplay, displayMessage, sender.world.name, replyTo = recipientDisplay)
+            formatMessage(formats, sender.name, recipientDisplay, displayMessage, world, replyTo = recipientDisplay)
         sender.apply {
             sendMessage(userMessage)
             takeIf { senderSettings?.directMessageNotificationEnabled == true }
@@ -203,14 +205,14 @@ class DirectMessageHandler(
         senderName: String,
         sourceServerName: String,
         message: String,
+        senderWorld: String,
     ) {
         val recipientSettings = settingsManager?.getSettings(recipient.uniqueId)
         val formats = messageFormats.current
         val senderDisplay = "$senderName@$sourceServerName"
 
         val userMessage =
-            // The relay does not carry the sender's world, so {world} renders empty for a remote sender.
-            formatMessage(formats, senderDisplay, recipient.name, message, world = "", replyTo = senderDisplay)
+            formatMessage(formats, senderDisplay, recipient.name, message, senderWorld, replyTo = senderDisplay)
         recipient.apply {
             sendMessage(userMessage)
             takeIf { recipientSettings?.directMessageNotificationEnabled == true }

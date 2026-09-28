@@ -105,7 +105,7 @@ class DirectMessageHandlerTest {
         val handler = createHandler()
         val sender = TestUtils.createMockPlayer(name = "Alice")
 
-        runBlocking { handler.handleOutgoingCrossServerMessage(sender, "Bob", "survival", "hi") }
+        runBlocking { handler.handleOutgoingCrossServerMessage(sender, "Bob", "survival", "hi", "world") }
 
         val delivered = sender.receivedMessage()
         assertEquals("§7[§eAlice §7>> §eBob@survival§7] §fhi", delivered.legacy())
@@ -125,14 +125,14 @@ class DirectMessageHandlerTest {
     }
 
     @Test
-    fun `a direct message from another server renders the sender's world empty`() {
+    fun `a direct message from another server renders the world the sender is in there`() {
         val formats = TestUtils.createTestConfiguration().messageFormat.copy(directMessageFormat = "{sender}[{world}]: {message}")
         val handler = createHandler(configuration = TestUtils.createTestConfiguration().copy(messageFormat = formats))
-        val recipient = TestUtils.createMockPlayer(name = "Bob")
+        val recipient = TestUtils.createMockPlayer(name = "Bob", worldName = "world")
 
-        handler.handleIncomingCrossServerMessage(recipient, "Alice", "lobby", "hi")
+        handler.handleIncomingCrossServerMessage(recipient, "Alice", "lobby", "hi", "world_nether")
 
-        assertEquals("Alice@lobby[]: hi", recipient.receivedMessage().legacy())
+        assertEquals("Alice@lobby[world_nether]: hi", recipient.receivedMessage().legacy())
     }
 
     @Test
@@ -140,7 +140,7 @@ class DirectMessageHandlerTest {
         val handler = createHandler()
         val recipient = TestUtils.createMockPlayer(name = "Bob")
 
-        handler.handleIncomingCrossServerMessage(recipient, "Alice", "lobby", "hi")
+        handler.handleIncomingCrossServerMessage(recipient, "Alice", "lobby", "hi", "world")
 
         val delivered = recipient.receivedMessage()
         assertEquals("§7[§eAlice@lobby §7>> §eBob§7] §fhi", delivered.legacy())
@@ -220,7 +220,7 @@ class DirectMessageHandlerTest {
         val handler = createHandler()
         val sender = TestUtils.createMockPlayer(name = "Alice")
 
-        val relayed = runBlocking { handler.handleOutgoingCrossServerMessage(sender, "Bob", "survival", "hi") }
+        val relayed = runBlocking { handler.handleOutgoingCrossServerMessage(sender, "Bob", "survival", "hi", "world") }
 
         assertEquals("hi", relayed)
     }
@@ -249,7 +249,7 @@ class DirectMessageHandlerTest {
         handler.remotePlayerRegistry = registry
         val recipient = TestUtils.createMockPlayer(name = "Bob")
 
-        handler.handleIncomingCrossServerMessage(recipient, "Alice", "lobby", "hi")
+        handler.handleIncomingCrossServerMessage(recipient, "Alice", "lobby", "hi", "world")
 
         val target = handler.getReplyTarget(recipient)
         assertIs<ReplyTarget.Remote>(target)

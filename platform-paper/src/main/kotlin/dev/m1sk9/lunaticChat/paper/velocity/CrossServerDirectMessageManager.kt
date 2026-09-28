@@ -57,12 +57,14 @@ class CrossServerDirectMessageManager(
         val messageId = UUID.randomUUID().toString()
         processedMessages.markProcessed(messageId)
 
+        val world = sender.world.name
         val relayedMessage =
             directMessageHandler.handleOutgoingCrossServerMessage(
                 sender = sender,
                 targetName = targetName,
                 targetServerName = targetServerName,
                 message = message,
+                world = world,
             )
 
         val relay =
@@ -74,6 +76,7 @@ class CrossServerDirectMessageManager(
                 targetServerName = targetServerName,
                 targetName = targetName,
                 message = relayedMessage,
+                senderWorld = world,
             )
 
         sender.sendPluginMessage(plugin, PluginMessageChannel.ID, PluginMessageCodec.encode(relay))
@@ -110,6 +113,7 @@ class CrossServerDirectMessageManager(
                         senderName = message.senderName,
                         sourceServerName = message.sourceServerName,
                         message = message.message,
+                        senderWorld = message.senderWorld,
                     )
                 },
             )
