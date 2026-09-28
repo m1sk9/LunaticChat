@@ -63,6 +63,8 @@ bun run format:check                     # What CI runs (biome ci .)
 ./x help
 ```
 
+Use the `start-preview-server` skill to bring one of these up and check that another machine (e.g. a Windows client over LAN or Tailscale) can reach it. Container names are fixed, so only one checkout or worktree can run a given environment at a time.
+
 Builds default to a nightly version derived from the git short hash; `--stable` builds a stable release. Server versions are derived from the `paper-api` / `velocity-api` coordinates in the module `build.gradle.kts` files — those are the single source of truth, so never duplicate a Minecraft version into the compose files.
 
 ## Architecture
