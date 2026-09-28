@@ -66,7 +66,7 @@ bun run build
 ### 2-2. 更新履歴
 
 - `CHANGELOG.md` にある v1.3.0 以降の各リリースについて，`website/src/changelog/` と `website/src/ja/changelog/` にページがあり，サイドバーに登録されていること
-- 各ページの Download リンクが，実在するリリースタグを指していること．v1.5.0 以降の規則は Paper が `vX.Y.Z`，Velocity が `velocity/vX.Y.Z`．それより前は同時リリースの `vX.Y.Z` に両方が入っている場合がある (例: Velocity v1.3.0 は `v1.4.0` の Release)．実在するタグは `gh release list --limit 50` で確かめる
+- 各ページの Download リンクが，実在するリリースタグを指していること．v1.4.0 より後の規則は Paper が `vX.Y.Z`，Velocity が `velocity/vX.Y.Z`．v1.4.0 までは同時リリースの `vX.Y.Z` に両方が入っている場合がある (例: Velocity v1.3.0 は `v1.4.0` の Release)．実在するタグは `gh release list --limit 50` で確かめる
 - リリースノートの内容が `CHANGELOG.md` と矛盾しないこと (書き換え・要約は正常．事実の食い違いだけを指摘する)
 - 公開済みのリリースノートの**内容の書き換え**は，事実誤認・リンク切れ・誤字の修正に留める
 

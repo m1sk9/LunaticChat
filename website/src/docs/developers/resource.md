@@ -39,7 +39,7 @@ One tag releases exactly one platform. The tag pattern selects which.
 
 - Releasing both at once means pushing both tags together (`git push origin v1.5.0 velocity/v1.4.0`). Each produces its own GitHub Release
 - Paper keeps the bare `vX.Y.Z` tag because the update checker in already-deployed Paper builds only understands that form
-- Before v1.5.0, a `vX.Y.Z` tag released both platforms (`v1.0.0`, `v1.3.0`, `v1.4.0`), and some Paper-only releases used `paper/vX.Y.Z`. Those tags are kept as they are
+- Up to v1.4.0, a `vX.Y.Z` tag released both platforms (`v1.0.0`, `v1.3.0`, `v1.4.0`), and some Paper-only releases used `paper/vX.Y.Z`. Those tags are kept as they are
 - Both workflows call the shared `_release.yaml`: `validate` (tag format, match with `gradle.properties`, duplicate release check) → `build` (mise + Gradle setup, `shadowJar`) → `release` (`gh release create --draft` + publish to Modrinth)
 - The GitHub Release is created as a draft. Publish a Velocity release with `--latest=false`, so that the repository's latest release stays the Paper one
 - Modrinth game-versions are Paper=`26.2.x` (loaders: paper, folia) and Velocity=`1.21.x` + `26.1.x` + `26.2.x` (loader: velocity), set in each caller workflow

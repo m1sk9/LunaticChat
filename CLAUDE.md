@@ -126,7 +126,7 @@ Paper and Velocity have independent versions in `gradle.properties` (`paperVersi
 | `v1.5.0` | `release-paper.yaml` | Paper/Folia JAR only |
 | `velocity/v1.4.0` | `release-velocity.yaml` | Velocity JAR only |
 
-One tag ships one platform; both workflows call the shared `_release.yaml`. To release both, push both tags together. Paper keeps the bare `vX.Y.Z` form because `UpdateChecker` in already-deployed Paper builds only understands it — never move Paper to a prefixed tag. Before v1.5.0, `vX.Y.Z` released both platforms and some Paper releases used `paper/vX.Y.Z`; those tags stay as history.
+One tag ships one platform; both workflows call the shared `_release.yaml`. To release both, push both tags together. Paper keeps the bare `vX.Y.Z` form because `UpdateChecker` in already-deployed Paper builds only understands it — never move Paper to a prefixed tag. Up to v1.4.0, `vX.Y.Z` released both platforms and some Paper releases used `paper/vX.Y.Z`; those tags stay as history.
 
 `CHANGELOG.md` headings map one-to-one onto tags: `### vX.Y.Z` is a Paper release (tag `vX.Y.Z`), `#### Velocity: vA.B.C` under it is a Velocity release shipped alongside it (tag `velocity/vA.B.C`), and a Velocity-only release gets its own `### Velocity: vA.B.C` heading.
 
