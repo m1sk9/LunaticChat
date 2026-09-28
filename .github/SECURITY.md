@@ -6,7 +6,7 @@ The Paper/Folia and Velocity plugins are released independently, and **only the 
 
 | Component | Supported |
 |-----------|-----------|
-| LunaticChat for Paper / Folia (latest `paper/vX.Y.Z`) | Yes |
+| LunaticChat for Paper / Folia (latest `vX.Y.Z`) | Yes |
 | LunaticChat for Velocity (latest `velocity/vX.Y.Z`) | Yes |
 | Any earlier release | No |
 | Nightly builds and CI artifacts | No |

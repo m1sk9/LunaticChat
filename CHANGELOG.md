@@ -2,6 +2,14 @@
 
 ## v1
 
+### v1.4.1
+
+- Fixed a bug where the update checker never reported a new release unless the newest GitHub release happened to be tagged `vX.Y.Z`.
+  - It read only the repository's latest release, so a Paper release tagged `paper/vX.Y.Z` or a Velocity release published after it was taken for version 0.x and ignored. It now picks the newest Paper release from the release list.
+- Each release tag now carries exactly one platform: `vX.Y.Z` for Paper / Folia and `velocity/vX.Y.Z` for Velocity.
+  - Up to v1.4.0, a `vX.Y.Z` tag could ship both JARs at once. When both are updated together, two tags and two GitHub Releases are published.
+- Fixed the GitHub download links in the v1.3.0 and v1.4.0 release notes (and the matching Velocity v1.2.0 and v1.3.0 notes) pointing at tags that did not exist.
+
 ### v1.4.0
 
 - Supports reloading configurations while the system is running. Except certain settings, changes can be applied immediately.

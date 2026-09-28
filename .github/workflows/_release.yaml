@@ -1,0 +1,189 @@
+name: Release (shared)
+
+on:
+  workflow_call:
+    inputs:
+      platform:
+        description: "paper or velocity"
+        required: true
+        type: string
+      modrinth-game-versions:
+        description: "Newline-separated Minecraft versions listed on Modrinth"
+        required: true
+        type: string
+      modrinth-mc-version:
+        description: "Minecraft version shown in the Modrinth version name (paper only)"
+        required: false
+        type: string
+        default: ""
+    secrets:
+      MODRINTH_TOKEN:
+        required: true
+      MODRINTH_PROJECT_ID:
+        required: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+      jar_name: ${{ steps.get_version.outputs.jar_name }}
+      module: ${{ steps.get_version.outputs.module }}
+      label: ${{ steps.get_version.outputs.label }}
+      modrinth_name: ${{ steps.get_version.outputs.modrinth_name }}
+      modrinth_version: ${{ steps.get_version.outputs.modrinth_version }}
+      modrinth_loaders: ${{ steps.get_version.outputs.modrinth_loaders }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Extract version from tag and validate
+        id: get_version
+        env:
+          PLATFORM: ${{ inputs.platform }}
+          MC_VERSION: ${{ inputs.modrinth-mc-version }}
+        run: |
+          # Paper keeps the bare vX.Y.Z tag so that UpdateChecker in already-deployed
+          # Paper builds, which strips only a leading "v", keeps recognising new releases.
+          case "$PLATFORM" in
+            paper)
+              TAG_PREFIX="v"
+              VERSION_KEY="paperVersion"
+              JAR_SUFFIX=""
+              MODULE="platform-paper"
+              LABEL="Paper/Folia"
+              ;;
+            velocity)
+              TAG_PREFIX="velocity/v"
+              VERSION_KEY="velocityVersion"
+              JAR_SUFFIX="-velocity"
+              MODULE="platform-velocity"
+              LABEL="Velocity"
+              ;;
+            *)
+              echo "Error: unknown platform '$PLATFORM'"
+              exit 1
+              ;;
+          esac
+
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          if [[ ! "$TAG_NAME" =~ ^${TAG_PREFIX}[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: Tag $TAG_NAME does not match ${TAG_PREFIX}X.Y.Z"
+            exit 1
+          fi
+
+          TAG_VERSION=${TAG_NAME#"$TAG_PREFIX"}
+          GRADLE_VERSION=$(grep "^${VERSION_KEY}=" gradle.properties | cut -d'=' -f2)
+          if [ "$TAG_VERSION" != "$GRADLE_VERSION" ]; then
+            echo "Error: Tag version ($TAG_VERSION) does not match gradle.properties $VERSION_KEY ($GRADLE_VERSION)"
+            exit 1
+          fi
+
+          if [ "$PLATFORM" = "paper" ]; then
+            MODRINTH_NAME="v${TAG_VERSION} (${LABEL} v${MC_VERSION})"
+            MODRINTH_VERSION="$TAG_VERSION"
+            MODRINTH_LOADERS=$'paper\nfolia'
+          else
+            MODRINTH_NAME="v${TAG_VERSION} (${LABEL})"
+            MODRINTH_VERSION="${TAG_VERSION}-velocity"
+            MODRINTH_LOADERS="velocity"
+          fi
+
+          {
+            echo "version=$TAG_VERSION"
+            echo "jar_name=LunaticChat-${TAG_VERSION}${JAR_SUFFIX}.jar"
+            echo "module=$MODULE"
+            echo "label=$LABEL"
+            echo "modrinth_name=$MODRINTH_NAME"
+            echo "modrinth_version=$MODRINTH_VERSION"
+            echo "modrinth_loaders<<EOF"
+            echo "$MODRINTH_LOADERS"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "Version validation passed: $TAG_NAME"
+
+      - name: Check if release already exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          if gh release view "$TAG_NAME" &> /dev/null; then
+            echo "Error: Release $TAG_NAME already exists"
+            exit 1
+          fi
+          echo "Release validation passed: $TAG_NAME does not exist yet"
+
+  build:
+    runs-on: ubuntu-24.04
+    needs: validate
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Development Environment
+        uses: jdx/mise-action@v4
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build shadowJar
+        run: ./gradlew :${{ needs.validate.outputs.module }}:shadowJar --no-daemon
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: LunaticChat-${{ inputs.platform }}-v${{ needs.validate.outputs.version }}
+          path: ${{ needs.validate.outputs.module }}/build/libs/${{ needs.validate.outputs.jar_name }}
+          retention-days: 90
+
+  release:
+    runs-on: ubuntu-24.04
+    needs: [validate, build]
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: LunaticChat-${{ inputs.platform }}-v${{ needs.validate.outputs.version }}
+          path: ${{ needs.validate.outputs.module }}/build/libs
+
+      # Created as a draft, so "latest" is decided when it is published, not here:
+      # GitHub makes a newly published release the latest one unless told otherwise.
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PLATFORM: ${{ inputs.platform }}
+          VERSION: ${{ needs.validate.outputs.version }}
+          JAR_PATH: ${{ needs.validate.outputs.module }}/build/libs/${{ needs.validate.outputs.jar_name }}
+          LABEL: ${{ needs.validate.outputs.label }}
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+
+          # The notes point at the changelog on the documentation site rather than
+          # repeating it here, so the release notes live in exactly one place.
+          gh release create "$TAG_NAME" \
+            "$JAR_PATH" \
+            --title "v${VERSION} (${LABEL})" \
+            --draft \
+            --notes "Release notes: [${LABEL} v${VERSION}](https://lc.m1sk9.dev/changelog/${PLATFORM}/v${VERSION})"
+
+      - name: Publish to Modrinth
+        uses: cloudnode-pro/modrinth-publish@3870f66007063f03fb70118ca9eddbc09a4ba666 # v2
+        with:
+          token: ${{ secrets.MODRINTH_TOKEN }}
+          name: ${{ needs.validate.outputs.modrinth_name }}
+          project: ${{ secrets.MODRINTH_PROJECT_ID }}
+          version: ${{ needs.validate.outputs.modrinth_version }}
+          channel: release
+          changelog: |-
+            Please refer to the [release notes](https://lc.m1sk9.dev/changelog/${{ inputs.platform }}/v${{ needs.validate.outputs.version }}) for update details.
+          loaders: ${{ needs.validate.outputs.modrinth_loaders }}
+          game-versions: ${{ inputs.modrinth-game-versions }}
+          files: ${{ needs.validate.outputs.module }}/build/libs/${{ needs.validate.outputs.jar_name }}

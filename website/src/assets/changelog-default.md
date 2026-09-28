@@ -6,7 +6,7 @@ layout: doc
 
 <!--
 - Download:
-  - [GitHub](https://github.com/m1sk9/LunaticChat/releases/tag/paper/vX.Y.Z)
+  - [GitHub](https://github.com/m1sk9/LunaticChat/releases/tag/vX.Y.Z)
   - [Modrinth](https://modrinth.com/plugin/lunaticchat/version/X.Y.Z)
 
 - Download:
