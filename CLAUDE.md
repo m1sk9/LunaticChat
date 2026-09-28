@@ -97,7 +97,7 @@ website/            → VitePress documentation site
 | paper | `converter` | Romaji→Japanese: `KanaConverter`, `GoogleIMEClient` (Ktor), `ConversionCache` |
 | paper | `config` | `config.yml` → `LunaticChatConfiguration` via KAML |
 | paper | `velocity` | Plugin-messaging client, cross-server chat/DM, remote player registry |
-| paper | `i18n` | `LanguageManager` (KAML), `MessageFormatter`, `ChatFormat` |
+| paper | `i18n` | `LanguageManager` (KAML), `MessageFormatter`, `ChatFormat`, `ChatPlaceholder` |
 | velocity | `messaging` | `PluginMessageHandler`, cross-server chat and DM relays |
 | velocity | `presence` | `PresenceTracker` — which backend a player is on |
 

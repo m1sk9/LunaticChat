@@ -18,7 +18,7 @@ import io.mockk.unmockkStatic
 import io.mockk.verify
 import net.kyori.adventure.sound.Sound
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.TextComponent
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.Bukkit
 import java.util.UUID
 import kotlin.test.AfterTest
@@ -26,7 +26,6 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class ChannelMessageHandlerTest {
@@ -83,7 +82,7 @@ class ChannelMessageHandlerTest {
         assertTrue(handler().sendChannelMessage(sender, "hello"))
 
         verify { member.sendMessage(capture(delivered)) }
-        assertEquals("§7[§b#general§7] §eAlice: §fhello", assertIs<TextComponent>(delivered.captured).content())
+        assertEquals("§7[§b#general§7] §eAlice: §fhello", LegacyComponentSerializer.legacySection().serialize(delivered.captured))
     }
 
     @Test
@@ -94,7 +93,7 @@ class ChannelMessageHandlerTest {
         handler().sendChannelMessage(sender, "hello")
 
         verify { member.sendMessage(capture(delivered)) }
-        assertEquals("<general> Alice: hello", assertIs<TextComponent>(delivered.captured).content())
+        assertEquals("<general> Alice: hello", LegacyComponentSerializer.legacySection().serialize(delivered.captured))
     }
 
     @Test

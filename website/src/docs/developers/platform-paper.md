@@ -158,6 +158,7 @@ Channel state itself is managed by the `chat/channel` package.
 - `Language` (enum) — `EN` / `JA`; unknown codes fall back to EN
 - `LanguageManager` — loads `resources/languages/` with KAML at startup and flattens the nested YAML into dotted keys (`toggle.on`, etc.). `getMessage(key, placeholders)` resolves with selected-language → EN fallback and substitutes `{placeholder}`, returning the key itself if not found. A missing EN is a fatal error
 - `MessageFormatter` (`object`) — produces an Adventure `Component` with a `[LC]` prefix and highlights `{braces}` placeholders detected by regex
+- `ChatPlaceholder` / `ChatFormat.kt` — the placeholder vocabulary of `messageFormat` and its one renderer: entry points per format (`directMessage` / `channelMessage` / `crossServerGlobalChat`) substitute in a single pass and hand the result to `LegacyComponentSerializer`, so handlers never spell a placeholder name
 
 ## converter — Romaji-to-Japanese conversion
 

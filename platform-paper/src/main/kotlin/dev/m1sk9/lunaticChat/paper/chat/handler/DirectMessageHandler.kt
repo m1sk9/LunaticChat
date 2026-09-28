@@ -4,13 +4,13 @@ import dev.m1sk9.lunaticChat.paper.common.SpyPermissionManager
 import dev.m1sk9.lunaticChat.paper.common.playDirectMessageNotification
 import dev.m1sk9.lunaticChat.paper.common.playMessageSendNotification
 import dev.m1sk9.lunaticChat.paper.config.MessageFormatHolder
+import dev.m1sk9.lunaticChat.paper.config.key.MessageFormatConfig
 import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
 import dev.m1sk9.lunaticChat.paper.converter.convertWithRomaji
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
-import dev.m1sk9.lunaticChat.paper.i18n.withChatPlaceholders
+import dev.m1sk9.lunaticChat.paper.i18n.directMessage
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
 import dev.m1sk9.lunaticChat.paper.velocity.RemotePlayerRegistry
-import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.ClickEvent
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
@@ -39,7 +39,7 @@ sealed interface ReplyTarget {
  * Tracks the last player who messaged each player for /reply functionality.
  *
  * `/lc reload` can replace the format between two messages, so each method reads it once, at the
- * top, and passes that one string down. Reading [MessageFormatHolder] again further in would let a
+ * top, and passes that one snapshot down. Reading [MessageFormatHolder] again further in would let a
  * reload land mid-message and show the spies a different format than the two players saw.
  */
 class DirectMessageHandler(
@@ -140,11 +140,11 @@ class DirectMessageHandler(
 
         val displayMessage = convertIfEnabled(message, senderSettings?.japaneseConversionEnabled == true)
 
-        val format = messageFormats.current.directMessageFormat
+        val formats = messageFormats.current
 
-        notifySpies(format, sender.name, recipient.name, message)
+        notifySpies(formats, sender.name, recipient.name, message)
 
-        val userMessage = formatMessage(format, sender.name, recipient.name, displayMessage, replyTo = sender.name)
+        val userMessage = formatMessage(formats, sender.name, recipient.name, displayMessage, replyTo = sender.name)
         sender.apply {
             sendMessage(userMessage)
             takeIf { senderSettings?.directMessageNotificationEnabled == true }
@@ -177,13 +177,13 @@ class DirectMessageHandler(
         val senderSettings = settingsManager?.getSettings(sender.uniqueId)
         val displayMessage = convertIfEnabled(message, senderSettings?.japaneseConversionEnabled == true)
 
-        val format = messageFormats.current.directMessageFormat
+        val formats = messageFormats.current
         val recipientDisplay = "$targetName@$targetServerName"
 
-        notifySpies(format, sender.name, recipientDisplay, message)
+        notifySpies(formats, sender.name, recipientDisplay, message)
 
         val userMessage =
-            formatMessage(format, sender.name, recipientDisplay, displayMessage, replyTo = recipientDisplay)
+            formatMessage(formats, sender.name, recipientDisplay, displayMessage, replyTo = recipientDisplay)
         sender.apply {
             sendMessage(userMessage)
             takeIf { senderSettings?.directMessageNotificationEnabled == true }
@@ -204,11 +204,11 @@ class DirectMessageHandler(
         message: String,
     ) {
         val recipientSettings = settingsManager?.getSettings(recipient.uniqueId)
-        val format = messageFormats.current.directMessageFormat
+        val formats = messageFormats.current
         val senderDisplay = "$senderName@$sourceServerName"
 
         val userMessage =
-            formatMessage(format, senderDisplay, recipient.name, message, replyTo = senderDisplay)
+            formatMessage(formats, senderDisplay, recipient.name, message, replyTo = senderDisplay)
         recipient.apply {
             sendMessage(userMessage)
             takeIf { recipientSettings?.directMessageNotificationEnabled == true }
@@ -229,7 +229,7 @@ class DirectMessageHandler(
         }
 
     private fun notifySpies(
-        format: String,
+        formats: MessageFormatConfig,
         senderName: String,
         recipientName: String,
         rawMessage: String,
@@ -238,26 +238,17 @@ class DirectMessageHandler(
             noticeText = { languageManager.getMessage("general.spyMessage") },
             exclude = { it.name == senderName || it.name == recipientName },
         ) {
-            formatMessage(format, senderName, recipientName, rawMessage, replyTo = senderName)
+            formatMessage(formats, senderName, recipientName, rawMessage, replyTo = senderName)
         }
     }
 
     private fun formatMessage(
-        format: String,
+        formats: MessageFormatConfig,
         senderName: String,
         recipientName: String,
         message: String,
         replyTo: String,
-    ): Component {
-        val text =
-            format.withChatPlaceholders(
-                "sender" to senderName,
-                "recipient" to recipientName,
-                "message" to message,
-            )
-
-        return Component
-            .text(text)
-            .clickEvent(ClickEvent.suggestCommand("/tell $replyTo "))
-    }
+    ) = formats
+        .directMessage(senderName, recipientName, message)
+        .clickEvent(ClickEvent.suggestCommand("/tell $replyTo "))
 }

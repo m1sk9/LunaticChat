@@ -10,7 +10,7 @@ import dev.m1sk9.lunaticChat.paper.common.playChannelReceiveNotification
 import dev.m1sk9.lunaticChat.paper.common.playMessageSendNotification
 import dev.m1sk9.lunaticChat.paper.config.MessageFormatHolder
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
-import dev.m1sk9.lunaticChat.paper.i18n.withChatPlaceholders
+import dev.m1sk9.lunaticChat.paper.i18n.channelMessage
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
@@ -90,15 +90,5 @@ class ChannelMessageHandler(
         senderName: String,
         channelName: String,
         message: String,
-    ): Component {
-        val format = messageFormats.current.channelMessageFormat
-        val text =
-            format.withChatPlaceholders(
-                "sender" to senderName,
-                "channel" to channelName,
-                "message" to message,
-            )
-
-        return Component.text(text)
-    }
+    ): Component = messageFormats.current.channelMessage(senderName, channelName, message)
 }
