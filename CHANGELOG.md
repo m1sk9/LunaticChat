@@ -2,8 +2,11 @@
 
 ## v1
 
-### v1.4.1
+### v1.5.0
 
+- Added the `{world}`, `{display_name}`, `{channel_id}` and `{role}` placeholders to `messageFormat`.
+  - `{world}` works in direct messages and channel chat; the other three work in channel chat. `{world}` is empty for a direct message from another server.
+  - A channel or player name containing `{message}` or another placeholder is now shown as written instead of being replaced.
 - Fixed a bug where the update checker never reported a new release unless the newest GitHub release happened to be tagged `vX.Y.Z`.
   - It read only the repository's latest release, so a Paper release tagged `paper/vX.Y.Z` or a Velocity release published after it was taken for version 0.x and ignored. It now picks the newest Paper release from the release list.
 - Each release tag now carries exactly one platform: `vX.Y.Z` for Paper / Folia and `velocity/vX.Y.Z` for Velocity.
