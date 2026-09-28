@@ -15,25 +15,35 @@ fun MessageFormatConfig.directMessage(
     sender: String,
     recipient: String,
     message: String,
+    world: String,
 ): Component =
     directMessageFormat.render(
         mapOf(
             ChatPlaceholder.SENDER to sender,
             ChatPlaceholder.RECIPIENT to recipient,
             ChatPlaceholder.MESSAGE to message,
+            ChatPlaceholder.WORLD to world,
         ),
     )
 
 fun MessageFormatConfig.channelMessage(
     sender: String,
     channel: String,
+    channelId: String,
+    displayName: String,
     message: String,
+    world: String,
+    role: String,
 ): Component =
     channelMessageFormat.render(
         mapOf(
             ChatPlaceholder.SENDER to sender,
             ChatPlaceholder.CHANNEL to channel,
+            ChatPlaceholder.CHANNEL_ID to channelId,
+            ChatPlaceholder.DISPLAY_NAME to displayName,
             ChatPlaceholder.MESSAGE to message,
+            ChatPlaceholder.WORLD to world,
+            ChatPlaceholder.ROLE to role,
         ),
     )
 
@@ -50,7 +60,7 @@ fun MessageFormatConfig.crossServerGlobalChat(
         ),
     )
 
-private val PLACEHOLDER = Regex("""\{([A-Za-z]+)}""")
+private val PLACEHOLDER = Regex("""\{([A-Za-z_]+)}""")
 
 // One pass over the format rather than one replace per placeholder, so a value that itself
 // contains "{message}" (a channel named that way, say) is inserted literally instead of being

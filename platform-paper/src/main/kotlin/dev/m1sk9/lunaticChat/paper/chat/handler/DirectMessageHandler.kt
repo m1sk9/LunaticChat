@@ -142,9 +142,10 @@ class DirectMessageHandler(
 
         val formats = messageFormats.current
 
-        notifySpies(formats, sender.name, recipient.name, message)
+        notifySpies(formats, sender.name, recipient.name, message, sender.world.name)
 
-        val userMessage = formatMessage(formats, sender.name, recipient.name, displayMessage, replyTo = sender.name)
+        val userMessage =
+            formatMessage(formats, sender.name, recipient.name, displayMessage, sender.world.name, replyTo = sender.name)
         sender.apply {
             sendMessage(userMessage)
             takeIf { senderSettings?.directMessageNotificationEnabled == true }
@@ -180,10 +181,10 @@ class DirectMessageHandler(
         val formats = messageFormats.current
         val recipientDisplay = "$targetName@$targetServerName"
 
-        notifySpies(formats, sender.name, recipientDisplay, message)
+        notifySpies(formats, sender.name, recipientDisplay, message, sender.world.name)
 
         val userMessage =
-            formatMessage(formats, sender.name, recipientDisplay, displayMessage, replyTo = recipientDisplay)
+            formatMessage(formats, sender.name, recipientDisplay, displayMessage, sender.world.name, replyTo = recipientDisplay)
         sender.apply {
             sendMessage(userMessage)
             takeIf { senderSettings?.directMessageNotificationEnabled == true }
@@ -208,7 +209,8 @@ class DirectMessageHandler(
         val senderDisplay = "$senderName@$sourceServerName"
 
         val userMessage =
-            formatMessage(formats, senderDisplay, recipient.name, message, replyTo = senderDisplay)
+            // The relay does not carry the sender's world, so {world} renders empty for a remote sender.
+            formatMessage(formats, senderDisplay, recipient.name, message, world = "", replyTo = senderDisplay)
         recipient.apply {
             sendMessage(userMessage)
             takeIf { recipientSettings?.directMessageNotificationEnabled == true }
@@ -233,12 +235,13 @@ class DirectMessageHandler(
         senderName: String,
         recipientName: String,
         rawMessage: String,
+        world: String,
     ) {
         SpyPermissionManager.notifySpies(
             noticeText = { languageManager.getMessage("general.spyMessage") },
             exclude = { it.name == senderName || it.name == recipientName },
         ) {
-            formatMessage(formats, senderName, recipientName, rawMessage, replyTo = senderName)
+            formatMessage(formats, senderName, recipientName, rawMessage, world, replyTo = senderName)
         }
     }
 
@@ -247,8 +250,9 @@ class DirectMessageHandler(
         senderName: String,
         recipientName: String,
         message: String,
+        world: String,
         replyTo: String,
     ) = formats
-        .directMessage(senderName, recipientName, message)
+        .directMessage(senderName, recipientName, message, world)
         .clickEvent(ClickEvent.suggestCommand("/tell $replyTo "))
 }

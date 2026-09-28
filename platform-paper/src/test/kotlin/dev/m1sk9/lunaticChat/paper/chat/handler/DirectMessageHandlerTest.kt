@@ -113,6 +113,29 @@ class DirectMessageHandlerTest {
     }
 
     @Test
+    fun `the direct message format renders the sender's world`() {
+        val formats = TestUtils.createTestConfiguration().messageFormat.copy(directMessageFormat = "{sender}@{world}: {message}")
+        val handler = createHandler(configuration = TestUtils.createTestConfiguration().copy(messageFormat = formats))
+        val sender = TestUtils.createMockPlayer(name = "Alice", worldName = "world_the_end")
+        val recipient = TestUtils.createMockPlayer(name = "Bob")
+
+        runBlocking { handler.sendDirectMessage(sender, recipient, "hi") }
+
+        assertEquals("Alice@world_the_end: hi", recipient.receivedMessage().legacy())
+    }
+
+    @Test
+    fun `a direct message from another server renders the sender's world empty`() {
+        val formats = TestUtils.createTestConfiguration().messageFormat.copy(directMessageFormat = "{sender}[{world}]: {message}")
+        val handler = createHandler(configuration = TestUtils.createTestConfiguration().copy(messageFormat = formats))
+        val recipient = TestUtils.createMockPlayer(name = "Bob")
+
+        handler.handleIncomingCrossServerMessage(recipient, "Alice", "lobby", "hi")
+
+        assertEquals("Alice@lobby[]: hi", recipient.receivedMessage().legacy())
+    }
+
+    @Test
     fun `handleIncomingCrossServerMessage shows the recipient the sender qualified by server`() {
         val handler = createHandler()
         val recipient = TestUtils.createMockPlayer(name = "Bob")

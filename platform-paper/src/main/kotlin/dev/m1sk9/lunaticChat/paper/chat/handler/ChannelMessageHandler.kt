@@ -1,6 +1,8 @@
 package dev.m1sk9.lunaticChat.paper.chat.handler
 
+import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelContext
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelMessageLogEntry
+import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelRole
 import dev.m1sk9.lunaticChat.engine.debug.DebugCategory
 import dev.m1sk9.lunaticChat.engine.debug.DebugLogger
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
@@ -13,6 +15,7 @@ import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.channelMessage
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 
@@ -35,7 +38,7 @@ class ChannelMessageHandler(
 
         val senderSettings = settingsManager?.getSettings(playerId)
 
-        val formattedMessage = formatChannelMessage(player.name, context.channel.name, message)
+        val formattedMessage = formatChannelMessage(player, context, message)
 
         // Play notification sound to sender if enabled
         if (senderSettings?.channelMessageNotificationEnabled == true) {
@@ -87,8 +90,26 @@ class ChannelMessageHandler(
     }
 
     private fun formatChannelMessage(
-        senderName: String,
-        channelName: String,
+        sender: Player,
+        context: ChannelContext,
         message: String,
-    ): Component = messageFormats.current.channelMessage(senderName, channelName, message)
+    ): Component =
+        messageFormats.current.channelMessage(
+            sender = sender.name,
+            channel = context.channel.name,
+            channelId = context.channel.id,
+            displayName = LegacyComponentSerializer.legacySection().serialize(sender.displayName()),
+            message = message,
+            world = sender.world.name,
+            role = roleLabel(context.members.firstOrNull { it.playerId == sender.uniqueId }?.role),
+        )
+
+    private fun roleLabel(role: ChannelRole?): String =
+        languageManager.getMessage(
+            when (role) {
+                ChannelRole.OWNER -> "channel.role.owner"
+                ChannelRole.MODERATOR -> "channel.role.moderator"
+                ChannelRole.MEMBER, null -> "channel.role.member"
+            },
+        )
 }

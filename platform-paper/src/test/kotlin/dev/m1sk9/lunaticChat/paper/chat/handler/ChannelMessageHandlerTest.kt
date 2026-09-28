@@ -2,6 +2,7 @@ package dev.m1sk9.lunaticChat.paper.chat.handler
 
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelContext
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelMessageLogEntry
+import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelRole
 import dev.m1sk9.lunaticChat.engine.debug.DebugLogger
 import dev.m1sk9.lunaticChat.paper.TestUtils
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
@@ -18,6 +19,7 @@ import io.mockk.unmockkStatic
 import io.mockk.verify
 import net.kyori.adventure.sound.Sound
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.Bukkit
 import java.util.UUID
@@ -94,6 +96,35 @@ class ChannelMessageHandlerTest {
 
         verify { member.sendMessage(capture(delivered)) }
         assertEquals("<general> Alice: hello", LegacyComponentSerializer.legacySection().serialize(delivered.captured))
+    }
+
+    @Test
+    fun `the channel format renders the sender's display name, world and role and the channel ID`() {
+        val owner =
+            TestUtils.createMockPlayer(
+                uuid = senderId,
+                name = "Alice",
+                displayName = Component.text("Queen", NamedTextColor.RED),
+                worldName = "world_nether",
+            )
+        every { Bukkit.getPlayer(senderId) } returns owner
+        every { channelManager.getPlayerChannelContext(senderId) } returns
+            ChannelContext(
+                channel = channel,
+                members =
+                    listOf(
+                        TestUtils.createTestChannelMember(channelId = channel.id, playerId = senderId, role = ChannelRole.OWNER),
+                        TestUtils.createTestChannelMember(channelId = channel.id, playerId = memberId),
+                    ),
+            )
+        every { languageManager.getMessage("channel.role.owner") } returns "Owner"
+        messageFormats.replace(MessageFormatConfig(channelMessageFormat = "{channel_id}|{display_name}|{world}|{role}"))
+        val delivered = slot<Component>()
+
+        handler().sendChannelMessage(owner, "hello")
+
+        verify { member.sendMessage(capture(delivered)) }
+        assertEquals("ch-1|§cQueen|world_nether|Owner", LegacyComponentSerializer.legacySection().serialize(delivered.captured))
     }
 
     @Test

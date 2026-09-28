@@ -17,6 +17,10 @@ layout: doc
 | `{message}` | メッセージの内容 | すべて |
 | `{channel}` | チャンネル名 | `channelMessageFormat` |
 | `{server}` | サーバー名 | `crossServerGlobalChatFormat` |
+| `{world}` <Badge type="tip" text="v1.5.0~" /> | 送信者がいるワールド名．別サーバーから届いたダイレクトメッセージでは空になります | `directMessageFormat`, `channelMessageFormat` |
+| `{display_name}` <Badge type="tip" text="v1.5.0~" /> | 送信者の表示名．他のプラグインが設定した色も含みます | `channelMessageFormat` |
+| `{channel_id}` <Badge type="tip" text="v1.5.0~" /> | チャンネル ID | `channelMessageFormat` |
+| `{role}` <Badge type="tip" text="v1.5.0~" /> | チャンネル内での送信者の役割 (オーナー / モデレーター / メンバー) | `channelMessageFormat` |
 
 ## フォーマット一覧
 

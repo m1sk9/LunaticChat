@@ -14,7 +14,11 @@ enum class ChatPlaceholder(
     RECIPIENT("recipient"),
     MESSAGE("message"),
     CHANNEL("channel"),
+    CHANNEL_ID("channel_id"),
+    DISPLAY_NAME("display_name"),
     SERVER("server"),
+    WORLD("world"),
+    ROLE("role"),
     ;
 
     companion object {
