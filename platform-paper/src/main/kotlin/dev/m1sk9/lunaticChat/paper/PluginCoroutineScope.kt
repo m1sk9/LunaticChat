@@ -5,8 +5,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import java.util.logging.Level
 import java.util.logging.Logger
+import kotlin.time.Duration
 
 /**
  * Provides a coroutine scope tied to the plugin lifecycle.
@@ -42,12 +45,19 @@ class PluginCoroutineScope(
     val scope = CoroutineScope(Dispatchers.Default + job + errorHandler)
 
     /**
-     * Cancels all coroutines in this scope.
+     * Cancels all coroutines in this scope and blocks until they have finished, or [timeout]
+     * passes. Returns whether they finished in time.
      * Should be called during plugin disable.
      */
-    fun cancel() {
+    fun cancel(timeout: Duration): Boolean {
         logger.info("Cancelling plugin coroutine scope...")
+        // A latch rather than runBlocking { job.join() }: this runs on the main thread, and the
+        // wait needs no coroutine machinery of its own.
+        val finished = CountDownLatch(1)
+        job.invokeOnCompletion { finished.countDown() }
         scope.cancel()
+        val completed = finished.await(timeout.inWholeMilliseconds, TimeUnit.MILLISECONDS)
         logger.info("Plugin coroutine scope cancelled.")
+        return completed
     }
 }
