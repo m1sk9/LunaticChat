@@ -15,9 +15,9 @@ import dev.m1sk9.lunaticChat.paper.command.impl.lcv.VelocityStatusCommand
 import dev.m1sk9.lunaticChat.paper.command.setting.SettingHandler
 import dev.m1sk9.lunaticChat.paper.command.setting.SettingHandlerRegistry
 import dev.m1sk9.lunaticChat.paper.command.setting.SettingKey
+import dev.m1sk9.lunaticChat.paper.common.PluginHttpClient
 import dev.m1sk9.lunaticChat.paper.common.UpdateCheckResult
 import dev.m1sk9.lunaticChat.paper.common.UpdateChecker
-import dev.m1sk9.lunaticChat.paper.common.awaitEngineStopped
 import dev.m1sk9.lunaticChat.paper.config.ConfigManager
 import dev.m1sk9.lunaticChat.paper.config.ConfigurationReloader
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
@@ -28,7 +28,6 @@ import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.listener.EventListenerRegistry
 import dev.m1sk9.lunaticChat.paper.velocity.VelocityConnectionManager
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
 import kotlinx.coroutines.launch
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
@@ -39,7 +38,7 @@ class LunaticChat :
     JavaPlugin(),
     Listener {
     private companion object {
-        val HTTP_ENGINE_STOP_TIMEOUT = 2.seconds
+        val SHUTDOWN_WAIT_TIMEOUT = 2.seconds
     }
 
     // Read by commands, which reach the plugin instance but not the container.
@@ -77,7 +76,7 @@ class LunaticChat :
 
     // Only the Japanese conversion and update-check features make HTTP calls, and both default
     // to off, so a stock install should not pay for a CIO engine and its thread pool.
-    private val httpClient = lazy { HttpClient(CIO) }
+    private val httpClient = lazy { PluginHttpClient() }
 
     override fun onEnable() {
         saveDefaultConfig()
@@ -111,7 +110,7 @@ class LunaticChat :
                 plugin = this,
                 configuration = configuration,
                 messageFormats = messageFormats,
-                httpClient = httpClient,
+                httpClient = lazy { httpClient.value.client },
                 logger = logger,
                 debug = debugLogger,
             )
@@ -126,21 +125,23 @@ class LunaticChat :
 
         // Check for updates
         if (configuration.checkForUpdates) {
-            initializeUpdateChecker(httpClient.value)
+            initializeUpdateChecker(httpClient.value.client)
         }
 
         logger.info("LunaticChat enabled.")
     }
 
     override fun onDisable() {
-        pluginScope.cancel()
-        val httpClient = httpClient.takeIf { it.isInitialized() }?.value
-        // Closed before the services save rather than after, so the engine's asynchronous cleanup
-        // runs while they write - the selector loop it stops is not part of the job awaited below.
-        httpClient?.close()
+        // Both waits below keep plugin code from running after this returns: Paper then closes the
+        // plugin JAR, and the first class such code has yet to load fails with "zip file closed".
+        if (!pluginScope.cancel(SHUTDOWN_WAIT_TIMEOUT)) {
+            logger.warning("Plugin coroutines did not finish within $SHUTDOWN_WAIT_TIMEOUT")
+        }
         serviceInitializer.shutdown(services)
-        if (httpClient != null && !httpClient.awaitEngineStopped(HTTP_ENGINE_STOP_TIMEOUT)) {
-            logger.warning("The HTTP client did not finish shutting down within $HTTP_ENGINE_STOP_TIMEOUT")
+        // Closed after the services save: a conversion that hits a closed client is cached as its
+        // hiragana fallback, and the save would then persist that.
+        if (httpClient.isInitialized() && !httpClient.value.close(SHUTDOWN_WAIT_TIMEOUT)) {
+            logger.warning("The HTTP client did not finish shutting down within $SHUTDOWN_WAIT_TIMEOUT")
         }
         logger.info("LunaticChat disabled.")
     }
