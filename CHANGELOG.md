@@ -2,6 +2,13 @@
 
 ## v1
 
+### v1.6.0
+
+- Paper 26.3 (Minecraft 26.3) is now supported.
+  - Support for Paper 26.2 has been dropped.
+- Fixed a `zip file closed` warning that could appear right after `LunaticChat disabled.` when the server stopped.
+  - The HTTP client used by the update check and Japanese conversion kept cleaning up after the plugin had been disabled. Shutdown now waits for it to finish.
+
 ### v1.5.0
 
 - Added the `{world}`, `{display_name}`, `{channel_id}` and `{role}` placeholders to `messageFormat`.
