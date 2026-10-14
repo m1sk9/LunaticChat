@@ -42,7 +42,7 @@ Paper と Velocity は別々のバージョン番号を持ち，独立にリリ�
 - v1.4.0 までは `vX.Y.Z` タグで両方をリリースしていた (`v1.0.0`，`v1.3.0`，`v1.4.0`)．Paper 単独のリリースには `paper/vX.Y.Z` を使ったものもある．これらのタグはそのまま残している
 - どちらのワークフローも共通の `_release.yaml` を呼び出す: `validate` (タグの形式，`gradle.properties` との一致，既存リリースの重複チェック) → `build` (mise + Gradle setup，`shadowJar`) → `release` (`gh release create --draft` + Modrinth 公開)
 - GitHub Release は draft で作られる．Velocity のリリースは `--latest=false` を付けて公開し，リポジトリの Latest が Paper のリリースのままになるようにする
-- Modrinth の game-versions は Paper=`26.2.x` (loader: paper, folia)，Velocity=`1.21.x` + `26.1.x` + `26.2.x` (loader: velocity)．呼び出し側の各ワークフローで指定する
+- Modrinth の game-versions は Paper=`26.3.x` (loader: paper, folia)，Velocity=`1.21.x` + `26.1.x` + `26.2.x` (loader: velocity)．呼び出し側の各ワークフローで指定する
 
 ## CI
 
