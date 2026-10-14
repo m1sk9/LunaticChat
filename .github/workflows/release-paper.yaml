@@ -12,6 +12,6 @@ jobs:
       contents: write
     with:
       platform: paper
-      modrinth-game-versions: "26.2.x"
-      modrinth-mc-version: "26.2"
+      modrinth-game-versions: "26.3.x"
+      modrinth-mc-version: "26.3"
     secrets: inherit
