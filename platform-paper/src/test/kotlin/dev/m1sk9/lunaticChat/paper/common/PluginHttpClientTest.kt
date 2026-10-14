@@ -2,13 +2,20 @@ package dev.m1sk9.lunaticChat.paper.common
 
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.net.InetAddress
 import java.net.ServerSocket
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.concurrent.thread
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 class PluginHttpClientTest {
@@ -55,5 +62,40 @@ class PluginHttpClientTest {
             assertEquals(emptyList(), liveHttpThreads())
             responder.join()
         }
+    }
+
+    @Test
+    fun `close reports failure when work on the client's threads outlives the timeout`() {
+        val http = PluginHttpClient()
+        val release = CountDownLatch(1)
+        val finished = CountDownLatch(1)
+        CoroutineScope(http.client.engine.dispatcher).launch {
+            try {
+                release.await()
+            } finally {
+                finished.countDown()
+            }
+        }
+
+        try {
+            assertFalse(http.close(50.milliseconds))
+        } finally {
+            release.countDown()
+            finished.await(5, TimeUnit.SECONDS)
+        }
+    }
+
+    @Test
+    fun `work dispatched after close is discarded rather than run elsewhere`() {
+        val http = PluginHttpClient()
+        assertTrue(http.close(5.seconds))
+        val ran = AtomicBoolean(false)
+
+        CoroutineScope(http.client.engine.dispatcher).launch { ran.set(true) }
+
+        assertEquals(1, http.discardedTasks)
+        // kotlinx-coroutines would rerun a rejected task on Dispatchers.IO; give it the chance to.
+        Thread.sleep(200)
+        assertFalse(ran.get())
     }
 }
