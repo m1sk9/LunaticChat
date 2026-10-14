@@ -114,6 +114,10 @@ export const en: DefaultTheme.Config = {
             text: 'v1',
             items: [
               {
+                link: '/changelog/paper/v1.6.0',
+                text: 'v1.6.0',
+              },
+              {
                 link: '/changelog/paper/v1.5.0',
                 text: 'v1.5.0',
               },
