@@ -17,6 +17,7 @@ import dev.m1sk9.lunaticChat.paper.command.setting.SettingHandlerRegistry
 import dev.m1sk9.lunaticChat.paper.command.setting.SettingKey
 import dev.m1sk9.lunaticChat.paper.common.UpdateCheckResult
 import dev.m1sk9.lunaticChat.paper.common.UpdateChecker
+import dev.m1sk9.lunaticChat.paper.common.awaitEngineStopped
 import dev.m1sk9.lunaticChat.paper.config.ConfigManager
 import dev.m1sk9.lunaticChat.paper.config.ConfigurationReloader
 import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
@@ -32,10 +33,15 @@ import kotlinx.coroutines.launch
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.time.Duration.Companion.seconds
 
 class LunaticChat :
     JavaPlugin(),
     Listener {
+    private companion object {
+        val HTTP_ENGINE_STOP_TIMEOUT = 2.seconds
+    }
+
     // Read by commands, which reach the plugin instance but not the container.
     val directMessageHandler: DirectMessageHandler get() = services.directMessageHandler
     val languageManager: LanguageManager get() = services.languageManager
@@ -128,8 +134,14 @@ class LunaticChat :
 
     override fun onDisable() {
         pluginScope.cancel()
+        val httpClient = httpClient.takeIf { it.isInitialized() }?.value
+        // Closed before the services save rather than after, so the engine's asynchronous cleanup
+        // runs while they write - the selector loop it stops is not part of the job awaited below.
+        httpClient?.close()
         serviceInitializer.shutdown(services)
-        if (httpClient.isInitialized()) httpClient.value.close()
+        if (httpClient != null && !httpClient.awaitEngineStopped(HTTP_ENGINE_STOP_TIMEOUT)) {
+            logger.warning("The HTTP client did not finish shutting down within $HTTP_ENGINE_STOP_TIMEOUT")
+        }
         logger.info("LunaticChat disabled.")
     }
 
