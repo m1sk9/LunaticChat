@@ -1,5 +1,6 @@
 import { execSync } from 'node:child_process';
 import { defineConfig } from 'vitepress';
+import llmstxt from 'vitepress-plugin-llms';
 import { en } from './config/en';
 import { ja } from './config/ja';
 
@@ -51,4 +52,13 @@ export default defineConfig({
   },
   title: 'LunaticChat',
   titleTemplate: 'LunaticChat',
+  vite: {
+    plugins: [
+      llmstxt({
+        domain: 'https://lc.m1sk9.dev',
+        // Keep the English site only: the Japanese pages would double llms-full.txt.
+        ignoreFiles: ['index.md', 'ja/**'],
+      }),
+    ],
+  },
 });
