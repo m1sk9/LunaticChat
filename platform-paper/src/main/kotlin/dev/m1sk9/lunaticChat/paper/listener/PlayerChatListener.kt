@@ -4,7 +4,6 @@ import dev.m1sk9.lunaticChat.engine.debug.DebugCategory
 import dev.m1sk9.lunaticChat.engine.debug.DebugLogger
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.chat.handler.ChannelMessageHandler
-import dev.m1sk9.lunaticChat.paper.config.LunaticChatConfiguration
 import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
 import dev.m1sk9.lunaticChat.paper.converter.convertWithRomajiBlocking
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
@@ -21,42 +20,29 @@ class PlayerChatListener(
     private val channelMessageHandler: ChannelMessageHandler?,
     private val romajiConverter: RomanjiConverter?,
     private val settingsManager: PlayerSettingsManager,
-    private val configuration: LunaticChatConfiguration,
     private val crossServerChatManager: CrossServerChatManager?,
     private val debug: DebugLogger = DebugLogger.Disabled,
 ) : Listener {
     private val plainTextSerializer = PlainTextComponentSerializer.plainText()
 
     /**
-     * Handles global chat message routing.
-     * Checks if Velocity cross-server chat is enabled and routes accordingly.
+     * Handles global chat message routing, relaying through Velocity when cross-server chat is
+     * enabled (in which case [crossServerChatManager] is non-null).
      */
     private fun handleGlobalChat(
         event: AsyncChatEvent,
         displayMessage: String,
     ) {
-        val velocityIntegrationEnabled = configuration.features.velocityIntegration.enabled
-        val crossServerChatEnabled = configuration.features.velocityIntegration.crossServerGlobalChat
-
         debug.log(DebugCategory.CHAT) {
-            val relayed = velocityIntegrationEnabled && crossServerChatEnabled && crossServerChatManager != null
-            "Routing ${event.player.name} to global chat (relayed across servers: $relayed)"
+            "Routing ${event.player.name} to global chat (relayed across servers: ${crossServerChatManager != null})"
         }
 
-        if (velocityIntegrationEnabled && crossServerChatEnabled && crossServerChatManager != null) {
-            // Send to Velocity for cross-server broadcast
-            crossServerChatManager.sendGlobalMessage(
-                event.player.uniqueId,
-                event.player.name,
-                displayMessage,
-            )
-
-            // Display as normal chat on the sender's server (no special formatting)
-            event.message(Component.text(displayMessage))
-        } else {
-            // Existing behavior: normal Minecraft chat
-            event.message(Component.text(displayMessage))
-        }
+        crossServerChatManager?.sendGlobalMessage(
+            event.player.uniqueId,
+            event.player.name,
+            displayMessage,
+        )
+        event.message(Component.text(displayMessage))
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

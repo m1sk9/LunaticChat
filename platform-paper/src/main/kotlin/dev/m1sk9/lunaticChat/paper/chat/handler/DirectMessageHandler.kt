@@ -91,11 +91,8 @@ class DirectMessageHandler(
      * to the last person they messaged. Targets that are no longer reachable
      * (offline locally, or absent from the proxy roster) are skipped.
      */
-    fun getReplyTarget(player: Player): ReplyTarget? {
-        resolveValidTarget(lastMessager[player.uniqueId])?.let { return it }
-        resolveValidTarget(lastRecipient[player.uniqueId])?.let { return it }
-        return null
-    }
+    fun getReplyTarget(player: Player): ReplyTarget? =
+        resolveValidTarget(lastMessager[player.uniqueId]) ?: resolveValidTarget(lastRecipient[player.uniqueId])
 
     private fun resolveValidTarget(target: ReplyTarget?): ReplyTarget? =
         when (target) {
@@ -147,16 +144,10 @@ class DirectMessageHandler(
 
         val userMessage =
             formatMessage(formats, sender.name, recipient.name, displayMessage, world, replyTo = sender.name)
-        sender.apply {
-            sendMessage(userMessage)
-            takeIf { senderSettings?.directMessageNotificationEnabled == true }
-                ?.playMessageSendNotification()
-        }
-        recipient.apply {
-            sendMessage(userMessage)
-            takeIf { recipientSettings?.directMessageNotificationEnabled == true }
-                ?.playDirectMessageNotification()
-        }
+        sender.sendMessage(userMessage)
+        if (senderSettings?.directMessageNotificationEnabled == true) sender.playMessageSendNotification()
+        recipient.sendMessage(userMessage)
+        if (recipientSettings?.directMessageNotificationEnabled == true) recipient.playDirectMessageNotification()
         return true
     }
 
@@ -187,11 +178,8 @@ class DirectMessageHandler(
 
         val userMessage =
             formatMessage(formats, sender.name, recipientDisplay, displayMessage, world, replyTo = recipientDisplay)
-        sender.apply {
-            sendMessage(userMessage)
-            takeIf { senderSettings?.directMessageNotificationEnabled == true }
-                ?.playMessageSendNotification()
-        }
+        sender.sendMessage(userMessage)
+        if (senderSettings?.directMessageNotificationEnabled == true) sender.playMessageSendNotification()
 
         return displayMessage
     }
@@ -213,11 +201,8 @@ class DirectMessageHandler(
 
         val userMessage =
             formatMessage(formats, senderDisplay, recipient.name, message, senderWorld, replyTo = senderDisplay)
-        recipient.apply {
-            sendMessage(userMessage)
-            takeIf { recipientSettings?.directMessageNotificationEnabled == true }
-                ?.playDirectMessageNotification()
-        }
+        recipient.sendMessage(userMessage)
+        if (recipientSettings?.directMessageNotificationEnabled == true) recipient.playDirectMessageNotification()
 
         lastMessager[recipient.uniqueId] = ReplyTarget.Remote(senderName, sourceServerName)
     }

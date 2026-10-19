@@ -4,11 +4,9 @@ import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.connection.PluginMessageEvent
 import com.velocitypowered.api.proxy.ProxyServer
 import com.velocitypowered.api.proxy.ServerConnection
-import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier
 import dev.m1sk9.lunaticChat.engine.debug.DebugCategory
 import dev.m1sk9.lunaticChat.engine.debug.DebugLogger
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessage
-import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageChannel
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageCodec
 import dev.m1sk9.lunaticChat.engine.protocol.ProtocolVersion
 import dev.m1sk9.lunaticChat.velocity.presence.PresenceTracker
@@ -33,17 +31,13 @@ class PluginMessageHandler(
     private val crossServerDirectMessageRelay: CrossServerDirectMessageRelay,
     private val presenceTracker: PresenceTracker,
 ) {
-    companion object {
-        private val CHANNEL = MinecraftChannelIdentifier.create(PluginMessageChannel.NAMESPACE, PluginMessageChannel.NAME)
-    }
-
     /**
      * Initialize
      */
     fun initialize() {
-        server.channelRegistrar.register(CHANNEL)
+        server.channelRegistrar.register(PLUGIN_MESSAGE_CHANNEL)
         server.eventManager.register(plugin, this)
-        logger.info("Plugin message handler registered for channel: $CHANNEL")
+        logger.info("Plugin message handler registered for channel: $PLUGIN_MESSAGE_CHANNEL")
     }
 
     /**
@@ -51,7 +45,7 @@ class PluginMessageHandler(
      */
     @Subscribe
     fun onPluginMessage(event: PluginMessageEvent) {
-        if (event.identifier != CHANNEL) return
+        if (event.identifier != PLUGIN_MESSAGE_CHANNEL) return
 
         val source = event.source
         if (source !is ServerConnection) {
@@ -154,7 +148,7 @@ class PluginMessageHandler(
         val data = PluginMessageCodec.encode(response)
 
         // Send
-        connection.sendPluginMessage(CHANNEL, data)
+        connection.sendPluginMessage(PLUGIN_MESSAGE_CHANNEL, data)
         debug.log(DebugCategory.PROTOCOL) { "Sent handshake response (${data.size} bytes) to ${connection.serverInfo.name}" }
 
         // Only the failure stays at INFO or above. Whether a backend connected is one line an
@@ -179,7 +173,7 @@ class PluginMessageHandler(
             )
 
         val data = PluginMessageCodec.encode(response)
-        connection.sendPluginMessage(CHANNEL, data)
+        connection.sendPluginMessage(PLUGIN_MESSAGE_CHANNEL, data)
 
         debug.log(DebugCategory.VELOCITY) { "Sent status response to ${connection.serverInfo.name}" }
     }

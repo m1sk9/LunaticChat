@@ -69,12 +69,6 @@ class ChannelNotificationHandler(
         val message = languageManager.getMessage(messageKey, placeholders + ("channel" to channel.name))
         val formattedMessage = MessageFormatter.format(message)
 
-        members.forEach { member ->
-            Bukkit.getPlayer(member.playerId)?.let { player ->
-                if (player.isOnline) {
-                    player.sendMessage(formattedMessage)
-                }
-            }
-        }
+        members.forEach { member -> Bukkit.getPlayer(member.playerId)?.sendMessage(formattedMessage) }
     }
 }

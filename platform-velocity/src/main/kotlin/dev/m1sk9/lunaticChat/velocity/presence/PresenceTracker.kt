@@ -5,14 +5,13 @@ import com.velocitypowered.api.event.connection.DisconnectEvent
 import com.velocitypowered.api.event.player.ServerPostConnectEvent
 import com.velocitypowered.api.proxy.Player
 import com.velocitypowered.api.proxy.ProxyServer
-import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier
 import com.velocitypowered.api.proxy.server.RegisteredServer
 import dev.m1sk9.lunaticChat.engine.debug.DebugCategory
 import dev.m1sk9.lunaticChat.engine.debug.DebugLogger
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessage
-import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageChannel
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageCodec
 import dev.m1sk9.lunaticChat.engine.protocol.PresenceEntry
+import dev.m1sk9.lunaticChat.velocity.messaging.PLUGIN_MESSAGE_CHANNEL
 import org.slf4j.Logger
 
 /**
@@ -31,10 +30,6 @@ class PresenceTracker(
     private val logger: Logger,
     private val debug: DebugLogger = DebugLogger.Disabled,
 ) {
-    companion object {
-        private val CHANNEL = MinecraftChannelIdentifier.create(PluginMessageChannel.NAMESPACE, PluginMessageChannel.NAME)
-    }
-
     /**
      * Registers presence event listeners.
      */
@@ -74,7 +69,7 @@ class PresenceTracker(
      */
     fun sendSnapshotTo(target: RegisteredServer) {
         val snapshot = buildSnapshot()
-        target.sendPluginMessage(CHANNEL, PluginMessageCodec.encode(snapshot))
+        target.sendPluginMessage(PLUGIN_MESSAGE_CHANNEL, PluginMessageCodec.encode(snapshot))
         debug.log(DebugCategory.VELOCITY) {
             "Sent a presence snapshot of ${snapshot.players.size} players to ${target.serverInfo.name}"
         }
@@ -84,7 +79,7 @@ class PresenceTracker(
         try {
             val snapshot = buildSnapshot(exclude)
             val data = PluginMessageCodec.encode(snapshot)
-            server.allServers.forEach { it.sendPluginMessage(CHANNEL, data) }
+            server.allServers.forEach { it.sendPluginMessage(PLUGIN_MESSAGE_CHANNEL, data) }
             debug.log(DebugCategory.VELOCITY) {
                 "Broadcast a presence snapshot of ${snapshot.players.size} players to ${server.allServers.size} servers"
             }

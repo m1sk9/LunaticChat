@@ -15,6 +15,7 @@ import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerMembershipLimitExceed
 import dev.m1sk9.lunaticChat.engine.exception.ChannelPrivateRequiresInvitationException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelRuntimeException
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
+import dev.m1sk9.lunaticChat.paper.common.has
 import dev.m1sk9.lunaticChat.paper.config.key.ChannelChatFeatureConfig
 import org.bukkit.Bukkit
 import java.util.UUID
@@ -25,7 +26,7 @@ import java.util.logging.Logger
  * Offline players cannot be checked, matching how the permission is evaluated elsewhere.
  */
 private fun hasChannelBypassPermission(playerId: UUID): Boolean =
-    Bukkit.getPlayer(playerId)?.hasPermission(LunaticChatPermissionNode.ChannelBypass.permissionNode) == true
+    Bukkit.getPlayer(playerId)?.let(LunaticChatPermissionNode.ChannelBypass::has) == true
 
 /**
  * @param hasModerationBypass Whether a player is exempt from being kicked or banned. Injected

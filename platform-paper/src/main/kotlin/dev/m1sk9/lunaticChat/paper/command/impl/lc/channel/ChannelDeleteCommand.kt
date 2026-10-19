@@ -11,6 +11,7 @@ import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
 import dev.m1sk9.lunaticChat.paper.command.core.LunaticSubCommand
+import dev.m1sk9.lunaticChat.paper.common.has
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
@@ -34,10 +35,7 @@ class ChannelDeleteCommand(
                     .suggests { ctx, builder ->
                         val player = ctx.source.executor as? org.bukkit.entity.Player
                         if (player != null) {
-                            val hasBypass =
-                                player.hasPermission(
-                                    LunaticChatPermissionNode.ChannelBypass.permissionNode,
-                                )
+                            val hasBypass = LunaticChatPermissionNode.ChannelBypass.has(player)
 
                             val channels =
                                 if (hasBypass) {
@@ -73,7 +71,7 @@ class ChannelDeleteCommand(
         channelId: String,
     ): CommandResult {
         val sender = ctx.requirePlayer()
-        val hasBypass = sender.hasPermission(LunaticChatPermissionNode.ChannelBypass.permissionNode)
+        val hasBypass = LunaticChatPermissionNode.ChannelBypass.has(sender)
 
         val result = channelManager.deleteChannel(channelId, sender.uniqueId, hasBypass)
         return result.fold(

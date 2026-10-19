@@ -1,12 +1,10 @@
 package dev.m1sk9.lunaticChat.velocity.messaging
 
 import com.velocitypowered.api.proxy.ProxyServer
-import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier
 import com.velocitypowered.api.proxy.server.RegisteredServer
 import dev.m1sk9.lunaticChat.engine.debug.DebugCategory
 import dev.m1sk9.lunaticChat.engine.debug.DebugLogger
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessage
-import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageChannel
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageCodec
 import org.slf4j.Logger
 
@@ -21,10 +19,6 @@ class CrossServerChatRelay(
     private val logger: Logger,
     private val debug: DebugLogger = DebugLogger.Disabled,
 ) {
-    companion object {
-        private val CHANNEL = MinecraftChannelIdentifier.create(PluginMessageChannel.NAMESPACE, PluginMessageChannel.NAME)
-    }
-
     /**
      * Relays a global chat message to all servers except the source
      *
@@ -48,7 +42,7 @@ class CrossServerChatRelay(
                     }
                     return@forEach
                 }
-                targetServer.sendPluginMessage(CHANNEL, encodedMessage)
+                targetServer.sendPluginMessage(PLUGIN_MESSAGE_CHANNEL, encodedMessage)
                 relayCount++
             }
 

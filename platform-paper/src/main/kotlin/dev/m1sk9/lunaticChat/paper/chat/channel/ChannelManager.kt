@@ -19,7 +19,6 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.logging.Logger
-import kotlin.collections.forEach
 
 class ChannelManager(
     private val storage: ChannelStorage,
@@ -421,14 +420,11 @@ class ChannelManager(
         channelsCache[channelId] = updatedChannel
 
         // Update member roles - new owner becomes OWNER, old owner becomes MODERATOR
-        val members = membersCache[channelId]
-        if (members != null) {
-            members.replaceAll { member ->
-                when (member.playerId) {
-                    newOwnerId -> member.copy(role = ChannelRole.OWNER)
-                    channel.ownerId -> member.copy(role = ChannelRole.MODERATOR)
-                    else -> member
-                }
+        membersCache[channelId]?.replaceAll { member ->
+            when (member.playerId) {
+                newOwnerId -> member.copy(role = ChannelRole.OWNER)
+                channel.ownerId -> member.copy(role = ChannelRole.MODERATOR)
+                else -> member
             }
         }
 
