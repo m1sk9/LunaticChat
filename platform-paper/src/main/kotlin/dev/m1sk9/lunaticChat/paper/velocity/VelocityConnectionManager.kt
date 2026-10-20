@@ -6,6 +6,7 @@ import dev.m1sk9.lunaticChat.engine.protocol.PluginMessage
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageChannel
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageCodec
 import dev.m1sk9.lunaticChat.engine.protocol.ProtocolVersion
+import dev.m1sk9.lunaticChat.engine.protocol.toHexPreview
 import dev.m1sk9.lunaticChat.paper.StoppableService
 import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
@@ -215,7 +216,7 @@ class VelocityConnectionManager(
                 else -> logger.warning("Unexpected message type: ${pluginMessage::class.simpleName}")
             }
         } catch (e: Exception) {
-            debug.log(DebugCategory.PROTOCOL) { "Undecodable message, first bytes: ${message.take(16).toHex()}" }
+            debug.log(DebugCategory.PROTOCOL) { "Undecodable message, first bytes: ${message.toHexPreview()}" }
             logger.severe("Failed to decode plugin message: ${e.message}")
             e.printStackTrace()
         }
@@ -359,4 +360,3 @@ class VelocityConnectionManager(
 }
 
 /** The leading bytes of an undecodable message, so a wire mismatch can be recognised on sight. */
-private fun List<Byte>.toHex(): String = joinToString(" ") { "%02x".format(it) }

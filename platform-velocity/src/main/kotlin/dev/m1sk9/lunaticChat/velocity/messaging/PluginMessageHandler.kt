@@ -9,6 +9,7 @@ import dev.m1sk9.lunaticChat.engine.debug.DebugLogger
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessage
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageCodec
 import dev.m1sk9.lunaticChat.engine.protocol.ProtocolVersion
+import dev.m1sk9.lunaticChat.engine.protocol.toHexPreview
 import dev.m1sk9.lunaticChat.velocity.presence.PresenceTracker
 import org.slf4j.Logger
 
@@ -58,28 +59,16 @@ class PluginMessageHandler(
                 "Received ${event.data.size} bytes from ${source.serverInfo.name}"
             }
             when (val message = PluginMessageCodec.decode(event.data)) {
-                is PluginMessage.Handshake -> {
-                    handleHandshake(source, message)
-                }
-                is PluginMessage.StatusRequest -> {
-                    handleStatusRequest(source)
-                }
-                is PluginMessage.GlobalChatMessage -> {
-                    handleGlobalChatMessage(source, message)
-                }
-                is PluginMessage.DirectMessageRelay -> {
-                    crossServerDirectMessageRelay.relay(message, source.server)
-                }
-                is PluginMessage.PresenceRequest -> {
-                    presenceTracker.sendSnapshotTo(source.server)
-                }
-                else -> {
-                    logger.warn("Unexpected message type from Paper: ${message::class.simpleName}")
-                }
+                is PluginMessage.Handshake -> handleHandshake(source, message)
+                is PluginMessage.StatusRequest -> handleStatusRequest(source)
+                is PluginMessage.GlobalChatMessage -> handleGlobalChatMessage(source, message)
+                is PluginMessage.DirectMessageRelay -> crossServerDirectMessageRelay.relay(message, source.server)
+                is PluginMessage.PresenceRequest -> presenceTracker.sendSnapshotTo(source.server)
+                else -> logger.warn("Unexpected message type from Paper: ${message::class.simpleName}")
             }
         } catch (e: Exception) {
             debug.log(DebugCategory.PROTOCOL) {
-                "Undecodable message from ${source.serverInfo.name}, first bytes: ${event.data.take(16).toHex()}"
+                "Undecodable message from ${source.serverInfo.name}, first bytes: ${event.data.toHexPreview()}"
             }
             logger.error("Failed to decode plugin message: ${e.message}", e)
         }
@@ -202,4 +191,3 @@ class PluginMessageHandler(
 }
 
 /** The leading bytes of an undecodable message, so a wire mismatch can be recognised on sight. */
-private fun List<Byte>.toHex(): String = joinToString(" ") { "%02x".format(it) }
