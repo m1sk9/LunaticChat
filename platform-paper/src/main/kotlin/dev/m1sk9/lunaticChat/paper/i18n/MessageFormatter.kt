@@ -17,7 +17,10 @@ object MessageFormatter {
     private val PLACEHOLDER_COLOR = NamedTextColor.YELLOW
     private val ERROR_COLOR = NamedTextColor.RED
     private val SUCCESS_COLOR = NamedTextColor.GREEN
-    private val PLACEHOLDER_REGEX = Regex("""\{([^}]+)}""")
+
+    // '{' is excluded from the body so a run of unclosed braces fails each attempt at the next
+    // brace instead of scanning to the end of the string, which made the match quadratic.
+    private val PLACEHOLDER_REGEX = Regex("""\{([^{}]+)}""")
 
     /**
      * Formats a message with the standard prefix and gray text.

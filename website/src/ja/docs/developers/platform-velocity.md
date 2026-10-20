@@ -26,15 +26,19 @@ protocol の定義は engine が持ち，チャットの状態 (チャンネル�
 `@Subscribe onPluginMessage` の処理:
 
 1. `event.identifier != CHANNEL` なら無視する
-2. 送信元が `ServerConnection` でなければ警告して破棄する
-3. `PluginMessageCodec.decode()` の結果を `when` で分岐する
-4. `Handshake` → 互換判定して `HandshakeResponse` 返送 / `StatusRequest` → `StatusResponse` 返送 / `GlobalChatMessage` → 中継へ委譲 / それ以外 (Velocity 発の応答型) → 警告のみ
+2. イベントを `ForwardResult.handled()` にして，Velocity がどこにも転送しないようにする
+3. 送信元が `ServerConnection` でなければ警告して破棄する
+4. `PluginMessageCodec.decode()` の結果を `when` で分岐する
+5. `Handshake` → 互換判定して `HandshakeResponse` 返送 / `StatusRequest` → `StatusResponse` 返送 / `GlobalChatMessage` → 中継へ委譲 / それ以外 (Velocity 発の応答型) → 警告のみ
 
 ### 信頼境界: クライアント由来メッセージの拒否
 
-送信元が `ServerConnection` かどうかのチェックは，単なる型ガードではなく**信頼境界**です．
+`lunaticchat:main` のプラグインメッセージはバックエンドサーバーだけでなくクライアントからも届き得ます．信頼境界は次の 2 段からなり，どちらが欠けても成り立ちません．
 
-Velocity のプラグインメッセージはバックエンドサーバーだけでなくクライアントからも届き得ます．ここでバックエンド接続以外を弾くことで，**クライアントがグローバルチャットや偽ハンドシェイクを直接注入することを防いでいます**．中継されるのは信頼できるサーバー接続から来たメッセージだけです．
+- **イベントを handled にする**: Velocity は，リスナーが消費しない限りプラグインメッセージを接続の反対側へ転送します．そのままだとクライアントのメッセージがバックエンドに届き，Bukkit はそれをプロキシが送ったものと区別できないため，偽のグローバルチャット・DM・presence スナップショット・ハンドシェイク応答を処理してしまいます．そのため送信元にかかわらず，最初に `handled()` にします．
+- **送信元が `ServerConnection` かを確認する**: プロキシ自身がクライアントのメッセージを処理しないようにします．中継されるのはバックエンド接続から来たメッセージだけです．
+
+Paper 側でも，ハンドシェイクが成功するまで relay を無視し，relay されたテキストから legacy フォーマットコードと制御文字を取り除いています．ただしこれは多層防御です．クライアントのメッセージを転送してしまうプロキシに対しては，認証付きの wire format でなければバックエンドは両者を区別できません．
 
 ## ハンドシェイク処理
 

@@ -103,17 +103,17 @@ class CrossServerDirectMessageManager(
                     val recipient = plugin.server.getPlayer(message.targetName)
                     if (recipient == null) {
                         logger.warning(
-                            "Received direct message for offline player: ${message.targetName} " +
-                                "(messageId=${message.messageId})",
+                            "Received direct message for offline player: ${message.targetName.neutralized()} " +
+                                "(messageId=${message.messageId.neutralized()})",
                         )
                         return@Runnable
                     }
                     directMessageHandler.handleIncomingCrossServerMessage(
                         recipient = recipient,
-                        senderName = message.senderName,
-                        sourceServerName = message.sourceServerName,
-                        message = message.message,
-                        senderWorld = message.senderWorld,
+                        senderName = message.senderName.neutralized(),
+                        sourceServerName = message.sourceServerName.neutralized(),
+                        message = message.message.neutralized(),
+                        senderWorld = message.senderWorld.neutralized(),
                     )
                 },
             )
@@ -140,7 +140,7 @@ class CrossServerDirectMessageManager(
                     val text =
                         languageManager.getMessage(
                             messageKey,
-                            mapOf("target" to error.targetName, "server" to error.targetServerName),
+                            mapOf("target" to error.targetName.neutralized(), "server" to error.targetServerName.neutralized()),
                         )
                     sender.sendMessage(MessageFormatter.formatError(text))
                 },

@@ -97,6 +97,43 @@ class CrossServerDirectMessageManagerTest {
     }
 
     @Test
+    fun `handleIncomingMessage strips formatting codes and control characters from relayed fields`() {
+        val f = Fixture()
+        val recipient = TestUtils.createMockPlayer(name = "Bob")
+        every { f.plugin.server.getPlayer("Bob") } returns recipient
+
+        f.manager.handleIncomingMessage(
+            relay().copy(
+                senderName = "§cOwner",
+                sourceServerName = "h\u0000ub",
+                message = "hi\n§l[Server] fake",
+                senderWorld = "§kworld",
+            ),
+        )
+
+        verify { f.dmHandler.handleIncomingCrossServerMessage(recipient, "Owner", "hub", "hi[Server] fake", "world") }
+    }
+
+    @Test
+    fun `handleError strips formatting codes from the names it echoes back`() {
+        val f = Fixture()
+        val senderId = UUID.randomUUID()
+        every { f.plugin.server.getPlayer(senderId) } returns TestUtils.createMockPlayer(uuid = senderId, name = "Alice")
+
+        f.manager.handleError(
+            PluginMessage.DirectMessageError(
+                messageId = "id",
+                senderId = senderId.toString(),
+                targetName = "§cBob\n",
+                targetServerName = "surv§lival",
+                reason = PluginMessage.DirectMessageError.Reason.TARGET_OFFLINE,
+            ),
+        )
+
+        verify { f.languageManager.getMessage(any(), mapOf("target" to "Bob", "server" to "survival")) }
+    }
+
+    @Test
     fun `handleIncomingMessage ignores duplicate message ids`() {
         val f = Fixture()
         val recipient = TestUtils.createMockPlayer(name = "Bob")

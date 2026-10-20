@@ -131,5 +131,9 @@ class CrossServerChatManager(
      * @return Formatted Component
      */
     private fun formatCrossServerMessage(message: PluginMessage.GlobalChatMessage): Component =
-        messageFormats.current.crossServerGlobalChat(message.serverName, message.playerName, message.message)
+        messageFormats.current.crossServerGlobalChat(
+            message.serverName.neutralized(),
+            message.playerName.neutralized(),
+            message.message.neutralized(),
+        )
 }

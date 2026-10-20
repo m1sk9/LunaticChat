@@ -206,7 +206,18 @@ class VelocityConnectionManager(
 
         try {
             debug.log(DebugCategory.PROTOCOL) { "Received ${message.size} bytes from Velocity" }
-            when (val pluginMessage = PluginMessageCodec.decode(message)) {
+            val pluginMessage = PluginMessageCodec.decode(message)
+            // Bukkit cannot tell a payload the proxy injected from one the player's client sent on
+            // the same connection, so a relay is only believed once a handshake has vouched for
+            // the proxy. Proxies without the forwarding fix stay exploitable after that point;
+            // closing it fully would take an authenticated wire format.
+            if (state != ConnectionState.CONNECTED && pluginMessage !is PluginMessage.HandshakeResponse) {
+                debug.log(DebugCategory.PROTOCOL) {
+                    "Dropped ${pluginMessage::class.simpleName} received while the connection was $state"
+                }
+                return
+            }
+            when (pluginMessage) {
                 is PluginMessage.HandshakeResponse -> handleHandshakeResponse(pluginMessage)
                 is PluginMessage.StatusResponse -> handleStatusResponse(pluginMessage)
                 is PluginMessage.GlobalChatMessage -> handleGlobalChatMessage(pluginMessage)
@@ -228,6 +239,7 @@ class VelocityConnectionManager(
      * @param response Handshake response message
      */
     private fun handleHandshakeResponse(response: PluginMessage.HandshakeResponse) {
+        if (state != ConnectionState.HANDSHAKING) return
         val future = handshakeFuture ?: return
 
         if (response.compatible) {

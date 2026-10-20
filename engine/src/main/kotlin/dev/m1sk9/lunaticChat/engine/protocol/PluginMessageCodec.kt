@@ -125,7 +125,19 @@ object PluginMessageCodec {
             SubChannel.PRESENCE_REQUEST -> {
                 PluginMessage.PresenceRequest
             }
-            else -> throw IllegalArgumentException("Unknown sub-channel: $subChannel")
+            else -> throw IllegalArgumentException("Unknown sub-channel: ${subChannel.forLog()}")
         }
+    }
+
+    private const val MAX_LOGGED_SUB_CHANNEL = 64
+
+    // The sub-channel is attacker-chosen and ends up in the server log through this message, so
+    // a line break in it must not be able to start a forged log line.
+    private fun String.forLog(): String {
+        val escaped =
+            take(MAX_LOGGED_SUB_CHANNEL)
+                .map { if (it.isISOControl()) "\\u%04x".format(it.code) else it.toString() }
+                .joinToString("")
+        return if (length > MAX_LOGGED_SUB_CHANNEL) "$escaped..." else escaped
     }
 }

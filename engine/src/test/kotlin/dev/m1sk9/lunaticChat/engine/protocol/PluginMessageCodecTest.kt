@@ -243,6 +243,21 @@ class PluginMessageCodecTest {
     }
 
     @Test
+    fun `an unknown sub-channel is reported escaped and truncated`() {
+        val out = java.io.ByteArrayOutputStream()
+        val dataOut = java.io.DataOutputStream(out)
+        dataOut.writeUTF("x\n[INFO]: forged" + "a".repeat(100))
+        dataOut.writeUTF("{}")
+
+        val error =
+            assertFailsWith<IllegalArgumentException> {
+                PluginMessageCodec.decode(out.toByteArray())
+            }
+
+        assertEquals("Unknown sub-channel: x\\u000a[INFO]: forged" + "a".repeat(48) + "...", error.message)
+    }
+
+    @Test
     fun `decode should throw on empty data`() {
         assertFailsWith<Exception> {
             PluginMessageCodec.decode(byteArrayOf())

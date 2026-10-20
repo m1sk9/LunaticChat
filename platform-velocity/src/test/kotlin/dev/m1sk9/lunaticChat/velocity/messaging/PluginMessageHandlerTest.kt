@@ -1,6 +1,7 @@
 package dev.m1sk9.lunaticChat.velocity.messaging
 
 import com.velocitypowered.api.event.connection.PluginMessageEvent
+import com.velocitypowered.api.proxy.Player
 import com.velocitypowered.api.proxy.ProxyServer
 import com.velocitypowered.api.proxy.ServerConnection
 import com.velocitypowered.api.proxy.messages.ChannelIdentifier
@@ -19,6 +20,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import org.slf4j.Logger
 import kotlin.test.Test
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class PluginMessageHandlerTest {
@@ -249,6 +251,52 @@ class PluginMessageHandlerTest {
         handler.onPluginMessage(event)
 
         verify(exactly = 0) { relay.relayGlobalMessage(any<PluginMessage.GlobalChatMessage>(), any<RegisteredServer>()) }
+    }
+
+    @Test
+    fun `a message from a player is not forwarded to the backend`() {
+        val (handler, _, _) = createHandler()
+        val player = mockk<Player>(relaxed = true)
+
+        val forged =
+            PluginMessage.GlobalChatMessage(
+                messageId = "forged",
+                serverName = "lobby",
+                playerId = "x",
+                playerName = "Admin",
+                message = "spoofed",
+            )
+        val event = createPluginMessageEvent(player, mockk(relaxed = true), channel, PluginMessageCodec.encode(forged))
+
+        handler.onPluginMessage(event)
+
+        assertFalse(event.result.isAllowed)
+    }
+
+    @Test
+    fun `a message from a backend is not echoed to the carrying player`() {
+        val (handler, _, _) = createHandler()
+        val connection = createServerConnection()
+
+        val event =
+            createPluginMessageEvent(connection, mockk(relaxed = true), channel, PluginMessageCodec.encode(PluginMessage.StatusRequest))
+
+        handler.onPluginMessage(event)
+
+        assertFalse(event.result.isAllowed)
+    }
+
+    @Test
+    fun `a message on another channel is left for Velocity to forward`() {
+        val (handler, _, _) = createHandler()
+        val connection = createServerConnection()
+
+        val otherChannel = MinecraftChannelIdentifier.create("other", "channel")
+        val event = createPluginMessageEvent(connection, mockk(relaxed = true), otherChannel, byteArrayOf(1, 2, 3))
+
+        handler.onPluginMessage(event)
+
+        assertTrue(event.result.isAllowed)
     }
 
     @Test

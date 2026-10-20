@@ -1,6 +1,8 @@
 package dev.m1sk9.lunaticChat.paper.i18n
 
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
+import org.junit.jupiter.api.assertTimeoutPreemptively
+import java.time.Duration
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -27,6 +29,21 @@ class MessageFormatterTest {
         val result = MessageFormatter.format("Hello {name}")
         val plainText = plainSerializer.serialize(result)
         assertEquals("[LC] Hello {name}", plainText)
+    }
+
+    @Test
+    fun `a long run of unclosed braces is formatted in linear time`() {
+        val hostile = "{".repeat(32_000)
+
+        val result = assertTimeoutPreemptively(Duration.ofSeconds(1)) { MessageFormatter.formatError(hostile) }
+
+        assertEquals("[LC] $hostile", plainSerializer.serialize(result))
+    }
+
+    @Test
+    fun `a placeholder after an unclosed brace is still highlighted`() {
+        val result = MessageFormatter.format("{oops {name}")
+        assertEquals("[LC] {oops {name}", plainSerializer.serialize(result))
     }
 
     @Test

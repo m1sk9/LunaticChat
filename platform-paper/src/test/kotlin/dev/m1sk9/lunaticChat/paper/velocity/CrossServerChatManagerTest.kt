@@ -86,6 +86,18 @@ class CrossServerChatManagerTest {
     }
 
     @Test
+    fun `formatting codes and line breaks in a relayed message are not rendered`() {
+        val f = Fixture()
+        f.messageFormats.replace(MessageFormatConfig(crossServerGlobalChatFormat = "({server}) {sender}: {message}"))
+
+        f.manager.handleIncomingMessage(
+            globalChat().copy(serverName = "§clobby", playerName = "Ad§lmin", message = "hi\n§c[Server] fake"),
+        )
+
+        assertEquals("(lobby) Admin: hi[Server] fake", f.broadcastTo(f.online))
+    }
+
+    @Test
     fun `a format replaced while the server runs applies to the next incoming message`() {
         val f = Fixture()
         f.messageFormats.replace(MessageFormatConfig(crossServerGlobalChatFormat = "({server}) {sender}: {message}"))

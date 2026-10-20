@@ -26,15 +26,19 @@ The protocol definition is held by `engine`, and all chat state (channels, DMs, 
 `@Subscribe onPluginMessage` processing:
 
 1. Ignore if `event.identifier != CHANNEL`
-2. Warn and discard if the source is not a `ServerConnection`
-3. Branch on the result of `PluginMessageCodec.decode()` with `when`
-4. `Handshake` → check compatibility and reply with `HandshakeResponse` / `StatusRequest` → reply with `StatusResponse` / `GlobalChatMessage` → delegate to the relay / otherwise (a Velocity-originated response type) → warn only
+2. Mark the event `ForwardResult.handled()` so Velocity forwards it nowhere
+3. Warn and discard if the source is not a `ServerConnection`
+4. Branch on the result of `PluginMessageCodec.decode()` with `when`
+5. `Handshake` → check compatibility and reply with `HandshakeResponse` / `StatusRequest` → reply with `StatusResponse` / `GlobalChatMessage` → delegate to the relay / otherwise (a Velocity-originated response type) → warn only
 
 ### Trust boundary: rejecting client-originated messages
 
-The check for whether the source is a `ServerConnection` is not just a type guard — it is a **trust boundary**.
+Velocity plugin messages on `lunaticchat:main` can arrive not only from backend servers but also from clients, and the trust boundary is made of two steps that only work together.
 
-Velocity plugin messages can arrive not only from backend servers but also from clients. By rejecting anything other than a backend connection here, **it prevents clients from directly injecting global chat or forged handshakes**. Only messages from trusted server connections are relayed.
+- **Marking the event handled.** Velocity forwards a plugin message to the other side of the connection unless a listener consumes it. A client's message would otherwise reach the backend, and Bukkit cannot tell it apart from one the proxy sent, so the backend would act on a forged global chat, direct message, presence snapshot or handshake response. The event is therefore marked `handled()` before anything else, whatever its source.
+- **Checking the source is a `ServerConnection`.** This keeps the proxy itself from acting on a client's message: only messages from backend connections are relayed.
+
+The Paper side additionally ignores every relay until a handshake has succeeded and strips legacy formatting codes and control characters from relayed text, but those are defence in depth: against a proxy that forwards client messages, only an authenticated wire format would let a backend tell the two apart.
 
 ## Handshake handling
 

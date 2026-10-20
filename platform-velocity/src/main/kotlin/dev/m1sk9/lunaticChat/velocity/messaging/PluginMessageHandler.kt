@@ -48,6 +48,11 @@ class PluginMessageHandler(
     fun onPluginMessage(event: PluginMessageEvent) {
         if (event.identifier != PLUGIN_MESSAGE_CHANNEL) return
 
+        // Consumed before the source check: Velocity forwards an unhandled message to the other
+        // side, so returning early for a player would hand that player's forged payload to the
+        // backend, which cannot tell it from one the proxy sent.
+        event.result = PluginMessageEvent.ForwardResult.handled()
+
         val source = event.source
         if (source !is ServerConnection) {
             logger.warn("Received plugin message from non-server source: ${source::class.simpleName}")
