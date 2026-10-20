@@ -96,6 +96,7 @@ Players with the `lunaticchat.channelbypass` permission (default: op) can bypass
 
 - Cannot be kicked or banned
 - Can delete channels even without being the owner
+- Can view private channels they are not a member of with `/lc channel info`
 
 ## Update Notifications
 

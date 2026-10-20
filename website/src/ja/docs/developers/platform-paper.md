@@ -132,7 +132,7 @@ config フラグ
 チャンネルの状態管理そのものは `chat/channel` パッケージが担います．
 
 - `ChannelManager` — チャンネルの単一の真実源．`channelsCache` / `membersCache` / `activeChannels` の `ConcurrentHashMap` で状態を持ち，CRUD は `kotlin.Result` を返して失敗時に engine 例外を包む．config の上限 (0 = 無制限) を検査する
-- `ChannelMembershipManager` — 入退室・切替・ロールのビジネスロジック．`joinChannel()` は 存在 / 既アクティブ / BAN / private-invite / 既メンバー / 所属上限 を順に検査する
+- `ChannelMembershipManager` — 入退室・切替・ロールのビジネスロジック．`joinChannel()` は 存在 / 既アクティブ / BAN / private-invite / 既メンバー / 所属上限 を順に検査する．`inviteToChannel()` は招待を記録するだけで (メモリ上，`INVITATION_LIFETIME` = 5 分)，`joinChannel()` がそれを受理して消費する．参加するとアクティブチャンネルも切り替わるため，招待の時点では対象を追加しない．`banPlayer()` / `kickPlayer()` は実行者を受け取り，実行者が対象より厳密に上のロールでなければ拒否する (`ChannelTargetNotOutrankedException`)．`Channel.ownerId` はメンバー行が無くても OWNER として扱う
 - `ChannelStorage` — `ChannelData` を JSON (`channels.json`) で永続化
 - `ChannelMessageLogger` — NDJSON の非同期ロガー．日次ローテーション＋サイズ上限＋保持日数超過ファイルの定期削除
 
@@ -175,6 +175,7 @@ config フラグ
 engine の protocol を使い，Bukkit の Plugin Messaging Channel (`lunaticchat:main`) でプロキシと通信します．実際のクロスサーバールーティングは Velocity 側が担い，paper は「送出・受信・重複排除・整形表示」を担当します．
 
 - `VelocityConnectionManager` (`PluginMessageListener`) — `ConnectionState` (DISCONNECTED / HANDSHAKING / CONNECTED / FAILED) を管理．ハンドシェイクは engine の `PluginMessage.Handshake` を encode して送信し，5 秒でタイムアウトする．循環依存回避のため `CrossServerChatManager` は後入れ (setter injection)
+- 状態が `CONNECTED` になるまで `HandshakeResponse` 以外のメッセージは捨て，`HandshakeResponse` も `HANDSHAKING` の間しか受け付けない．Bukkit からはプロキシが注入したペイロードと，運び役のプレイヤーのクライアントが送ったペイロードを区別できないため，これは窓を狭めるだけで，本当の防御は Velocity 側がこのチャンネルの全メッセージを消費することにある．中継された文字列は，legacy として解釈されるチャットフォーマットに渡る前に `neutralized()` (legacy コードと制御文字を除去) を通る
 - ハンドシェイクは**最初のプレイヤー参加を契機に一度だけ** (`AtomicBoolean`) 実行される．参加の 1 秒後に `asyncScheduler` でスケジュールし，結果は `HandshakeResult.Success` / `Error` で受ける
 - `CrossServerChatManager` — グローバルチャットの送出・受信・**重複排除**．送信時に生成した `messageId` を即キャッシュ登録して自サーバーでのエコーを防ぎ (一段目)，受信時は `messageId` の重複排除キャッシュ (TTL 60s，`cacheSize` 超過で古い順に掃除) で二重表示を防ぐ．Bukkit API 呼び出しは `scheduler.runTask` でメインスレッドに戻す
 

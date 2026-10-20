@@ -4,6 +4,17 @@
 
 ### v1.7.0
 
+- **Security**: fixed two issues. Update both the Paper and the Velocity plugin.
+  - [GHSA-4p78-89rh-8px5](https://github.com/m1sk9/LunaticChat/security/advisories/GHSA-4p78-89rh-8px5): behind a Velocity proxy without the matching fix, a player with a modified client could forge cross-server chat, direct messages and presence data. The fix itself is in the Velocity plugin v1.4.0; the Paper side adds the following on top of it.
+    - Global chat and direct messages relayed from other servers are ignored until the handshake with Velocity has succeeded. Messages sent in the first seconds after the first player joins, and every message while `/lcv status` shows `FAILED`, are no longer shown.
+    - Formatting codes (`§`) and line breaks in relayed names and messages are removed instead of being applied. A `velocityIntegration.serverName` written with color codes is now shown without them on other servers.
+    - A message with many unclosed `{` can no longer stall the server.
+    - A plugin message of an unknown type is logged with its control characters escaped, so it can no longer add fake lines to the server log.
+  - [GHSA-7gmf-j543-53pr](https://github.com/m1sk9/LunaticChat/security/advisories/GHSA-7gmf-j543-53pr): channel chat permission fixes.
+    - `/lc channel info` no longer shows private channels to players who are not members, and its tab completion no longer lists them. Players with `lunaticchat.channelbypass` can still view them.
+    - `/lc channel invite` now sends an invitation instead of adding the player at once. The player accepts it with `/lc channel join <channelId>` within 5 minutes, and their active channel does not change until then. Invitations that have not been accepted are lost when the server restarts.
+    - `/lc channel kick` and `ban` only work on players with a lower channel role than yours. Moderators can no longer kick or ban the owner or other moderators.
+    - The English and Japanese messages for these commands were updated to match.
 - A player joining no longer re-checks the spy permission of every online player, which added main-thread work that grew with the number of online players on every join.
   - Only the joining player is checked. The permission is also checked again before each spy copy is sent, so a spy whose permission is revoked while online stops receiving copies right away.
   - A player who is given the spy permission while online now starts receiving copies after they re-join. Previously, this also happened whenever any other player joined.
@@ -16,17 +27,13 @@
   - `ChannelManager.getAllChannels()` and `getPublicChannels()` now return the channel list directly instead of a `Result` that could not fail.
   - Removed the unreachable `channel.list.error` message from the language files.
   - The duplicate check for cross-server chat and direct messages no longer sorts its whole cache on every message once the cache is full.
-  - Test suite: 729 → 737.
-
-### v1.6.1
-
-- Internal cleanup. There are no functional changes to the plugin.
   - Removed duplicated code: the player-name tab completion shared by `/lc channel kick`, `ban`, `mod`, `ownership` and `unban`, the debug logger, and the hex dump of undecodable plugin messages.
   - Removed the unused `Player.requirePermission` helper and the engine's `RequirePermissionException`.
-  - Test suite: 719 → 728.
+  - Test suite: 719 → 767.
 
 #### Velocity: v1.4.0
 
+- **Security**: fixed [GHSA-4p78-89rh-8px5](https://github.com/m1sk9/LunaticChat/security/advisories/GHSA-4p78-89rh-8px5). A player with a modified client could send plugin messages that the proxy passed on to the backend as if they came from Velocity. The proxy now keeps every LunaticChat plugin message to itself.
 - Velocity 4.3.0 is now supported.
   - Support for Velocity 4.2.x and earlier has been dropped.
 - Internal cleanup. There are no functional changes to the plugin.

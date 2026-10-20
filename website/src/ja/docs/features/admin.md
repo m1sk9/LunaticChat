@@ -96,6 +96,7 @@ bug report のトリアージに必要な情報を `plugins/LunaticChat/debug/re
 
 - キック・BAN の対象にならない
 - オーナーでなくてもチャンネルを削除できる
+- メンバーでない private チャンネルも `/lc channel info` で閲覧できる
 
 ## アップデート通知
 
