@@ -1,5 +1,6 @@
 package dev.m1sk9.lunaticChat.paper.chat.handler
 
+import dev.m1sk9.lunaticChat.engine.settings.PlayerChatSettings
 import dev.m1sk9.lunaticChat.paper.common.SpyPermissionManager
 import dev.m1sk9.lunaticChat.paper.common.playDirectMessageNotification
 import dev.m1sk9.lunaticChat.paper.common.playMessageSendNotification
@@ -11,6 +12,7 @@ import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.directMessage
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
 import dev.m1sk9.lunaticChat.paper.velocity.RemotePlayerRegistry
+import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.ClickEvent
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
@@ -144,10 +146,8 @@ class DirectMessageHandler(
 
         val userMessage =
             formatMessage(formats, sender.name, recipient.name, displayMessage, world, replyTo = sender.name)
-        sender.sendMessage(userMessage)
-        if (senderSettings?.directMessageNotificationEnabled == true) sender.playMessageSendNotification()
-        recipient.sendMessage(userMessage)
-        if (recipientSettings?.directMessageNotificationEnabled == true) recipient.playDirectMessageNotification()
+        sender.showOutgoing(userMessage, senderSettings)
+        recipient.showIncoming(userMessage, recipientSettings)
         return true
     }
 
@@ -178,8 +178,7 @@ class DirectMessageHandler(
 
         val userMessage =
             formatMessage(formats, sender.name, recipientDisplay, displayMessage, world, replyTo = recipientDisplay)
-        sender.sendMessage(userMessage)
-        if (senderSettings?.directMessageNotificationEnabled == true) sender.playMessageSendNotification()
+        sender.showOutgoing(userMessage, senderSettings)
 
         return displayMessage
     }
@@ -201,10 +200,25 @@ class DirectMessageHandler(
 
         val userMessage =
             formatMessage(formats, senderDisplay, recipient.name, message, senderWorld, replyTo = senderDisplay)
-        recipient.sendMessage(userMessage)
-        if (recipientSettings?.directMessageNotificationEnabled == true) recipient.playDirectMessageNotification()
+        recipient.showIncoming(userMessage, recipientSettings)
 
         lastMessager[recipient.uniqueId] = ReplyTarget.Remote(senderName, sourceServerName)
+    }
+
+    private fun Player.showOutgoing(
+        message: Component,
+        settings: PlayerChatSettings?,
+    ) {
+        sendMessage(message)
+        if (settings?.directMessageNotificationEnabled == true) playMessageSendNotification()
+    }
+
+    private fun Player.showIncoming(
+        message: Component,
+        settings: PlayerChatSettings?,
+    ) {
+        sendMessage(message)
+        if (settings?.directMessageNotificationEnabled == true) playDirectMessageNotification()
     }
 
     private suspend fun convertIfEnabled(
