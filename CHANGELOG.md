@@ -9,8 +9,10 @@
   - Removed the unused `Player.requirePermission` helper and the engine's `RequirePermissionException`.
   - Test suite: 719 → 728.
 
-#### Velocity: v1.3.2
+#### Velocity: v1.4.0
 
+- Velocity 4.3.0 is now supported.
+  - Support for Velocity 4.2.x and earlier has been dropped.
 - Internal cleanup. There are no functional changes to the plugin.
   - The plugin message channel identifier and the debug logger are now shared instead of being defined in several places.
 
