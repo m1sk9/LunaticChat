@@ -14,7 +14,6 @@ import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
-import org.bukkit.Bukkit
 
 @PlayerOnly
 class ChannelUnbanCommand(
@@ -32,21 +31,8 @@ class ChannelUnbanCommand(
             .then(
                 Commands
                     .argument("playerName", StringArgumentType.word())
-                    .suggests { ctx, builder ->
-                        val player = ctx.source.executor as? org.bukkit.entity.Player
-                        if (player != null) {
-                            val channelId = channelManager.getPlayerChannel(player.uniqueId)
-                            if (channelId != null) {
-                                val channel = channelManager.getChannel(channelId).getOrNull()
-                                channel?.bannedPlayers?.forEach { bannedId ->
-                                    Bukkit.getOfflinePlayer(bannedId).name?.let { name ->
-                                        builder.suggest(name)
-                                    }
-                                }
-                            }
-                        }
-                        builder.buildFuture()
-                    }.executes { ctx ->
+                    .suggests(::suggestBannedPlayers)
+                    .executes { ctx ->
                         val context = wrapContext(ctx)
                         checkPlayerOnly(context)?.let { return@executes handleResult(context, it) }
 

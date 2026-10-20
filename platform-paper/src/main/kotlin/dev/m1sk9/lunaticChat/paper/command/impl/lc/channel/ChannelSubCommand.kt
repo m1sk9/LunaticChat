@@ -104,15 +104,37 @@ abstract class ChannelSubCommand(
     protected fun suggestOtherMembers(
         ctx: BrigadierCommandContext<CommandSourceStack>,
         builder: SuggestionsBuilder,
+    ): CompletableFuture<Suggestions> =
+        suggestPlayersOfActiveChannel(ctx, builder) { player, channelId ->
+            channelManager
+                .getChannelMembers(channelId)
+                .getOrNull()
+                .orEmpty()
+                .map { it.playerId }
+                .filter { it != player.uniqueId }
+        }
+
+    /** Suggests the names of the players banned from the executor's active channel. */
+    protected fun suggestBannedPlayers(
+        ctx: BrigadierCommandContext<CommandSourceStack>,
+        builder: SuggestionsBuilder,
+    ): CompletableFuture<Suggestions> =
+        suggestPlayersOfActiveChannel(ctx, builder) { _, channelId ->
+            channelManager
+                .getChannel(channelId)
+                .getOrNull()
+                ?.bannedPlayers
+                .orEmpty()
+        }
+
+    private fun suggestPlayersOfActiveChannel(
+        ctx: BrigadierCommandContext<CommandSourceStack>,
+        builder: SuggestionsBuilder,
+        playerIds: (executor: Player, channelId: String) -> Iterable<UUID>,
     ): CompletableFuture<Suggestions> {
         val player = ctx.source.executor as? Player ?: return builder.buildFuture()
         val channelId = activeChannelOf(player) ?: return builder.buildFuture()
-        channelManager
-            .getChannelMembers(channelId)
-            .getOrNull()
-            .orEmpty()
-            .filter { it.playerId != player.uniqueId }
-            .forEach { member -> Bukkit.getOfflinePlayer(member.playerId).name?.let(builder::suggest) }
+        playerIds(player, channelId).forEach { id -> Bukkit.getOfflinePlayer(id).name?.let(builder::suggest) }
         return builder.buildFuture()
     }
 }
