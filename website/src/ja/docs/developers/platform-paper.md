@@ -140,7 +140,7 @@ config フラグ
 
 - `EventListenerRegistry` (`object`) — `SpyPermissionManager` と `PlayerPresenceListener` は常時，`PlayerChatListener` は channel / velocity cross-server / romaji のいずれかが有効なときだけ登録する (ここも Feature Gating)
 - `PlayerPresenceListener` — Join でアップデート通知・nightly 警告・アクティブチャンネル復元通知，Quit で DM 参照クリア＋アクティブチャンネル解除＋設定保存
-- `SpyPermissionManager` (`object : Listener`) — `Spy` 権限保持者を join/quit でキャッシュし，DM・チャンネルハンドラが参照する
+- `SpyPermissionManager` (`object : Listener`) — `Spy` 権限保持者をキャッシュし (登録時にオンライン全員から構築し，以後は join/quit したプレイヤーのみ更新)，配信の直前に権限を再確認する．DM・チャンネルハンドラが参照する
 
 ## config
 

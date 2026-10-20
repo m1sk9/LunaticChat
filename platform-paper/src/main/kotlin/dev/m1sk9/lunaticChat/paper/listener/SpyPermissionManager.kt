@@ -39,7 +39,10 @@ object SpyPermissionManager : Listener {
     ) {
         if (directMessageSpyPlayers.isEmpty()) return
 
-        val spies = directMessageSpyPlayers.values.filter { it.isOnline && !exclude(it) }
+        // The permission is re-checked here because the cache is only refreshed per joining player:
+        // without it, a spy whose permission is revoked while online keeps receiving copies until
+        // they re-join.
+        val spies = directMessageSpyPlayers.values.filter { it.isOnline && it.isSpy() && !exclude(it) }
         if (spies.isEmpty()) return
 
         val withNotice = message().hoverEvent(HoverEvent.showText(Component.text(noticeText())))
@@ -47,23 +50,28 @@ object SpyPermissionManager : Listener {
     }
 
     /**
-     * Updates the cache of players with direct message spy permission.
-     * Call this on player join/quit/permission change events.
+     * Rebuilds the cache from every online player.
+     *
+     * Called once when the listener is registered, so players already online when the plugin is
+     * enabled are covered. Joins evaluate only the joining player instead of calling this, since a
+     * full rescan per join is O(online players) permission lookups on the main thread.
      */
     fun updateSpyCache() {
         directMessageSpyPlayers.clear()
         Bukkit
             .getOnlinePlayers()
-            .filter {
-                it.hasAllPermission {
-                    +LunaticChatPermissionNode.Spy
-                }
-            }.associateByTo(directMessageSpyPlayers) { it.uniqueId }
+            .filter { it.isSpy() }
+            .associateByTo(directMessageSpyPlayers) { it.uniqueId }
     }
 
     @EventHandler(ignoreCancelled = true)
-    fun onPlayerJoin(e: PlayerJoinEvent) {
-        updateSpyCache()
+    fun onPlayerJoin(event: PlayerJoinEvent) {
+        val player = event.player
+        if (player.isSpy()) {
+            directMessageSpyPlayers[player.uniqueId] = player
+        } else {
+            directMessageSpyPlayers.remove(player.uniqueId)
+        }
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -71,3 +79,5 @@ object SpyPermissionManager : Listener {
         directMessageSpyPlayers.remove(event.player.uniqueId)
     }
 }
+
+private fun Player.isSpy(): Boolean = LunaticChatPermissionNode.Spy.has(this)

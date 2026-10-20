@@ -4,11 +4,15 @@
 
 ### v1.7.0
 
+- A player joining no longer re-checks the spy permission of every online player, which added main-thread work that grew with the number of online players on every join.
+  - Only the joining player is checked. The permission is also checked again before each spy copy is sent, so a spy whose permission is revoked while online stops receiving copies right away.
+  - A player who is given the spy permission while online now starts receiving copies after they re-join. Previously, this also happened whenever any other player joined.
+  - Spies who are already online when the plugin is enabled now receive copies right away, instead of only after someone joins.
 - Internal cleanup. There are no functional changes to the plugin.
   - `DirectMessageHandler.sendDirectMessage` no longer returns a `Boolean` that was always `true`.
   - `ChannelManager.getAllChannels()` and `getPublicChannels()` now return the channel list directly instead of a `Result` that could not fail.
   - Removed the unreachable `channel.list.error` message from the language files.
-  - Test suite: 729 → 727.
+  - Test suite: 729 → 732.
 
 ### v1.6.1
 
