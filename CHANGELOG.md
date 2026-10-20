@@ -8,12 +8,15 @@
   - Only the joining player is checked. The permission is also checked again before each spy copy is sent, so a spy whose permission is revoked while online stops receiving copies right away.
   - A player who is given the spy permission while online now starts receiving copies after they re-join. Previously, this also happened whenever any other player joined.
   - Spies who are already online when the plugin is enabled now receive copies right away, instead of only after someone joins.
+- `/lc channel kick`, `ban`, `unban`, `mod` and `ownership` no longer risk stalling the server to look up a player name.
+  - The target is now looked up only in the server's own player name cache, instead of possibly asking Mojang's servers on the main thread.
+  - A player who changed their name and has not joined since must be targeted by their old name, and a player who has dropped out of the server's name cache is no longer found.
 - Internal cleanup. There are no functional changes to the plugin.
   - `DirectMessageHandler.sendDirectMessage` no longer returns a `Boolean` that was always `true`.
   - `ChannelManager.getAllChannels()` and `getPublicChannels()` now return the channel list directly instead of a `Result` that could not fail.
   - Removed the unreachable `channel.list.error` message from the language files.
   - The duplicate check for cross-server chat and direct messages no longer sorts its whole cache on every message once the cache is full.
-  - Test suite: 729 → 736.
+  - Test suite: 729 → 737.
 
 ### v1.6.1
 
