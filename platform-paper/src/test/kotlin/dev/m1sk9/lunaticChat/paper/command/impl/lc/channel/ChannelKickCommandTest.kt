@@ -62,7 +62,7 @@ class ChannelKickCommandTest {
         every { offlinePlayer.hasPlayedBefore() } returns hasPlayedBefore
         every { offlinePlayer.isOnline } returns isOnline
         every { offlinePlayer.name } returns "TargetPlayer"
-        every { Bukkit.getOfflinePlayer(any<String>()) } returns offlinePlayer
+        every { Bukkit.getOfflinePlayerIfCached(any()) } returns offlinePlayer
         return offlinePlayer
     }
 
@@ -131,5 +131,18 @@ class ChannelKickCommandTest {
         val result = command.execute(ctx, "TargetPlayer")
 
         assertIs<CommandResult.Failure>(result)
+    }
+
+    @Test
+    fun `execute should return Failure without a web lookup when the player is not cached`() {
+        val ctx = createContext()
+        every { channelManager.getPlayerChannel(testUUID) } returns channelId
+        every { membershipManager.hasRole(testUUID, channelId, any()) } returns Result.success(true)
+        every { Bukkit.getOfflinePlayerIfCached(any()) } returns null
+
+        val result = command.execute(ctx, "TargetPlayer")
+
+        assertIs<CommandResult.Failure>(result)
+        verify(exactly = 0) { Bukkit.getOfflinePlayer(any<String>()) }
     }
 }

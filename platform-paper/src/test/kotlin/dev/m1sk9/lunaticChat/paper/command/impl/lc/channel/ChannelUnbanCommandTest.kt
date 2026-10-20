@@ -61,7 +61,7 @@ class ChannelUnbanCommandTest {
         every { offlinePlayer.hasPlayedBefore() } returns hasPlayedBefore
         every { offlinePlayer.isOnline } returns isOnline
         every { offlinePlayer.name } returns "TargetPlayer"
-        every { Bukkit.getOfflinePlayer(any<String>()) } returns offlinePlayer
+        every { Bukkit.getOfflinePlayerIfCached(any()) } returns offlinePlayer
         return offlinePlayer
     }
 

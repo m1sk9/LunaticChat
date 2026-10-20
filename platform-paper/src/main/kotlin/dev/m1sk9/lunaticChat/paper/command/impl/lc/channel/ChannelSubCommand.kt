@@ -96,9 +96,13 @@ abstract class ChannelSubCommand(
     /**
      * The named player if the server has ever seen them, or null. Offline players are resolvable
      * because bans and role changes must work while the target is away.
+     *
+     * Resolved from the server's name cache rather than [Bukkit.getOfflinePlayer], which can make a
+     * blocking web request on the tick thread for a name the cache does not hold. The cost is that a
+     * player missing from the cache - renamed and not back since, or dropped from it - is not found.
      */
     protected fun knownPlayer(playerName: String): OfflinePlayer? =
-        Bukkit.getOfflinePlayer(playerName).takeIf { it.hasPlayedBefore() || it.isOnline }
+        Bukkit.getOfflinePlayerIfCached(playerName)?.takeIf { it.hasPlayedBefore() || it.isOnline }
 
     /** Suggests the names of the other members of the executor's active channel. */
     protected fun suggestOtherMembers(
