@@ -41,8 +41,7 @@ class ChannelInfoCommand(
                     .argument("channelId", StringArgumentType.word())
                     .suggests { _, builder ->
                         // Tab completion: suggest all public channel IDs
-                        val channels = channelManager.getAllChannels().getOrNull() ?: emptyList()
-                        channels.forEach { channel ->
+                        channelManager.getAllChannels().forEach { channel ->
                             builder.suggest(channel.id)
                         }
                         builder.buildFuture()

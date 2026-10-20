@@ -127,7 +127,6 @@ channel:
   list:
     header: "--- 公開チャンネル ({count}件) ---"
     empty: "公開チャンネルはありません"
-    error: "チャンネル一覧の取得に失敗しました"
     clickToJoin: "クリックして参加"
   delete:
     success: "チャンネル '{id}' を削除しました"

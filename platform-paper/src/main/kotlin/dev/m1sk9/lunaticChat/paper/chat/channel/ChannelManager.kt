@@ -140,23 +140,16 @@ class ChannelManager(
 
     /**
      * Retrieves all channels.
-     *
-     * @return Result containing the list of all channels.
      */
-    fun getAllChannels(): Result<List<Channel>> = Result.success(channelsCache.values.toList())
+    fun getAllChannels(): List<Channel> = channelsCache.values.toList()
 
     /**
-     * Retrieves all public channels.
-     *
-     * @return Result containing the list of public channels.
+     * Retrieves all public channels, sorted by name.
      */
-    fun getPublicChannels(): Result<List<Channel>> {
-        val channels =
-            channelsCache.values
-                .filter { !it.isPrivate }
-                .sortedBy { it.name }
-        return Result.success(channels)
-    }
+    fun getPublicChannels(): List<Channel> =
+        channelsCache.values
+            .filter { !it.isPrivate }
+            .sortedBy { it.name }
 
     /**
      * Retrieves members of a channel.

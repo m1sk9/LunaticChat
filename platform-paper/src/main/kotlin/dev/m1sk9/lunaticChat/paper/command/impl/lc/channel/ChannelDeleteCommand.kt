@@ -37,22 +37,12 @@ class ChannelDeleteCommand(
                         if (player != null) {
                             val hasBypass = LunaticChatPermissionNode.ChannelBypass.has(player)
 
-                            val channels =
-                                if (hasBypass) {
-                                    // Show all channels if has bypass permission
-                                    channelManager.getAllChannels().getOrNull() ?: emptyList()
-                                } else {
-                                    // Show only owned channels
-                                    channelManager
-                                        .getAllChannels()
-                                        .getOrNull()
-                                        ?.filter { it.ownerId == player.uniqueId }
-                                        ?: emptyList()
+                            channelManager
+                                .getAllChannels()
+                                .filter { hasBypass || it.ownerId == player.uniqueId }
+                                .forEach { channel ->
+                                    builder.suggest(channel.id)
                                 }
-
-                            channels.forEach { channel ->
-                                builder.suggest(channel.id)
-                            }
                         }
                         builder.buildFuture()
                     }.executes { ctx ->
