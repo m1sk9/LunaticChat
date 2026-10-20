@@ -1,6 +1,5 @@
 package dev.m1sk9.lunaticChat.engine.exception
 
-import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -216,23 +215,6 @@ class ChannelExceptionTest {
         assertEquals(cause, ex.cause)
     }
 
-    // --- RequirePermissionException ---
-
-    @Test
-    fun `RequirePermissionException should join permission nodes in message`() {
-        val permissions = listOf(LunaticChatPermissionNode.Lc, LunaticChatPermissionNode.Tell)
-        val ex = RequirePermissionException(permissions)
-        assertTrue(ex.message!!.contains("lunaticchat.command.lc"))
-        assertTrue(ex.message!!.contains("lunaticchat.command.tell"))
-    }
-
-    @Test
-    fun `RequirePermissionException with single permission should contain that node`() {
-        val permissions = listOf(LunaticChatPermissionNode.Spy)
-        val ex = RequirePermissionException(permissions)
-        assertTrue(ex.message!!.contains("lunaticchat.spy"))
-    }
-
     // --- All exceptions are instances of Exception ---
 
     @Test
@@ -256,6 +238,5 @@ class ChannelExceptionTest {
         assertIs<Exception>(ChannelRuntimeException("test"))
         assertIs<Exception>(ChannelStorageLoadException("test"))
         assertIs<Exception>(ChannelStorageSaveException("test"))
-        assertIs<Exception>(RequirePermissionException(listOf(LunaticChatPermissionNode.Lc)))
     }
 }

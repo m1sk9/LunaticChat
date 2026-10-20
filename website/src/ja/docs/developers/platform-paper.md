@@ -184,7 +184,7 @@ engine の protocol を使い，Bukkit の Plugin Messaging Channel (`lunaticcha
 - `YamlPlayerSettingsStorage` — KAML で `player-settings.yaml` を read/write．5 秒デバウンス保存．バックアップファイルは存在せず，読み込み失敗時はログを出して**空の設定**にフォールバックするため，全プレイヤーの設定が黙ってデフォルトに戻る
 - `UpdateChecker` — GitHub Releases API を Ktor で叩き semver 比較．結果は sealed `UpdateCheckResult`
 - `SoundCollector` — 通知音の Adventure `Sound` 定数と Player 拡張関数
-- `PermissionCollector` — `@PermissionDsl` ＋ `+LunaticChatPermissionNode` 演算子で権限を集める DSL．`requirePermission` は engine の `RequirePermissionException` を投げる
+- `PermissionCollector` — `@PermissionDsl` ＋ `+LunaticChatPermissionNode` 演算子で権限を集める DSL．
 
 ## 関連
 
