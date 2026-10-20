@@ -64,7 +64,6 @@ object EventListenerRegistry {
                     channelMessageHandler = services.channelMessageHandler,
                     romajiConverter = services.romajiConverter,
                     settingsManager = services.playerSettingsManager,
-                    configuration = configuration,
                     crossServerChatManager = services.crossServerChatManager,
                     debug = debug,
                 ),

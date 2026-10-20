@@ -31,7 +31,7 @@ class CrossServerDirectMessageManager(
     private val configuration: LunaticChatConfiguration,
     private val directMessageHandler: DirectMessageHandler,
     private val languageManager: LanguageManager,
-    private val cacheSize: Int = 100,
+    cacheSize: Int,
 ) {
     private val processedMessages = MessageDeduplicationCache(cacheSize, logger, "direct message")
 

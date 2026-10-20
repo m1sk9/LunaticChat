@@ -1,12 +1,10 @@
 package dev.m1sk9.lunaticChat.velocity.messaging
 
 import com.velocitypowered.api.proxy.ProxyServer
-import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier
 import com.velocitypowered.api.proxy.server.RegisteredServer
 import dev.m1sk9.lunaticChat.engine.debug.DebugCategory
 import dev.m1sk9.lunaticChat.engine.debug.DebugLogger
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessage
-import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageChannel
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageCodec
 import org.slf4j.Logger
 
@@ -21,10 +19,6 @@ class CrossServerChatRelay(
     private val logger: Logger,
     private val debug: DebugLogger = DebugLogger.Disabled,
 ) {
-    companion object {
-        private val CHANNEL = MinecraftChannelIdentifier.create(PluginMessageChannel.NAMESPACE, PluginMessageChannel.NAME)
-    }
-
     /**
      * Relays a global chat message to all servers except the source
      *
@@ -37,23 +31,19 @@ class CrossServerChatRelay(
     ) {
         try {
             val encodedMessage = PluginMessageCodec.encode(message)
-            var relayCount = 0
+            val (skipped, targets) = server.allServers.partition { it == sourceServer }
 
-            server.allServers.forEach { targetServer ->
-                if (targetServer == sourceServer) {
-                    // Named rather than silently skipped: "the message never arrived" and "the
-                    // message was never sent" look identical from the receiving server's log.
-                    debug.log(DebugCategory.VELOCITY) {
-                        "Skipped ${targetServer.serverInfo.name} for messageId=${message.messageId}: it is the source"
-                    }
-                    return@forEach
+            // Named rather than silently skipped: "the message never arrived" and "the
+            // message was never sent" look identical from the receiving server's log.
+            skipped.forEach { source ->
+                debug.log(DebugCategory.VELOCITY) {
+                    "Skipped ${source.serverInfo.name} for messageId=${message.messageId}: it is the source"
                 }
-                targetServer.sendPluginMessage(CHANNEL, encodedMessage)
-                relayCount++
             }
+            targets.forEach { it.sendPluginMessage(PLUGIN_MESSAGE_CHANNEL, encodedMessage) }
 
             debug.log(DebugCategory.VELOCITY) {
-                "Relayed global chat message from ${message.serverName} to $relayCount servers (messageId=${message.messageId})"
+                "Relayed global chat message from ${message.serverName} to ${targets.size} servers (messageId=${message.messageId})"
             }
         } catch (e: Exception) {
             logger.error("Failed to relay global chat message: ${e.message}", e)

@@ -12,12 +12,16 @@ import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerBypassBanException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerBypassKickException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerMembershipLimitExceededException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelPrivateRequiresInvitationException
+import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.TestUtils
 import dev.m1sk9.lunaticChat.paper.TestUtils.createTestChannel
 import dev.m1sk9.lunaticChat.paper.TestUtils.createTestUUID
 import dev.m1sk9.lunaticChat.paper.config.key.ChannelChatFeatureConfig
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
+import org.bukkit.Bukkit
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -436,6 +440,34 @@ class ChannelMembershipManagerTest {
 
         assertTrue(membership.kickPlayer(playerId, "mod-ch").isSuccess)
         assertFalse(membership.isMember(playerId, "mod-ch").getOrThrow())
+    }
+
+    @Test
+    fun `by default the moderation bypass is read from the online player's permission`() {
+        val ownerId = createTestUUID(1)
+        val protectedPlayer = createTestUUID(2)
+        val offlinePlayer = createTestUUID(3)
+        val ordinaryPlayer = createTestUUID(4)
+        val (_, channelManager, logger) = createManagers()
+        val membership = ChannelMembershipManager(channelManager, logger, ChannelChatFeatureConfig(enabled = true))
+        channelManager.createChannel(createTestChannel(id = "mod-ch", name = "Moderated", ownerId = ownerId))
+
+        val online = TestUtils.createMockPlayer(uuid = protectedPlayer)
+        every { online.hasPermission(LunaticChatPermissionNode.ChannelBypass.permissionNode) } returns true
+        val ordinary = TestUtils.createMockPlayer(uuid = ordinaryPlayer)
+        every { ordinary.hasPermission(any<String>()) } returns false
+        mockkStatic(Bukkit::class)
+        try {
+            every { Bukkit.getPlayer(any<UUID>()) } returns null
+            every { Bukkit.getPlayer(protectedPlayer) } returns online
+            every { Bukkit.getPlayer(ordinaryPlayer) } returns ordinary
+
+            assertIs<ChannelPlayerBypassBanException>(membership.banPlayer(protectedPlayer, "mod-ch").exceptionOrNull())
+            assertTrue(membership.banPlayer(offlinePlayer, "mod-ch").isSuccess)
+            assertTrue(membership.banPlayer(ordinaryPlayer, "mod-ch").isSuccess)
+        } finally {
+            unmockkStatic(Bukkit::class)
+        }
     }
 
     @Test

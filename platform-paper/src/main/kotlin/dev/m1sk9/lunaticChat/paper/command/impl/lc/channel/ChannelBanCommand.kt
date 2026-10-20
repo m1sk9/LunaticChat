@@ -36,23 +36,8 @@ class ChannelBanCommand(
             .then(
                 Commands
                     .argument("playerName", StringArgumentType.word())
-                    .suggests { ctx, builder ->
-                        val player = ctx.source.executor as? org.bukkit.entity.Player
-                        if (player != null) {
-                            val channelId = channelManager.getPlayerChannel(player.uniqueId)
-                            if (channelId != null) {
-                                val members = channelManager.getChannelMembers(channelId).getOrNull() ?: emptyList()
-                                members
-                                    .filter { it.playerId != player.uniqueId }
-                                    .forEach { member ->
-                                        Bukkit.getOfflinePlayer(member.playerId).name?.let { name ->
-                                            builder.suggest(name)
-                                        }
-                                    }
-                            }
-                        }
-                        builder.buildFuture()
-                    }.executes { ctx ->
+                    .suggests(::suggestOtherMembers)
+                    .executes { ctx ->
                         val context = wrapContext(ctx)
                         checkPlayerOnly(context)?.let { return@executes handleResult(context, it) }
 

@@ -4,13 +4,12 @@ import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.connection.PluginMessageEvent
 import com.velocitypowered.api.proxy.ProxyServer
 import com.velocitypowered.api.proxy.ServerConnection
-import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier
 import dev.m1sk9.lunaticChat.engine.debug.DebugCategory
 import dev.m1sk9.lunaticChat.engine.debug.DebugLogger
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessage
-import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageChannel
 import dev.m1sk9.lunaticChat.engine.protocol.PluginMessageCodec
 import dev.m1sk9.lunaticChat.engine.protocol.ProtocolVersion
+import dev.m1sk9.lunaticChat.engine.protocol.toHexPreview
 import dev.m1sk9.lunaticChat.velocity.presence.PresenceTracker
 import org.slf4j.Logger
 
@@ -33,17 +32,13 @@ class PluginMessageHandler(
     private val crossServerDirectMessageRelay: CrossServerDirectMessageRelay,
     private val presenceTracker: PresenceTracker,
 ) {
-    companion object {
-        private val CHANNEL = MinecraftChannelIdentifier.create(PluginMessageChannel.NAMESPACE, PluginMessageChannel.NAME)
-    }
-
     /**
      * Initialize
      */
     fun initialize() {
-        server.channelRegistrar.register(CHANNEL)
+        server.channelRegistrar.register(PLUGIN_MESSAGE_CHANNEL)
         server.eventManager.register(plugin, this)
-        logger.info("Plugin message handler registered for channel: $CHANNEL")
+        logger.info("Plugin message handler registered for channel: $PLUGIN_MESSAGE_CHANNEL")
     }
 
     /**
@@ -51,7 +46,7 @@ class PluginMessageHandler(
      */
     @Subscribe
     fun onPluginMessage(event: PluginMessageEvent) {
-        if (event.identifier != CHANNEL) return
+        if (event.identifier != PLUGIN_MESSAGE_CHANNEL) return
 
         val source = event.source
         if (source !is ServerConnection) {
@@ -64,28 +59,16 @@ class PluginMessageHandler(
                 "Received ${event.data.size} bytes from ${source.serverInfo.name}"
             }
             when (val message = PluginMessageCodec.decode(event.data)) {
-                is PluginMessage.Handshake -> {
-                    handleHandshake(source, message)
-                }
-                is PluginMessage.StatusRequest -> {
-                    handleStatusRequest(source)
-                }
-                is PluginMessage.GlobalChatMessage -> {
-                    handleGlobalChatMessage(source, message)
-                }
-                is PluginMessage.DirectMessageRelay -> {
-                    crossServerDirectMessageRelay.relay(message, source.server)
-                }
-                is PluginMessage.PresenceRequest -> {
-                    presenceTracker.sendSnapshotTo(source.server)
-                }
-                else -> {
-                    logger.warn("Unexpected message type from Paper: ${message::class.simpleName}")
-                }
+                is PluginMessage.Handshake -> handleHandshake(source, message)
+                is PluginMessage.StatusRequest -> handleStatusRequest(source)
+                is PluginMessage.GlobalChatMessage -> handleGlobalChatMessage(source, message)
+                is PluginMessage.DirectMessageRelay -> crossServerDirectMessageRelay.relay(message, source.server)
+                is PluginMessage.PresenceRequest -> presenceTracker.sendSnapshotTo(source.server)
+                else -> logger.warn("Unexpected message type from Paper: ${message::class.simpleName}")
             }
         } catch (e: Exception) {
             debug.log(DebugCategory.PROTOCOL) {
-                "Undecodable message from ${source.serverInfo.name}, first bytes: ${event.data.take(16).toHex()}"
+                "Undecodable message from ${source.serverInfo.name}, first bytes: ${event.data.toHexPreview()}"
             }
             logger.error("Failed to decode plugin message: ${e.message}", e)
         }
@@ -154,7 +137,7 @@ class PluginMessageHandler(
         val data = PluginMessageCodec.encode(response)
 
         // Send
-        connection.sendPluginMessage(CHANNEL, data)
+        connection.sendPluginMessage(PLUGIN_MESSAGE_CHANNEL, data)
         debug.log(DebugCategory.PROTOCOL) { "Sent handshake response (${data.size} bytes) to ${connection.serverInfo.name}" }
 
         // Only the failure stays at INFO or above. Whether a backend connected is one line an
@@ -179,7 +162,7 @@ class PluginMessageHandler(
             )
 
         val data = PluginMessageCodec.encode(response)
-        connection.sendPluginMessage(CHANNEL, data)
+        connection.sendPluginMessage(PLUGIN_MESSAGE_CHANNEL, data)
 
         debug.log(DebugCategory.VELOCITY) { "Sent status response to ${connection.serverInfo.name}" }
     }
@@ -208,4 +191,3 @@ class PluginMessageHandler(
 }
 
 /** The leading bytes of an undecodable message, so a wire mismatch can be recognised on sight. */
-private fun List<Byte>.toHex(): String = joinToString(" ") { "%02x".format(it) }

@@ -184,7 +184,7 @@ Using the engine's protocol, it communicates with the proxy over Bukkit's Plugin
 - `YamlPlayerSettingsStorage` — reads/writes `player-settings.yaml` with KAML; debounced save (5s). There is no backup file: a load failure is logged and falls back to **empty settings**, which means every player silently returns to defaults
 - `UpdateChecker` — hits the GitHub Releases API via Ktor and compares semver. The result is a sealed `UpdateCheckResult`
 - `SoundCollector` — Adventure `Sound` constants for notifications plus Player extension functions
-- `PermissionCollector` — a DSL that collects permissions via `@PermissionDsl` + the `+LunaticChatPermissionNode` operator. `requirePermission` throws the engine's `RequirePermissionException`
+- `PermissionCollector` — a DSL that collects permissions via `@PermissionDsl` + the `+LunaticChatPermissionNode` operator.
 
 ## Related
 

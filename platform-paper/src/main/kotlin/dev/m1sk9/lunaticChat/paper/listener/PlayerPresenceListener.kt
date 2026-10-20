@@ -8,8 +8,10 @@ import dev.m1sk9.lunaticChat.paper.common.hasAnyPermission
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import dev.m1sk9.lunaticChat.paper.settings.PlayerSettingsManager
+import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.format.NamedTextColor
+import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
@@ -30,34 +32,28 @@ class PlayerPresenceListener(
 
         // Send update notification if available
         if (updateCheckerFlag.get() && player.hasAnyPermission { +LunaticChatPermissionNode.NoticeUpdate }) {
-            lunaticChat.server.asyncScheduler.runDelayed(lunaticChat, { _ ->
-                if (player.isOnline) {
-                    player.sendMessage(
-                        MessageFormatter
-                            .format(languageManager.getMessage("general.newUpdateAvailable"))
-                            .clickEvent(ClickEvent.openUrl("https://github.com/m1sk9/LunaticChat/releases/latest")),
-                    )
-                }
-            }, 3, TimeUnit.SECONDS)
+            sendLater(player, 3) {
+                listOf(
+                    MessageFormatter
+                        .format(languageManager.getMessage("general.newUpdateAvailable"))
+                        .clickEvent(ClickEvent.openUrl("https://github.com/m1sk9/LunaticChat/releases/latest")),
+                )
+            }
         }
 
         // Nightly build warning
         if (BuildInfo.isNightly) {
-            lunaticChat.server.asyncScheduler.runDelayed(lunaticChat, { _ ->
-                if (player.isOnline) {
-                    player.sendMessage(
-                        MessageFormatter
-                            .format(languageManager.getMessage("general.nightlyWarning"))
-                            .color(NamedTextColor.YELLOW),
-                    )
-                    player.sendMessage(
-                        MessageFormatter
-                            .format(languageManager.getMessage("general.nightlyReportIssue"))
-                            .clickEvent(ClickEvent.openUrl("https://github.com/m1sk9/LunaticChat/issues"))
-                            .color(NamedTextColor.YELLOW),
-                    )
-                }
-            }, 6, TimeUnit.SECONDS)
+            sendLater(player, 6) {
+                listOf(
+                    MessageFormatter
+                        .format(languageManager.getMessage("general.nightlyWarning"))
+                        .color(NamedTextColor.YELLOW),
+                    MessageFormatter
+                        .format(languageManager.getMessage("general.nightlyReportIssue"))
+                        .clickEvent(ClickEvent.openUrl("https://github.com/m1sk9/LunaticChat/issues"))
+                        .color(NamedTextColor.YELLOW),
+                )
+            }
         }
 
         // Restore active channel from membership and notify (delayed to avoid being buried by other plugins' join messages)
@@ -74,13 +70,20 @@ class PlayerPresenceListener(
                         ).clickEvent(
                             ClickEvent.runCommand("/lc channel status"),
                         )
-                lunaticChat.server.asyncScheduler.runDelayed(lunaticChat, { _ ->
-                    if (player.isOnline) {
-                        player.sendMessage(notification)
-                    }
-                }, 3, TimeUnit.SECONDS)
+                sendLater(player, 3) { listOf(notification) }
             }
         }
+    }
+
+    /** Sends [messages] after [delaySeconds], unless the player has left by then. */
+    private fun sendLater(
+        player: Player,
+        delaySeconds: Long,
+        messages: () -> List<Component>,
+    ) {
+        lunaticChat.server.asyncScheduler.runDelayed(lunaticChat, { _ ->
+            if (player.isOnline) messages().forEach(player::sendMessage)
+        }, delaySeconds, TimeUnit.SECONDS)
     }
 
     @EventHandler(ignoreCancelled = true)

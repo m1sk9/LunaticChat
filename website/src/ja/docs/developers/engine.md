@@ -89,8 +89,9 @@ UUID シリアライザが 2 つあるのは用途が違うためです．
 - `DebugCategories.parse` / `resolve` — デバッグスイッチの唯一の解釈．Paper の `DebugConfigSerializer` と Velocity の `VelocityDebugSwitch` が共有する．未知の名前は例外にせず収集するため，タイポの影響はその名前だけに留まる
 - `DebugLogger` — `log(category) { message }`．lambda であることが要点で，チャット経路は 1 通あたり 1 回計装されるが，無効時は文字列自体が組み立てられない
 - `DebugState` — 現在有効なカテゴリ．`/lc reload` と `/lc debug` が稼働中に差し替える
+- `StateDebugLogger` — 両プラットフォームが使う `DebugLogger`．`DebugState` を確認し，`[LC/<key>]` の接頭辞を付けて出力先 (sink) へ渡す
 
-`JulDebugLogger` (Paper) と `Slf4jDebugLogger` (Velocity) はどちらも `INFO` で出力します．どちらのプラットフォームも，既定のログ設定では `INFO` 未満を出力しないためです．
+`JulDebugLogger` (Paper) と `Slf4jDebugLogger` (Velocity) は `StateDebugLogger` に委譲し，出力先だけを渡します．どちらも `INFO` で出力します．どちらのプラットフォームも，既定のログ設定では `INFO` 未満を出力しないためです．
 
 ## permission / command — 中立抽象
 

@@ -87,8 +87,9 @@ Debug logging is a contract before it is an implementation: `config.yml` and the
 - `DebugCategories.parse` / `resolve` — the one reading of a debug switch, shared by `DebugConfigSerializer` on Paper and `VelocityDebugSwitch` on Velocity. An unknown name is collected rather than thrown, so a typo costs only itself
 - `DebugLogger` — `log(category) { message }`. The lambda is the point: the chat path is instrumented once per message, and while debugging is off the string is never built
 - `DebugState` — the categories currently on, replaceable at runtime by `/lc reload` and `/lc debug`
+- `StateDebugLogger` — the `DebugLogger` both platforms use: it checks `DebugState`, adds the `[LC/<key>]` prefix and hands the line to a sink
 
-`JulDebugLogger` (Paper) and `Slf4jDebugLogger` (Velocity) both write at `INFO`, because neither platform's stock logging configuration prints anything below it.
+`JulDebugLogger` (Paper) and `Slf4jDebugLogger` (Velocity) delegate to `StateDebugLogger` and supply only the sink. Both write at `INFO`, because neither platform's stock logging configuration prints anything below it.
 
 ## permission / command — Neutral abstractions
 
