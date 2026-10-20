@@ -34,6 +34,7 @@ object EventListenerRegistry {
 
         // Always register these listeners
         pluginManager.registerEvents(SpyPermissionManager, plugin)
+        SpyPermissionManager.updateSpyCache()
         pluginManager.registerEvents(
             PlayerPresenceListener(
                 lunaticChat = plugin,

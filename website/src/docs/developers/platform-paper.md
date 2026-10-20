@@ -140,7 +140,7 @@ Channel state itself is managed by the `chat/channel` package.
 
 - `EventListenerRegistry` (`object`) — `SpyPermissionManager` and `PlayerPresenceListener` are always registered; `PlayerChatListener` is registered only when channel / velocity cross-server / romaji is enabled (Feature Gating again)
 - `PlayerPresenceListener` — on Join: update notification, nightly warning, active-channel restoration notice; on Quit: clear DM references, deactivate the active channel, and save settings
-- `SpyPermissionManager` (`object : Listener`) — caches holders of the `Spy` permission on join/quit; referenced by the DM and channel handlers
+- `SpyPermissionManager` (`object : Listener`) — caches holders of the `Spy` permission (rebuilt from every online player at registration, then updated per joining/quitting player) and re-checks the permission before each copy; referenced by the DM and channel handlers
 
 ## config
 
