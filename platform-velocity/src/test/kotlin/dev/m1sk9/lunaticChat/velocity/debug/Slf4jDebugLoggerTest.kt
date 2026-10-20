@@ -22,7 +22,7 @@ class Slf4jDebugLoggerTest {
         }
 
         assertFalse(evaluated)
-        verify(exactly = 0) { logger.info(any<String>(), any(), any()) }
+        verify(exactly = 0) { logger.info(any<String>()) }
     }
 
     @Test
@@ -31,6 +31,6 @@ class Slf4jDebugLoggerTest {
 
         debug.log(DebugCategory.VELOCITY) { "handshake received" }
 
-        verify { logger.info("[LC/{}] {}", "velocity", "handshake received") }
+        verify { logger.info("[LC/velocity] handshake received") }
     }
 }
