@@ -28,7 +28,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 /**
  * Tests for DirectMessageHandler.
@@ -55,17 +54,6 @@ class DirectMessageHandlerTest {
     private fun Component.legacy(): String = LegacyComponentSerializer.legacySection().serialize(this)
 
     @Test
-    fun `sendDirectMessage should return true on success`() {
-        val handler = createHandler()
-        val sender = TestUtils.createMockPlayer()
-        val recipient = TestUtils.createMockPlayer()
-
-        val result = runBlocking { handler.sendDirectMessage(sender, recipient, "Test message") }
-
-        assertTrue(result)
-    }
-
-    @Test
     fun `sendDirectMessage should use custom message format from configuration`() {
         val customConfig =
             TestUtils.createTestConfiguration().copy(
@@ -82,9 +70,8 @@ class DirectMessageHandlerTest {
         val sender = TestUtils.createMockPlayer(name = "Alice")
         val recipient = TestUtils.createMockPlayer(name = "Bob")
 
-        val result = runBlocking { handler.sendDirectMessage(sender, recipient, "Test") }
+        runBlocking { handler.sendDirectMessage(sender, recipient, "Test") }
 
-        assertTrue(result)
         assertEquals("[DM] Alice -> Bob: Test", recipient.receivedMessage().legacy())
     }
 
@@ -192,12 +179,12 @@ class DirectMessageHandlerTest {
         every { settingsManager.getSettings(any()) } returns senderSettings
 
         val handler = createHandler(settingsManager = settingsManager)
-        val sender = TestUtils.createMockPlayer()
-        val recipient = TestUtils.createMockPlayer()
+        val sender = TestUtils.createMockPlayer(name = "Alice")
+        val recipient = TestUtils.createMockPlayer(name = "Bob")
 
-        val result = runBlocking { handler.sendDirectMessage(sender, recipient, "konnichiwa") }
+        runBlocking { handler.sendDirectMessage(sender, recipient, "konnichiwa") }
 
-        assertTrue(result)
+        assertEquals("§7[§eAlice §7>> §eBob§7] §fkonnichiwa", recipient.receivedMessage().legacy())
     }
 
     @Test
@@ -217,13 +204,12 @@ class DirectMessageHandlerTest {
         }
 
         val handler = createHandler(settingsManager = settingsManager, romanjiConverter = romanjiConverter)
-        val sender = TestUtils.createMockPlayer()
-        val recipient = TestUtils.createMockPlayer()
+        val sender = TestUtils.createMockPlayer(name = "Alice")
+        val recipient = TestUtils.createMockPlayer(name = "Bob")
 
-        // Should not throw exception and should complete quickly (within timeout)
-        val result = runBlocking { handler.sendDirectMessage(sender, recipient, "konnichiwa") }
+        runBlocking { handler.sendDirectMessage(sender, recipient, "konnichiwa") }
 
-        assertTrue(result)
+        assertEquals("§7[§eAlice §7>> §eBob§7] §fkonnichiwa", recipient.receivedMessage().legacy())
     }
 
     @Test
@@ -236,9 +222,9 @@ class DirectMessageHandlerTest {
         // This validates Issue #1 refactoring - ConfigManager DI
         val sender = TestUtils.createMockPlayer()
         val recipient = TestUtils.createMockPlayer()
-        val result = runBlocking { handler.sendDirectMessage(sender, recipient, "Test") }
+        runBlocking { handler.sendDirectMessage(sender, recipient, "Test") }
 
-        assertTrue(result)
+        recipient.receivedMessage()
     }
 
     @Test
@@ -348,8 +334,8 @@ class DirectMessageHandlerTest {
 
         val sender = TestUtils.createMockPlayer()
         val recipient = TestUtils.createMockPlayer()
-        val result = runBlocking { handler.sendDirectMessage(sender, recipient, "Test") }
+        runBlocking { handler.sendDirectMessage(sender, recipient, "Test") }
 
-        assertTrue(result)
+        recipient.receivedMessage()
     }
 }
