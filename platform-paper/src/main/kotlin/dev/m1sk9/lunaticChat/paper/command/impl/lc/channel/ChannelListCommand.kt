@@ -61,130 +61,123 @@ class ChannelListCommand(
     ): CommandResult {
         val sender = ctx.requirePlayer()
 
-        val result = channelManager.getPublicChannels()
-        return result.fold(
-            onSuccess = { channels ->
-                if (channels.isEmpty()) {
-                    sender.sendMessage(
-                        MessageFormatter.format(
-                            languageManager.getMessage("channel.list.empty"),
-                        ),
-                    )
-                } else {
-                    val totalPages = ceil(channels.size.toDouble() / CHANNELS_PER_PAGE).toInt()
-                    val currentPage = page.coerceIn(1, totalPages)
-                    val startIndex = (currentPage - 1) * CHANNELS_PER_PAGE
-                    val endIndex = (startIndex + CHANNELS_PER_PAGE).coerceAtMost(channels.size)
-                    val pageChannels = channels.subList(startIndex, endIndex)
+        val channels = channelManager.getPublicChannels()
+        if (channels.isEmpty()) {
+            sender.sendMessage(
+                MessageFormatter.format(
+                    languageManager.getMessage("channel.list.empty"),
+                ),
+            )
+        } else {
+            val totalPages = ceil(channels.size.toDouble() / CHANNELS_PER_PAGE).toInt()
+            val currentPage = page.coerceIn(1, totalPages)
+            val startIndex = (currentPage - 1) * CHANNELS_PER_PAGE
+            val endIndex = (startIndex + CHANNELS_PER_PAGE).coerceAtMost(channels.size)
+            val pageChannels = channels.subList(startIndex, endIndex)
 
-                    sender.sendMessage(
-                        MessageFormatter.format(
-                            languageManager.getMessage(
-                                "channel.list.header",
-                                mapOf("count" to channels.size.toString()),
-                            ),
-                        ),
-                    )
+            sender.sendMessage(
+                MessageFormatter.format(
+                    languageManager.getMessage(
+                        "channel.list.header",
+                        mapOf("count" to channels.size.toString()),
+                    ),
+                ),
+            )
 
-                    pageChannels.forEach { channel ->
-                        val memberCountResult = channelManager.getChannelMembers(channel.id)
-                        val memberCount =
-                            memberCountResult.getOrNull()?.size
-                                ?: 0
+            pageChannels.forEach { channel ->
+                val memberCountResult = channelManager.getChannelMembers(channel.id)
+                val memberCount =
+                    memberCountResult.getOrNull()?.size
+                        ?: 0
 
-                        val hoverTextBuilder =
-                            Component
-                                .text()
-                                .append(Component.text("ID: ", NamedTextColor.GRAY))
-                                .append(Component.text(channel.id, NamedTextColor.YELLOW))
-                                .append(Component.newline())
-                                .append(Component.text("Members: ", NamedTextColor.GRAY))
-                                .append(Component.text(memberCount.toString(), NamedTextColor.WHITE))
+                val hoverTextBuilder =
+                    Component
+                        .text()
+                        .append(Component.text("ID: ", NamedTextColor.GRAY))
+                        .append(Component.text(channel.id, NamedTextColor.YELLOW))
+                        .append(Component.newline())
+                        .append(Component.text("Members: ", NamedTextColor.GRAY))
+                        .append(Component.text(memberCount.toString(), NamedTextColor.WHITE))
 
-                        channel.description?.let { desc ->
-                            hoverTextBuilder
-                                .append(Component.newline())
-                                .append(Component.text("Description: ", NamedTextColor.GRAY))
-                                .append(Component.text(desc, NamedTextColor.WHITE))
-                        }
-
-                        hoverTextBuilder
-                            .append(Component.newline())
-                            .append(Component.newline())
-                            .append(Component.text(languageManager.getMessage("channel.list.clickToJoin"), NamedTextColor.GREEN))
-                            .append(Component.text(" ▶", NamedTextColor.YELLOW))
-
-                        val hoverText = hoverTextBuilder.build()
-
-                        val channelInfo =
-                            Component
-                                .text("  • ", NamedTextColor.GRAY)
-                                .append(
-                                    Component
-                                        .text(channel.name, NamedTextColor.AQUA),
-                                ).append(Component.text(" (", NamedTextColor.GRAY))
-                                .append(Component.text(channel.id, NamedTextColor.YELLOW))
-                                .append(Component.text(")", NamedTextColor.GRAY))
-                                .hoverEvent(HoverEvent.showText(hoverText))
-                                .clickEvent(ClickEvent.runCommand("/lc channel join ${channel.id}"))
-
-                        sender.sendMessage(channelInfo)
-                    }
-
-                    // Display pagination footer
-                    if (totalPages > 1) {
-                        val paginationComponent =
-                            Component
-                                .text()
-                                .append(Component.text("Page ", NamedTextColor.GRAY))
-                                .append(Component.text("$currentPage", NamedTextColor.YELLOW))
-                                .append(Component.text("/", NamedTextColor.GRAY))
-                                .append(Component.text("$totalPages", NamedTextColor.YELLOW))
-
-                        if (currentPage > 1) {
-                            paginationComponent
-                                .append(Component.text("  ", NamedTextColor.GRAY))
-                                .append(
-                                    Component
-                                        .text("[◀]", NamedTextColor.GREEN)
-                                        .clickEvent(ClickEvent.runCommand("/lc channel list ${currentPage - 1}"))
-                                        .hoverEvent(
-                                            HoverEvent.showText(
-                                                Component.text(
-                                                    "Go to page ${currentPage - 1}",
-                                                    NamedTextColor.WHITE,
-                                                ),
-                                            ),
-                                        ),
-                                )
-                        }
-
-                        if (currentPage < totalPages) {
-                            paginationComponent
-                                .append(Component.text("  ", NamedTextColor.GRAY))
-                                .append(
-                                    Component
-                                        .text("[▶]", NamedTextColor.GREEN)
-                                        .clickEvent(ClickEvent.runCommand("/lc channel list ${currentPage + 1}"))
-                                        .hoverEvent(
-                                            HoverEvent.showText(
-                                                Component.text(
-                                                    "Go to page ${currentPage + 1}",
-                                                    NamedTextColor.WHITE,
-                                                ),
-                                            ),
-                                        ),
-                                )
-                        }
-
-                        sender.sendMessage(paginationComponent.build())
-                    }
+                channel.description?.let { desc ->
+                    hoverTextBuilder
+                        .append(Component.newline())
+                        .append(Component.text("Description: ", NamedTextColor.GRAY))
+                        .append(Component.text(desc, NamedTextColor.WHITE))
                 }
-                CommandResult.Success
-            },
-            onFailure = { error ->
-                fail("channel.list.error")
-            },
-        )
+
+                hoverTextBuilder
+                    .append(Component.newline())
+                    .append(Component.newline())
+                    .append(Component.text(languageManager.getMessage("channel.list.clickToJoin"), NamedTextColor.GREEN))
+                    .append(Component.text(" ▶", NamedTextColor.YELLOW))
+
+                val hoverText = hoverTextBuilder.build()
+
+                val channelInfo =
+                    Component
+                        .text("  • ", NamedTextColor.GRAY)
+                        .append(
+                            Component
+                                .text(channel.name, NamedTextColor.AQUA),
+                        ).append(Component.text(" (", NamedTextColor.GRAY))
+                        .append(Component.text(channel.id, NamedTextColor.YELLOW))
+                        .append(Component.text(")", NamedTextColor.GRAY))
+                        .hoverEvent(HoverEvent.showText(hoverText))
+                        .clickEvent(ClickEvent.runCommand("/lc channel join ${channel.id}"))
+
+                sender.sendMessage(channelInfo)
+            }
+
+            // Display pagination footer
+            if (totalPages > 1) {
+                val paginationComponent =
+                    Component
+                        .text()
+                        .append(Component.text("Page ", NamedTextColor.GRAY))
+                        .append(Component.text("$currentPage", NamedTextColor.YELLOW))
+                        .append(Component.text("/", NamedTextColor.GRAY))
+                        .append(Component.text("$totalPages", NamedTextColor.YELLOW))
+
+                if (currentPage > 1) {
+                    paginationComponent
+                        .append(Component.text("  ", NamedTextColor.GRAY))
+                        .append(
+                            Component
+                                .text("[◀]", NamedTextColor.GREEN)
+                                .clickEvent(ClickEvent.runCommand("/lc channel list ${currentPage - 1}"))
+                                .hoverEvent(
+                                    HoverEvent.showText(
+                                        Component.text(
+                                            "Go to page ${currentPage - 1}",
+                                            NamedTextColor.WHITE,
+                                        ),
+                                    ),
+                                ),
+                        )
+                }
+
+                if (currentPage < totalPages) {
+                    paginationComponent
+                        .append(Component.text("  ", NamedTextColor.GRAY))
+                        .append(
+                            Component
+                                .text("[▶]", NamedTextColor.GREEN)
+                                .clickEvent(ClickEvent.runCommand("/lc channel list ${currentPage + 1}"))
+                                .hoverEvent(
+                                    HoverEvent.showText(
+                                        Component.text(
+                                            "Go to page ${currentPage + 1}",
+                                            NamedTextColor.WHITE,
+                                        ),
+                                    ),
+                                ),
+                        )
+                }
+
+                sender.sendMessage(paginationComponent.build())
+            }
+        }
+        return CommandResult.Success
     }
 }

@@ -124,7 +124,7 @@ class DiagnosticsReport(
             }
 
             section("Stores") {
-                val channels = services.channelManager?.getAllChannels()?.getOrNull()
+                val channels = services.channelManager?.getAllChannels()
                 if (channels == null) {
                     line("channels", "channel chat disabled")
                 } else {

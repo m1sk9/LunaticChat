@@ -127,7 +127,6 @@ channel:
   list:
     header: "--- Public Channels ({count}) ---"
     empty: "No public channels available"
-    error: "Failed to retrieve channel list"
     clickToJoin: "Click to join"
   delete:
     success: "Deleted channel '{id}'"

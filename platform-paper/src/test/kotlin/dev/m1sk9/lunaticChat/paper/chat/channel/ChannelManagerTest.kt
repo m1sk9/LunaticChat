@@ -251,9 +251,7 @@ class ChannelManagerTest {
         manager.createChannel(createTestChannel(id = "ch1", name = "Ch1", ownerId = createTestUUID(1)))
         manager.createChannel(createTestChannel(id = "ch2", name = "Ch2", ownerId = createTestUUID(2)))
 
-        val result = manager.getAllChannels()
-        assertTrue(result.isSuccess)
-        assertEquals(2, result.getOrThrow().size)
+        assertEquals(2, manager.getAllChannels().size)
     }
 
     @Test
@@ -266,10 +264,7 @@ class ChannelManagerTest {
             createTestChannel(id = "private-ch", name = "Private", ownerId = createTestUUID(2), isPrivate = true),
         )
 
-        val result = manager.getPublicChannels()
-        assertTrue(result.isSuccess)
-        assertEquals(1, result.getOrThrow().size)
-        assertEquals("public-ch", result.getOrThrow()[0].id)
+        assertEquals(listOf("public-ch"), manager.getPublicChannels().map { it.id })
     }
 
     @Test

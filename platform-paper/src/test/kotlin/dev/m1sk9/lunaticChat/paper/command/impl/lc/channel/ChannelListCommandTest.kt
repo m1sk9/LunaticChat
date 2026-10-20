@@ -1,7 +1,6 @@
 package dev.m1sk9.lunaticChat.paper.command.impl.lc.channel
 
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
-import dev.m1sk9.lunaticChat.engine.exception.ChannelNotFoundException
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.TestUtils
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
@@ -51,7 +50,7 @@ class ChannelListCommandTest {
                 TestUtils.createTestChannelMember(channelId = "channel-1", playerId = testUUID),
             )
 
-        every { deps.channelManager.getPublicChannels() } returns Result.success(channels)
+        every { deps.channelManager.getPublicChannels() } returns channels
         every { deps.channelManager.getChannelMembers(any()) } returns Result.success(members)
 
         val result = deps.command.execute(deps.ctx, 1)
@@ -63,7 +62,7 @@ class ChannelListCommandTest {
     fun `execute should return Success with empty list message`() {
         val deps = createDependencies()
 
-        every { deps.channelManager.getPublicChannels() } returns Result.success(emptyList())
+        every { deps.channelManager.getPublicChannels() } returns emptyList()
 
         val result = deps.command.execute(deps.ctx, 1)
 
@@ -86,22 +85,11 @@ class ChannelListCommandTest {
                 TestUtils.createTestChannelMember(channelId = "channel-1", playerId = testUUID),
             )
 
-        every { deps.channelManager.getPublicChannels() } returns Result.success(channels)
+        every { deps.channelManager.getPublicChannels() } returns channels
         every { deps.channelManager.getChannelMembers(any()) } returns Result.success(members)
 
         val result = deps.command.execute(deps.ctx, 1)
 
         assertIs<CommandResult.Success>(result)
-    }
-
-    @Test
-    fun `execute should return Failure on error`() {
-        val deps = createDependencies()
-
-        every { deps.channelManager.getPublicChannels() } returns Result.failure(ChannelNotFoundException("error"))
-
-        val result = deps.command.execute(deps.ctx, 1)
-
-        assertIs<CommandResult.Failure>(result)
     }
 }

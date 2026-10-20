@@ -43,8 +43,7 @@ class ChannelJoinCommand(
                     .argument("channelId", StringArgumentType.word())
                     .suggests { _, builder ->
                         // Tab completion: suggest all public channel IDs
-                        val channels = channelManager.getPublicChannels().getOrNull() ?: emptyList()
-                        channels.forEach { channel ->
+                        channelManager.getPublicChannels().forEach { channel ->
                             builder.suggest(channel.id)
                         }
                         builder.buildFuture()

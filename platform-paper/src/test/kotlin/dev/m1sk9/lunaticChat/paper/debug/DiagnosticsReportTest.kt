@@ -29,7 +29,7 @@ class DiagnosticsReportTest {
 
     private val channelManager =
         mockk<ChannelManager>(relaxed = true) {
-            every { getAllChannels() } returns Result.success(listOf(channel))
+            every { getAllChannels() } returns listOf(channel)
             every { getChannelMembers(channel.id) } returns
                 Result.success(
                     listOf(TestUtils.createTestChannelMember(channelId = channel.id, playerId = playerId)),

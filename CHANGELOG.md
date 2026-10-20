@@ -6,7 +6,9 @@
 
 - Internal cleanup. There are no functional changes to the plugin.
   - `DirectMessageHandler.sendDirectMessage` no longer returns a `Boolean` that was always `true`.
-  - Test suite: 729 → 728.
+  - `ChannelManager.getAllChannels()` and `getPublicChannels()` now return the channel list directly instead of a `Result` that could not fail.
+  - Removed the unreachable `channel.list.error` message from the language files.
+  - Test suite: 729 → 727.
 
 ### v1.6.1
 
