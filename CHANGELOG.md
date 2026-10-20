@@ -5,11 +5,16 @@
 ### v1.7.0
 
 - **Security**: fixed two issues. Update both the Paper and the Velocity plugin.
-  - [GHSA-4p78-89rh-8px5](https://github.com/m1sk9/LunaticChat/security/advisories/GHSA-4p78-89rh-8px5): behind a Velocity proxy without the matching fix, a player with a modified client could forge cross-server chat, direct messages and presence data. The Paper side now ignores relays until the handshake with Velocity has succeeded, strips formatting codes and control characters from relayed text, no longer stalls on text with many unclosed `{`, and escapes unknown message types before logging them. The fix itself is in the Velocity plugin v1.4.0.
+  - [GHSA-4p78-89rh-8px5](https://github.com/m1sk9/LunaticChat/security/advisories/GHSA-4p78-89rh-8px5): behind a Velocity proxy without the matching fix, a player with a modified client could forge cross-server chat, direct messages and presence data. The fix itself is in the Velocity plugin v1.4.0; the Paper side adds the following on top of it.
+    - Global chat and direct messages relayed from other servers are ignored until the handshake with Velocity has succeeded. Messages sent in the first seconds after the first player joins, and every message while `/lcv status` shows `FAILED`, are no longer shown.
+    - Formatting codes (`§`) and line breaks in relayed names and messages are removed instead of being applied. A `velocityIntegration.serverName` written with color codes is now shown without them on other servers.
+    - A message with many unclosed `{` can no longer stall the server.
+    - A plugin message of an unknown type is logged with its control characters escaped, so it can no longer add fake lines to the server log.
   - [GHSA-7gmf-j543-53pr](https://github.com/m1sk9/LunaticChat/security/advisories/GHSA-7gmf-j543-53pr): channel chat permission fixes.
-    - `/lc channel info` no longer shows private channels to players who are not members, and its tab completion no longer lists them.
-    - `/lc channel invite` now sends an invitation instead of adding the player at once. The player accepts it with `/lc channel join <channelId>` within 5 minutes, and their active channel does not change until then.
+    - `/lc channel info` no longer shows private channels to players who are not members, and its tab completion no longer lists them. Players with `lunaticchat.channelbypass` can still view them.
+    - `/lc channel invite` now sends an invitation instead of adding the player at once. The player accepts it with `/lc channel join <channelId>` within 5 minutes, and their active channel does not change until then. Invitations that have not been accepted are lost when the server restarts.
     - `/lc channel kick` and `ban` only work on players with a lower channel role than yours. Moderators can no longer kick or ban the owner or other moderators.
+    - The English and Japanese messages for these commands were updated to match.
 - A player joining no longer re-checks the spy permission of every online player, which added main-thread work that grew with the number of online players on every join.
   - Only the joining player is checked. The permission is also checked again before each spy copy is sent, so a spy whose permission is revoked while online stops receiving copies right away.
   - A player who is given the spy permission while online now starts receiving copies after they re-join. Previously, this also happened whenever any other player joined.

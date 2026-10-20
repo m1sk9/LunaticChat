@@ -70,6 +70,12 @@ The states reported by `/lcv status` and their meanings:
 
 The handshake timeout is 5 seconds. If the handshake times out, the state becomes `FAILED`.
 
+Until the state is `CONNECTED`, the server ignores global chat and direct messages relayed from other servers. A server stuck in `FAILED` therefore shows nothing from the rest of the network.
+
+::: warning Keep the Velocity plugin up to date
+A backend cannot tell a message the proxy relayed from one a player's client sent on the same connection, so it relies on the Velocity plugin to drop messages that players send on the LunaticChat channel. Velocity plugin v1.3.1 and earlier passed them on ([GHSA-4p78-89rh-8px5](https://github.com/m1sk9/LunaticChat/security/advisories/GHSA-4p78-89rh-8px5)). Updating only the Paper plugin does not close this.
+:::
+
 ### Troubleshooting `FAILED`
 
 - Confirm the Velocity plugin is installed and the proxy is running

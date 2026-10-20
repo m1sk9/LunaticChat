@@ -132,7 +132,7 @@ Manages `/tell`・`/reply` state. Two `ConcurrentHashMap`s, `lastMessager` / `la
 Channel state itself is managed by the `chat/channel` package.
 
 - `ChannelManager` — the single source of truth for channels. It holds state in `channelsCache` / `membersCache` / `activeChannels` (`ConcurrentHashMap`), and its CRUD returns `kotlin.Result`, wrapping engine exceptions on failure. It checks config limits (0 = unlimited)
-- `ChannelMembershipManager` — the business logic for join/leave/switch/role. `joinChannel()` checks existence / already-active / BAN / private-invite / already-a-member / membership limit in order
+- `ChannelMembershipManager` — the business logic for join/leave/switch/role. `joinChannel()` checks existence / already-active / BAN / private-invite / already-a-member / membership limit in order. `inviteToChannel()` only records an invitation (in memory, `INVITATION_LIFETIME` = 5 minutes) that `joinChannel()` accepts and uses up; it never adds the target, because joining also switches their active channel. `banPlayer()` / `kickPlayer()` take the actor and refuse unless the actor strictly outranks the target (`ChannelTargetNotOutrankedException`), with `Channel.ownerId` ranking as OWNER even without a member entry
 - `ChannelStorage` — persists `ChannelData` as JSON (`channels.json`)
 - `ChannelMessageLogger` — an asynchronous NDJSON logger with daily rotation, a size cap, and periodic deletion of files past the retention period
 
@@ -175,6 +175,7 @@ Romaji conversion lives here in full: the algorithm, the API client, the cache, 
 Using the engine's protocol, it communicates with the proxy over Bukkit's Plugin Messaging Channel (`lunaticchat:main`). The actual cross-server routing is handled by the Velocity side; paper is responsible for "sending, receiving, deduplication, and formatted display".
 
 - `VelocityConnectionManager` (`PluginMessageListener`) — manages `ConnectionState` (DISCONNECTED / HANDSHAKING / CONNECTED / FAILED). It encodes and sends the engine's `PluginMessage.Handshake`, timing out after 5 seconds. To avoid a circular dependency, `CrossServerChatManager` is injected afterward (setter injection)
+- Every message other than `HandshakeResponse` is dropped until the state is `CONNECTED`, and a `HandshakeResponse` is only accepted while `HANDSHAKING`. Bukkit cannot tell a payload the proxy injected from one the carrying player's client sent, so this only narrows the window; the real guard is the Velocity side consuming every message on the channel. Relayed strings also pass through `neutralized()` (legacy codes and control characters removed) before they reach the legacy-parsed chat formats
 - The handshake runs **only once, triggered by the first player join** (`AtomicBoolean`). It is scheduled 1 second after the join via `asyncScheduler`, and the result is received as `HandshakeResult.Success` / `Error`
 - `CrossServerChatManager` — the send/receive and **deduplication** of global chat. On send, it registers the generated `messageId` in the cache immediately to prevent an echo on its own server (stage one); on receive, it prevents duplicate display with a dedup cache keyed by `messageId` (TTL 60s, oldest-first cleanup when over `cacheSize`). Bukkit API calls are moved to the main thread via `scheduler.runTask`
 

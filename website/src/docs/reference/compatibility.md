@@ -61,6 +61,7 @@ Compatibility is checked at connection time:
 2. Velocity validates Paper's protocol version against its own
 3. On mismatch, Velocity rejects the connection and Paper's state becomes `FAILED`
 4. The handshake timeout is 5 seconds
+5. Until the handshake succeeds, Paper ignores global chat and direct messages relayed from other servers
 
 The handshake is sent once per server start, and it is triggered by a player joining rather than by startup itself — the plugin messaging channel needs a player connection to send on. Until the first player joins, `/lcv status` reports `DISCONNECTED`, which is normal and not a sign of a problem.
 

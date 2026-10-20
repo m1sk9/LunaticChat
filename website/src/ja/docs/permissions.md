@@ -46,7 +46,7 @@ LunaticChat のすべてのパーミッションノードの一覧です．
 |---------------|-----------|------|
 | `lunaticchat.spy` | op | サーバー上の全ダイレクトメッセージ・チャンネルメッセージを閲覧 |
 | `lunaticchat.noticeupdate` | op | アップデート通知の受信 |
-| `lunaticchat.channelbypass` | op | チャンネル制限のバイパス(キック・BAN 保護，強制削除) |
+| `lunaticchat.channelbypass` | op | チャンネル制限のバイパス(キック・BAN 保護，強制削除，private チャンネルの閲覧) |
 | `lunaticchat.command.lcv.status` | op | `/lcv status` コマンドの使用 |
 | `lunaticchat.command.lc.reload` | op | `/lc reload` コマンドの使用 |
 | `lunaticchat.command.lc.debug` | op | `/lc debug` コマンドの使用 |
