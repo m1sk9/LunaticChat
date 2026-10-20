@@ -468,6 +468,27 @@ class ChannelManagerTest {
     }
 
     @Test
+    fun `updateChannelOwner leaves the roles of other members unchanged`() {
+        val (manager, _, _) = createManager()
+        manager.initialize()
+
+        val oldOwnerId = createTestUUID(1)
+        val newOwnerId = createTestUUID(2)
+        val moderatorId = createTestUUID(3)
+        val memberId = createTestUUID(4)
+        manager.createChannel(createTestChannel(id = "own-ch", name = "Channel", ownerId = oldOwnerId))
+        manager.addMember("own-ch", newOwnerId, ChannelRole.MEMBER)
+        manager.addMember("own-ch", moderatorId, ChannelRole.MODERATOR)
+        manager.addMember("own-ch", memberId, ChannelRole.MEMBER)
+
+        manager.updateChannelOwner("own-ch", newOwnerId).getOrThrow()
+
+        val members = manager.getChannelMembers("own-ch").getOrThrow()
+        assertEquals(ChannelRole.MODERATOR, members.find { it.playerId == moderatorId }?.role)
+        assertEquals(ChannelRole.MEMBER, members.find { it.playerId == memberId }?.role)
+    }
+
+    @Test
     fun `setPlayerChannel should set and clear active channel`() {
         val (manager, _, _) = createManager()
         manager.initialize()

@@ -1,7 +1,9 @@
 package dev.m1sk9.lunaticChat.paper.chat.handler
 
 import dev.m1sk9.lunaticChat.engine.protocol.PresenceEntry
+import dev.m1sk9.lunaticChat.engine.settings.PlayerChatSettings
 import dev.m1sk9.lunaticChat.paper.TestUtils
+import dev.m1sk9.lunaticChat.paper.common.SoundCollector
 import dev.m1sk9.lunaticChat.paper.config.MessageFormatHolder
 import dev.m1sk9.lunaticChat.paper.config.key.DebugConfig
 import dev.m1sk9.lunaticChat.paper.converter.RomanjiConverter
@@ -16,6 +18,7 @@ import io.mockk.slot
 import io.mockk.unmockkStatic
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
+import net.kyori.adventure.sound.Sound
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
@@ -98,6 +101,37 @@ class DirectMessageHandlerTest {
             assertEquals("§7[§eAlice §7>> §eBob§7] §fhello", delivered.legacy())
             assertEquals(ClickEvent.suggestCommand("/tell Alice "), delivered.clickEvent())
         }
+    }
+
+    private fun settingsWithNotifications(enabled: Boolean): PlayerSettingsManager {
+        val settingsManager = mockk<PlayerSettingsManager>()
+        every { settingsManager.getSettings(any()) } answers
+            { PlayerChatSettings(uuid = firstArg(), directMessageNotificationEnabled = enabled) }
+        return settingsManager
+    }
+
+    @Test
+    fun `sendDirectMessage plays the send and receive sounds when notifications are on`() {
+        val handler = createHandler(settingsManager = settingsWithNotifications(enabled = true))
+        val sender = TestUtils.createMockPlayer(name = "Alice")
+        val recipient = TestUtils.createMockPlayer(name = "Bob")
+
+        runBlocking { handler.sendDirectMessage(sender, recipient, "hello") }
+
+        verify(exactly = 1) { sender.playSound(SoundCollector.LUNATIC_POP_SOUND) }
+        verify(exactly = 1) { recipient.playSound(SoundCollector.LUNATIC_CLEAR_SOUND) }
+    }
+
+    @Test
+    fun `sendDirectMessage plays no sound when notifications are off`() {
+        val handler = createHandler(settingsManager = settingsWithNotifications(enabled = false))
+        val sender = TestUtils.createMockPlayer(name = "Alice")
+        val recipient = TestUtils.createMockPlayer(name = "Bob")
+
+        runBlocking { handler.sendDirectMessage(sender, recipient, "hello") }
+
+        verify(exactly = 0) { sender.playSound(any<Sound>()) }
+        verify(exactly = 0) { recipient.playSound(any<Sound>()) }
     }
 
     @Test
