@@ -14,12 +14,16 @@ import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerBypassKickException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerMembershipLimitExceededException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelPrivateRequiresInvitationException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelRuntimeException
+import dev.m1sk9.lunaticChat.engine.exception.ChannelTargetNotOutrankedException
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.common.has
 import dev.m1sk9.lunaticChat.paper.config.key.ChannelChatFeatureConfig
 import org.bukkit.Bukkit
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 import java.util.logging.Logger
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 
 /**
  * Whether the player is currently online and holds the moderation bypass permission.
@@ -31,6 +35,7 @@ private fun hasChannelBypassPermission(playerId: UUID): Boolean =
 /**
  * @param hasModerationBypass Whether a player is exempt from being kicked or banned. Injected
  *   rather than read from Bukkit inline so this manager stays testable without a running server.
+ * @param now The current time in milliseconds, injected so invitation expiry can be tested.
  */
 class ChannelMembershipManager(
     private val channelManager: ChannelManager,
@@ -38,7 +43,17 @@ class ChannelMembershipManager(
     private val config: ChannelChatFeatureConfig,
     private val debug: DebugLogger = DebugLogger.Disabled,
     private val hasModerationBypass: (UUID) -> Boolean = ::hasChannelBypassPermission,
+    private val now: () -> Long = System::currentTimeMillis,
 ) {
+    companion object {
+        /** How long an invitation can be accepted with `/lc channel join`. */
+        val INVITATION_LIFETIME: Duration = 5.minutes
+    }
+
+    // Held in memory only: an invitation is meant to be taken up while both players are around,
+    // so losing the outstanding ones on a restart costs no more than inviting again.
+    private val invitations = ConcurrentHashMap<Pair<UUID, String>, Long>()
+
     /**
      * Names the refusal in the debug log, leaving the result untouched.
      *
@@ -136,9 +151,10 @@ class ChannelMembershipManager(
      * If the player is already a member of other channels, they remain members of those channels.
      * Only one channel can be active at a time.
      *
+     * A private channel admits only a player holding an unexpired invitation, which joining uses up.
+     *
      * @param playerId The UUID of the player.
      * @param channelId The ID of the channel.
-     * @param bypassPrivateCheck If true, allows joining private channels without invitation (used for invites).
      * @return Result indicating success or failure.
      * @throws ChannelNotFoundException if the channel does not exist.
      * @throws ChannelMemberAlreadyException if the player is already a member of this channel.
@@ -148,13 +164,11 @@ class ChannelMembershipManager(
     fun joinChannel(
         playerId: UUID,
         channelId: String,
-        bypassPrivateCheck: Boolean = false,
-    ): Result<Unit> = join(playerId, channelId, bypassPrivateCheck).reportRefusal("join", playerId, channelId)
+    ): Result<Unit> = join(playerId, channelId).reportRefusal("join", playerId, channelId)
 
     private fun join(
         playerId: UUID,
         channelId: String,
-        bypassPrivateCheck: Boolean,
     ): Result<Unit> {
         // Check if channel exists
         val channel =
@@ -181,7 +195,7 @@ class ChannelMembershipManager(
         }
 
         // Check if this is a private channel (only invited members can join)
-        if (channel.isPrivate && !bypassPrivateCheck) {
+        if (channel.isPrivate && !hasInvitation(playerId, channelId)) {
             return Result.failure(
                 ChannelPrivateRequiresInvitationException(playerId, channelId),
             )
@@ -217,6 +231,8 @@ class ChannelMembershipManager(
         channelManager.addMember(channelId, playerId, ChannelRole.MEMBER).getOrElse {
             return Result.failure(it)
         }
+
+        invitations.remove(playerId to channelId)
 
         // Set as active channel
         channelManager.setPlayerChannel(playerId, channelId)
@@ -307,34 +323,41 @@ class ChannelMembershipManager(
     }
 
     /**
-     * Bans [targetId] from [channelId].
+     * Bans [targetId] from [channelId] on [actorId]'s authority.
      *
-     * The bypass rule lives here rather than in the ban command so that every path to a ban -
-     * commands today, anything else later - is held to it.
+     * The moderation rules live here rather than in the ban command so that every path to a ban -
+     * commands today, anything else later - is held to them.
      *
      * @return Result indicating success or failure.
+     * @throws ChannelTargetNotOutrankedException if [actorId] does not hold a higher role than the target.
      * @throws ChannelPlayerBypassBanException if the target is exempt from moderation.
      */
     fun banPlayer(
+        actorId: UUID,
         targetId: UUID,
         channelId: String,
     ): Result<Unit> {
+        refuseUnlessOutranked(actorId, targetId, channelId)?.let { return it.reportRefusal("ban", targetId, channelId) }
         if (hasModerationBypass(targetId)) {
             return Result.failure<Unit>(ChannelPlayerBypassBanException(targetId, channelId)).reportRefusal("ban", targetId, channelId)
         }
+        invitations.remove(targetId to channelId)
         return channelManager.banPlayer(channelId, targetId).map { }.reportRefusal("ban", targetId, channelId)
     }
 
     /**
-     * Removes [targetId] from [channelId] as a moderation action.
+     * Removes [targetId] from [channelId] as a moderation action on [actorId]'s authority.
      *
      * @return Result indicating success or failure.
+     * @throws ChannelTargetNotOutrankedException if [actorId] does not hold a higher role than the target.
      * @throws ChannelPlayerBypassKickException if the target is exempt from moderation.
      */
     fun kickPlayer(
+        actorId: UUID,
         targetId: UUID,
         channelId: String,
     ): Result<Unit> {
+        refuseUnlessOutranked(actorId, targetId, channelId)?.let { return it.reportRefusal("kick", targetId, channelId) }
         if (hasModerationBypass(targetId)) {
             return Result.failure<Unit>(ChannelPlayerBypassKickException(targetId, channelId)).reportRefusal("kick", targetId, channelId)
         }
@@ -342,20 +365,75 @@ class ChannelMembershipManager(
     }
 
     /**
-     * Adds [targetId] to [channelId] on [actorId]'s invitation, bypassing the private-channel gate.
+     * Null when [actorId] holds a strictly higher role than [targetId] in [channelId].
+     *
+     * The channel's owner ranks as OWNER even without a member entry, since a member entry lost to
+     * an earlier kick must not leave the owner open to moderation by their own moderators.
+     */
+    private fun refuseUnlessOutranked(
+        actorId: UUID,
+        targetId: UUID,
+        channelId: String,
+    ): Result<Unit>? {
+        val channel = channelManager.getChannel(channelId).getOrElse { return Result.failure(it) }
+
+        fun rankOf(playerId: UUID): Int =
+            if (playerId == channel.ownerId) {
+                ChannelRole.OWNER.rank
+            } else {
+                getMemberRoleOrNull(playerId, channelId)?.rank ?: NON_MEMBER_RANK
+            }
+        if (rankOf(actorId) > rankOf(targetId)) return null
+        return Result.failure(ChannelTargetNotOutrankedException(actorId, targetId, channelId))
+    }
+
+    /**
+     * Records [actorId]'s invitation of [targetId] to [channelId], which the target accepts by
+     * joining within [INVITATION_LIFETIME].
+     *
+     * The target is deliberately not added here: joining also makes the channel their active one,
+     * so an invitation that took effect at once would let anyone who owns a channel redirect
+     * another player's next message into it.
      *
      * @return Result indicating success or failure.
      * @throws ChannelCannotInviteSelfException if the actor invited themselves.
+     * @throws ChannelPlayerBannedException if the target is banned from the channel.
+     * @throws ChannelMemberAlreadyException if the target is already a member.
      */
     fun inviteToChannel(
         actorId: UUID,
         targetId: UUID,
         channelId: String,
+    ): Result<Unit> = invite(actorId, targetId, channelId).reportRefusal("invite", actorId, channelId)
+
+    private fun invite(
+        actorId: UUID,
+        targetId: UUID,
+        channelId: String,
     ): Result<Unit> {
-        if (actorId == targetId) {
-            return Result.failure<Unit>(ChannelCannotInviteSelfException(actorId)).reportRefusal("invite", actorId, channelId)
+        if (actorId == targetId) return Result.failure(ChannelCannotInviteSelfException(actorId))
+        channelManager.getChannel(channelId).getOrElse { return Result.failure(ChannelNotFoundException(channelId)) }
+        if (channelManager.isPlayerBanned(channelId, targetId).getOrElse { false }) {
+            return Result.failure(ChannelPlayerBannedException(targetId, channelId))
         }
-        return joinChannel(targetId, channelId, bypassPrivateCheck = true)
+        if (isMember(targetId, channelId).getOrElse { false }) {
+            return Result.failure(ChannelMemberAlreadyException(targetId, channelId))
+        }
+        invitations[targetId to channelId] = now() + INVITATION_LIFETIME.inWholeMilliseconds
+        logger.info("Player $actorId invited $targetId to channel $channelId")
+        return Result.success(Unit)
+    }
+
+    /** Whether [playerId] holds an unexpired invitation to [channelId]. */
+    fun hasInvitation(
+        playerId: UUID,
+        channelId: String,
+    ): Boolean {
+        val key = playerId to channelId
+        val expiresAt = invitations[key] ?: return false
+        if (now() < expiresAt) return true
+        invitations.remove(key, expiresAt)
+        return false
     }
 
     /**
@@ -366,3 +444,13 @@ class ChannelMembershipManager(
      */
     fun getPlayerChannels(playerId: UUID): List<String> = channelManager.channelIdsOf(playerId)
 }
+
+private const val NON_MEMBER_RANK = -1
+
+private val ChannelRole.rank: Int
+    get() =
+        when (this) {
+            ChannelRole.MEMBER -> 0
+            ChannelRole.MODERATOR -> 1
+            ChannelRole.OWNER -> 2
+        }

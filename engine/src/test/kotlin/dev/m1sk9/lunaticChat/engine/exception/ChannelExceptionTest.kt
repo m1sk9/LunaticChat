@@ -132,6 +132,17 @@ class ChannelExceptionTest {
         assertEquals(testChannelId, ex.channelId)
     }
 
+    // --- ChannelTargetNotOutrankedException ---
+
+    @Test
+    fun `ChannelTargetNotOutrankedException should contain both players in message and store channelId`() {
+        val targetId = UUID.fromString("00000002-0000-0000-0000-000000000000")
+        val ex = ChannelTargetNotOutrankedException(testPlayerId, targetId, testChannelId)
+        assertTrue(ex.message!!.contains(testPlayerId.toString()))
+        assertTrue(ex.message!!.contains(targetId.toString()))
+        assertEquals(testChannelId, ex.channelId)
+    }
+
     // --- ChannelPlayerMembershipLimitExceededException ---
 
     @Test

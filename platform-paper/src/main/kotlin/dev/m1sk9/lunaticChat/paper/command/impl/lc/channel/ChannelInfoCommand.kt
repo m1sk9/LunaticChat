@@ -2,6 +2,7 @@ package dev.m1sk9.lunaticChat.paper.command.impl.lc.channel
 
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
+import dev.m1sk9.lunaticChat.engine.chat.channel.Channel
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
@@ -9,6 +10,7 @@ import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
 import dev.m1sk9.lunaticChat.paper.command.annotation.PlayerOnly
 import dev.m1sk9.lunaticChat.paper.command.core.CommandContext
 import dev.m1sk9.lunaticChat.paper.command.core.LunaticSubCommand
+import dev.m1sk9.lunaticChat.paper.common.has
 import dev.m1sk9.lunaticChat.paper.i18n.LanguageManager
 import dev.m1sk9.lunaticChat.paper.i18n.MessageFormatter
 import io.papermc.paper.command.brigadier.CommandSourceStack
@@ -16,6 +18,7 @@ import io.papermc.paper.command.brigadier.Commands
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Bukkit
+import org.bukkit.entity.Player
 
 @PlayerOnly
 class ChannelInfoCommand(
@@ -39,11 +42,12 @@ class ChannelInfoCommand(
             }.then(
                 Commands
                     .argument("channelId", StringArgumentType.word())
-                    .suggests { _, builder ->
-                        // Tab completion: suggest all public channel IDs
-                        channelManager.getAllChannels().forEach { channel ->
-                            builder.suggest(channel.id)
-                        }
+                    .suggests { ctx, builder ->
+                        val player = ctx.source.executor as? Player
+                        channelManager
+                            .getAllChannels()
+                            .filter { player == null || canView(player, it) }
+                            .forEach { channel -> builder.suggest(channel.id) }
                         builder.buildFuture()
                     }.executes { ctx ->
                         val context = wrapContext(ctx)
@@ -66,14 +70,14 @@ class ChannelInfoCommand(
             channelIdArg ?: channelManager.getPlayerChannel(sender.uniqueId)
                 ?: return fail("channel.info.noActiveChannel")
 
-        // Get channel
+        // A private channel the sender cannot see answers exactly like a missing one, so the reply
+        // does not confirm that it exists.
         val channel =
-            channelManager.getChannel(channelId).getOrElse {
-                return fail(
+            channelManager.getChannel(channelId).getOrNull()?.takeIf { canView(sender, it) }
+                ?: return fail(
                     "channel.info.notFound",
                     mapOf("channelId" to channelId),
                 )
-            }
 
         // Get members
         val members =
@@ -130,4 +134,12 @@ class ChannelInfoCommand(
 
         return CommandResult.Success
     }
+
+    private fun canView(
+        player: Player,
+        channel: Channel,
+    ): Boolean =
+        !channel.isPrivate ||
+            channelManager.isMember(channel.id, player.uniqueId).getOrDefault(false) ||
+            LunaticChatPermissionNode.ChannelBypass.has(player)
 }

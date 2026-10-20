@@ -5,6 +5,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelRole
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
 import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerBypassKickException
+import dev.m1sk9.lunaticChat.engine.exception.ChannelTargetNotOutrankedException
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
@@ -66,7 +67,7 @@ class ChannelKickCommand(
             return failHere("notMember", mapOf("player" to playerName))
         }
 
-        return membershipManager.kickPlayer(targetId, channelId).fold(
+        return membershipManager.kickPlayer(sender.uniqueId, targetId, channelId).fold(
             onSuccess = {
                 // Clear their active channel if this was it
                 if (channelManager.getPlayerChannel(targetId) == channelId) {
@@ -89,6 +90,7 @@ class ChannelKickCommand(
             },
             onFailure = { error ->
                 when (error) {
+                    is ChannelTargetNotOutrankedException -> failHere("cannotKickHigherRole", mapOf("player" to targetName))
                     is ChannelPlayerBypassKickException -> failHere("cannotKickBypass", mapOf("player" to targetName))
                     else -> failHere("error")
                 }

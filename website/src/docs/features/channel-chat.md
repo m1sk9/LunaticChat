@@ -27,7 +27,7 @@ The creator automatically becomes the owner.
 /lc channel switch <channelId>  # Switch the active channel
 ```
 
-Joining a private channel requires an invitation from the owner or a moderator.
+Joining a private channel requires an invitation from the owner or a moderator. An invitation does not add the player by itself: they accept it with `/lc channel join <channelId>` within 5 minutes.
 
 ## Active Channel
 
@@ -57,7 +57,7 @@ Channels have three roles.
 | Role | Permissions |
 |------|-------------|
 | **OWNER** | Delete the channel, manage moderators, transfer ownership, manage members |
-| **MODERATOR** | Invite, kick, ban/unban members |
+| **MODERATOR** | Invite, kick, ban/unban members (kicks and bans reach only lower roles) |
 | **MEMBER** | Participate in chat, view channel information |
 
 ### Moderator Management (Owner Only)

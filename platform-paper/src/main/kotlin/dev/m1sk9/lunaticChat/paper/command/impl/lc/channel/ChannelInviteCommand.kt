@@ -5,7 +5,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelRole
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
 import dev.m1sk9.lunaticChat.engine.exception.ChannelCannotInviteSelfException
-import dev.m1sk9.lunaticChat.engine.exception.ChannelMemberLimitExceededException
+import dev.m1sk9.lunaticChat.engine.exception.ChannelMemberAlreadyException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerBannedException
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
@@ -71,23 +71,23 @@ class ChannelInviteCommand(
         return result.fold(
             onSuccess = {
                 val channelName = channelNameOf(channelId)
+                val minutes = ChannelMembershipManager.INVITATION_LIFETIME.inWholeMinutes.toString()
 
-                // Send notification to invited player
                 targetPlayer.sendMessage(
                     MessageFormatter.format(
                         languageManager.getMessage(
                             "channel.invite.receivedInvite",
-                            mapOf("channel" to channelName, "inviter" to sender.name),
+                            mapOf("channel" to channelName, "inviter" to sender.name, "channelId" to channelId, "minutes" to minutes),
                         ),
                     ),
                 )
 
-                okHere("success", mapOf("player" to targetPlayer.name, "channel" to channelName))
+                okHere("success", mapOf("player" to targetPlayer.name, "channel" to channelName, "minutes" to minutes))
             },
             onFailure = { error ->
                 when (error) {
                     is ChannelCannotInviteSelfException -> failHere("cannotInviteSelf")
-                    is ChannelMemberLimitExceededException -> failHere("channelFull", mapOf("limit" to error.limit.toString()))
+                    is ChannelMemberAlreadyException -> failHere("alreadyMember", mapOf("player" to targetPlayer.name))
                     is ChannelPlayerBannedException -> failHere("playerBanned", mapOf("player" to targetPlayer.name))
                     else -> failHere("error")
                 }

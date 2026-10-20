@@ -94,7 +94,7 @@ Displays a list of public channels (10 per page).
 
 #### `/lc channel info [channelId]`
 
-Displays detailed information about a channel. Without arguments, shows information about the active channel.
+Displays detailed information about a channel. Without arguments, shows information about the active channel. A private channel is shown only to its members and to players with `lunaticchat.channelbypass`; to anyone else it is reported as not found.
 
 - **Aliases**: `i`
 - **Permission**: `lunaticchat.command.lc.channel.info`
@@ -103,7 +103,7 @@ Displays detailed information about a channel. Without arguments, shows informat
 
 #### `/lc channel join <channelId>`
 
-Joins a channel. An invitation is required for private channels.
+Joins a channel. A private channel can only be joined with an invitation, which this command accepts and uses up.
 
 - **Aliases**: `j`
 - **Permission**: `lunaticchat.command.lc.channel.join`
@@ -133,7 +133,7 @@ Displays your channel membership status (active channel and list of joined chann
 
 #### `/lc channel invite <playerName>`
 
-Invites a player to the active channel. Bypasses private channel restrictions.
+Invites an online player to the active channel. The player is not added until they accept with `/lc channel join <channelId>` within 5 minutes, which also admits them to a private channel. Their active channel is left unchanged until then.
 
 - **Aliases**: `inv`
 - **Permission**: `lunaticchat.command.lc.channel.invite`
@@ -141,7 +141,7 @@ Invites a player to the active channel. Bypasses private channel restrictions.
 
 #### `/lc channel kick <playerName>`
 
-Kicks a player from the active channel.
+Kicks a player from the active channel. Only a player with a lower role than yours can be kicked, so a moderator can kick members but not the owner or other moderators.
 
 - **Aliases**: `k`
 - **Permission**: `lunaticchat.command.lc.channel.kick`
@@ -149,7 +149,7 @@ Kicks a player from the active channel.
 
 #### `/lc channel ban <playerName>`
 
-Bans a player from the active channel. Banned players cannot rejoin.
+Bans a player from the active channel. Banned players cannot rejoin. As with kicks, only a player with a lower role than yours can be banned.
 
 - **Permission**: `lunaticchat.command.lc.channel.ban`
 - **Required role**: OWNER or MODERATOR

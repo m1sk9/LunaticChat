@@ -2,6 +2,7 @@ package dev.m1sk9.lunaticChat.paper.command.impl.lc.channel
 
 import dev.m1sk9.lunaticChat.engine.chat.channel.Channel
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
+import dev.m1sk9.lunaticChat.engine.exception.ChannelTargetNotOutrankedException
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.TestUtils
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
@@ -76,14 +77,31 @@ class ChannelKickCommandTest {
         every { membershipManager.isMember(targetUUID, channelId) } returns Result.success(true)
 
         val channel = Channel(id = channelId, name = "Test Channel", ownerId = testUUID, createdAt = 1000L)
-        every { membershipManager.kickPlayer(targetUUID, channelId) } returns Result.success(Unit)
+        every { membershipManager.kickPlayer(testUUID, targetUUID, channelId) } returns Result.success(Unit)
         every { channelManager.getPlayerChannel(targetUUID) } returns channelId
         every { channelManager.getChannel(channelId) } returns Result.success(channel)
 
         val result = command.execute(ctx, "TargetPlayer")
 
         assertIs<CommandResult.SuccessWithMessage>(result)
-        verify { membershipManager.kickPlayer(targetUUID, channelId) }
+        verify { membershipManager.kickPlayer(testUUID, targetUUID, channelId) }
+    }
+
+    @Test
+    fun `a target the sender does not outrank is refused`() {
+        val ctx = createContext()
+        every { channelManager.getPlayerChannel(testUUID) } returns channelId
+        every { membershipManager.hasRole(testUUID, channelId, any()) } returns Result.success(true)
+        setupOfflinePlayer()
+        every { membershipManager.isMember(targetUUID, channelId) } returns Result.success(true)
+        every { membershipManager.kickPlayer(testUUID, targetUUID, channelId) } returns
+            Result.failure(ChannelTargetNotOutrankedException(testUUID, targetUUID, channelId))
+
+        val result = command.execute(ctx, "TargetPlayer")
+
+        assertIs<CommandResult.Failure>(result)
+        verify { languageManager.getMessage("channel.kick.cannotKickHigherRole", mapOf("player" to "TargetPlayer")) }
+        verify(exactly = 0) { channelManager.setPlayerChannel(targetUUID, null) }
     }
 
     @Test

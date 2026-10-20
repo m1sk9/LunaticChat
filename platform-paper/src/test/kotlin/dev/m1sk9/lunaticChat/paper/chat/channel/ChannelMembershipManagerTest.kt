@@ -12,6 +12,7 @@ import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerBypassBanException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerBypassKickException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerMembershipLimitExceededException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelPrivateRequiresInvitationException
+import dev.m1sk9.lunaticChat.engine.exception.ChannelTargetNotOutrankedException
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.TestUtils
 import dev.m1sk9.lunaticChat.paper.TestUtils.createTestChannel
@@ -37,6 +38,7 @@ class ChannelMembershipManagerTest {
         maxMembersPerChannel: Int = 50,
         maxMembershipPerPlayer: Int = 5,
         playersWithBypass: Set<UUID> = emptySet(),
+        now: () -> Long = { 0L },
     ): Triple<ChannelMembershipManager, ChannelManager, TestUtils.TestLogger> {
         val logger = TestUtils.TestLogger()
         val storage = mockk<ChannelStorage>(relaxed = true)
@@ -54,7 +56,7 @@ class ChannelMembershipManagerTest {
         channelManager.initialize()
 
         val membershipManager =
-            ChannelMembershipManager(channelManager, logger, config, hasModerationBypass = { it in playersWithBypass })
+            ChannelMembershipManager(channelManager, logger, config, hasModerationBypass = { it in playersWithBypass }, now = now)
         return Triple(membershipManager, channelManager, logger)
     }
 
@@ -134,7 +136,7 @@ class ChannelMembershipManagerTest {
     }
 
     @Test
-    fun `joinChannel should succeed for private channel with bypass`() {
+    fun `joinChannel admits an invited player to a private channel and uses up the invitation`() {
         val (membership, channelManager, _) = createManagers()
 
         val ownerId = createTestUUID(1)
@@ -142,9 +144,40 @@ class ChannelMembershipManagerTest {
         channelManager.createChannel(
             createTestChannel(id = "priv-ch", name = "Private", ownerId = ownerId, isPrivate = true),
         )
+        membership.inviteToChannel(ownerId, playerId, "priv-ch")
 
-        val result = membership.joinChannel(playerId, "priv-ch", bypassPrivateCheck = true)
-        assertTrue(result.isSuccess)
+        assertTrue(membership.joinChannel(playerId, "priv-ch").isSuccess)
+        assertEquals("priv-ch", channelManager.getPlayerChannel(playerId))
+        assertFalse(membership.hasInvitation(playerId, "priv-ch"))
+    }
+
+    @Test
+    fun `joinChannel refuses a private channel once the invitation has expired`() {
+        var clock = 0L
+        val (membership, channelManager, _) = createManagers(now = { clock })
+
+        val ownerId = createTestUUID(1)
+        val playerId = createTestUUID(2)
+        channelManager.createChannel(
+            createTestChannel(id = "priv-ch", name = "Private", ownerId = ownerId, isPrivate = true),
+        )
+        membership.inviteToChannel(ownerId, playerId, "priv-ch")
+        clock = ChannelMembershipManager.INVITATION_LIFETIME.inWholeMilliseconds
+
+        assertIs<ChannelPrivateRequiresInvitationException>(membership.joinChannel(playerId, "priv-ch").exceptionOrNull())
+    }
+
+    @Test
+    fun `an invitation to one private channel does not open another`() {
+        val (membership, channelManager, _) = createManagers()
+
+        val ownerId = createTestUUID(1)
+        val playerId = createTestUUID(2)
+        channelManager.createChannel(createTestChannel(id = "priv-a", name = "A", ownerId = ownerId, isPrivate = true))
+        channelManager.createChannel(createTestChannel(id = "priv-b", name = "B", ownerId = ownerId, isPrivate = true))
+        membership.inviteToChannel(ownerId, playerId, "priv-a")
+
+        assertIs<ChannelPrivateRequiresInvitationException>(membership.joinChannel(playerId, "priv-b").exceptionOrNull())
     }
 
     @Test
@@ -399,7 +432,7 @@ class ChannelMembershipManagerTest {
         val (membership, channelManager, _) = createManagers(playersWithBypass = setOf(protectedPlayer))
         channelManager.createChannel(createTestChannel(id = "mod-ch", name = "Moderated", ownerId = ownerId))
 
-        val result = membership.banPlayer(protectedPlayer, "mod-ch")
+        val result = membership.banPlayer(ownerId, protectedPlayer, "mod-ch")
 
         assertIs<ChannelPlayerBypassBanException>(result.exceptionOrNull())
         assertFalse(channelManager.isPlayerBanned("mod-ch", protectedPlayer).getOrThrow())
@@ -412,7 +445,7 @@ class ChannelMembershipManagerTest {
         val (membership, channelManager, _) = createManagers()
         channelManager.createChannel(createTestChannel(id = "mod-ch", name = "Moderated", ownerId = ownerId))
 
-        assertTrue(membership.banPlayer(playerId, "mod-ch").isSuccess)
+        assertTrue(membership.banPlayer(ownerId, playerId, "mod-ch").isSuccess)
         assertTrue(channelManager.isPlayerBanned("mod-ch", playerId).getOrThrow())
     }
 
@@ -424,7 +457,7 @@ class ChannelMembershipManagerTest {
         channelManager.createChannel(createTestChannel(id = "mod-ch", name = "Moderated", ownerId = ownerId))
         membership.joinChannel(protectedPlayer, "mod-ch")
 
-        val result = membership.kickPlayer(protectedPlayer, "mod-ch")
+        val result = membership.kickPlayer(ownerId, protectedPlayer, "mod-ch")
 
         assertIs<ChannelPlayerBypassKickException>(result.exceptionOrNull())
         assertTrue(membership.isMember(protectedPlayer, "mod-ch").getOrThrow())
@@ -438,7 +471,7 @@ class ChannelMembershipManagerTest {
         channelManager.createChannel(createTestChannel(id = "mod-ch", name = "Moderated", ownerId = ownerId))
         membership.joinChannel(playerId, "mod-ch")
 
-        assertTrue(membership.kickPlayer(playerId, "mod-ch").isSuccess)
+        assertTrue(membership.kickPlayer(ownerId, playerId, "mod-ch").isSuccess)
         assertFalse(membership.isMember(playerId, "mod-ch").getOrThrow())
     }
 
@@ -462,9 +495,9 @@ class ChannelMembershipManagerTest {
             every { Bukkit.getPlayer(protectedPlayer) } returns online
             every { Bukkit.getPlayer(ordinaryPlayer) } returns ordinary
 
-            assertIs<ChannelPlayerBypassBanException>(membership.banPlayer(protectedPlayer, "mod-ch").exceptionOrNull())
-            assertTrue(membership.banPlayer(offlinePlayer, "mod-ch").isSuccess)
-            assertTrue(membership.banPlayer(ordinaryPlayer, "mod-ch").isSuccess)
+            assertIs<ChannelPlayerBypassBanException>(membership.banPlayer(ownerId, protectedPlayer, "mod-ch").exceptionOrNull())
+            assertTrue(membership.banPlayer(ownerId, offlinePlayer, "mod-ch").isSuccess)
+            assertTrue(membership.banPlayer(ownerId, ordinaryPlayer, "mod-ch").isSuccess)
         } finally {
             unmockkStatic(Bukkit::class)
         }
@@ -482,14 +515,108 @@ class ChannelMembershipManagerTest {
     }
 
     @Test
-    fun `inviteToChannel admits a guest to a private channel`() {
+    fun `inviteToChannel records an invitation without adding the guest or touching their active channel`() {
         val ownerId = createTestUUID(1)
         val guestId = createTestUUID(2)
         val (membership, channelManager, _) = createManagers()
         channelManager.createChannel(createTestChannel(id = "mod-ch", name = "Moderated", ownerId = ownerId).copy(isPrivate = true))
+        channelManager.createChannel(createTestChannel(id = "own-ch", name = "Own", ownerId = guestId))
 
         assertTrue(membership.inviteToChannel(ownerId, guestId, "mod-ch").isSuccess)
-        assertTrue(membership.isMember(guestId, "mod-ch").getOrThrow())
+
+        assertTrue(membership.hasInvitation(guestId, "mod-ch"))
+        assertFalse(membership.isMember(guestId, "mod-ch").getOrThrow())
+        assertEquals("own-ch", channelManager.getPlayerChannel(guestId))
+    }
+
+    @Test
+    fun `inviteToChannel refuses a guest who is already a member`() {
+        val ownerId = createTestUUID(1)
+        val guestId = createTestUUID(2)
+        val (membership, channelManager, _) = createManagers()
+        channelManager.createChannel(createTestChannel(id = "mod-ch", name = "Moderated", ownerId = ownerId))
+        membership.joinChannel(guestId, "mod-ch")
+
+        assertIs<ChannelMemberAlreadyException>(membership.inviteToChannel(ownerId, guestId, "mod-ch").exceptionOrNull())
+    }
+
+    @Test
+    fun `a ban withdraws an outstanding invitation`() {
+        val ownerId = createTestUUID(1)
+        val guestId = createTestUUID(2)
+        val (membership, channelManager, _) = createManagers()
+        channelManager.createChannel(createTestChannel(id = "mod-ch", name = "Moderated", ownerId = ownerId).copy(isPrivate = true))
+        membership.inviteToChannel(ownerId, guestId, "mod-ch")
+
+        membership.banPlayer(ownerId, guestId, "mod-ch")
+
+        assertFalse(membership.hasInvitation(guestId, "mod-ch"))
+    }
+
+    @Test
+    fun `a moderator cannot ban or kick the owner`() {
+        val ownerId = createTestUUID(1)
+        val modId = createTestUUID(2)
+        val (membership, channelManager, _) = createManagers()
+        channelManager.createChannel(createTestChannel(id = "mod-ch", name = "Moderated", ownerId = ownerId))
+        channelManager.addMember("mod-ch", modId, ChannelRole.MODERATOR)
+
+        assertIs<ChannelTargetNotOutrankedException>(membership.banPlayer(modId, ownerId, "mod-ch").exceptionOrNull())
+        assertIs<ChannelTargetNotOutrankedException>(membership.kickPlayer(modId, ownerId, "mod-ch").exceptionOrNull())
+        assertFalse(channelManager.isPlayerBanned("mod-ch", ownerId).getOrThrow())
+        assertEquals(ChannelRole.OWNER, membership.getMemberRole(ownerId, "mod-ch").getOrThrow())
+    }
+
+    @Test
+    fun `a moderator cannot ban or kick another moderator`() {
+        val ownerId = createTestUUID(1)
+        val modId = createTestUUID(2)
+        val otherModId = createTestUUID(3)
+        val (membership, channelManager, _) = createManagers()
+        channelManager.createChannel(createTestChannel(id = "mod-ch", name = "Moderated", ownerId = ownerId))
+        channelManager.addMember("mod-ch", modId, ChannelRole.MODERATOR)
+        channelManager.addMember("mod-ch", otherModId, ChannelRole.MODERATOR)
+
+        assertIs<ChannelTargetNotOutrankedException>(membership.banPlayer(modId, otherModId, "mod-ch").exceptionOrNull())
+        assertIs<ChannelTargetNotOutrankedException>(membership.kickPlayer(modId, otherModId, "mod-ch").exceptionOrNull())
+    }
+
+    @Test
+    fun `a moderator can ban a member and a non-member`() {
+        val ownerId = createTestUUID(1)
+        val modId = createTestUUID(2)
+        val memberId = createTestUUID(3)
+        val strangerId = createTestUUID(4)
+        val (membership, channelManager, _) = createManagers()
+        channelManager.createChannel(createTestChannel(id = "mod-ch", name = "Moderated", ownerId = ownerId))
+        channelManager.addMember("mod-ch", modId, ChannelRole.MODERATOR)
+        channelManager.addMember("mod-ch", memberId, ChannelRole.MEMBER)
+
+        assertTrue(membership.banPlayer(modId, memberId, "mod-ch").isSuccess)
+        assertTrue(membership.banPlayer(modId, strangerId, "mod-ch").isSuccess)
+    }
+
+    @Test
+    fun `the owner can ban a moderator`() {
+        val ownerId = createTestUUID(1)
+        val modId = createTestUUID(2)
+        val (membership, channelManager, _) = createManagers()
+        channelManager.createChannel(createTestChannel(id = "mod-ch", name = "Moderated", ownerId = ownerId))
+        channelManager.addMember("mod-ch", modId, ChannelRole.MODERATOR)
+
+        assertTrue(membership.banPlayer(ownerId, modId, "mod-ch").isSuccess)
+    }
+
+    @Test
+    fun `the owner stays protected even after losing their member entry`() {
+        val ownerId = createTestUUID(1)
+        val modId = createTestUUID(2)
+        val (membership, channelManager, _) = createManagers()
+        channelManager.createChannel(createTestChannel(id = "mod-ch", name = "Moderated", ownerId = ownerId))
+        channelManager.addMember("mod-ch", modId, ChannelRole.MODERATOR)
+        channelManager.removeMember("mod-ch", ownerId)
+
+        assertIs<ChannelTargetNotOutrankedException>(membership.banPlayer(modId, ownerId, "mod-ch").exceptionOrNull())
     }
 
     @Test
@@ -498,7 +625,7 @@ class ChannelMembershipManagerTest {
         val bannedId = createTestUUID(2)
         val (membership, channelManager, _) = createManagers()
         channelManager.createChannel(createTestChannel(id = "mod-ch", name = "Moderated", ownerId = ownerId))
-        membership.banPlayer(bannedId, "mod-ch")
+        membership.banPlayer(ownerId, bannedId, "mod-ch")
 
         val result = membership.inviteToChannel(ownerId, bannedId, "mod-ch")
 

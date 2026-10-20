@@ -2,6 +2,7 @@ package dev.m1sk9.lunaticChat.paper.command.impl.lc.channel
 
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
 import dev.m1sk9.lunaticChat.engine.exception.ChannelCannotInviteSelfException
+import dev.m1sk9.lunaticChat.engine.exception.ChannelMemberAlreadyException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerBannedException
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.TestUtils
@@ -13,6 +14,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
+import io.mockk.verify
 import org.bukkit.Bukkit
 import java.util.UUID
 import kotlin.test.Test
@@ -65,6 +67,13 @@ class ChannelInviteCommandTest {
             val result = deps.command.execute(deps.ctx, "TargetPlayer")
 
             assertIs<CommandResult.SuccessWithMessage>(result)
+            verify {
+                deps.languageManager.getMessage(
+                    "channel.invite.receivedInvite",
+                    mapOf("channel" to channel.name, "inviter" to "Player1", "channelId" to channelId, "minutes" to "5"),
+                )
+            }
+            verify(exactly = 0) { deps.channelManager.setPlayerChannel(targetUUID, any()) }
         } finally {
             unmockkStatic(Bukkit::class)
         }
@@ -109,6 +118,29 @@ class ChannelInviteCommandTest {
             val result = deps.command.execute(deps.ctx, "TargetPlayer")
 
             assertIs<CommandResult.Failure>(result)
+        } finally {
+            unmockkStatic(Bukkit::class)
+        }
+    }
+
+    @Test
+    fun `execute should return Failure when target is already a member`() {
+        val deps = createDependencies()
+        val targetPlayer = TestUtils.createMockPlayer(uuid = targetUUID, name = "TargetPlayer")
+
+        every { deps.channelManager.getPlayerChannel(testUUID) } returns channelId
+        every { deps.membershipManager.hasRole(testUUID, channelId, any()) } returns Result.success(true)
+        every { deps.membershipManager.inviteToChannel(testUUID, targetUUID, channelId) } returns
+            Result.failure(ChannelMemberAlreadyException(targetUUID, channelId))
+
+        mockkStatic(Bukkit::class)
+        try {
+            every { Bukkit.getPlayer(any<String>()) } returns targetPlayer
+
+            val result = deps.command.execute(deps.ctx, "TargetPlayer")
+
+            assertIs<CommandResult.Failure>(result)
+            verify { deps.languageManager.getMessage("channel.invite.alreadyMember", mapOf("player" to "TargetPlayer")) }
         } finally {
             unmockkStatic(Bukkit::class)
         }

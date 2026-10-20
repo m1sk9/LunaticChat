@@ -2,6 +2,7 @@ package dev.m1sk9.lunaticChat.paper.command.impl.lc.channel
 
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
 import dev.m1sk9.lunaticChat.engine.exception.ChannelNotFoundException
+import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.TestUtils
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
@@ -11,6 +12,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
+import io.mockk.verify
 import org.bukkit.Bukkit
 import org.bukkit.OfflinePlayer
 import java.util.UUID
@@ -107,6 +109,61 @@ class ChannelInfoCommandTest {
         val result = deps.command.execute(deps.ctx, null)
 
         assertIs<CommandResult.Failure>(result)
+    }
+
+    @Test
+    fun `a private channel the sender is not in is reported as not found`() {
+        val deps = createDependencies()
+        val ownerId = UUID.fromString("00000002-0000-0000-0000-000000000000")
+        val channel = TestUtils.createTestChannel(id = channelId, ownerId = ownerId, isPrivate = true)
+        every { deps.channelManager.getChannel(channelId) } returns Result.success(channel)
+        every { deps.channelManager.isMember(channelId, testUUID) } returns Result.success(false)
+        every { deps.mockPlayer.hasPermission(any<String>()) } returns false
+
+        val result = deps.command.execute(deps.ctx, channelId)
+
+        assertIs<CommandResult.Failure>(result)
+        verify { deps.languageManager.getMessage("channel.info.notFound", mapOf("channelId" to channelId)) }
+        verify(exactly = 0) { deps.channelManager.getChannelMembers(any()) }
+    }
+
+    @Test
+    fun `a private channel is shown to its members`() {
+        val deps = createDependencies()
+        val ownerId = UUID.fromString("00000002-0000-0000-0000-000000000000")
+        val channel = TestUtils.createTestChannel(id = channelId, ownerId = ownerId, isPrivate = true)
+        every { deps.channelManager.getChannel(channelId) } returns Result.success(channel)
+        every { deps.channelManager.isMember(channelId, testUUID) } returns Result.success(true)
+        every { deps.channelManager.getChannelMembers(channelId) } returns Result.success(emptyList())
+
+        mockkStatic(Bukkit::class)
+        try {
+            mockBukkitOfflinePlayer()
+
+            assertIs<CommandResult.Success>(deps.command.execute(deps.ctx, channelId))
+        } finally {
+            unmockkStatic(Bukkit::class)
+        }
+    }
+
+    @Test
+    fun `a private channel is shown to holders of the channel bypass`() {
+        val deps = createDependencies()
+        val ownerId = UUID.fromString("00000002-0000-0000-0000-000000000000")
+        val channel = TestUtils.createTestChannel(id = channelId, ownerId = ownerId, isPrivate = true)
+        every { deps.channelManager.getChannel(channelId) } returns Result.success(channel)
+        every { deps.channelManager.isMember(channelId, testUUID) } returns Result.success(false)
+        every { deps.mockPlayer.hasPermission(LunaticChatPermissionNode.ChannelBypass.permissionNode) } returns true
+        every { deps.channelManager.getChannelMembers(channelId) } returns Result.success(emptyList())
+
+        mockkStatic(Bukkit::class)
+        try {
+            mockBukkitOfflinePlayer()
+
+            assertIs<CommandResult.Success>(deps.command.execute(deps.ctx, channelId))
+        } finally {
+            unmockkStatic(Bukkit::class)
+        }
     }
 
     @Test

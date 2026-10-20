@@ -6,6 +6,7 @@ import dev.m1sk9.lunaticChat.engine.chat.channel.ChannelRole
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
 import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerAlreadyBannedException
 import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerBypassBanException
+import dev.m1sk9.lunaticChat.engine.exception.ChannelTargetNotOutrankedException
 import dev.m1sk9.lunaticChat.engine.permission.LunaticChatPermissionNode
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
@@ -61,7 +62,7 @@ class ChannelBanCommand(
 
         val targetName = target.name ?: playerName
 
-        return membershipManager.banPlayer(target.uniqueId, channelId).fold(
+        return membershipManager.banPlayer(sender.uniqueId, target.uniqueId, channelId).fold(
             onSuccess = {
                 val channelName = channelNameOf(channelId)
 
@@ -79,6 +80,7 @@ class ChannelBanCommand(
             },
             onFailure = { error ->
                 when (error) {
+                    is ChannelTargetNotOutrankedException -> failHere("cannotBanHigherRole", mapOf("player" to targetName))
                     is ChannelPlayerBypassBanException -> failHere("cannotBanBypass", mapOf("player" to targetName))
                     is ChannelPlayerAlreadyBannedException -> failHere("alreadyBanned", mapOf("player" to playerName))
                     else -> failHere("error")

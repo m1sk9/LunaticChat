@@ -3,6 +3,7 @@ package dev.m1sk9.lunaticChat.paper.command.impl.lc.channel
 import dev.m1sk9.lunaticChat.engine.chat.channel.Channel
 import dev.m1sk9.lunaticChat.engine.command.CommandResult
 import dev.m1sk9.lunaticChat.engine.exception.ChannelPlayerAlreadyBannedException
+import dev.m1sk9.lunaticChat.engine.exception.ChannelTargetNotOutrankedException
 import dev.m1sk9.lunaticChat.paper.LunaticChat
 import dev.m1sk9.lunaticChat.paper.TestUtils
 import dev.m1sk9.lunaticChat.paper.chat.channel.ChannelManager
@@ -76,13 +77,13 @@ class ChannelBanCommandTest {
         every { Bukkit.getPlayer(any<String>()) } returns null
 
         val channel = Channel(id = channelId, name = "Test Channel", ownerId = testUUID, createdAt = 1000L)
-        every { membershipManager.banPlayer(targetUUID, channelId) } returns Result.success(Unit)
+        every { membershipManager.banPlayer(testUUID, targetUUID, channelId) } returns Result.success(Unit)
         every { channelManager.getChannel(channelId) } returns Result.success(channel)
 
         val result = command.execute(ctx, "TargetPlayer")
 
         assertIs<CommandResult.SuccessWithMessage>(result)
-        verify { membershipManager.banPlayer(targetUUID, channelId) }
+        verify { membershipManager.banPlayer(testUUID, targetUUID, channelId) }
     }
 
     @Test
@@ -119,6 +120,21 @@ class ChannelBanCommandTest {
     }
 
     @Test
+    fun `a target the sender does not outrank is refused`() {
+        val ctx = createContext()
+        every { channelManager.getPlayerChannel(testUUID) } returns channelId
+        every { membershipManager.hasRole(testUUID, channelId, any()) } returns Result.success(true)
+        setupOfflinePlayer()
+        every { membershipManager.banPlayer(testUUID, targetUUID, channelId) } returns
+            Result.failure(ChannelTargetNotOutrankedException(testUUID, targetUUID, channelId))
+
+        val result = command.execute(ctx, "TargetPlayer")
+
+        assertIs<CommandResult.Failure>(result)
+        verify { languageManager.getMessage("channel.ban.cannotBanHigherRole", mapOf("player" to "TargetPlayer")) }
+    }
+
+    @Test
     fun `execute should return Failure when already banned`() {
         val ctx = createContext()
         every { channelManager.getPlayerChannel(testUUID) } returns channelId
@@ -126,7 +142,7 @@ class ChannelBanCommandTest {
         setupOfflinePlayer()
         every { Bukkit.getPlayer(any<String>()) } returns null
 
-        every { membershipManager.banPlayer(targetUUID, channelId) } returns
+        every { membershipManager.banPlayer(testUUID, targetUUID, channelId) } returns
             Result.failure(ChannelPlayerAlreadyBannedException(targetUUID, channelId))
 
         val result = command.execute(ctx, "TargetPlayer")
