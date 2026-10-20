@@ -114,6 +114,10 @@ export const en: DefaultTheme.Config = {
             text: 'v1',
             items: [
               {
+                link: '/changelog/paper/v1.7.0',
+                text: 'v1.7.0',
+              },
+              {
                 link: '/changelog/paper/v1.6.0',
                 text: 'v1.6.0',
               },
@@ -139,6 +143,10 @@ export const en: DefaultTheme.Config = {
           {
             text: 'v1',
             items: [
+              {
+                link: '/changelog/velocity/v1.4.0',
+                text: 'v1.4.0',
+              },
               {
                 link: '/changelog/velocity/v1.3.1',
                 text: 'v1.3.1',
