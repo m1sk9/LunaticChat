@@ -28,7 +28,7 @@ class CrossServerChatManager(
     private val debug: DebugLogger = DebugLogger.Disabled,
     private val configuration: LunaticChatConfiguration,
     private val messageFormats: MessageFormatHolder,
-    cacheSize: Int = 100,
+    cacheSize: Int,
 ) {
     private val processedMessages = MessageDeduplicationCache(cacheSize, logger, "global chat")
 
