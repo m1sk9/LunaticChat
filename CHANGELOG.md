@@ -12,7 +12,8 @@
   - `DirectMessageHandler.sendDirectMessage` no longer returns a `Boolean` that was always `true`.
   - `ChannelManager.getAllChannels()` and `getPublicChannels()` now return the channel list directly instead of a `Result` that could not fail.
   - Removed the unreachable `channel.list.error` message from the language files.
-  - Test suite: 729 → 732.
+  - The duplicate check for cross-server chat and direct messages no longer sorts its whole cache on every message once the cache is full.
+  - Test suite: 729 → 736.
 
 ### v1.6.1
 
