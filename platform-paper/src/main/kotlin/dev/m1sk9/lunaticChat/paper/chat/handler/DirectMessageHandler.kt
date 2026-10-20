@@ -126,14 +126,12 @@ class DirectMessageHandler(
      * The conversation is recorded by the caller via [recordMessage] before the delivery is queued,
      * for the same reason as [recordRemoteRecipient]. Recording it here as well would also re-insert
      * entries that [clearPlayer] has already swept, if the recipient quits mid-delivery.
-     *
-     * @return true if message was sent successfully
      */
     suspend fun sendDirectMessage(
         sender: Player,
         recipient: Player,
         message: String,
-    ): Boolean {
+    ) {
         val senderSettings = settingsManager?.getSettings(sender.uniqueId)
         val recipientSettings = settingsManager?.getSettings(recipient.uniqueId)
 
@@ -148,7 +146,6 @@ class DirectMessageHandler(
             formatMessage(formats, sender.name, recipient.name, displayMessage, world, replyTo = sender.name)
         sender.showOutgoing(userMessage, senderSettings)
         recipient.showIncoming(userMessage, recipientSettings)
-        return true
     }
 
     /**

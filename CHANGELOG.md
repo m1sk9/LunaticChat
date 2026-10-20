@@ -2,6 +2,12 @@
 
 ## v1
 
+### v1.7.0
+
+- Internal cleanup. There are no functional changes to the plugin.
+  - `DirectMessageHandler.sendDirectMessage` no longer returns a `Boolean` that was always `true`.
+  - Test suite: 729 → 728.
+
 ### v1.6.1
 
 - Internal cleanup. There are no functional changes to the plugin.
