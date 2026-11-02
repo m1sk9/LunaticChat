@@ -1,0 +1,126 @@
+name: Release PR checks
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+# Every job is skipped on an ordinary PR; only release-please's PRs are checked. Require the
+# "gate" job, not the individual ones: a skipped job counts as passing, and gate fails if
+# any job it waits for failed.
+jobs:
+  context:
+    if: startsWith(github.head_ref, 'release-please--')
+    runs-on: ubuntu-24.04
+    outputs:
+      tags: ${{ steps.tags.outputs.list }}
+      paper: ${{ steps.tags.outputs.paper }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Work out the tags this PR will produce
+        id: tags
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git show "origin/${BASE_REF}:.release-please-manifest.json" > "$RUNNER_TEMP/before.json"
+          tags=$(.github/scripts/release-tags.sh "$RUNNER_TEMP/before.json" .release-please-manifest.json)
+          if [ -z "$tags" ]; then
+            echo "::error::This PR changes no version in .release-please-manifest.json"
+            exit 1
+          fi
+          {
+            echo "list<<EOF"
+            echo "$tags"
+            echo "EOF"
+            if grep -q '^v' <<< "$tags"; then
+              echo "paper=true"
+            else
+              echo "paper=false"
+            fi
+          } >> "$GITHUB_OUTPUT"
+
+  protocol:
+    needs: context
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check the protocol version
+        run: .github/scripts/check-protocol.sh
+
+  compat:
+    needs: context
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Development Environment
+        uses: jdx/mise-action@v4
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Build both JARs
+        run: ./gradlew :platform-paper:shadowJar :platform-velocity:shadowJar --no-daemon
+
+      - name: Check Paper and Velocity can talk to each other
+        run: |
+          .github/scripts/check-compat.sh \
+            platform-paper/build/libs/LunaticChat-*[0-9].jar \
+            platform-velocity/build/libs/LunaticChat-*-velocity.jar
+
+  notes:
+    needs: context
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Check the release notes
+        env:
+          TAGS: ${{ needs.context.outputs.tags }}
+        run: |
+          mapfile -t tags <<< "$TAGS"
+          .github/scripts/check-release-notes.sh "${tags[@]}"
+
+  modrinth-meta:
+    needs: context
+    if: needs.context.outputs.paper == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Check the Modrinth game versions
+        run: .github/scripts/check-modrinth-meta.sh
+
+  gate:
+    if: always()
+    needs: [context, protocol, compat, notes, modrinth-meta]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Fail if any check failed
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          if jq -e 'to_entries | any(.value.result == "failure" or .value.result == "cancelled")' <<< "$NEEDS" > /dev/null; then
+            echo "::error::A release check failed or was cancelled"
+            exit 1
+          fi
