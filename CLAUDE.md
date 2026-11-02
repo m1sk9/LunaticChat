@@ -128,13 +128,15 @@ Paper and Velocity have independent versions: `version.txt` at the repository ro
 | `v1.5.0` | `release-paper.yaml` | Paper/Folia JAR only |
 | `velocity/v1.4.0` | `release-velocity.yaml` | Velocity JAR only |
 
-One tag ships one platform; both workflows call the shared `_release.yaml`. To release both, push both tags together. Paper keeps the bare `vX.Y.Z` form because `UpdateChecker` in already-deployed Paper builds only understands it — never move Paper to a prefixed tag. Up to v1.4.0, `vX.Y.Z` released both platforms and some Paper releases used `paper/vX.Y.Z`; those tags stay as history.
+One tag ships one platform; both workflows call the shared `_release.yaml`. Paper keeps the bare `vX.Y.Z` form because `UpdateChecker` in already-deployed Paper builds only understands it — never move Paper to a prefixed tag. Up to v1.4.0, `vX.Y.Z` released both platforms and some Paper releases used `paper/vX.Y.Z`; those tags stay as history.
 
-`CHANGELOG.md` headings map one-to-one onto tags: `### vX.Y.Z` is a Paper release (tag `vX.Y.Z`), `#### Velocity: vA.B.C` under it is a Velocity release shipped alongside it (tag `velocity/vA.B.C`), and a Velocity-only release gets its own `### Velocity: vA.B.C` heading.
+Releases are driven by release-please (`release-please-config.json`, `.release-please-manifest.json`), one Release PR per platform. The bump comes from the Conventional Commit types merged since the last release, so the commit type is a release decision: `fix(deps)` from Renovate is what keeps dependency updates from being left out. Paper's package is the repository root (minus `platform-velocity/` and the non-shipping directories), so `engine/` changes reach Paper; Velocity only sees `platform-velocity/`, so an `engine/` change (a protocol change, a `kotlinx-serialization` bump) that must also reach Velocity is not detected: include a change under `platform-velocity/` in the same PR.
 
-Release drafts are published by hand; publish a Velocity release with `gh release edit <tag> --draft=false --latest=false` so the repository's latest release stays the Paper one.
+The human steps are writing the release notes in the Release PR (`create-release-note`) and merging it. Everything after the merge is automatic: `release-please.yaml` pushes a signed tag with the release bot's key, then `_release.yaml` verifies, publishes to Modrinth and GitHub, and checks the rollout. Do not tag by hand except as the last resort described in `release-lc`.
 
-Use the `release-lc` skill (`.claude/skills/release-lc/SKILL.md`) to run the pre-release checks, tag, and watch the rollout through GitHub Releases, Modrinth, and the docs site. Write the site release notes first with `create-release-note`; check Paper↔Velocity compatibility of the current tree with `test-integration`; audit the docs site with `correction-docs`.
+`CHANGELOG.md` stops at v1.7.0 (release-please runs with `skip-changelog`). The site release notes under `website/src/changelog/` are the changelog, and the GitHub Release and Modrinth changelog are rendered from the English page.
+
+The checks run by `release-pr-checks.yaml` and the release workflow are scripts in `.github/scripts/` that also run locally from the repository root. A required check on `main`'s branch protection, `Release PR checks / gate`, keeps a failing Release PR from being merged. Use the `release-lc` skill (`.claude/skills/release-lc/SKILL.md`) to check the state of a release, troubleshoot a failure, and verify the one-time setup (GitHub App, bot GPG key, secrets). `test-integration` covers the live handshake, which is not automated; `correction-docs` audits the docs site and is not part of the release path.
 
 ### Protocol Version (`engine/protocol/ProtocolVersion.kt`)
 

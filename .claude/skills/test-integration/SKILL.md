@@ -1,5 +1,5 @@
 ---
-description: 現在のコードベースからビルドした Paper 版と Velocity 版の LunaticChat が互換性を持つかを，JAR のプロトコル定数・後方互換テスト・Docker 上の実機ハンドシェイクで検証する．
+description: Docker 上の実機ハンドシェイクで Paper 版と Velocity 版の LunaticChat の互換性を確かめる．JAR のプロトコル定数と後方互換テストの検査も，手元で先に流せる．
 disable-model-invocation: true
 argument-hint: [--static-only]
 allowed-tools: Bash(./gradlew *), Bash(./x *), Bash(git *), Bash(javap *), Bash(docker *), Bash(curl *), Read, Grep, Glob, Edit
@@ -12,6 +12,13 @@ allowed-tools: Bash(./gradlew *), Bash(./x *), Bash(git *), Bash(javap *), Bash(
 Paper ↔ Velocity の互換性は**プロトコルバージョンだけ**で決まる (プラグインバージョンは見ない)．判定するのは Velocity 側で，`PluginMessageHandler` が Paper から届いた Handshake に対し「MAJOR が一致し，Paper の MINOR が `MIN_SUPPORTED_MINOR..MINOR` に入る」かを評価する．Paper 側は応答の `compatible` をそのまま受け入れる．
 
 検証は 3 段階で行う．`--static-only` のときは段階 1・2 だけ実行する．
+
+段階 1 と 2 は Release PR のチェック (`release-pr-checks.yaml` の `protocol` と `compat`) が自動で行うので，リリースのためにここで流す必要はない．ブランチの作業中に手元で先に確かめたいときと，段階 3 (プレイヤーの接続が要るので自動化していない) のために使う．段階 1 の判定は，次のスクリプトと同じ結果になる:
+
+```
+.github/scripts/check-protocol.sh
+.github/scripts/check-compat.sh platform-paper/build/libs/LunaticChat-*[0-9].jar platform-velocity/build/libs/LunaticChat-*-velocity.jar
+```
 
 ## 段階 1: ビルドと JAR の静的検査
 

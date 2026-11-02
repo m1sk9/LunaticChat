@@ -29,19 +29,24 @@ Paper and Velocity carry separate version numbers and can be released independen
 
 ## Release workflows
 
-One tag releases exactly one platform. The tag pattern selects which.
+A release is prepared by [release-please](https://github.com/googleapis/release-please) and started by merging its pull request. One tag releases exactly one platform, and Paper and Velocity get separate Release PRs.
 
-| Workflow | Trigger tag | Build target | Version validation |
-|----------|-------------|--------------|--------------------|
-| `release-paper.yaml` | `vX.Y.Z` | Paper only | requires the tag to match `version.txt` |
-| `release-velocity.yaml` | `velocity/vX.Y.Z` | Velocity only | requires the tag to match `platform-velocity/version.txt` |
+| Workflow | Trigger | Role |
+|----------|---------|------|
+| `release-please.yaml` | push to `main` | Opens and updates the Release PRs; once one is merged, pushes the signed tag |
+| `release-pr-checks.yaml` | Release PR | Checks the protocol version, Paper↔Velocity compatibility, the release notes and the Modrinth game versions. Branch protection requires its `gate` job |
+| `release-paper.yaml` | tag `vX.Y.Z` | Paper only |
+| `release-velocity.yaml` | tag `velocity/vX.Y.Z` | Velocity only |
 
-- Releasing both at once means pushing both tags together (`git push origin v1.5.0 velocity/v1.4.0`). Each produces its own GitHub Release
+- `version.txt` (Paper) and `platform-velocity/version.txt` (Velocity) belong to release-please. The bump follows the Conventional Commit types merged since the last release: `fix` is PATCH, `feat` is MINOR, a breaking change is MAJOR
+- The release notes are written by hand in the Release PR (`/create-release-note`). The PR cannot be merged until the checks find them. `CHANGELOG.md` stops at v1.7.0; the notes on this site are the changelog
+- The tag is created by a job of our own rather than by release-please, signed with the release bot's GPG key, so releases keep their signed annotated tags. It is pushed with a GitHub App token, because a tag pushed with `GITHUB_TOKEN` would not start the release workflows
 - Paper keeps the bare `vX.Y.Z` tag because the update checker in already-deployed Paper builds only understands that form
 - Up to v1.4.0, a `vX.Y.Z` tag released both platforms (`v1.0.0`, `v1.3.0`, `v1.4.0`), and some Paper-only releases used `paper/vX.Y.Z`. Those tags are kept as they are
-- Both workflows call the shared `_release.yaml`: `validate` (tag format, match with `version.txt`, duplicate release check) → `build` (mise + Gradle setup, `shadowJar`) → `release` (`gh release create --draft` + publish to Modrinth)
-- The GitHub Release is created as a draft. Publish a Velocity release with `--latest=false`, so that the repository's latest release stays the Paper one
-- Modrinth game-versions are Paper=`26.3.x` (loaders: paper, folia) and Velocity=`1.21.x` + `26.1.x` + `26.2.x` (loader: velocity), set in each caller workflow
+- Both release workflows call the shared `_release.yaml`: `validate` (tag format, match with `version.txt`; a published Release stops the run) → `build` (mise + Gradle setup, `shadowJar`) → `verify` (the JAR's protocol constants match the source, and the release notes are live on the site) → `release` (draft GitHub Release → Modrinth → publish) → `verify-rollout` (opens an issue on failure). A re-run reuses the draft an earlier run left behind
+- The GitHub Release body and the Modrinth changelog are both rendered from the English release notes page. Modrinth is called through its API by `.github/scripts/publish-modrinth.sh`; no third-party action receives the token
+- A Velocity release is published with `--latest=false`, so that the repository's latest release stays the Paper one
+- Modrinth game-versions are written as patterns in each caller workflow (Paper=`26.3.x`, loaders: paper, folia; Velocity=`1.21.x` + `26.1.x` + `26.2.x` + `26.3.x`, loader: velocity) and expanded to the concrete versions Modrinth stores
 
 ## CI
 
