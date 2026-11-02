@@ -20,7 +20,15 @@ val isNightly: Boolean = providers.gradleProperty("isNightly").orNull?.toBoolean
 // The nightly marker belongs in the version itself, not only in build-info.properties:
 // a JAR named after the bare release version is indistinguishable from that release
 // in the server log, /plugins and bug reports.
-val baseVersion = findProperty("paperVersion")?.toString() ?: "0.0.0"
+//
+// Read through providers.fileContents rather than File.readText(): only the former is a
+// tracked configuration input, so the cache is invalidated when release-please bumps it.
+val baseVersion: String =
+    providers
+        .fileContents(rootProject.layout.projectDirectory.file("version.txt"))
+        .asText
+        .get()
+        .trim()
 version = if (isNightly) "$baseVersion-nightly.$gitCommitHash" else baseVersion
 
 repositories {

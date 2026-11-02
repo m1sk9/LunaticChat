@@ -17,7 +17,15 @@ val isNightly: Boolean = providers.gradleProperty("isNightly").orNull?.toBoolean
 
 // Velocity carries no build-info.properties, so the version is the only place a nightly
 // build can announce itself.
-val baseVersion = findProperty("velocityVersion")?.toString() ?: "0.0.0"
+//
+// Read through providers.fileContents rather than File.readText(): only the former is a
+// tracked configuration input, so the cache is invalidated when release-please bumps it.
+val baseVersion: String =
+    providers
+        .fileContents(layout.projectDirectory.file("version.txt"))
+        .asText
+        .get()
+        .trim()
 version = if (isNightly) "$baseVersion-nightly.$gitCommitHash" else baseVersion
 
 repositories {

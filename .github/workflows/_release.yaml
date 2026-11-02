@@ -48,14 +48,14 @@ jobs:
           case "$PLATFORM" in
             paper)
               TAG_PREFIX="v"
-              VERSION_KEY="paperVersion"
+              VERSION_FILE="version.txt"
               JAR_SUFFIX=""
               MODULE="platform-paper"
               LABEL="Paper/Folia"
               ;;
             velocity)
               TAG_PREFIX="velocity/v"
-              VERSION_KEY="velocityVersion"
+              VERSION_FILE="platform-velocity/version.txt"
               JAR_SUFFIX="-velocity"
               MODULE="platform-velocity"
               LABEL="Velocity"
@@ -73,9 +73,9 @@ jobs:
           fi
 
           TAG_VERSION=${TAG_NAME#"$TAG_PREFIX"}
-          GRADLE_VERSION=$(grep "^${VERSION_KEY}=" gradle.properties | cut -d'=' -f2)
-          if [ "$TAG_VERSION" != "$GRADLE_VERSION" ]; then
-            echo "Error: Tag version ($TAG_VERSION) does not match gradle.properties $VERSION_KEY ($GRADLE_VERSION)"
+          FILE_VERSION=$(tr -d '[:space:]' < "$VERSION_FILE")
+          if [ "$TAG_VERSION" != "$FILE_VERSION" ]; then
+            echo "Error: Tag version ($TAG_VERSION) does not match $VERSION_FILE ($FILE_VERSION)"
             exit 1
           fi
 

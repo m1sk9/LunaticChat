@@ -121,7 +121,7 @@ website/            → VitePress documentation site
 
 ## Versioning & Release
 
-Paper and Velocity have independent versions in `gradle.properties` (`paperVersion`, `velocityVersion`).
+Paper and Velocity have independent versions: `version.txt` at the repository root for Paper, `platform-velocity/version.txt` for Velocity. release-please owns both files; never edit them by hand.
 
 | Tag Pattern | Workflow | Target |
 |-------------|----------|--------|
