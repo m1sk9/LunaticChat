@@ -10,6 +10,7 @@ jobs:
     uses: ./.github/workflows/_release.yaml
     permissions:
       contents: write
+      issues: write
     with:
       platform: velocity
       modrinth-game-versions: |-

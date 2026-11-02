@@ -57,3 +57,33 @@ load_constants() {
 is_compatible() {
   [ "$1" -eq "$4" ] && [ "$5" -ge "$3" ] && [ "$5" -le "$2" ]
 }
+
+MODRINTH_API=${MODRINTH_API:-https://api.modrinth.com/v2}
+# Modrinth rejects anonymous clients; the contact is how they reach us about a misbehaving one.
+MODRINTH_USER_AGENT="m1sk9/LunaticChat release workflow (https://lc.m1sk9.dev)"
+
+# Turns the game-version patterns the release workflows are written with ("26.3.x") into the
+# concrete versions Modrinth stores ("26.3", "26.3.1", ...). The API refuses patterns, and
+# writing the concrete list into each workflow would mean editing it on every Minecraft patch
+# release. Reads one pattern per line on stdin, prints one concrete version per line.
+# Snapshots and pre-releases share the prefix ("26.3-rc-1"), so only release versions count.
+expand_game_versions() {
+  local tags pattern prefix expanded
+  tags=$(curl -sS --fail-with-body -H "User-Agent: ${MODRINTH_USER_AGENT}" "${MODRINTH_API}/tag/game_version")
+  while IFS= read -r pattern; do
+    [ -n "$pattern" ] || continue
+    case "$pattern" in
+      *.x)
+        prefix=${pattern%.x}
+        expanded=$(jq -r --arg p "$prefix" \
+          '.[] | select(.version_type == "release") | .version | select(. == $p or startswith($p + "."))' <<< "$tags")
+        if [ -z "$expanded" ]; then
+          echo "No released Minecraft version matches ${pattern}" >&2
+          return 1
+        fi
+        echo "$expanded"
+        ;;
+      *) echo "$pattern" ;;
+    esac
+  done | sort -uV
+}
