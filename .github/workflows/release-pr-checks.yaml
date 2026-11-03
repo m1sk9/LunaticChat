@@ -43,7 +43,8 @@ jobs:
             echo "list<<EOF"
             echo "$tags"
             echo "EOF"
-            if grep -q '^v' <<< "$tags"; then
+            # "^v" alone would also match "velocity/v1.4.1".
+            if grep -q '^v[0-9]' <<< "$tags"; then
               echo "paper=true"
             else
               echo "paper=false"
