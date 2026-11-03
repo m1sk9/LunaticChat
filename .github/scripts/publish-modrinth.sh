@@ -68,9 +68,21 @@ if jq -e --arg v "$version_number" 'any(.[]; .version_number == $v)' <<< "$exist
   exit 0
 fi
 
-curl -sS --fail-with-body -X POST "${MODRINTH_API}/version" \
+# The body goes to a file first: piped straight into jq, the error JSON of a rejected upload
+# was reduced to nulls and the reason was lost.
+response=$(mktemp)
+if ! curl -sS -o "$response" -w '%{http_code}' -X POST "${MODRINTH_API}/version" \
   -H "Authorization: ${token}" \
   -H "User-Agent: ${MODRINTH_USER_AGENT}" \
   -F "data=${data};type=application/json" \
-  -F "jar=@${jar};type=application/java-archive" \
-  | jq '{id, version_number, status}'
+  -F "jar=@${jar};type=application/java-archive" > "$response.code"; then
+  cat "$response" >&2 || true
+  exit 1
+fi
+code=$(cat "$response.code")
+if [ "$code" -ge 400 ]; then
+  echo "Modrinth rejected the upload with HTTP ${code}:" >&2
+  cat "$response" >&2
+  exit 1
+fi
+jq '{id, version_number, status}' "$response"
