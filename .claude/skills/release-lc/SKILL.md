@@ -146,7 +146,8 @@ gh pr edit {PR 番号} --remove-label 'autorelease: pending' --add-label 'autore
 |------|------|------|
 | GitHub App | LunaticChat にインストール済み．権限は Contents / Pull requests / Issues の Read & write | 設定画面 (CLI からは確認できない) |
 | Secrets `CLIENT_ID` / `PRIVATE_KEY` | App の Client ID と秘密鍵 | `gh secret list` |
-| 必須チェック | `main` のブランチ保護で `Release PR checks / gate` を必須にする | `gh api repos/m1sk9/LunaticChat/branches/main/protection --jq .required_status_checks` |
+| 必須チェック | `main` のルールセット `branch-protect` の必須チェックに `gate` (ワークフロー `Release PR checks` のジョブ) を足す．マージして `gate` が `main` 向けの PR で報告されるようになってから足すこと (先に足すと，ほかの PR が `gate` を待ち続ける) | `gh api repos/m1sk9/LunaticChat/rules/branches/main --jq '.[] \| select(.type == "required_status_checks") \| .parameters.required_status_checks'` |
+| タグのルールセット | `protect-tag` は削除・更新・non-fast-forward だけを禁じ，作成は禁じていない．`creation` のルールを足すと `tag` ジョブの push が失敗するので足さない | `gh api repos/m1sk9/LunaticChat/rulesets/11712454 --jq '[.rules[].type]'` |
 | 既存の Secrets | `MODRINTH_TOKEN` / `MODRINTH_PROJECT_ID` | `gh secret list` |
 
 秘密鍵や Secrets の値を読み出したり，会話に出力したりしない．

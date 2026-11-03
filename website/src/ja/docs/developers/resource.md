@@ -34,7 +34,7 @@ Paper と Velocity は別々のバージョン番号を持ち，独立にリリ�
 | ワークフロー | トリガ | 役割 |
 |-------------|--------|------|
 | `release-please.yaml` | `main` への push | Release PR を作成・更新する．マージされたらタグを push する |
-| `release-pr-checks.yaml` | Release PR | プロトコルバージョン，Paper↔Velocity の互換性，リリースノート，Modrinth の game-versions を検査する．ブランチ保護で `gate` ジョブを必須にする |
+| `release-pr-checks.yaml` | Release PR | プロトコルバージョン，Paper↔Velocity の互換性，リリースノート，Modrinth の game-versions を検査する．`main` のルールセットで `gate` ジョブを必須チェックにする |
 | `release-paper.yaml` | タグ `vX.Y.Z` | Paper のみ |
 | `release-velocity.yaml` | タグ `velocity/vX.Y.Z` | Velocity のみ |
 

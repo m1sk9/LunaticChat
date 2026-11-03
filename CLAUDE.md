@@ -136,7 +136,7 @@ The human steps are writing the release notes in the Release PR (`create-release
 
 `CHANGELOG.md` stops at v1.7.0 (release-please runs with `skip-changelog`). The site release notes under `website/src/changelog/` are the changelog, and the GitHub Release and Modrinth changelog are rendered from the English page.
 
-The checks run by `release-pr-checks.yaml` and the release workflow are scripts in `.github/scripts/` that also run locally from the repository root. A required check on `main`'s branch protection, `Release PR checks / gate`, keeps a failing Release PR from being merged. Use the `release-lc` skill (`.claude/skills/release-lc/SKILL.md`) to check the state of a release, troubleshoot a failure, and verify the one-time setup (GitHub App, secrets, required check). `test-integration` covers the live handshake, which is not automated; `correction-docs` audits the docs site and is not part of the release path.
+The checks run by `release-pr-checks.yaml` and the release workflow are scripts in `.github/scripts/` that also run locally from the repository root. The `gate` job of `release-pr-checks.yaml` is a required check in `main`'s `branch-protect` ruleset and keeps a failing Release PR from being merged; the `protect-tag` ruleset must keep allowing tag creation, or the tag job's push fails. Use the `release-lc` skill (`.claude/skills/release-lc/SKILL.md`) to check the state of a release, troubleshoot a failure, and verify the one-time setup (GitHub App, secrets, required check). `test-integration` covers the live handshake, which is not automated; `correction-docs` audits the docs site and is not part of the release path.
 
 ### Protocol Version (`engine/protocol/ProtocolVersion.kt`)
 

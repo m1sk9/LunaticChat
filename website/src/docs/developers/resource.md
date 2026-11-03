@@ -34,7 +34,7 @@ A release is prepared by [release-please](https://github.com/googleapis/release-
 | Workflow | Trigger | Role |
 |----------|---------|------|
 | `release-please.yaml` | push to `main` | Opens and updates the Release PRs; once one is merged, pushes the tag |
-| `release-pr-checks.yaml` | Release PR | Checks the protocol version, Paper↔Velocity compatibility, the release notes and the Modrinth game versions. Branch protection requires its `gate` job |
+| `release-pr-checks.yaml` | Release PR | Checks the protocol version, Paper↔Velocity compatibility, the release notes and the Modrinth game versions. The `main` ruleset requires its `gate` job |
 | `release-paper.yaml` | tag `vX.Y.Z` | Paper only |
 | `release-velocity.yaml` | tag `velocity/vX.Y.Z` | Velocity only |
 
