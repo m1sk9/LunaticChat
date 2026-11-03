@@ -11,6 +11,7 @@ jobs:
     permissions:
       contents: write
       issues: write
+      actions: read
     with:
       platform: velocity
       modrinth-game-versions: |-

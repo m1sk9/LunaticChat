@@ -90,8 +90,8 @@ gh pr merge {PR 番号} --squash
    gh run list --workflow release-paper.yaml --limit 3
    gh run watch {run-id} --exit-status
    ```
-   `gh run watch` は長いので Bash の `run_in_background` で実行する．`verify` ジョブは，サイトのリリースノートが公開されるまで最大 20 分待つ (マージ後の docs のデプロイ待ち)
-3. **ロールアウトの検証**: `verify-rollout` ジョブが GitHub Release (draft でない，Latest が Paper のまま)，Modrinth (`listed`，loaders，game versions)，サイトのリンクを確認する．失敗すると Issue が起票される
+   `gh run watch` は長いので Bash の `run_in_background` で実行する．`verify` ジョブは，タグが指すコミットの `ci.yaml` (`build_docs`) が終わるまで最大 20 分待つ (マージ後の docs のデプロイ待ち)．サイトそのものは取りに行かない: GitHub の runner には 403 が返る
+3. **ロールアウトの検証**: `verify-rollout` ジョブが GitHub Release (draft でない，Latest が Paper のまま)，Modrinth (`listed`，loaders，game versions)，Release の本文が生成されたリリースノートであることを確認する．失敗すると Issue が起票される
 
 ## 6. 失敗時の対処
 
@@ -116,7 +116,7 @@ gh run view {run-id} --log-failed
 | `validate` | タグと `version.txt` が不一致 | Release PR のブランチが作り直された可能性．タグが指すコミットの `version.txt` を確認する |
 | `validate` | `already published` | 同じタグの Release が公開済み．重複なので止まるのが正しい |
 | `verify` | JAR のプロトコル定数がソースと不一致 | 別のコミットからビルドされた JAR．タグが指すコミットとビルドの対象を確認する |
-| `verify` | サイトのページが 200 にならずタイムアウト | `ci.yaml` の `build_docs` (Cloudflare へのデプロイ) が `main` で失敗していないか確認する．直ったらワークフローを再実行する |
+| `verify` | docs のデプロイを待ってタイムアウト，または `build_docs` が失敗 | タグが指すコミットの `ci.yaml` (`build_docs`，Cloudflare へのデプロイ) の結果を見る (`gh run list --workflow ci.yaml --commit {SHA}`)．タグが `main` のコミットを指していないと，CI の実行が無く，タイムアウトする |
 | `release` | Modrinth の公開で失敗 | draft の Release は残る．**再実行して構わない**: draft は再利用され，Modrinth に同じバージョンがあれば公開をスキップする．API のエラー本文はログに出る |
 | `release` | 最後の公開で失敗 | Modrinth には出ているが Release は draft のまま．再実行すると公開まで進む |
 | `verify-rollout` | Modrinth が `listed` にならない | 反映の遅れなら数分後に再実行する．それでも出ない場合は Modrinth の画面でバージョンの状態を確認する |

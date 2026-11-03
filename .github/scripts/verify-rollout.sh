@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Checks that a finished release is what it should be on GitHub, Modrinth and the site.
+# Checks that a finished release is what it should be on GitHub and Modrinth.
 #
 # Usage: verify-rollout.sh <tag> <paper|velocity> <version> <modrinth-version>
 # Env:   GH_TOKEN, GITHUB_REPOSITORY, MODRINTH_PROJECT_ID, MODRINTH_LOADERS and
@@ -14,7 +14,6 @@ version=$3
 modrinth_version=$4
 
 repo=${GITHUB_REPOSITORY:-m1sk9/LunaticChat}
-site=${SITE_URL:-https://lc.m1sk9.dev}
 
 release=$(gh release view "$tag" --repo "$repo" --json isDraft,assets,body)
 if [ "$(jq -r .isDraft <<< "$release")" != false ]; then
@@ -72,19 +71,12 @@ else
   done <<< "$want_game_versions"
 fi
 
-# Every site link in the release body, plus the notes pages themselves.
-urls=$(
-  {
-    jq -r .body <<< "$release" | grep -oE "${site}[^) ]*" || true
-    echo "${site}/changelog/${platform}/v${version}"
-    echo "${site}/ja/changelog/${platform}/v${version}"
-  } | sort -u
-)
-while IFS= read -r url; do
-  code=$(curl -s -o /dev/null -w '%{http_code}' -L "$url" || true)
-  if [ "$code" != 200 ]; then
-    error "${url} answers ${code}"
-  fi
-done <<< "$urls"
+# The site's pages are not fetched: it answers 403 to GitHub-hosted runners. That the notes
+# are deployed was already established before publishing, so this only checks that the body
+# is the rendered notes and points at the page for this version.
+expected="Full release notes: https://lc.m1sk9.dev/changelog/${platform}/v${version}"
+if ! jq -r .body <<< "$release" | grep -qxF "$expected"; then
+  error "The body of GitHub Release ${tag} does not end with '${expected}'"
+fi
 
 exit "$STATUS"

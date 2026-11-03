@@ -102,6 +102,9 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
+          # release-please only ever creates the "pending" label, so the first run of a fresh
+          # repository would fail on "tagged" not existing; --force makes this idempotent.
+          gh label create "autorelease: tagged" --description "A release PR that has been tagged" --color EDEDED --force
           gh pr edit "${{ steps.pr.outputs.number }}" \
             --remove-label "autorelease: pending" \
             --add-label "autorelease: tagged"
