@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to release again (recovery after a failed run)"
+        required: true
+        type: string
 
 jobs:
   release:
@@ -13,6 +19,7 @@ jobs:
       issues: write
       actions: read
     with:
+      tag: ${{ inputs.tag }}
       platform: paper
       modrinth-game-versions: "26.3.x"
       modrinth-mc-version: "26.3"

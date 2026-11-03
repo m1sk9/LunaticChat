@@ -122,6 +122,16 @@ gh run view {run-id} --log-failed
 | `verify-rollout` | Modrinth が `listed` にならない | 反映の遅れなら数分後に再実行する．それでも出ない場合は Modrinth の画面でバージョンの状態を確認する |
 | `verify-rollout` | Latest が Velocity のタグになっている | `gh release edit {最新の Paper のタグ} --latest` で戻す (承認を得てから) |
 
+### タグがあるのにリリースが失敗した (復旧実行)
+
+失敗した実行は，タグが指すコミットの古いワークフロー定義のままなので，`gh run rerun` では直らないことがある (ワークフロー自体の不具合のとき)．`main` のワークフローとスクリプトで，既存のタグのソースをリリースし直せる．タグは動かさない．`main` からだけ実行できる．承認を得てから:
+
+```
+gh workflow run release-velocity.yaml --ref main -f tag=velocity/vX.Y.Z   # Paper は release-paper.yaml と tag=vX.Y.Z
+```
+
+公開済みの Release があれば `validate` が止める．draft は再利用される．
+
 ### 手動でタグを作る (最終手段)
 
 `tag` ジョブが使えない場合に限る．annotated タグで，Paper は `vX.Y.Z`，Velocity は `velocity/vX.Y.Z`．タグはマージされたコミットに付ける:

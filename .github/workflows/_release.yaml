@@ -16,6 +16,11 @@ on:
         required: false
         type: string
         default: ""
+      tag:
+        description: "Existing tag to release from main's workflows (recovery run); empty for a tag push"
+        required: false
+        type: string
+        default: ""
     secrets:
       MODRINTH_TOKEN:
         required: true
@@ -33,15 +38,21 @@ jobs:
       modrinth_name: ${{ steps.get_version.outputs.modrinth_name }}
       modrinth_version: ${{ steps.get_version.outputs.modrinth_version }}
       modrinth_loaders: ${{ steps.get_version.outputs.modrinth_loaders }}
+      tag: ${{ steps.get_version.outputs.tag }}
+      sha: ${{ steps.get_version.outputs.sha }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
 
       - name: Extract version from tag and validate
         id: get_version
         env:
           PLATFORM: ${{ inputs.platform }}
           MC_VERSION: ${{ inputs.modrinth-mc-version }}
+          INPUT_TAG: ${{ inputs.tag }}
         run: |
           # Paper keeps the bare vX.Y.Z tag so that UpdateChecker in already-deployed
           # Paper builds, which strips only a leading "v", keeps recognising new releases.
@@ -66,14 +77,29 @@ jobs:
               ;;
           esac
 
-          TAG_NAME=${GITHUB_REF#refs/tags/}
+          # A recovery run names an existing tag and runs main's workflows and scripts against
+          # it, because the tag's own copies are the ones that failed. Only main's tooling may
+          # publish, so a branch cannot dispatch itself into a release.
+          if [ -n "$INPUT_TAG" ]; then
+            if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+              echo "Error: a recovery run must be dispatched from main, not $GITHUB_REF"
+              exit 1
+            fi
+            TAG_NAME=$INPUT_TAG
+          else
+            TAG_NAME=${GITHUB_REF#refs/tags/}
+          fi
           if [[ ! "$TAG_NAME" =~ ^${TAG_PREFIX}[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "Error: Tag $TAG_NAME does not match ${TAG_PREFIX}X.Y.Z"
             exit 1
           fi
+          if ! TAG_SHA=$(git rev-parse --verify "refs/tags/${TAG_NAME}^{commit}"); then
+            echo "Error: Tag $TAG_NAME does not exist"
+            exit 1
+          fi
 
           TAG_VERSION=${TAG_NAME#"$TAG_PREFIX"}
-          FILE_VERSION=$(tr -d '[:space:]' < "$VERSION_FILE")
+          FILE_VERSION=$(git show "${TAG_SHA}:${VERSION_FILE}" | tr -d '[:space:]')
           if [ "$TAG_VERSION" != "$FILE_VERSION" ]; then
             echo "Error: Tag version ($TAG_VERSION) does not match $VERSION_FILE ($FILE_VERSION)"
             exit 1
@@ -91,6 +117,8 @@ jobs:
 
           {
             echo "version=$TAG_VERSION"
+            echo "tag=$TAG_NAME"
+            echo "sha=$TAG_SHA"
             echo "jar_name=LunaticChat-${TAG_VERSION}${JAR_SUFFIX}.jar"
             echo "module=$MODULE"
             echo "label=$LABEL"
@@ -108,7 +136,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG_NAME=${GITHUB_REF#refs/tags/}
+          TAG_NAME=${{ steps.get_version.outputs.tag }}
           if is_draft=$(gh release view "$TAG_NAME" --json isDraft --jq .isDraft 2> /dev/null); then
             if [ "$is_draft" = "false" ]; then
               echo "Error: Release $TAG_NAME is already published"
@@ -123,6 +151,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+        with:
+          ref: refs/tags/${{ needs.validate.outputs.tag }}
 
       - name: Setup Development Environment
         uses: jdx/mise-action@v4
@@ -153,6 +183,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
 
       - name: Setup Development Environment
         uses: jdx/mise-action@v4
@@ -166,12 +199,13 @@ jobs:
       - name: Check the JAR carries this commit's protocol version
         env:
           JAR_PATH: ${{ needs.validate.outputs.module }}/build/libs/${{ needs.validate.outputs.jar_name }}
+          SOURCE_REF: ${{ needs.validate.outputs.sha }}
         run: .github/scripts/check-jar-protocol.sh "$JAR_PATH"
 
       - name: Wait for the docs deploy of the tagged commit
         env:
           GH_TOKEN: ${{ github.token }}
-        run: .github/scripts/wait-for-docs-deploy.sh "$GITHUB_SHA"
+        run: .github/scripts/wait-for-docs-deploy.sh "${{ needs.validate.outputs.sha }}"
 
   release:
     runs-on: ubuntu-24.04
@@ -203,7 +237,7 @@ jobs:
       # GitHub makes a newly published release the latest one unless told otherwise.
       - name: Create GitHub Release as a draft
         run: |
-          TAG_NAME=${GITHUB_REF#refs/tags/}
+          TAG_NAME=${{ needs.validate.outputs.tag }}
           if gh release view "$TAG_NAME" > /dev/null 2>&1; then
             gh release upload "$TAG_NAME" "$JAR_PATH" --clobber
             gh release edit "$TAG_NAME" --title "v${VERSION} (${LABEL})" --notes-file "$RUNNER_TEMP/notes.md"
@@ -229,7 +263,7 @@ jobs:
       # Published last: nothing is public on GitHub until Modrinth has the version too.
       - name: Publish the GitHub Release
         run: |
-          TAG_NAME=${GITHUB_REF#refs/tags/}
+          TAG_NAME=${{ needs.validate.outputs.tag }}
           if [ "$PLATFORM" = "velocity" ]; then
             gh release edit "$TAG_NAME" --draft=false --latest=false
           else
@@ -257,13 +291,13 @@ jobs:
           VERSION: ${{ needs.validate.outputs.version }}
           MODRINTH_VERSION: ${{ needs.validate.outputs.modrinth_version }}
         run: |
-          TAG_NAME=${GITHUB_REF#refs/tags/}
+          TAG_NAME=${{ needs.validate.outputs.tag }}
           .github/scripts/verify-rollout.sh "$TAG_NAME" "$PLATFORM" "$VERSION" "$MODRINTH_VERSION"
 
       - name: Open an issue when the rollout is wrong
         if: failure()
         run: |
-          TAG_NAME=${GITHUB_REF#refs/tags/}
+          TAG_NAME=${{ needs.validate.outputs.tag }}
           gh issue create \
             --title "Release ${TAG_NAME}: rollout verification failed" \
             --body "The release workflow published ${TAG_NAME}, but the checks afterwards failed. See ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."
