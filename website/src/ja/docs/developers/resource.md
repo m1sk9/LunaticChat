@@ -43,7 +43,7 @@ Paper と Velocity は別々のバージョン番号を持ち，独立にリリ�
 - タグは release-please ではなく自前のジョブが，annotated タグとして作ります．リリースのタグは GPG 署名しません．署名には，公開鍵を置くための通常の GitHub アカウントがもう 1 つ必要で (GitHub App は鍵を登録できません)，その手間に見合わないと判断しました．push には GitHub App のトークンを使います．`GITHUB_TOKEN` で push したタグでは，リリースのワークフローが起動しないためです
 - Paper が接頭辞なしの `vX.Y.Z` を使うのは，配布済みの Paper 版のアップデートチェッカーがこの形式しか解釈できないため
 - v1.4.0 までは `vX.Y.Z` タグで両方をリリースしていた (`v1.0.0`，`v1.3.0`，`v1.4.0`)．Paper 単独のリリースには `paper/vX.Y.Z` を使ったものもある．これらのタグはそのまま残している
-- どちらのリリースワークフローも共通の `_release.yaml` を呼び出す: `validate` (タグの形式，`version.txt` との一致．公開済みの Release があれば止める) → `build` (mise + Gradle setup，`shadowJar`) → `verify` (JAR のプロトコル定数がソースと一致し，リリースノートがサイトに公開されている) → `release` (draft の GitHub Release → Modrinth → 公開) → `verify-rollout` (失敗したら Issue を作る)．再実行すると，前回の実行が残した draft を再利用する
+- どちらのリリースワークフローも共通の `_release.yaml` を呼び出す: `validate` (タグの形式，`version.txt` との一致．公開済みの Release があれば止める) → `build` (mise + Gradle setup，`shadowJar`) → `verify` (JAR のプロトコル定数がソースと一致し，タグが指すコミットの docs のデプロイが終わり，リリースノートがサイトに載っている) → `release` (draft の GitHub Release → Modrinth → 公開) → `verify-rollout` (失敗したら Issue を作る)．再実行すると，前回の実行が残した draft を再利用する
 - GitHub Release の本文と Modrinth の changelog は，どちらも英語のリリースノートのページから生成する．Modrinth はスクリプト (`.github/scripts/publish-modrinth.sh`) が API で直接呼び，サードパーティの Action にトークンを渡さない
 - Velocity のリリースは `--latest=false` を付けて公開し，リポジトリの Latest が Paper のリリースのままになるようにする
 - Modrinth の game-versions は，呼び出し側の各ワークフローにパターンで書き (Paper=`26.3.x` (loader: paper, folia)，Velocity=`1.21.x` + `26.1.x` + `26.2.x` + `26.3.x` (loader: velocity))，Modrinth が持つ具体的なバージョンに展開して使う

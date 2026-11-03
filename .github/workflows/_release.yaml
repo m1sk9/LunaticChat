@@ -147,6 +147,9 @@ jobs:
   verify:
     runs-on: ubuntu-24.04
     needs: [validate, build]
+    permissions:
+      contents: read
+      actions: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -165,11 +168,10 @@ jobs:
           JAR_PATH: ${{ needs.validate.outputs.module }}/build/libs/${{ needs.validate.outputs.jar_name }}
         run: .github/scripts/check-jar-protocol.sh "$JAR_PATH"
 
-      - name: Wait for the release notes to be on the site
+      - name: Wait for the docs deploy of the tagged commit
         env:
-          PLATFORM: ${{ inputs.platform }}
-          VERSION: ${{ needs.validate.outputs.version }}
-        run: .github/scripts/wait-for-release-notes.sh "$PLATFORM" "$VERSION"
+          GH_TOKEN: ${{ github.token }}
+        run: .github/scripts/wait-for-docs-deploy.sh "$GITHUB_SHA"
 
   release:
     runs-on: ubuntu-24.04
