@@ -48,14 +48,14 @@ jobs:
           case "$PLATFORM" in
             paper)
               TAG_PREFIX="v"
-              VERSION_KEY="paperVersion"
+              VERSION_FILE="version.txt"
               JAR_SUFFIX=""
               MODULE="platform-paper"
               LABEL="Paper/Folia"
               ;;
             velocity)
               TAG_PREFIX="velocity/v"
-              VERSION_KEY="velocityVersion"
+              VERSION_FILE="platform-velocity/version.txt"
               JAR_SUFFIX="-velocity"
               MODULE="platform-velocity"
               LABEL="Velocity"
@@ -73,9 +73,9 @@ jobs:
           fi
 
           TAG_VERSION=${TAG_NAME#"$TAG_PREFIX"}
-          GRADLE_VERSION=$(grep "^${VERSION_KEY}=" gradle.properties | cut -d'=' -f2)
-          if [ "$TAG_VERSION" != "$GRADLE_VERSION" ]; then
-            echo "Error: Tag version ($TAG_VERSION) does not match gradle.properties $VERSION_KEY ($GRADLE_VERSION)"
+          FILE_VERSION=$(tr -d '[:space:]' < "$VERSION_FILE")
+          if [ "$TAG_VERSION" != "$FILE_VERSION" ]; then
+            echo "Error: Tag version ($TAG_VERSION) does not match $VERSION_FILE ($FILE_VERSION)"
             exit 1
           fi
 
@@ -102,16 +102,20 @@ jobs:
           } >> "$GITHUB_OUTPUT"
           echo "Version validation passed: $TAG_NAME"
 
-      - name: Check if release already exists
+      # Only a published Release blocks a re-run. A draft is what an earlier run leaves behind
+      # when a later step failed, and the release job knows how to pick it up again.
+      - name: Check that the release is not already published
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG_NAME=${GITHUB_REF#refs/tags/}
-          if gh release view "$TAG_NAME" &> /dev/null; then
-            echo "Error: Release $TAG_NAME already exists"
-            exit 1
+          if is_draft=$(gh release view "$TAG_NAME" --json isDraft --jq .isDraft 2> /dev/null); then
+            if [ "$is_draft" = "false" ]; then
+              echo "Error: Release $TAG_NAME is already published"
+              exit 1
+            fi
+            echo "Draft Release $TAG_NAME exists from an earlier run and will be reused"
           fi
-          echo "Release validation passed: $TAG_NAME does not exist yet"
 
   build:
     runs-on: ubuntu-24.04
@@ -139,11 +143,45 @@ jobs:
           path: ${{ needs.validate.outputs.module }}/build/libs/${{ needs.validate.outputs.jar_name }}
           retention-days: 90
 
-  release:
+  # Everything that can still stop a release runs here, before the first thing is published.
+  verify:
     runs-on: ubuntu-24.04
     needs: [validate, build]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Development Environment
+        uses: jdx/mise-action@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: LunaticChat-${{ inputs.platform }}-v${{ needs.validate.outputs.version }}
+          path: ${{ needs.validate.outputs.module }}/build/libs
+
+      - name: Check the JAR carries this commit's protocol version
+        env:
+          JAR_PATH: ${{ needs.validate.outputs.module }}/build/libs/${{ needs.validate.outputs.jar_name }}
+        run: .github/scripts/check-jar-protocol.sh "$JAR_PATH"
+
+      - name: Wait for the release notes to be on the site
+        env:
+          PLATFORM: ${{ inputs.platform }}
+          VERSION: ${{ needs.validate.outputs.version }}
+        run: .github/scripts/wait-for-release-notes.sh "$PLATFORM" "$VERSION"
+
+  release:
+    runs-on: ubuntu-24.04
+    needs: [validate, build, verify]
     permissions:
       contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PLATFORM: ${{ inputs.platform }}
+      VERSION: ${{ needs.validate.outputs.version }}
+      LABEL: ${{ needs.validate.outputs.label }}
+      JAR_PATH: ${{ needs.validate.outputs.module }}/build/libs/${{ needs.validate.outputs.jar_name }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -154,36 +192,76 @@ jobs:
           name: LunaticChat-${{ inputs.platform }}-v${{ needs.validate.outputs.version }}
           path: ${{ needs.validate.outputs.module }}/build/libs
 
+      # The text people write in the Release PR is the only copy; both the GitHub Release and
+      # the Modrinth changelog are rendered from it.
+      - name: Render the release notes
+        run: .github/scripts/render-release-notes.sh "$PLATFORM" "$VERSION" > "$RUNNER_TEMP/notes.md"
+
       # Created as a draft, so "latest" is decided when it is published, not here:
       # GitHub makes a newly published release the latest one unless told otherwise.
-      - name: Create GitHub Release
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PLATFORM: ${{ inputs.platform }}
-          VERSION: ${{ needs.validate.outputs.version }}
-          JAR_PATH: ${{ needs.validate.outputs.module }}/build/libs/${{ needs.validate.outputs.jar_name }}
-          LABEL: ${{ needs.validate.outputs.label }}
+      - name: Create GitHub Release as a draft
         run: |
           TAG_NAME=${GITHUB_REF#refs/tags/}
-
-          # The notes point at the changelog on the documentation site rather than
-          # repeating it here, so the release notes live in exactly one place.
-          gh release create "$TAG_NAME" \
-            "$JAR_PATH" \
-            --title "v${VERSION} (${LABEL})" \
-            --draft \
-            --notes "Release notes: [${LABEL} v${VERSION}](https://lc.m1sk9.dev/changelog/${PLATFORM}/v${VERSION})"
+          if gh release view "$TAG_NAME" > /dev/null 2>&1; then
+            gh release upload "$TAG_NAME" "$JAR_PATH" --clobber
+            gh release edit "$TAG_NAME" --title "v${VERSION} (${LABEL})" --notes-file "$RUNNER_TEMP/notes.md"
+          else
+            gh release create "$TAG_NAME" "$JAR_PATH" \
+              --title "v${VERSION} (${LABEL})" \
+              --draft \
+              --notes-file "$RUNNER_TEMP/notes.md"
+          fi
 
       - name: Publish to Modrinth
-        uses: cloudnode-pro/modrinth-publish@3870f66007063f03fb70118ca9eddbc09a4ba666 # v2
-        with:
-          token: ${{ secrets.MODRINTH_TOKEN }}
-          name: ${{ needs.validate.outputs.modrinth_name }}
-          project: ${{ secrets.MODRINTH_PROJECT_ID }}
-          version: ${{ needs.validate.outputs.modrinth_version }}
-          channel: release
-          changelog: |-
-            Please refer to the [release notes](https://lc.m1sk9.dev/changelog/${{ inputs.platform }}/v${{ needs.validate.outputs.version }}) for update details.
-          loaders: ${{ needs.validate.outputs.modrinth_loaders }}
-          game-versions: ${{ inputs.modrinth-game-versions }}
-          files: ${{ needs.validate.outputs.module }}/build/libs/${{ needs.validate.outputs.jar_name }}
+        env:
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+          MODRINTH_PROJECT_ID: ${{ secrets.MODRINTH_PROJECT_ID }}
+          MODRINTH_LOADERS: ${{ needs.validate.outputs.modrinth_loaders }}
+          MODRINTH_GAME_VERSIONS: ${{ inputs.modrinth-game-versions }}
+          MODRINTH_NAME: ${{ needs.validate.outputs.modrinth_name }}
+          MODRINTH_VERSION: ${{ needs.validate.outputs.modrinth_version }}
+        run: |
+          .github/scripts/publish-modrinth.sh \
+            "$JAR_PATH" "$MODRINTH_VERSION" "$MODRINTH_NAME" "$RUNNER_TEMP/notes.md"
+
+      # Published last: nothing is public on GitHub until Modrinth has the version too.
+      - name: Publish the GitHub Release
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          if [ "$PLATFORM" = "velocity" ]; then
+            gh release edit "$TAG_NAME" --draft=false --latest=false
+          else
+            gh release edit "$TAG_NAME" --draft=false --latest
+          fi
+
+  verify-rollout:
+    runs-on: ubuntu-24.04
+    needs: [validate, release]
+    permissions:
+      contents: read
+      issues: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      MODRINTH_PROJECT_ID: ${{ secrets.MODRINTH_PROJECT_ID }}
+      MODRINTH_LOADERS: ${{ needs.validate.outputs.modrinth_loaders }}
+      MODRINTH_GAME_VERSIONS: ${{ inputs.modrinth-game-versions }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Verify the rollout
+        env:
+          PLATFORM: ${{ inputs.platform }}
+          VERSION: ${{ needs.validate.outputs.version }}
+          MODRINTH_VERSION: ${{ needs.validate.outputs.modrinth_version }}
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          .github/scripts/verify-rollout.sh "$TAG_NAME" "$PLATFORM" "$VERSION" "$MODRINTH_VERSION"
+
+      - name: Open an issue when the rollout is wrong
+        if: failure()
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          gh issue create \
+            --title "Release ${TAG_NAME}: rollout verification failed" \
+            --body "The release workflow published ${TAG_NAME}, but the checks afterwards failed. See ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."

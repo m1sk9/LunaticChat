@@ -1,0 +1,21 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "release-type": "simple",
+  "include-v-in-tag": true,
+  "separate-pull-requests": true,
+  "skip-changelog": true,
+  "skip-github-release": true,
+  "packages": {
+    ".": {
+      "package-name": "paper",
+      "include-component-in-tag": false,
+      "exclude-paths": ["platform-velocity", "website", "docker", ".github", ".claude", "dokka", "x"]
+    },
+    "platform-velocity": {
+      "package-name": "velocity",
+      "component": "velocity",
+      "include-component-in-tag": true,
+      "tag-separator": "/"
+    }
+  }
+}

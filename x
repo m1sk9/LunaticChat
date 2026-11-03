@@ -69,7 +69,7 @@ EOF
 }
 
 # The version suffix is derived in build.gradle.kts from -PisNightly; passing -Pversion here
-# has no effect, since each module assigns its own version from paperVersion/velocityVersion.
+# has no effect, since each module assigns its own version from version.txt (repository root for Paper, platform-velocity/ for Velocity).
 setup_nightly() {
     SHORT_HASH=$(git rev-parse --short HEAD)
     GRADLE_EXTRA_ARGS="-PisNightly=true"

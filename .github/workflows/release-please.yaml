@@ -1,0 +1,126 @@
+name: Release Please
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+# Two runs interleaving would let release-please see a merged Release PR that has not been
+# tagged yet, which it refuses to work around.
+concurrency:
+  group: release-please
+  cancel-in-progress: false
+
+jobs:
+  # Runs before release-please: while a merged Release PR is still labelled
+  # "autorelease: pending", release-please aborts instead of opening the next one.
+  tag:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Get token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.CLIENT_ID }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
+          # Skip token revocation because expired tokens are automatically
+          # invalidated by GitHub anyway.
+          skip-token-revoke: true
+
+      # The App token, not GITHUB_TOKEN, does the push: events caused by GITHUB_TOKEN never
+      # start other workflows, so the release workflows would not see the tag.
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Find the merged Release PR
+        id: pr
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          number=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/pulls" \
+            --jq '[.[] | select(any(.labels[]; .name == "autorelease: pending"))][0].number // empty')
+          echo "number=${number}" >> "$GITHUB_OUTPUT"
+          if [ -z "$number" ]; then
+            echo "No pending Release PR was merged by ${GITHUB_SHA}"
+          fi
+
+      - name: Work out the tags
+        id: tags
+        if: steps.pr.outputs.number != ''
+        run: |
+          git show "${GITHUB_SHA}^:.release-please-manifest.json" > "$RUNNER_TEMP/before.json"
+          tags=$(.github/scripts/release-tags.sh "$RUNNER_TEMP/before.json" .release-please-manifest.json)
+          if [ -z "$tags" ]; then
+            echo "::error::Release PR #${{ steps.pr.outputs.number }} changed no version in the manifest"
+            exit 1
+          fi
+          {
+            echo "list<<EOF"
+            echo "$tags"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      # An annotated tag needs a tagger. Tags are not signed: that would need a second, ordinary
+      # GitHub account to hold the public key, since a GitHub App cannot register one.
+      - name: Set the tagger
+        if: steps.pr.outputs.number != ''
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Create and push tags
+        if: steps.pr.outputs.number != ''
+        env:
+          TAGS: ${{ steps.tags.outputs.list }}
+        run: |
+          to_push=()
+          while IFS= read -r tag; do
+            if git ls-remote --exit-code --tags origin "refs/tags/${tag}" > /dev/null; then
+              echo "${tag} already exists on origin, skipping"
+              continue
+            fi
+            case "$tag" in
+              velocity/*) label="Velocity" ;;
+              *) label="Paper" ;;
+            esac
+            git tag -a "$tag" -m "${label} ${tag##*/}" "$GITHUB_SHA"
+            to_push+=("$tag")
+          done <<< "$TAGS"
+
+          if [ "${#to_push[@]}" -gt 0 ]; then
+            git push origin "${to_push[@]}"
+          fi
+
+      - name: Mark the Release PR as tagged
+        if: steps.pr.outputs.number != ''
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          gh pr edit "${{ steps.pr.outputs.number }}" \
+            --remove-label "autorelease: pending" \
+            --add-label "autorelease: tagged"
+
+  release-please:
+    needs: tag
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Get token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.CLIENT_ID }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
+          skip-token-revoke: true
+
+      - name: Run release-please-action
+        uses: googleapis/release-please-action@v5
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json

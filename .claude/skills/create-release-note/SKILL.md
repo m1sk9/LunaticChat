@@ -1,5 +1,5 @@
 ---
-description: CHANGELOG.md の未公開エントリから，ドキュメントサイトの英語・日本語リリースノート (website/src/changelog/, website/src/ja/changelog/) を作成する．
+description: 開いている Release PR (release-please) の変更から，ドキュメントサイトの英語・日本語リリースノート (website/src/changelog/, website/src/ja/changelog/) を作成する．
 disable-model-invocation: true
 argument-hint: [paper|velocity|both] [version]
 allowed-tools: Bash(git *), Bash(gh *), Bash(bun *), Bash(curl *), Read, Grep, Glob, Edit, Write
@@ -9,22 +9,43 @@ allowed-tools: Bash(git *), Bash(gh *), Bash(bun *), Bash(curl *), Read, Grep, G
 
 引数: `$ARGUMENTS`
 
-`CHANGELOG.md` は開発者向けの網羅的な変更記録，サイトのリリースノートは利用者 (サーバー管理者) 向けの要約である．このスキルは前者を後者へ書き直す．逐語訳・丸写しはしない．
+リリースノートは利用者 (サーバー管理者) 向けの要約である．材料はコミット履歴と PR の説明で，このスキルはそれを利用者に見える変化として書き直す．逐語訳・丸写しはしない．
+
+`CHANGELOG.md` は v1.7.0 を最後に更新されない (release-please は `skip-changelog` で動く)．サイトのリリースノートが，新しいリリースの唯一の変更記録である．
 
 ## 1. 対象バージョンの決定
 
-1. `CHANGELOG.md` を読む．見出しはリリースタグと 1 対 1 に対応する:
+リリースは release-please が開く Release PR で決まる．バージョンを自分で決めない．
 
-   | 見出し | リリース | タグ |
-   |--------|---------|------|
-   | `### vX.Y.Z` | Paper / Folia 版 | `vX.Y.Z` |
-   | その直下の `#### Velocity: vA.B.C` | 同時に出す Velocity 版 | `velocity/vA.B.C` |
-   | `### Velocity: vA.B.C` | Velocity 版の単独リリース | `velocity/vA.B.C` |
-
-   v1.4.0 以前の見出しには旧規則のもの (Velocity のためだけに作った `### vX.Y.Z` など) があるが，新しいページの対象にはならないので気にしなくてよい
-2. `gradle.properties` の `paperVersion` / `velocityVersion` と突き合わせる．CHANGELOG の先頭のエントリと一致しない場合はユーザーに報告して止まる
-3. 引数があればそれに従う．無ければ，先頭のエントリのうち `website/src/changelog/{paper,velocity}/v{version}.md` がまだ存在しないものを対象にする
+1. 開いている Release PR を探す (Paper と Velocity で別々の PR になる):
+   ```
+   gh pr list --state open --search 'head:release-please--' --json number,title,headRefName
+   ```
+   PR が無い場合 (対象のコミットがまだ `main` に無い) は，その旨を報告して止まる
+2. 各 PR のバージョンを，PR のブランチの `version.txt` (Paper) / `platform-velocity/version.txt` (Velocity) から読む．タグは Paper が `vX.Y.Z`，Velocity が `velocity/vA.B.C`
+3. 引数があればそれに従う．無ければ，`website/src/changelog/{paper,velocity}/v{version}.md` がまだ存在しないものを対象にする
 4. 対象のページが既に存在する場合は上書きせず，差分の追記か作り直しかをユーザーに確認する
+
+### 作業するブランチ
+
+ノートは Release PR のブランチにコミットする．
+
+```
+gh pr checkout {PR 番号}
+```
+
+release-please は，`main` に releasable なコミット (`feat` / `fix` や `fix(deps)` の依存更新) が入るたびに，この PR のブランチを **force-push で作り直す**．そのとき手で足したコミットは消える．作業の前に `main` との差を確認し，書いている間は他の PR を `main` にマージしないようユーザーに伝える．消えた場合は，このスキルをもう一度実行する．
+
+### 材料を集める
+
+前回のリリースから対象の変更を集める．Paper は `engine/` や共通ファイルも含み，Velocity は `platform-velocity/` だけを見る:
+
+```
+git log --format='%h %s%n%b---' {前回のタグ}..HEAD
+gh pr view {番号}     # 変更の説明が必要な PR だけ
+```
+
+前回のタグは `git tag --list 'v*' --sort=-v:refname | head -1` (Paper)，`git tag --list 'velocity/v*' --sort=-v:refname | head -1` (Velocity) で取る．コミットの本文には変更の Why が書かれているので，利用者に見える結果の説明に使う．
 
 ## 2. リンク先
 
@@ -41,7 +62,7 @@ Download リンクはバージョン番号だけで決まる:
 
 ### 振り分け
 
-CHANGELOG の各項目を次の見出しに振り分ける．項目の無い見出しは削除する．
+集めた変更を次の見出しに振り分ける．項目の無い見出しは削除する．
 
 | 見出し | 入れるもの |
 |--------|-----------|
@@ -59,7 +80,8 @@ CHANGELOG の各項目を次の見出しに振り分ける．項目の無い見�
 - 設定キーは `` `features.xxx.yyy` `` のようにコード表記のまま残す
 - 項目が長い場合は親項目に結論，子項目に補足を置く (既存ページのインデントは 2 スペース)
 - プロトコルバージョンの変更は Paper・Velocity 両方のページに書く．PATCH なら「どちらを先に更新してもよい」，MINOR なら「Velocity を先に更新する」ことを必ず添える (`CLAUDE.md` の Protocol Version 節)
-- `#### Velocity:` 以下の項目は Velocity ページへ，それ以外は Paper ページへ．両方に関わる項目 (engine の変更，プロトコル) は両方へ
+- `platform-velocity/` だけを変える項目は Velocity ページへ，`platform-paper/` や共通のものは Paper ページへ．両方に関わる項目 (engine の変更，プロトコル) は両方へ
+- 依存の更新だけのリリースは，項目を並べず `## Improvements` に一行で書く (例: `Updated the supported Paper API to build 237.`)．更新が利用者に見えない場合は `Updated dependencies.` に畳む．Paper API の更新で対応する Minecraft バージョンが変わる場合は，`## New Features` に書き，サポートを打ち切るバージョンも併記する
 - ドキュメントの該当ページへのリンクは積極的に張る．リンクは英語版は `/docs/...`，日本語版は `/ja/docs/...` の絶対パスで書き，アンカーは実在する見出しから作る (VitePress の slug 規則: 小文字化，空白は `-`，記号除去．日本語見出しはそのまま)．張る前に `Grep` で見出しの存在を確かめる
 
 ### 日本語版
@@ -91,12 +113,18 @@ bun run build
 
 外部リンク (GitHub / Modrinth) はリリース前には 404 になるのが正常なので，URL の形だけを §2 の表と照合する．
 
-Velocity 単独のリリースで CHANGELOG に `### Velocity: vA.B.C` の見出しが無く，Paper の見出しの下に書かれている場合は，見出しの修正を提案する．
+Release PR の必須チェックも同じ内容を見る．手元で先に確かめるには次を実行する (タグは §1 で決めたもの):
+
+```
+.github/scripts/check-release-notes.sh v1.7.1 velocity/v1.4.1
+```
 
 ## 6. 報告
 
 - 作成・変更したファイルの一覧
-- CHANGELOG から落とした項目・畳んだ項目とその理由
+- コミット履歴から落とした項目・畳んだ項目とその理由
 - 判断に迷った振り分け (ユーザーが見直すべき箇所)
 
-コミットはユーザーに確認してから行う．メッセージ例: `docs(changelog): add release notes for paper v1.5.0 and velocity v1.4.0`
+コミットはユーザーに確認してから行い，push はユーザーが行う (Release PR のブランチへの push になる)．メッセージ例: `docs(changelog): add release notes for paper v1.7.1`．push 後は Release PR のチェックが通ることを確かめ，ユーザーがマージすればリリースが始まる．
+
+このスキルが作ったページの本文は，リリース時に GitHub Release と Modrinth の changelog としてそのまま使われる (Download リストと `# vX.Y.Z` の見出しは除かれる)．英語ページの内容は，Release と Modrinth を読む人にも通じる書き方にする．

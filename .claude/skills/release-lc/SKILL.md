@@ -1,179 +1,159 @@
 ---
-description: CHANGELOG.md を基にリリース対象を決め，リリース前チェック，署名付きタグの作成と push，ワークフロー・GitHub Release・Modrinth・ドキュメントサイトへのロールアウト完了までを監視する．
+description: Release PR (release-please) の状態を確認し，リリースノートの準備，マージ，タグ・ワークフロー・GitHub Release・Modrinth・ドキュメントサイトへのロールアウトの監視，失敗時の対処までを案内する．初期設定の確認にも使う．
 disable-model-invocation: true
-argument-hint: [paper|velocity|both]
-allowed-tools: Bash(./gradlew *), Bash(git *), Bash(gh *), Bash(curl *), Bash(jq *), Bash(javap *), Bash(shasum *), Read, Grep, Glob
+argument-hint: [paper|velocity|both|status|setup]
+allowed-tools: Bash(git *), Bash(gh *), Bash(curl *), Bash(jq *), Bash(.github/scripts/*), Read, Grep, Glob
 ---
 
 # Release LunaticChat
 
 引数: `$ARGUMENTS`
 
-リリースは「タグを push したら終わり」ではない．**GitHub Release が公開され，Modrinth に listed で並び，リリースノートのリンク先が生きている**ところまで確認して完了とする．
+リリースはほぼ自動で進む．人間がやるのは **リリースノートを書くこと** と **Release PR をマージすること** の 2 つだけで，それ以降 (タグ，ビルド，検証，Modrinth，GitHub Release) は Actions が行う．このスキルは，その各段階が正しく進んでいるかを確かめ，止まったときに原因を切り分ける．
 
-副作用のある操作 (タグ作成・push・draft の公開・ワークフロー再実行) は，必ず直前にユーザーの確認を得ること．
+```
+main に fix/feat/依存更新が入る
+  → release-please が Release PR を作る (Paper と Velocity は別々)
+  → Release PR のチェック (release-pr-checks.yaml)        ← 失敗するとマージできない
+  → 人間がリリースノートを書く (/create-release-note)
+  → 人間が Release PR をマージする
+  → release-please.yaml の tag ジョブがタグを push
+  → release-paper.yaml / release-velocity.yaml (_release.yaml)
+       validate → build → verify → release (draft → Modrinth → 公開) → verify-rollout
+```
 
-## 1. リリース対象の決定
+副作用のある操作 (Release PR のマージ，ワークフローの再実行，手動のタグ作成・push，ラベルの付け替え) は，必ず直前にユーザーの確認を得ること．
 
-1. `gradle.properties` から `paperVersion` / `velocityVersion` を読む
-2. `CHANGELOG.md` の先頭エントリを読む．見出しがそのままタグ名になる (`### vX.Y.Z` → `vX.Y.Z`，`#### Velocity: vA.B.C` / `### Velocity: vA.B.C` → `velocity/vA.B.C`)
-3. 既存リリースを確認する:
+引数が `setup` なら §7 だけを実行する．`status` なら §1 だけを実行する．
+
+## 1. 状態の確認
+
+```
+gh pr list --state open --search 'head:release-please--' --json number,title,headRefName,statusCheckRollup
+gh release list --limit 6
+gh run list --workflow ci.yaml --branch main --limit 3
+```
+
+- Release PR が無い: `main` に releasable なコミットが無いか，release-please のワークフローが失敗している (`gh run list --workflow release-please.yaml --limit 3`)
+- Release PR のタイトルが提案するバージョンを，PR のブランチの `version.txt` (Paper) / `platform-velocity/version.txt` (Velocity) で確かめる．期待より低い・高い場合は，コミットの種類 (`fix` は PATCH，`feat` は MINOR，`!` や `BREAKING CHANGE` は MAJOR) を見直す．**バージョンを手で書き換えない** (release-please が上書きする)．MINOR 以上にしたい場合は，コミットの種類を正す．`Release-As: X.Y.Z` のフッターでバージョンを指定することもできるが，release-please はコミットが変更したパスでパッケージに振り分けるので，対象のパス (Paper はルート，Velocity は `platform-velocity/`) を変更するコミットに付けること (パスを変更しない空コミットが振り分けられるかは未確認)
+- `engine/` だけを変えた変更は Velocity に振り分けられない．Velocity の JAR にも含まれる変更 (プロトコル，`kotlinx-serialization` の更新) で Velocity もリリースしたいときは，Velocity 側 (`platform-velocity/`) の変更を同じ PR に含める
+- Paper と Velocity の両方に PR がある場合，プロトコルが MINOR 上がるなら Velocity を先にマージする (チェックのコメントに出る)．MAJOR なら同時にマージする
+
+## 2. リリースノートの準備
+
+ノートが無い間，Release PR には，手順を英語で案内するコメントが自動で付く (`remind-release-notes.sh`．検査のたびに同じコメントを更新し，ノートが揃うと消える)．
+
+`/create-release-note` を実行し，Release PR のブランチにノート (英日のページ・サイドバー) をコミットして push する．書いている間は他の PR を `main` にマージしない (マージすると release-please が PR のブランチを作り直し，ノートのコミットが消える)．
+
+## 3. マージ前のチェック
+
+```
+gh pr checks {PR 番号}
+```
+
+必須チェックは `gate` ジョブだけで，中身は次の 4 つ．失敗したら該当のスクリプトを手元で実行して原因を見る (どれも `.github/scripts/` にあり，リポジトリのルートで動く):
+
+| ジョブ | 見ていること | 手元での確認 |
+|--------|-------------|-------------|
+| `protocol` | 通信形式 (`PluginMessage.kt` / `PluginMessageChannel.kt`) が前回のリリースから変わったのに，`ProtocolVersion` が上がっていない，または `ProtocolBackwardCompatibilityTest` にスナップショットが無い | `.github/scripts/check-protocol.sh` |
+| `compat` | 両 JAR のプロトコル定数から，HEAD ↔ HEAD，HEAD Velocity ↔ 最新リリースの Paper，最新リリースの Velocity ↔ HEAD Paper の互換性を判定 | `./gradlew :platform-paper:shadowJar :platform-velocity:shadowJar` のあと `.github/scripts/check-compat.sh {paper.jar} {velocity.jar}` |
+| `notes` | 英日のリリースノート，サイドバー登録，Download リンクのタグ | `.github/scripts/check-release-notes.sh {タグ...}` |
+| `modrinth-meta` | `paper-api` が示す Minecraft バージョンと，`release-paper.yaml` の `modrinth-mc-version` / `modrinth-game-versions` の一致 (Paper のみ) | `.github/scripts/check-modrinth-meta.sh` |
+
+- `compat` の通知 (notice) は失敗ではない．「Velocity を先に」「Paper を先に更新」などのデプロイ順序の制約を示す
+- `modrinth-meta` が失敗したら，`release-paper.yaml` の入力を直す (Paper が新しい Minecraft に対応するとき，古いバージョンのサポートを打ち切るかも判断する)
+- プロトコルの変更が MINOR 以上のときは `/test-integration` の実行を勧める (実機のハンドシェイクは自動化されていない)
+
+## 4. マージ
+
+チェックがすべて通り，ノートの内容をユーザーが確認したら，ユーザーの確認を得てマージする (squash)．
+
+```
+gh pr merge {PR 番号} --squash
+```
+
+両方出す場合は §1 の順序に従う．マージ後は何もしなくてよい．
+
+## 5. ロールアウトの監視
+
+マージ後に動くものを順に確かめる．
+
+1. **タグ**: `release-please.yaml` の `tag` ジョブ (数十秒)．annotated タグ (署名なし) ができ，Release PR のラベルが `autorelease: tagged` になる:
    ```
-   gh release list --limit 20
-   git tag --list 'v*' 'velocity/v*' --sort=-creatordate
+   gh run list --workflow release-please.yaml --limit 2
+   git fetch --tags && git tag -n1 {タグ}
+   gh pr view {PR 番号} --json labels --jq '.labels[].name'
    ```
-4. 未リリースのバージョンから対象を決める．1 タグ = 1 プラットフォームで，両方を出す場合はタグを 2 つ作る．引数が与えられていればそれを優先し，推定と食い違えば指摘する:
-
-   | プラットフォーム | タグ | ワークフロー | タグメッセージ |
-   |-----------------|------|-------------|---------------|
-   | Paper | `v{paperVersion}` | `release-paper.yaml` (`Release Paper`) | `Paper v{paperVersion}` |
-   | Velocity | `velocity/v{velocityVersion}` | `release-velocity.yaml` (`Release Velocity`) | `Velocity v{velocityVersion}` |
-
-   - `both` は上の 2 行を両方実行する．片側が既にリリース済みのバージョンなら，その側はリリースしない (Modrinth で同一バージョンの重複公開になる)
-   - Paper を `paper/vX.Y.Z` でタグ付けしてはならない．どちらのワークフローも起動せず，配布済みの `UpdateChecker` も認識できない
-5. 決定内容 (形態・タグ名・両バージョン) をユーザーに提示する
-
-## 2. リリース前チェック
-
-すべて通るまでタグの提案に進まない．失敗したら原因を報告し，直せるものは修正方針を提案する．
-
-### リポジトリ状態
-
-- `main` ブランチにいて，working tree がクリーンであること
-- `git fetch origin` 後，`HEAD` が `origin/main` と一致すること (未 push のコミットをタグ付けしない)
-- タグがローカル・リモートの両方に存在しないこと (`git ls-remote --tags origin {tag}`)
-- `HEAD` の CI (`CI` ワークフロー) が成功していること:
-  ```
-  gh run list --workflow ci.yaml --commit $(git rev-parse HEAD) --json status,conclusion,url
-  ```
-
-### ビルドとテスト
-
-```
-./gradlew ktlintCheck
-./gradlew test
-./gradlew :platform-paper:shadowJar :platform-velocity:shadowJar
-```
-
-対象外のプラットフォームも含めて両方ビルドする (engine の変更がもう一方を壊していないことの確認を兼ねる)．
-
-### プロトコル
-
-前回リリースのタグ (対象プラットフォームごと) からの差分に `engine/src/main/kotlin/dev/m1sk9/lunaticChat/engine/protocol/` の変更があるか確認する:
-
-```
-git diff --stat {前回タグ}..HEAD -- engine/src/main/kotlin/dev/m1sk9/lunaticChat/engine/protocol/
-```
-
-変更がある場合:
-
-- `ProtocolVersion.kt` が CLAUDE.md の規則どおりに上がっていること (変更の種類に対して PATCH / MINOR / MAJOR が妥当か)
-- `ProtocolBackwardCompatibilityTest` にスナップショットが追加されていること
-- `/test-integration` の実行を推奨する (未実行ならユーザーに確認する)
-- MINOR なら Velocity を先に出す必要がある．`paper` 単独リリースで Velocity 側が未対応なら止める
-
-### リリースノート
-
-- `CHANGELOG.md` に対象バージョンのエントリがあること
-- `website/src/changelog/{paper,velocity}/v{version}.md` と `website/src/ja/changelog/...` が対象の全プラットフォーム分あり，`config/en.ts` / `config/ja.ts` のサイドバーに登録されていること．無ければ `/create-release-note` を先に実行するよう伝えて止まる
-- ページの Download リンクのタグが §1 の表と一致すること (Paper は `releases/tag/v{paperVersion}`，Velocity は `releases/tag/velocity/v{velocityVersion}`)
-- **デプロイ済み**であること．Release と Modrinth の changelog はサイトを指すため，未デプロイだとリンク切れで公開される:
-  ```
-  curl -s -o /dev/null -w '%{http_code}\n' https://lc.m1sk9.dev/changelog/paper/v{paperVersion}
-  curl -s -o /dev/null -w '%{http_code}\n' https://lc.m1sk9.dev/ja/changelog/paper/v{paperVersion}
-  ```
-  サイトは `main` への push 時に CI の `build_docs` ジョブが Cloudflare Workers へデプロイする．404 なら CI の完了を待つ
-
-### Modrinth のメタデータ
-
-対象ワークフローの `MODRINTH_*_GAME_VERSIONS` / `MODRINTH_MC_VERSION` が，`platform-paper/build.gradle.kts` の `paper-api` (と `platform-velocity/build.gradle.kts` の `velocity-api`) が示す Minecraft バージョンと食い違っていないか確認する．Paper の対応バージョンを上げたリリースで更新漏れが起きやすい．
-
-## 3. タグの作成と push
-
-チェック結果の要約を示し，ユーザーの確認を得てから実行する．既存タグと同じく署名付き annotated タグにする:
-
-```
-git tag -s {tag} -m "{タグメッセージ}"
-git push origin {tag}
-```
-
-両方を出す場合は 2 つのタグを作ってから 1 回で push する．プロトコルの MINOR を上げたリリースでは Velocity が先に出ている必要があるので，Velocity のタグを先に書く:
-
-```
-git push origin velocity/v{velocityVersion} v{paperVersion}
-```
-
-2 つのワークフローが並行して走る．以降の §4〜§6 はタグごとに行う．
-
-GPG / SSH のエラーが出たら再試行せずに止まり，ユーザーに伝える．
-
-## 4. ワークフローの監視
-
-1. 起動を確認する (数十秒かかることがある):
+   タグのメッセージが `Paper vX.Y.Z` / `Velocity vX.Y.Z` で，ラベルに `autorelease: tagged` があること
+2. **リリースワークフロー**: タグの push で `release-paper.yaml` / `release-velocity.yaml` が起動する:
    ```
-   gh run list --workflow {workflow-file} --limit 3 --json databaseId,headBranch,status,event,url
-   ```
-   `headBranch` がタグ名の run を選ぶ．1 分待っても現れなければ `git ls-remote --tags origin {tag}` で push を確かめる
-2. 完了まで追う．長時間かかるので Bash の `run_in_background` で実行し，完了通知を待つ:
-   ```
+   gh run list --workflow release-paper.yaml --limit 3
    gh run watch {run-id} --exit-status
    ```
-3. 失敗したらジョブを切り分ける:
-   ```
-   gh run view {run-id} --log-failed
-   ```
-   - `validate` … タグと `gradle.properties` の不一致，または同名 Release が既に存在する
-   - `build` … ローカルでは通っているので CI 環境固有の問題を疑う
-   - `release` … GitHub Release 作成か Modrinth 公開の失敗．**GitHub Release 作成後に Modrinth で落ちた場合，再実行は `validate` の重複チェックで止まる**．Release とタグの状態を示したうえで，対処 (draft Release を削除して再実行する，Modrinth へ手動公開する，など) をユーザーに提案する
-   - 再実行 (`gh run rerun`) やタグの付け直しは提案に留め，承認を得てから行う
+   `gh run watch` は長いので Bash の `run_in_background` で実行する．`verify` ジョブは，サイトのリリースノートが公開されるまで最大 20 分待つ (マージ後の docs のデプロイ待ち)
+3. **ロールアウトの検証**: `verify-rollout` ジョブが GitHub Release (draft でない，Latest が Paper のまま)，Modrinth (`listed`，loaders，game versions)，サイトのリンクを確認する．失敗すると Issue が起票される
 
-## 5. draft の公開
+## 6. 失敗時の対処
 
-ワークフローは Release を **draft** で作る．
+原因を示して対処を提案する．再実行 (`gh run rerun`) とタグの付け直しは，ユーザーの承認を得てから行う．
 
 ```
-gh release view {tag} --json isDraft,name,assets,url
+gh run view {run-id} --log-failed
 ```
 
-- 添付ファイルが期待どおりであること:
-  - Paper: `LunaticChat-{paperVersion}.jar`
-  - Velocity: `LunaticChat-{velocityVersion}-velocity.jar`
-- 添付 JAR をスクラッチパッドへダウンロードし，埋め込まれたプロトコル定数が `HEAD` の `ProtocolVersion.kt` と一致することを確かめる (別コミットからビルドされていないことの確認):
-  ```
-  gh release download {tag} --dir {scratchpad}/release-{tag}
-  javap -constants -cp {jar} dev.m1sk9.lunaticChat.engine.protocol.ProtocolVersion
-  ```
-- 問題なければ公開をユーザーに確認し，公開する:
-  ```
-  gh release edit v{paperVersion} --draft=false
-  gh release edit velocity/v{velocityVersion} --draft=false --latest=false
-  ```
-  GitHub は公開したリリースを既定で Latest にする．リポジトリの Latest は常に Paper のリリースにしておくため，Velocity では必ず `--latest=false` を付ける．両方を出す場合は Paper を後に公開する
+### `release-please.yaml`
 
-## 6. ロールアウトの確認
+| 症状 | 原因と対処 |
+|------|-----------|
+| タグの push で失敗 | App の権限不足 (Contents: write)，またはタグ保護ルール．App のインストールと権限を確認する |
+| Release PR が作られず，ログに `untagged, merged release PRs` | 直前の Release PR のラベルが `autorelease: pending` のまま．タグが無ければ §6 の手動タグを作り，ラベルを `autorelease: tagged` に付け替える |
+| App トークンの取得で失敗 | `CLIENT_ID` / `PRIVATE_KEY` が無い，または App がこのリポジトリにインストールされていない |
 
-以下をすべて確認し，表にして報告する．
+### `_release.yaml`
 
-| 確認先 | 方法 | 期待値 |
-|--------|------|--------|
-| GitHub Release | `gh release view {tag} --json isDraft,assets` | `isDraft: false`，JAR 添付済み |
-| Latest | `gh api repos/m1sk9/LunaticChat/releases/latest --jq .tag_name` | 最新の Paper のタグ (`v{paperVersion}` など)．`velocity/v*` になっていたら `gh release edit v{paperVersion} --latest` で戻す |
-| Modrinth (Paper) | 下記 API | `version_number == {paperVersion}`，`status == listed`，loaders に `paper` と `folia`，game_versions にワークフローの値 |
-| Modrinth (Velocity) | 下記 API | `version_number == {velocityVersion}-velocity`，`status == listed`，loaders に `velocity` |
-| リリースノート | `curl` で en / ja の changelog ページ | `200` |
-| Release 本文のリンク | 本文中の `lc.m1sk9.dev` リンクを `curl` | `200` |
-| リリースノートの Download リンク | ページ内の GitHub / Modrinth リンクを `curl` | `200` |
+| ジョブ | 症状 | 対処 |
+|--------|------|------|
+| `validate` | タグと `version.txt` が不一致 | Release PR のブランチが作り直された可能性．タグが指すコミットの `version.txt` を確認する |
+| `validate` | `already published` | 同じタグの Release が公開済み．重複なので止まるのが正しい |
+| `verify` | JAR のプロトコル定数がソースと不一致 | 別のコミットからビルドされた JAR．タグが指すコミットとビルドの対象を確認する |
+| `verify` | サイトのページが 200 にならずタイムアウト | `ci.yaml` の `build_docs` (Cloudflare へのデプロイ) が `main` で失敗していないか確認する．直ったらワークフローを再実行する |
+| `release` | Modrinth の公開で失敗 | draft の Release は残る．**再実行して構わない**: draft は再利用され，Modrinth に同じバージョンがあれば公開をスキップする．API のエラー本文はログに出る |
+| `release` | 最後の公開で失敗 | Modrinth には出ているが Release は draft のまま．再実行すると公開まで進む |
+| `verify-rollout` | Modrinth が `listed` にならない | 反映の遅れなら数分後に再実行する．それでも出ない場合は Modrinth の画面でバージョンの状態を確認する |
+| `verify-rollout` | Latest が Velocity のタグになっている | `gh release edit {最新の Paper のタグ} --latest` で戻す (承認を得てから) |
 
-Modrinth は公開 API をトークンなしで参照できる:
+### 手動でタグを作る (最終手段)
+
+`tag` ジョブが使えない場合に限る．annotated タグで，Paper は `vX.Y.Z`，Velocity は `velocity/vX.Y.Z`．タグはマージされたコミットに付ける:
 
 ```
-curl -s https://api.modrinth.com/v2/project/lunaticchat/version | jq '.[:4][] | {version_number, status, loaders, game_versions, date_published, file: .files[0].filename}'
+git switch main && git pull --ff-only
+git tag -a {タグ} -m "{Paper|Velocity} {バージョン}" {マージコミットの SHA}
+git push origin {タグ}
 ```
 
-Modrinth への反映は数分遅れることがある．見つからない場合は数分おいて再確認し，それでも無ければワークフローの `release` ジョブのログを確認する．
+push したら Release PR のラベルを付け替える:
 
-## 7. 完了報告
+```
+gh pr edit {PR 番号} --remove-label 'autorelease: pending' --add-label 'autorelease: tagged'
+```
 
-- リリースしたタグ・バージョン・Release の URL・Modrinth の URL
-- §6 の確認表
+## 7. 初期設定 (一度だけ)
+
+自動化が動くために必要な，リポジトリ外の設定．`setup` のときは，できる範囲で確かめて結果を表にして報告する．
+
+| 項目 | 内容 | 確認 |
+|------|------|------|
+| GitHub App | LunaticChat にインストール済み．権限は Contents / Pull requests / Issues の Read & write | 設定画面 (CLI からは確認できない) |
+| Secrets `CLIENT_ID` / `PRIVATE_KEY` | App の Client ID と秘密鍵 | `gh secret list` |
+| 必須チェック | `main` のルールセット `branch-protect` の必須チェックに `gate` (ワークフロー `Release PR checks` のジョブ) を足す．マージして `gate` が `main` 向けの PR で報告されるようになってから足すこと (先に足すと，ほかの PR が `gate` を待ち続ける) | `gh api repos/m1sk9/LunaticChat/rules/branches/main --jq '.[] \| select(.type == "required_status_checks") \| .parameters.required_status_checks'` |
+| タグのルールセット | `protect-tag` は削除・更新・non-fast-forward だけを禁じ，作成は禁じていない．`creation` のルールを足すと `tag` ジョブの push が失敗するので足さない | `gh api repos/m1sk9/LunaticChat/rulesets/11712454 --jq '[.rules[].type]'` |
+| 既存の Secrets | `MODRINTH_TOKEN` / `MODRINTH_PROJECT_ID` | `gh secret list` |
+
+秘密鍵や Secrets の値を読み出したり，会話に出力したりしない．
+
+## 8. 完了報告
+
+- リリースしたタグ・バージョン・GitHub Release の URL・Modrinth の URL
+- §5 の確認結果 (タグ，ワークフロー，ロールアウトの検証)
 - 未完了の項目があれば，その内容と次にユーザーが取るべき操作
