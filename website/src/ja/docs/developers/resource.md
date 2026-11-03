@@ -33,14 +33,14 @@ Paper と Velocity は別々のバージョン番号を持ち，独立にリリ�
 
 | ワークフロー | トリガ | 役割 |
 |-------------|--------|------|
-| `release-please.yaml` | `main` への push | Release PR を作成・更新する．マージされたら署名付きタグを push する |
+| `release-please.yaml` | `main` への push | Release PR を作成・更新する．マージされたらタグを push する |
 | `release-pr-checks.yaml` | Release PR | プロトコルバージョン，Paper↔Velocity の互換性，リリースノート，Modrinth の game-versions を検査する．ブランチ保護で `gate` ジョブを必須にする |
 | `release-paper.yaml` | タグ `vX.Y.Z` | Paper のみ |
 | `release-velocity.yaml` | タグ `velocity/vX.Y.Z` | Velocity のみ |
 
 - `version.txt` (Paper) と `platform-velocity/version.txt` (Velocity) は release-please のものです．バージョンは，前回のリリース以降にマージされたコミットの種類 (Conventional Commits) で決まります．`fix` は PATCH，`feat` は MINOR，破壊的変更は MAJOR です
 - リリースノートは Release PR の中で手で書きます (`/create-release-note`)．検査がノートを見つけるまで，PR はマージできません．`CHANGELOG.md` は v1.7.0 で更新を止めており，このサイトのリリースノートが変更履歴です
-- タグは release-please ではなく自前のジョブが，リリース用 bot の GPG 鍵で署名して作ります．これで，リリースが署名付きの annotated タグを保てます．push には GitHub App のトークンを使います．`GITHUB_TOKEN` で push したタグでは，リリースのワークフローが起動しないためです
+- タグは release-please ではなく自前のジョブが，annotated タグとして作ります．リリースのタグは GPG 署名しません．署名には，公開鍵を置くための通常の GitHub アカウントがもう 1 つ必要で (GitHub App は鍵を登録できません)，その手間に見合わないと判断しました．push には GitHub App のトークンを使います．`GITHUB_TOKEN` で push したタグでは，リリースのワークフローが起動しないためです
 - Paper が接頭辞なしの `vX.Y.Z` を使うのは，配布済みの Paper 版のアップデートチェッカーがこの形式しか解釈できないため
 - v1.4.0 までは `vX.Y.Z` タグで両方をリリースしていた (`v1.0.0`，`v1.3.0`，`v1.4.0`)．Paper 単独のリリースには `paper/vX.Y.Z` を使ったものもある．これらのタグはそのまま残している
 - どちらのリリースワークフローも共通の `_release.yaml` を呼び出す: `validate` (タグの形式，`version.txt` との一致．公開済みの Release があれば止める) → `build` (mise + Gradle setup，`shadowJar`) → `verify` (JAR のプロトコル定数がソースと一致し，リリースノートがサイトに公開されている) → `release` (draft の GitHub Release → Modrinth → 公開) → `verify-rollout` (失敗したら Issue を作る)．再実行すると，前回の実行が残した draft を再利用する

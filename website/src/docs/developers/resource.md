@@ -33,14 +33,14 @@ A release is prepared by [release-please](https://github.com/googleapis/release-
 
 | Workflow | Trigger | Role |
 |----------|---------|------|
-| `release-please.yaml` | push to `main` | Opens and updates the Release PRs; once one is merged, pushes the signed tag |
+| `release-please.yaml` | push to `main` | Opens and updates the Release PRs; once one is merged, pushes the tag |
 | `release-pr-checks.yaml` | Release PR | Checks the protocol version, Paper↔Velocity compatibility, the release notes and the Modrinth game versions. Branch protection requires its `gate` job |
 | `release-paper.yaml` | tag `vX.Y.Z` | Paper only |
 | `release-velocity.yaml` | tag `velocity/vX.Y.Z` | Velocity only |
 
 - `version.txt` (Paper) and `platform-velocity/version.txt` (Velocity) belong to release-please. The bump follows the Conventional Commit types merged since the last release: `fix` is PATCH, `feat` is MINOR, a breaking change is MAJOR
 - The release notes are written by hand in the Release PR (`/create-release-note`). The PR cannot be merged until the checks find them. `CHANGELOG.md` stops at v1.7.0; the notes on this site are the changelog
-- The tag is created by a job of our own rather than by release-please, signed with the release bot's GPG key, so releases keep their signed annotated tags. It is pushed with a GitHub App token, because a tag pushed with `GITHUB_TOKEN` would not start the release workflows
+- The tag is created by a job of our own rather than by release-please, as an annotated tag. Release tags are no longer GPG-signed: that needed a second, ordinary GitHub account to hold the public key, because a GitHub App cannot register one. It is pushed with a GitHub App token, because a tag pushed with `GITHUB_TOKEN` would not start the release workflows
 - Paper keeps the bare `vX.Y.Z` tag because the update checker in already-deployed Paper builds only understands that form
 - Up to v1.4.0, a `vX.Y.Z` tag released both platforms (`v1.0.0`, `v1.3.0`, `v1.4.0`), and some Paper-only releases used `paper/vX.Y.Z`. Those tags are kept as they are
 - Both release workflows call the shared `_release.yaml`: `validate` (tag format, match with `version.txt`; a published Release stops the run) → `build` (mise + Gradle setup, `shadowJar`) → `verify` (the JAR's protocol constants match the source, and the release notes are live on the site) → `release` (draft GitHub Release → Modrinth → publish) → `verify-rollout` (opens an issue on failure). A re-run reuses the draft an earlier run left behind

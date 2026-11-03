@@ -66,21 +66,15 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Import the signing key
+      # An annotated tag needs a tagger. Tags are not signed: that would need a second, ordinary
+      # GitHub account to hold the public key, since a GitHub App cannot register one.
+      - name: Set the tagger
         if: steps.pr.outputs.number != ''
-        env:
-          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
         run: |
-          # The key's own user ID decides the tagger, so GitHub can match the signature to the
-          # bot account that holds the public key. Nothing else configures an identity.
-          printf '%s' "$GPG_PRIVATE_KEY" | gpg --batch --import
-          key_id=$(gpg --list-secret-keys --with-colons | awk -F: '/^sec/ {print $5; exit}')
-          uid=$(gpg --list-secret-keys --with-colons | awk -F: '/^uid/ {print $10; exit}')
-          git config user.name "${uid% <*}"
-          git config user.email "$(echo "$uid" | sed -E 's/.*<(.*)>.*/\1/')"
-          git config user.signingkey "$key_id"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Create and push signed tags
+      - name: Create and push tags
         if: steps.pr.outputs.number != ''
         env:
           TAGS: ${{ steps.tags.outputs.list }}
@@ -95,7 +89,7 @@ jobs:
               velocity/*) label="Velocity" ;;
               *) label="Paper" ;;
             esac
-            git tag -s "$tag" -m "${label} ${tag##*/}" "$GITHUB_SHA"
+            git tag -a "$tag" -m "${label} ${tag##*/}" "$GITHUB_SHA"
             to_push+=("$tag")
           done <<< "$TAGS"
 

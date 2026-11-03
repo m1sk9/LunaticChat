@@ -17,7 +17,7 @@ main に fix/feat/依存更新が入る
   → Release PR のチェック (release-pr-checks.yaml)        ← 失敗するとマージできない
   → 人間がリリースノートを書く (/create-release-note)
   → 人間が Release PR をマージする
-  → release-please.yaml の tag ジョブが署名付きタグを push
+  → release-please.yaml の tag ジョブがタグを push
   → release-paper.yaml / release-velocity.yaml (_release.yaml)
        validate → build → verify → release (draft → Modrinth → 公開) → verify-rollout
 ```
@@ -78,13 +78,13 @@ gh pr merge {PR 番号} --squash
 
 マージ後に動くものを順に確かめる．
 
-1. **タグ**: `release-please.yaml` の `tag` ジョブ (数十秒)．署名付きの annotated タグができ，Release PR のラベルが `autorelease: tagged` になる:
+1. **タグ**: `release-please.yaml` の `tag` ジョブ (数十秒)．annotated タグ (署名なし) ができ，Release PR のラベルが `autorelease: tagged` になる:
    ```
    gh run list --workflow release-please.yaml --limit 2
-   git fetch --tags && git tag -v {タグ}
-   gh api repos/m1sk9/LunaticChat/git/tags/$(gh api repos/m1sk9/LunaticChat/git/ref/tags/{タグ} --jq .object.sha) --jq .verification
+   git fetch --tags && git tag -n1 {タグ}
+   gh pr view {PR 番号} --json labels --jq '.labels[].name'
    ```
-   `verified: true` であること
+   タグのメッセージが `Paper vX.Y.Z` / `Velocity vX.Y.Z` で，ラベルに `autorelease: tagged` があること
 2. **リリースワークフロー**: タグの push で `release-paper.yaml` / `release-velocity.yaml` が起動する:
    ```
    gh run list --workflow release-paper.yaml --limit 3
@@ -105,7 +105,6 @@ gh run view {run-id} --log-failed
 
 | 症状 | 原因と対処 |
 |------|-----------|
-| `tag` ジョブが `Import the signing key` で失敗 | `GPG_PRIVATE_KEY` が無い，または壊れている．§7 の手順で入れ直す |
 | タグの push で失敗 | App の権限不足 (Contents: write)，またはタグ保護ルール．App のインストールと権限を確認する |
 | Release PR が作られず，ログに `untagged, merged release PRs` | 直前の Release PR のラベルが `autorelease: pending` のまま．タグが無ければ §6 の手動タグを作り，ラベルを `autorelease: tagged` に付け替える |
 | App トークンの取得で失敗 | `CLIENT_ID` / `PRIVATE_KEY` が無い，または App がこのリポジトリにインストールされていない |
@@ -125,15 +124,15 @@ gh run view {run-id} --log-failed
 
 ### 手動でタグを作る (最終手段)
 
-`tag` ジョブが使えない場合に限る．署名付きの annotated タグで，Paper は `vX.Y.Z`，Velocity は `velocity/vX.Y.Z`:
+`tag` ジョブが使えない場合に限る．annotated タグで，Paper は `vX.Y.Z`，Velocity は `velocity/vX.Y.Z`．タグはマージされたコミットに付ける:
 
 ```
 git switch main && git pull --ff-only
-git tag -s {タグ} -m "{Paper|Velocity} {タグ}"
+git tag -a {タグ} -m "{Paper|Velocity} {バージョン}" {マージコミットの SHA}
 git push origin {タグ}
 ```
 
-署名の GPG / SSH のエラーが出たら再試行せず，ユーザーに伝えて止まる．push したら Release PR のラベルを付け替える:
+push したら Release PR のラベルを付け替える:
 
 ```
 gh pr edit {PR 番号} --remove-label 'autorelease: pending' --add-label 'autorelease: tagged'
@@ -147,8 +146,6 @@ gh pr edit {PR 番号} --remove-label 'autorelease: pending' --add-label 'autore
 |------|------|------|
 | GitHub App | LunaticChat にインストール済み．権限は Contents / Pull requests / Issues の Read & write | 設定画面 (CLI からは確認できない) |
 | Secrets `CLIENT_ID` / `PRIVATE_KEY` | App の Client ID と秘密鍵 | `gh secret list` |
-| bot アカウント | 署名用の通常の GitHub アカウント (`m1sk9-bot`)．verified email と，GPG 公開鍵の登録が必要 | 設定画面 |
-| Secret `GPG_PRIVATE_KEY` | bot の GPG 秘密鍵．鍵の user ID (名前とメール) がタグの tagger になる．秘密鍵はユーザー自身が登録する (`gpg --armor --export-secret-keys ... \| gh secret set GPG_PRIVATE_KEY`) | `gh secret list` |
 | 必須チェック | `main` のブランチ保護で `Release PR checks / gate` を必須にする | `gh api repos/m1sk9/LunaticChat/branches/main/protection --jq .required_status_checks` |
 | 既存の Secrets | `MODRINTH_TOKEN` / `MODRINTH_PROJECT_ID` | `gh secret list` |
 
@@ -157,5 +154,5 @@ gh pr edit {PR 番号} --remove-label 'autorelease: pending' --add-label 'autore
 ## 8. 完了報告
 
 - リリースしたタグ・バージョン・GitHub Release の URL・Modrinth の URL
-- §5 の確認結果 (タグの署名，ワークフロー，ロールアウトの検証)
+- §5 の確認結果 (タグ，ワークフロー，ロールアウトの検証)
 - 未完了の項目があれば，その内容と次にユーザーが取るべき操作
