@@ -41,6 +41,8 @@ gh run list --workflow ci.yaml --branch main --limit 3
 
 ## 2. リリースノートの準備
 
+ノートが無い間，Release PR には，手順を英語で案内するコメントが自動で付く (`remind-release-notes.sh`．検査のたびに同じコメントを更新し，ノートが揃うと消える)．
+
 `/create-release-note` を実行し，Release PR のブランチにノート (英日のページ・サイドバー) をコミットして push する．書いている間は他の PR を `main` にマージしない (マージすると release-please が PR のブランチを作り直し，ノートのコミットが消える)．
 
 ## 3. マージ前のチェック

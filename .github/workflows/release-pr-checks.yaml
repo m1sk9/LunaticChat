@@ -89,16 +89,36 @@ jobs:
   notes:
     needs: context
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      # The check must not end the job: the reminder comment below has to be posted precisely
+      # when it fails, and the job is failed afterwards by the last step.
       - name: Check the release notes
+        id: check
+        continue-on-error: true
         env:
           TAGS: ${{ needs.context.outputs.tags }}
         run: |
+          set -o pipefail
           mapfile -t tags <<< "$TAGS"
-          .github/scripts/check-release-notes.sh "${tags[@]}"
+          .github/scripts/check-release-notes.sh "${tags[@]}" 2>&1 | tee "$RUNNER_TEMP/notes-check.log"
+
+      - name: Keep the reminder comment up to date
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          TAGS: ${{ needs.context.outputs.tags }}
+          OUTCOME: ${{ steps.check.outcome }}
+        run: .github/scripts/remind-release-notes.sh "$OUTCOME" "$RUNNER_TEMP/notes-check.log"
+
+      - name: Fail if the release notes are missing
+        if: steps.check.outcome == 'failure'
+        run: exit 1
 
   modrinth-meta:
     needs: context
