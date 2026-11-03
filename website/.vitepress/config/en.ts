@@ -144,6 +144,10 @@ export const en: DefaultTheme.Config = {
             text: 'v1',
             items: [
               {
+                link: '/changelog/velocity/v1.4.1',
+                text: 'v1.4.1',
+              },
+              {
                 link: '/changelog/velocity/v1.4.0',
                 text: 'v1.4.0',
               },
