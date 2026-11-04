@@ -49,6 +49,7 @@ data=$(jq -n \
     version_type: "release",
     loaders: $loaders,
     status: "listed",
+    featured: false,
     file_parts: ["jar"],
     primary_file: "jar"
   }')
