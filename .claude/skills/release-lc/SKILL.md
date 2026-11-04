@@ -107,6 +107,7 @@ gh run view {run-id} --log-failed
 |------|-----------|
 | タグの push で失敗 | App の権限不足 (Contents: write)，またはタグ保護ルール．App のインストールと権限を確認する |
 | Release PR が作られず，ログに `untagged, merged release PRs` | 直前の Release PR のラベルが `autorelease: pending` のまま．タグが無ければ §6 の手動タグを作り，ラベルを `autorelease: tagged` に付け替える |
+| `tag` ジョブの最後 (`gh pr edit`) が `'autorelease: tagged' not found` で失敗 | ラベルが無い (release-please は `pending` しか作らない)．現在のワークフローは自分で作る．タグの push は済んでいるので，リリースの起動には影響しない．古い定義で起きたら `gh label create "autorelease: tagged"` で作り，PR のラベルを付け替える |
 | App トークンの取得で失敗 | `CLIENT_ID` / `PRIVATE_KEY` が無い，または App がこのリポジトリにインストールされていない |
 
 ### `_release.yaml`
@@ -116,8 +117,9 @@ gh run view {run-id} --log-failed
 | `validate` | タグと `version.txt` が不一致 | Release PR のブランチが作り直された可能性．タグが指すコミットの `version.txt` を確認する |
 | `validate` | `already published` | 同じタグの Release が公開済み．重複なので止まるのが正しい |
 | `verify` | JAR のプロトコル定数がソースと不一致 | 別のコミットからビルドされた JAR．タグが指すコミットとビルドの対象を確認する |
+| `verify` | 取得したサイトが 403 (古い定義の挙動) | GitHub の runner からは `lc.m1sk9.dev` が 403 になる (根本原因は未調査)．現在の定義はサイトを取得せず API で待つので，`main` の定義で §6 の復旧実行をする |
 | `verify` | docs のデプロイを待ってタイムアウト，または `build_docs` が失敗 | タグが指すコミットの `ci.yaml` (`build_docs`，Cloudflare へのデプロイ) の結果を見る (`gh run list --workflow ci.yaml --commit {SHA}`)．タグが `main` のコミットを指していないと，CI の実行が無く，タイムアウトする |
-| `release` | Modrinth の公開で失敗 | draft の Release は残る．**再実行して構わない**: draft は再利用され，Modrinth に同じバージョンがあれば公開をスキップする．API のエラー本文はログに出る |
+| `release` | Modrinth の公開で失敗 | draft の Release は残る．**再実行して構わない**: draft は再利用され，Modrinth に同じバージョンがあれば公開をスキップする．API のエラー本文はログに出る (`Modrinth rejected the upload with HTTP 400: {...}`)．過去の例: `missing field featured` (アップロード用 JSON の必須フィールドの不足)．ドライラン (`DRY_RUN=1`) は Modrinth に送らないので，この種の不備は検出できない．本文の `description` を読んで `publish-modrinth.sh` を直し，§6 の復旧実行で出し直す |
 | `release` | 最後の公開で失敗 | Modrinth には出ているが Release は draft のまま．再実行すると公開まで進む |
 | `verify-rollout` | Modrinth が `listed` にならない | 反映の遅れなら数分後に再実行する．それでも出ない場合は Modrinth の画面でバージョンの状態を確認する |
 | `verify-rollout` | Latest が Velocity のタグになっている | `gh release edit {最新の Paper のタグ} --latest` で戻す (承認を得てから) |
@@ -131,6 +133,8 @@ gh workflow run release-velocity.yaml --ref main -f tag=velocity/vX.Y.Z   # Pape
 ```
 
 公開済みの Release があれば `validate` が止める．draft は再利用される．
+
+失敗の原因が，タグ側の古いワークフロー定義にあるかを見分ける: 再実行しても同じ箇所で同じ原因で失敗するなら，定義が原因．`main` で直してから，この復旧実行を使う．
 
 ### 手動でタグを作る (最終手段)
 
