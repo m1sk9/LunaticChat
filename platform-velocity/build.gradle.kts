@@ -43,7 +43,7 @@ dependencies {
 
     // Test dependencies
     testImplementation("com.velocitypowered:velocity-api:4.3.1")
-    testImplementation("io.mockk:mockk:1.14.11")
+    testImplementation("io.mockk:mockk:1.14.12")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
 }
 
