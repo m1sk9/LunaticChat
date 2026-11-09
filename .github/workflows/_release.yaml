@@ -42,7 +42,7 @@ jobs:
       sha: ${{ steps.get_version.outputs.sha }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           fetch-tags: true
@@ -150,7 +150,7 @@ jobs:
     needs: validate
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: refs/tags/${{ needs.validate.outputs.tag }}
 
@@ -182,7 +182,7 @@ jobs:
       actions: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           fetch-tags: true
@@ -220,7 +220,7 @@ jobs:
       JAR_PATH: ${{ needs.validate.outputs.module }}/build/libs/${{ needs.validate.outputs.jar_name }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Download build artifact
         uses: actions/download-artifact@v8
@@ -283,7 +283,7 @@ jobs:
       MODRINTH_GAME_VERSIONS: ${{ inputs.modrinth-game-versions }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Verify the rollout
         env:

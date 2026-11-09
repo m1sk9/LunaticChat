@@ -33,7 +33,7 @@ jobs:
       # The App token, not GITHUB_TOKEN, does the push: events caused by GITHUB_TOKEN never
       # start other workflows, so the release workflows would not see the tag.
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           token: ${{ steps.app-token.outputs.token }}
