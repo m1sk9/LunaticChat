@@ -29,7 +29,7 @@ on:
 
 jobs:
   validate:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     outputs:
       version: ${{ steps.get_version.outputs.version }}
       jar_name: ${{ steps.get_version.outputs.jar_name }}
@@ -146,7 +146,7 @@ jobs:
           fi
 
   build:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: validate
     steps:
       - name: Checkout repository
@@ -175,7 +175,7 @@ jobs:
 
   # Everything that can still stop a release runs here, before the first thing is published.
   verify:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: [validate, build]
     permissions:
       contents: read
@@ -208,7 +208,7 @@ jobs:
         run: .github/scripts/wait-for-docs-deploy.sh "${{ needs.validate.outputs.sha }}"
 
   release:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: [validate, build, verify]
     permissions:
       contents: write
@@ -271,7 +271,7 @@ jobs:
           fi
 
   verify-rollout:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: [validate, release]
     permissions:
       contents: read
