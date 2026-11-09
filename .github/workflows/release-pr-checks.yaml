@@ -73,7 +73,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Development Environment
-        uses: jdx/mise-action@v4
+        uses: jdx/mise-action@v5
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6

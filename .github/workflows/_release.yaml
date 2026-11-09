@@ -155,7 +155,7 @@ jobs:
           ref: refs/tags/${{ needs.validate.outputs.tag }}
 
       - name: Setup Development Environment
-        uses: jdx/mise-action@v4
+        uses: jdx/mise-action@v5
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
@@ -188,7 +188,7 @@ jobs:
           fetch-tags: true
 
       - name: Setup Development Environment
-        uses: jdx/mise-action@v4
+        uses: jdx/mise-action@v5
 
       - name: Download build artifact
         uses: actions/download-artifact@v8
