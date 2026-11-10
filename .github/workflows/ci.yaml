@@ -11,7 +11,7 @@ on:
 
 jobs:
   build_plugin:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       pull-requests: write
@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Setup Development Environment
-        uses: jdx/mise-action@v4
+        uses: jdx/mise-action@v5
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
@@ -65,13 +65,13 @@ jobs:
           retention-days: 7
 
   build_dokka:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
 
       - name: Setup Development Environment
-        uses: jdx/mise-action@v4
+        uses: jdx/mise-action@v5
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
@@ -88,7 +88,7 @@ jobs:
   deploy_dokka:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: build_dokka
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     permissions:
       pages: write
@@ -107,7 +107,7 @@ jobs:
         uses: actions/deploy-pages@v5
 
   build_docs:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     defaults:
       run:
         working-directory: "./website"
@@ -116,7 +116,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Setup Development Environment
-        uses: jdx/mise-action@v4
+        uses: jdx/mise-action@v5
         with:
           working_directory: .
 
