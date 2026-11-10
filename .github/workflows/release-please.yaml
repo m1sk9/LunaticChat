@@ -18,7 +18,7 @@ jobs:
   # Runs before release-please: while a merged Release PR is still labelled
   # "autorelease: pending", release-please aborts instead of opening the next one.
   tag:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Get token
         id: app-token
@@ -111,7 +111,7 @@ jobs:
 
   release-please:
     needs: tag
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Get token
         id: app-token

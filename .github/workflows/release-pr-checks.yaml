@@ -18,7 +18,7 @@ concurrency:
 jobs:
   context:
     if: startsWith(github.head_ref, 'release-please--')
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     outputs:
       tags: ${{ steps.tags.outputs.list }}
       paper: ${{ steps.tags.outputs.paper }}
@@ -53,7 +53,7 @@ jobs:
 
   protocol:
     needs: context
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -65,7 +65,7 @@ jobs:
 
   compat:
     needs: context
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -89,7 +89,7 @@ jobs:
 
   notes:
     needs: context
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       pull-requests: write
@@ -124,7 +124,7 @@ jobs:
   modrinth-meta:
     needs: context
     if: needs.context.outputs.paper == 'true'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -135,7 +135,7 @@ jobs:
   gate:
     if: always()
     needs: [context, protocol, compat, notes, modrinth-meta]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Fail if any check failed
         env:
